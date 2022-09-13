@@ -1,8 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
-
+ 
 #include <iostream>
 #include <complex>
 #include <fftw3.h>

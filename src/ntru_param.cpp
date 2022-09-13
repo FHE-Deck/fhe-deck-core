@@ -1,6 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
+ 
 
 #include "../include/ntru_param.h"
 #include "../include/utils.h"

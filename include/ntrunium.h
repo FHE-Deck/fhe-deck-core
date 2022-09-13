@@ -1,7 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
+ 
 #ifndef NTRUNIUM_H
 #define NTRUNIUM_H
 

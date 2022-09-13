@@ -1,8 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
-
+ 
 #ifndef LWE_H
 #define LWE_H
 

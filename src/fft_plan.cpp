@@ -1,7 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
+ 
 #include <fftw3.h>
 #include <random>
 #include <iostream>

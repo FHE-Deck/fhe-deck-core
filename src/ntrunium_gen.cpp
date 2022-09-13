@@ -1,7 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/ 
-
+ 
 #include "../include/ntrunium_gen.h"
 
 ntrunium_gen::~ntrunium_gen(){

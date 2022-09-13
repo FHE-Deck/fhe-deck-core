@@ -1,7 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
+ 
 
 #ifndef NTRU_PARAM_H
 #define NTRU_PARAM_H

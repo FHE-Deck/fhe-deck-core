@@ -1,8 +1,4 @@
-/*
-PLEASE DO NOT DISTRIBUTE!!! This version is for review only. 
-*/
-
-
+ 
 #ifndef FFT_PLAN_H
 #define FFT_PLAN_H
 
