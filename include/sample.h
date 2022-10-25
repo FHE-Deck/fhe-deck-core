@@ -4,12 +4,12 @@
 
 #include <random>
 
-class sample{
+class sampler{
  
-    private: 
+    //private: 
+    public:
 
-        std::mt19937_64 e1; 
-
+        std::mt19937_64 e1;  
 
         double expectation;
         double stddev;
@@ -20,13 +20,11 @@ class sample{
         std::normal_distribution<double> normal_dist;
         std::binomial_distribution<long> binomial_dist;
 
-    public:
      
-        sample();
+        sampler();
 
-        sample(double expectation, double stddev);
- 
-
+        sampler(double expectation, double stddev);
+  
         long binary(); 
 
         long ternary(); 
@@ -38,9 +36,7 @@ class sample{
 
         // Returns a multiple of q
         long gaussian(long q);
- 
-
-
+   
         long uniform(long Q);
 
         void binary_array(long *a, int n); 

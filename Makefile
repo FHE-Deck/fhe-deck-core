@@ -9,10 +9,10 @@ FFTW = -lfftw3 -lfftw3l
 PTHREAD = -pthread
 EXTERN = $(NTL) $(FFTW) $(PTHREAD) -lhexl
 
-COMMON_FILES = fft_plan.o utils.o sample.o lwe.o lwe_param.o rotation_poly.o
+COMMON_FILES = fft_plan.o utils.o sample.o lwe.o lwe_param.o rotation_poly.o gadget.o
 RLWE_FILES = rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_lib.a rlwe.o rlwe_param.o
 NTRU_FILES = ntrunium_lib.a ntrunium.o ntrunium_gen.o ntru_param.o ntru.o
-TEST_FILES = rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test
+TEST_FILES = rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test gadget_tests
 
 
 all: clean rlwe_lib.a ntrunium_lib.a tests 
@@ -23,7 +23,20 @@ tests: $(TEST_FILES)
 
 clean:
 	$(RM) $(TEST_FILES) $(COMMON_FILES)  $(RLWE_FILES)  $(NTRU_FILES) 
-  
+
+
+# Libraries
+rlwe_lib.a: rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o gadget.o
+	$(AR) -q rlwe_lib.a rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o gadget.o
+
+ntrunium_lib.a: sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o gadget.o
+	$(AR) -q ntrunium_lib.a sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o gadget.o
+
+
+# Tests
+gadget_tests: sample.o gadget.o utils.o
+	$(CC) -o gadget_tests tests/gadget_tests.cpp gadget.o sample.o utils.o $(EXTERN) 
+
 hexl_test: utils.o sample.o
 	$(CC) -o hexl_test tests/hexl_test.cpp utils.o sample.o $(EXTERN) 
 
@@ -34,22 +47,14 @@ rlwe_tests: rlwe_lib.a
 	$(CC) -o rlwe_tests tests/rlwe_tests.cpp rlwe_lib.a $(EXTERN)  
 
 
-rlwe_lib.a: rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o
-	$(AR) -q rlwe_lib.a rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o
-
- 
 error_tests: lwe_param.o lwe.o  ntru_param.o  ntru.o  
 	$(CC) -o error_tests tests/error_tests.cpp ntrunium_lib.a $(EXTERN)   
 
 
-performance_tests: ntrunium_lib.a sample.o fft_plan.o rotation_poly.o ntrunium.o ntrunium_gen.o ntru_param.o ntru.o lwe_param.o lwe.o utils.o  
-	$(CC) -o performance_tests tests/performance_tests.cpp ntrunium_lib.a  $(EXTERN)   
+performance_tests: ntrunium_lib.a rlwe_lib.a sample.o fft_plan.o rotation_poly.o ntrunium.o ntrunium_gen.o ntru_param.o ntru.o lwe_param.o lwe.o utils.o  
+	$(CC) -o performance_tests tests/performance_tests.cpp ntrunium_lib.a rlwe_lib.a $(EXTERN)   
  
-
-ntrunium_lib.a: sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o
-	$(AR) -q ntrunium_lib.a sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o
-
-
+ 
 fft_mul_tests:  sample.o ntru_param.o ntru.o utils.o fft_plan.o
 	$(CC) -o fft_mul_tests tests/fft_mul_tests.cpp  fft_plan.o sample.o ntru_param.o ntru.o utils.o $(EXTERN) 
 
@@ -58,7 +63,7 @@ type_tests:
  
 ntrunium_tests: sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o
 	$(CC) -o ntrunium_tests tests/ntrunium_tests.cpp ntrunium.o ntrunium_gen.o fft_plan.o sample.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o $(EXTERN)  
-#	$(CC) -o ntrunium_tests tests/ntrunium_tests.cpp ntrunium_lib.a $(EXTERN)  
+
 
 ntru_tests: sample.o ntru_param.o utils.o ntru.o fft_plan.o
 	$(CC) -o ntru_test tests/ntru_tests.cpp sample.o fft_plan.o ntru_param.o utils.o ntru.o $(EXTERN)
@@ -66,6 +71,9 @@ ntru_tests: sample.o ntru_param.o utils.o ntru.o fft_plan.o
 lwe_tests: sample.o utils.o lwe_param.o lwe.o  
 	$(CC)  -o lwe_test tests/lwe_tests.cpp sample.o utils.o lwe_param.o lwe.o $(NTL)
 
+
+
+# Object files
 ntru.o: include/ntru.h 
 	$(CC) $(OPTIMIZATION) -c src/ntru.cpp
  
@@ -83,6 +91,9 @@ sample.o: include/sample.h
 
 utils.o: include/utils.h
 	$(CC) $(OPTIMIZATION) -c src/utils.cpp 
+
+gadget.o: include/gadget.h
+	$(CC) $(OPTIMIZATION) -c src/gadget.cpp 
 
 ntrunium_gen.o: include/ntrunium_gen.h
 	$(CC) $(OPTIMIZATION) -c src/ntrunium_gen.cpp 

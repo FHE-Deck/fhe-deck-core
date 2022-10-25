@@ -13,7 +13,7 @@ class lwe_sk {
     lwe_param lwe_par;
 
     // This is all secret  
-    sample rand; 
+    sampler rand; 
     long *s;
   
     lwe_sk();
@@ -25,12 +25,7 @@ class lwe_sk {
     lwe_sk(lwe_param lwe_par, long* key);
 
     lwe_param get_lwe_param();
-
-    // Secret
-    // void init_binary_key();
-    // Secret
-    // void init_ternary_key();
-
+  
     // Secret
     long* encrypt(long m);
     // Secret

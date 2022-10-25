@@ -30,11 +30,15 @@ class rlwe_hom_acc_scheme_gen{
     int sizeof_u;
     long *ext_s;
 
+    // How many LWE ciphertexts we need for masking key or the sanitization bootstrapping?
+    int masking_size;
+    double stddev_masking;
+
     ~rlwe_hom_acc_scheme_gen();
 
     rlwe_hom_acc_scheme_gen();
 
-    rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par);
+    rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking);
 
     rlwe_hom_acc_scheme* get_public_param();
  
@@ -49,6 +53,8 @@ class rlwe_hom_acc_scheme_gen{
     long* extract_rlwe_key();
 
     long*** key_switching_key_gen();
+ 
+    long** masking_key_gen();
     
     rlwe_gadget_ct* blind_rotation_key_gen();
 
@@ -60,7 +66,7 @@ class rlwe_hom_acc_scheme_gen{
 
 
 enum rlwe_hom_acc_scheme_named_param{ 
-    rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_12_B
+    rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_12_B, rlwe_hom_acc_scheme_C_11_NTT, rlwe_hom_acc_scheme_C_11_NTT_flood
 };
 
 
@@ -73,11 +79,20 @@ class rlwe_hom_acc_scheme_named_param_generator{
     rlwe_gadget_param rlwe_gadget_par;
     lwe_gadget_param lwe_gadget_par;
 
+    polynomial_arithmetic sk_arithmetic = ntl;
+
+    int masking_size;
+    double stddev_masking;
+
     rlwe_hom_acc_scheme_named_param_generator(rlwe_hom_acc_scheme_named_param name);
  
     void generate_bootstapping_keys(); 
 
     void init_rlwe_hom_acc_scheme_small_test();
+ 
+    void init_rlwe_hom_acc_scheme_C_11_NTT(); 
+
+    void init_rlwe_hom_acc_scheme_C_11_NTT_flood();
 
     void init_rlwe_hom_acc_scheme_C_11_B(); 
 

@@ -104,7 +104,7 @@ ntru_ct& ntru_ct::operator=(const ntru_ct other){
 ntru_ct ntru_ct::negacyclic_rotate(int rot){
     ntru_ct out(param);
     // TODO: For now I implement cyclic rotation because I first need to change the ring!!!
-    // WTF!!!???? I think this is no longer used (delete from here)
+    // !!!! Where is this stuff used??? It seems it make a rotation, but not a negacyclic rotation.
     utils::rotate_poly(out.c, c, param.N, rot); 
     return out;
 }
@@ -451,7 +451,7 @@ void ntru_gadget_ct::gadget_mul_fft(long *out, long *ct_1, fftwl_complex **c_2){
         param.engine->add_eval_form_l(multisum_eval, multisum_eval, prod); 
     } 
   
-    long double* coef_form = new long double[param.engine->plan_size];  
+    long* coef_form = new long[param.engine->plan_size];  
     param.engine->to_coef_form_l(coef_form, multisum_eval);    
     utils::mod_reduce(out, coef_form, param.Q, param.engine->N); 
     
@@ -519,9 +519,9 @@ void ntru_gadget_ct::to_eval(){
 
 void ntru_gadget_ct::to_coef(){
       if(arithmetic == long_double_fft){
-            long double** g_ct_coef = new long double*[ell]; 
+            long** g_ct_coef = new long*[ell]; 
             for(int i = 0; i < ell; ++i){
-                  g_ct_coef[i] = new long double[param.engine->plan_size];
+                  g_ct_coef[i] = new long[param.engine->plan_size];
                   param.engine->to_coef_form_l(g_ct_coef[i], gadget_ct_eval_l[i]); 
                   utils::mod_reduce(gadget_ct[i], g_ct_coef[i], param.Q, param.engine->N); 
             }

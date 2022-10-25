@@ -16,7 +16,7 @@ void mult_test(){
     long sample_modulus = 1073741824;
     fftw_complex* fftw_c_1 = new fftw_complex[tests];
     std::complex<double> std_c_1[tests];
-    sample sam;
+    sampler sam;
     for(int i = 0; i < tests; ++i){
         fftw_c_1[i][0] = sam.uniform(sample_modulus);
         fftw_c_1[i][1] = sam.uniform(sample_modulus);
@@ -60,7 +60,7 @@ void int_vs_auto_test(){
     long modulus = 1073741824;
     long mask = modulus -1;
     long sample_modulus = modulus * 65536; 
-    sample sam;
+    sampler sam;
     long a[tests];
     long b[tests];
     long c[tests];
@@ -96,7 +96,7 @@ void int_vs_vector_test(){
     long modulus = 1073741824;
     long mask = modulus -1;
     long sample_modulus = modulus * 65536; 
-    sample sam;
+    sampler sam;
 
     std::chrono::high_resolution_clock::time_point start, end; 
 
@@ -147,7 +147,7 @@ void mod_reduction_test(){
     long modulus = 65536;
     long mask = modulus -1;
     long sample_modulus = modulus * 65536; 
-    sample sam;
+    sampler sam;
     long a[tests];
     long b[tests];
     long c[tests];
@@ -186,7 +186,7 @@ void fft_mul_test(){
       psi[i] = 0;
    } 
    double stddev = 3.2;
-   sample rand;
+   sampler rand;
    NTL::ZZ_pX psi_poly;
    utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
    ntru_param param(cyclic, N, Q, any, stddev); 
@@ -286,7 +286,7 @@ void fft_random_mul_test(){
       psi[i] = 0;
    } 
    double stddev = 3.2;
-   sample rand;
+   sampler rand;
    NTL::ZZ_pX psi_poly;
    utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
    ntru_param param(cyclic, N, Q, any, stddev); 
@@ -399,7 +399,7 @@ void fft_random_convolve_test(){
       psi[i] = 0;
    } 
    double stddev = 3.2;
-   sample rand;
+   sampler rand;
    NTL::ZZ_pX psi_poly;
    utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
    ntru_param param(cyclic, N, Q, any, stddev); 
@@ -504,7 +504,7 @@ void fft_plan_test(ring_type ring, int num_of_tests){
  
     
    double stddev = 3.2;
-   sample rand; 
+   sampler rand; 
    ntru_param param(ring, N, Q, any, stddev); 
  
     // Choose uniformly random polynomials
@@ -598,7 +598,7 @@ void over_64_fft_plan_test(ring_type ring, int num_of_tests){
    // ... bits  
    long B = 1024;
    double stddev = 3.2;
-   sample rand;
+   sampler rand;
    //NTL::ZZ_pX psi_poly;
    //utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
    ntru_param param(ring, N, Q, any, stddev); 
@@ -617,7 +617,7 @@ void over_64_fft_plan_test(ring_type ring, int num_of_tests){
     // The function in evaluation form
     fftwl_complex* prod_eval = new fftwl_complex[engine.plan_size];
     // THe function in coefficient form
-    long double *prod_coef = new long double[engine.plan_size];
+    long *prod_coef = new long[engine.plan_size];
     // Mod reduced (we will compere this with the prod)
     long *prod_mod = new long[N];
     bool test = true; 
@@ -679,22 +679,22 @@ void over_64_fft_plan_test(ring_type ring, int num_of_tests){
 
 
 void fft_negacyclic_convolution_test(int num_of_tests){
-    std::cout << "================= fft_plan_test =================" << std::endl;
-   /*  
-   int N = 4096; 
+    std::cout << "================= fft_plan_test =================" << std::endl; 
+   int N = 2048; 
     // Around .. bits modulus
-   long Q = 268435456;
+   long Q = 16777216;
    // ... bits  
-   long B = 1024;
-    */ 
+   long B = 2; 
+   /*
    int N = 4; 
     // Around .. bits modulus
    long Q = 13;
    // ... bits  
    long B = 13;
+   */
     
    double stddev = 3.2;
-   sample rand; 
+   sampler rand; 
    //ntru_param param(negacyclic, N, Q, any, stddev); 
  
     // Choose uniformly random polynomials
@@ -718,68 +718,107 @@ void fft_negacyclic_convolution_test(int num_of_tests){
     long *prod_mod = new long[N];
 
     rand.uniform_array(poly_1, N, Q);
-    rand.uniform_array(poly_2, N, Q);
+    rand.uniform_array(poly_2, B, Q);
     rand.uniform_array(poly_3, N, Q); 
 
     utils::mul_mod(prod, poly_1, N, poly_2, N, N, Q, negacyclic); 
-    utils::add_mod(prod, prod, N, poly_3, N, N, Q); 
-    std::cout << "prod: " << utils::to_string(prod, N) << std::endl;
+    //utils::add_mod(prod, prod, N, poly_3, N, N, Q); 
+    //std::cout << "prod: " << utils::to_string(prod, N) << std::endl;
     engine.to_eval_form_scale(poly_1_eval, poly_1, 2.0); 
     engine.to_eval_form_scale(poly_3_eval, poly_3); 
     engine.to_eval_form(poly_2_eval, poly_2);
     engine.mul_eval_form(prod_eval, poly_1_eval, poly_2_eval);
-    engine.add_eval_form(prod_eval, prod_eval, poly_3_eval);
+    //engine.add_eval_form(prod_eval, prod_eval, poly_3_eval);
     engine.to_coef_form(prod_coef, prod_eval);
     //param.mod_reduce(prod_mod, prod_coef);
     utils::array_mod_form(prod_mod, prod_coef, N, Q);
-    std::cout << "prod_mod: " << utils::to_string(prod_mod, N) << std::endl;
+    //std::cout << "prod_mod: " << utils::to_string(prod_mod, N) << std::endl;
 
- /*   bool test = true; 
-    std::cout << "Start testing..." << std::endl;
-    // Start the test
-    for(int i = 0; i < num_of_tests; ++i){
-        // Choose random polynomails
-        rand.uniform_array(poly_1, N, Q);
-        rand.uniform_array(poly_2, N, B); 
-        rand.uniform_array(poly_3, N, Q); 
-        // Classic multiplication: prod = poly_1 * poly_2 + poly_3
-        utils::mul_mod(prod, poly_1, N, poly_2, N, param); 
-        utils::add_mod(prod, prod, N, poly_3, N, param); 
-        // FFT multiplication: Get the evaluation forms for poly_1, poly_2, poly_3
-        // FFT multiplication: poly_1 and poly_3 are scaled (divided by 2*N)
-        // engine.to_eval_form_scale(poly_1_eval, poly_1, scale); 
-        engine.to_eval_form_scale(poly_1_eval, poly_1); 
-        engine.to_eval_form(poly_2_eval, poly_2);
-        // engine.to_eval_form_scale(poly_3_eval, poly_3, scale);
-        engine.to_eval_form_scale(poly_3_eval, poly_3);
-        engine.mul_eval_form(prod_eval, poly_1_eval, poly_2_eval);
-        engine.add_eval_form(prod_eval, prod_eval, poly_3_eval);
-        engine.to_coef_form(prod_coef, prod_eval);
-        param.mod_reduce(prod_mod, prod_coef);
-        
-        // The result should be the same as prod.
-        if(!utils::is_eq_poly(prod_mod, prod, N)){ 
-            std::cout << "FFT Polynomials Multiplication Test: Fail" << std::endl;
-            std::cout << "At test number: " << i << std::endl;
-            std::cout << "prod: " << utils::to_string(prod, N) << std::endl;
-            std::cout << "result: " << utils::to_string(prod_mod, N) << std::endl;
-            long *diff = new long[N];
-            for(int i =0; i < N; ++i){
-                diff[i] = prod[i] - prod_mod[i];
-            }
-            std::cout << "diff: " << utils::to_string(diff, N) << std::endl;
-            test = false;
-            break;
+    if(!utils::is_eq_poly(prod_mod, prod, N)){
+        long* diff = new long[N];
+        for(int j = 0; j < N; ++j){
+            diff[j] = prod[j] - prod_mod[j];
         }
-    }
-    if(test){
-        std::cout << "FFT Polynomials Multiplication Test: OK" << std::endl;
-    }
- */
-
-
+        std::cout << "diff: " << utils::to_string(diff, N) << std::endl;
+        int max = utils::max(diff, N);
+        int min = utils::min(diff, N);
+        std::cout << "max: " << max <<std::endl;
+        std::cout << "min: " << min << std::endl;
+        std::cout << "meaen: " << utils::mean(diff, N) << std::endl;
+        std::cout << "variance: " << utils::variance(diff, N) << std::endl;
+        std::cout << "stddev: " << utils::standard_deviation(diff, N) << std::endl; 
+        int size = max - min + 1;
+        std::cout << "size: " << size << std::endl; 
+        long* occurences = utils::count_occurences(diff, N);
+        std::cout << "occurences: " << utils::to_string(occurences, size) << std::endl;
+    } 
 }
 
+
+void fft_negacyclic_convolution_test_long_double(int num_of_tests){
+    std::cout << "================= fft_plan_test =================" << std::endl; 
+   int N = 2048; 
+    // Around .. bits modulus
+   long Q = 4294967296;
+   // ... bits  
+   long B = 32; 
+   /*
+   int N = 4; 
+    // Around .. bits modulus
+   long Q = 13;
+   // ... bits  
+   long B = 13;
+   */
+    
+   double stddev = 3.2;
+   sampler rand; 
+   //ntru_param param(negacyclic, N, Q, any, stddev); 
+ 
+    // Choose uniformly random polynomials
+    long poly_1[N];
+    long poly_2[N];
+    long poly_3[N];
+    // This is the polynomials where classinc multiplication is done.
+    long *prod = new long[N];
+    // For FFT: Need to scale one of the polynomials down by 2*N
+    //double scale = 2.0 * (double)N;
+    // Setting up the fft_plan and the fft polynomials (for eval form)
+    fft_plan engine(negacyclic, N, true); 
+    fftwl_complex* poly_1_eval = new fftwl_complex[engine.plan_size];
+    fftwl_complex* poly_2_eval = new fftwl_complex[engine.plan_size];
+    fftwl_complex* poly_3_eval = new fftwl_complex[engine.plan_size];
+    // The function in evaluation form
+    fftwl_complex* prod_eval = new fftwl_complex[engine.plan_size];
+    // THe function in coefficient form
+    long *prod_coef = new long[engine.plan_size];
+    // Mod reduced (we will compere this with the prod)
+    long *prod_mod = new long[N];
+
+    rand.uniform_array(poly_1, N, Q);
+    rand.uniform_array(poly_2, B, Q);
+    rand.uniform_array(poly_3, N, Q); 
+
+    utils::mul_mod(prod, poly_1, N, poly_2, N, N, Q, negacyclic); 
+    //utils::add_mod(prod, prod, N, poly_3, N, N, Q); 
+    //std::cout << "prod: " << utils::to_string(prod, N) << std::endl;
+    engine.to_eval_form_scale_l(poly_1_eval, poly_1, 2.0); 
+    engine.to_eval_form_scale_l(poly_3_eval, poly_3); 
+    engine.to_eval_form_l(poly_2_eval, poly_2);
+    engine.mul_eval_form_l(prod_eval, poly_1_eval, poly_2_eval);
+    //engine.add_eval_form(prod_eval, prod_eval, poly_3_eval);
+    engine.to_coef_form_l(prod_coef, prod_eval);
+    //param.mod_reduce(prod_mod, prod_coef);
+    utils::array_mod_form(prod_mod, prod_coef, N, Q);
+    //std::cout << "prod_mod: " << utils::to_string(prod_mod, N) << std::endl;
+
+    if(!utils::is_eq_poly(prod_mod, prod, N)){
+        long* diff = new long[N];
+        for(int j = 0; j < N; ++j){
+            diff[j] = prod[j] - prod_mod[j];
+        }
+        std::cout << "diff: " << utils::to_string(diff, N) << std::endl;
+    } 
+}
 
 
 int main(){
@@ -796,6 +835,7 @@ int main(){
     
     //over_64_fft_plan_test(negacyclic, 100);
     // NOTE: pay attention to the ring - for negacyclic we need a power of two cyclotomic.
-    fft_plan_test(cyclic, 100);  
+    //fft_plan_test(cyclic, 100);  
     fft_negacyclic_convolution_test(100);
+    //fft_negacyclic_convolution_test_long_double(100);
 }

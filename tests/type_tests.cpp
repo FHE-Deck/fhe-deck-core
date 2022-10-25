@@ -17,6 +17,8 @@ int main(){
        << " bytes" << std::endl;
     std::cout << "Size of unsigned long int : " << sizeof(unsigned long int)
        << " bytes" << std::endl;
+    std::cout << "Size of unsigned long long : " << sizeof(unsigned long long)
+      << " bytes" << std::endl;
     std::cout << "Size of float : " << sizeof(float)
        << " bytes" << std::endl;
     std::cout << "Size of double : " << sizeof(double)

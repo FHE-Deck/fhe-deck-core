@@ -246,7 +246,7 @@ void random_mul_test(){
     for(int i=1; i < N; ++i){
         psi[i] = 0;
     } 
-    sample rand;
+    sampler rand;
     NTL::ZZ_pX psi_poly;
     utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
 
@@ -299,7 +299,7 @@ void random_multisum_test(){
     for(int i=1; i < N; ++i){
         psi[i] = 0;
     } 
-    sample rand;
+    sampler rand;
     NTL::ZZ_pX psi_poly;
     utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
 

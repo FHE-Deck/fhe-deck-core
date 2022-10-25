@@ -75,6 +75,16 @@ void utils::add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int size
    utils::set_array_from_polynomial(out, N, res);
 }
 
+void utils::sub_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus){
+   NTL::ZZ_pX in_1_poly;
+   utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
+   NTL::ZZ_pX in_2_poly;
+   utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
+   NTL::ZZ_pX res = in_1_poly - in_2_poly;
+   utils::set_array_from_polynomial(out, N, res);
+}
+
+
 void utils::neg_mod(long *out, long *in, int size, long modulus){
     for(int i = 0; i < size; ++i){
         out[i] = utils::integer_mod_form(-in[i], modulus);
@@ -104,6 +114,41 @@ void utils::cp(long *out, long *in, int size){
         out[i] = in[i];
     }
 }
+
+
+int utils::power_times(long x, long base){
+    long temp = base; 
+    int k = 1;
+    while(temp < x){
+        temp *= base;
+        k++;
+    }
+    return k;
+}
+
+
+bool utils::is_power_of(long x, long base){
+    long temp = base; 
+    int k = 1;
+    while(temp < x){
+        temp *= base;
+        k++;
+    }
+    if(temp == x){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+long utils::abs(long x){
+    if(x >= 0){
+        return x;
+    }
+    return -x;
+}
+
 
 long utils::mod_inv(long in, long modulus){
     return NTL::InvMod(in, modulus);
@@ -383,6 +428,7 @@ void utils::decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, i
     long mask = basis-1;
     long shift;
     for(int i = 0; i < ell; ++i){
+        // TODO: Change and test for shift += k (starting from shift = -k) - should give a mini speedup
         shift = k*i;
         for(int j=0; j < sizeof_poly; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
@@ -420,12 +466,14 @@ void utils::signed_decomp(long **d_ct, long* poly, int sizeof_poly, int basis, i
     delete[] signed_poly;
 }
 
+
+ 
 /*
 - d_ct is a two dimensional array, that holds polynomials.
 - basis is the decomposition basis. We assume that its a power of two
 - ell = log_basis(limit) (usually limit is the modulus)
 - param are the ntru parameters
-*/
+*/ 
 void utils::decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell){
     int mask = basis-1;
     int shift;
@@ -437,7 +485,7 @@ void utils::decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, in
         }
         mask = mask << k;
     }
-}
+} 
 
 
 void utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell){
@@ -456,8 +504,10 @@ void utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell)
 }
 
 
-
-void utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, sample &rand){
+/*
+TODO: Deprecated: its implemented now in the gadget class
+*/
+void utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, sampler &rand){
     int mask = basis-1;
     int shift;  
     long* gaussians = new long[sizeof_poly];
@@ -484,3 +534,99 @@ void utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, in
     delete[] gaussians; 
 }
  
+
+
+long utils::max(long* in, int N){
+    long max = in[0];
+    for(int i = 1; i < N; ++i){
+        if(max < in[i]){
+            max = in[i];
+        }
+    }
+    return max;
+}
+
+long utils::min(long* in, int N){
+    long max = in[0];
+    for(int i = 1; i < N; ++i){
+        if(max > in[i]){
+            max = in[i];
+        }
+    }
+    return max;
+}
+
+double utils::mean(long* in, int N){
+    double sum = 0;
+    for(int i = 0; i < N; ++i){
+        sum += (double)in[i];
+    }
+    return sum / (double)N;
+}
+
+double utils::variance(long* in, int N){
+    double m = mean(in, N); 
+    double sum = 0.0;
+    double square = 0.0;
+    for(int i = 0; i < N; ++i){
+        square = in[i] - m;
+        square *= square;
+        sum += square;
+    } 
+    return sum/(double)N;
+}
+
+double utils::variance(long* in, int N, double mean){
+    double m = mean;
+    double sum = 0.0;
+    double square = 0.0;
+    for(int i = 0; i < N; ++i){
+        square = in[i] - m;
+        square *= square;
+        sum += square;
+    } 
+    return sum/(double)N;
+}
+
+double utils::standard_deviation(long* in, int N){ 
+    return sqrt(utils::variance(in, N)); 
+}
+
+ 
+double utils::standard_deviation(long* in, int N, double mean){ 
+    return sqrt(utils::variance(in, N, mean)); 
+}
+
+long* utils::count_occurences(long* in, int N){
+    long max = utils::max(in, N);
+    long min = utils::min(in, N);
+    int size = max - min + 1;
+    long* occurences = new long[size];
+    for(int i = 0; i < size; ++i){
+        occurences[i] = 0;
+    }
+    for(int i = 0; i < size; ++i){
+        occurences[in[i]-min] += 1;
+    }
+    return occurences;
+}
+
+long utils::count_positive(long* in, int N){
+    long out = 0;
+    for(int i = 0; i < N; ++i){
+        if(in[i] > 0){
+            out++;
+        }
+    }
+    return out;
+}
+
+long utils::count_negative(long* in, int N){
+    long out = 0;
+    for(int i = 0; i < N; ++i){
+        if(in[i] < 0){
+            out++;
+        }
+    }
+    return out;
+}

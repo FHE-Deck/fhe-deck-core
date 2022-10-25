@@ -26,11 +26,11 @@ class lwe_param{
     // Public
     void scalar_mul(long *out, long *ct, long scalar);
     // Public
-    void scalar_mul_no_mod_reduction(long *out, long *ct, long scalar);
+    void scalar_mul_lazy(long *out, long *ct, long scalar);
     // Public
     void add(long *out, long *ct_1, long *ct_2);
     // Public
-    void add_no_mod_reduction(long *out, long *ct_1, long *ct_2); 
+    void add_lazy(long *out, long *ct_1, long *ct_2); 
     // Public
     lwe_param modulus_switch(long new_modulus);
     // Public
@@ -56,7 +56,7 @@ class lwe_gadget_param{
   // Public Gadget
     void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
     // Public Gadget
-    void gadget_mul_no_mod_reduction(long *out_ct, long** gadget_ct, long scalar);
+    void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
   
 };
 

@@ -185,7 +185,7 @@ void ntru_sk::encrypt(ntru_ct *ct_out, long* msg){
         param.engine->add_eval_form_l(c_fft, c_fft, e_fft);
 
         // To coef form and mod reduce
-        long double* result = new long double[param.engine->plan_size];
+        long* result = new long[param.engine->plan_size];
         param.engine->to_coef_form_l(result, c_fft);  
         utils::mod_reduce(ct_out->c, result, param.Q, param.N);  
         delete(g);

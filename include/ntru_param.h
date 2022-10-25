@@ -21,7 +21,7 @@ class ntru_param{
     long Q; 
 
     fft_plan *engine;
-    sample rand;
+    sampler rand;
 
     ~ntru_param();
     
@@ -131,9 +131,9 @@ class ntru_gadget_ct{
   bool init = false;
 
   // TODO: Of course this gadget param have to be changed after we write the gadget class
-    int ell;
-    int k;
-    int basis; 
+   int ell;
+   int k;
+  int basis; 
     
   ~ntru_gadget_ct();
 

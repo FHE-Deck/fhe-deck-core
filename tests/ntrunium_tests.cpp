@@ -14,7 +14,7 @@ void test_key_switching(ntrunium_named_param param_name){
   
     ntrunium_named_param_generator param_gen(param_name); 
     param_gen.generate_bootstapping_keys();  
-    sample rand; 
+    sampler rand; 
     int t = 5;
        
 
@@ -170,7 +170,7 @@ void test_rotation_polynomials(int num_of_tests){
     long t = 13;
     // NOTE: Here N is the same as Q! Don't forget about that, or you get rubish.
     long N = Q;
-    sample rand; 
+    sampler rand; 
     long x;
     long result;
     long result_rounded; 
@@ -438,7 +438,7 @@ void test_bootstrap_named_params(ntrunium_named_param param_name, int num_of_tes
     std::cout << "Generate Bootstrapping Keys: " ;
     param_gen.generate_bootstapping_keys(); 
     std::cout << "DONE." << std::endl;
-    sample rand; 
+    sampler rand; 
     int t = 6;
     // Create the msb function for the acc (its with power of two parameters) 
     long* acc_msg = rotation_poly::rot_msb(t, param_gen.N, param_gen.P);   
@@ -499,7 +499,7 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
 
     ntrunium_named_param_generator param_gen(param_name); 
     param_gen.generate_bootstapping_keys(); 
-    sample rand; 
+    sampler rand; 
     int t = 5;
     // Create the identity function for the acc (its with power of two parameters) 
     long* acc_msg = rotation_poly::rot_identity(t, param_gen.N, param_gen.P);     
@@ -834,7 +834,7 @@ void homomorphic_plaintext_gauss(ntrunium_named_param_generator param_gen, int* 
 // n is the dimension
 // t is the modulus
 int** random_system_of_equations(int n, int t){
-    sample rand; 
+    sampler rand; 
     int** mat = new int*[n];
     for(int i = 0; i < n; ++i){
         mat[i] = new int[n+1];

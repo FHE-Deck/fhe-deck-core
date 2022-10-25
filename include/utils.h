@@ -22,12 +22,12 @@ class utils{
         static void mod_polynomial(long *out, long *in, int sizeof_in, long modulus);
 
         static void mul_scalar(long *out, long *in, int sizeof_in, long scalar);
-
-        // static void mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, ntru_param param);
+ 
         static void mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus, ring_type ring);
-
-        //static void add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, ntru_param param);
+ 
         static void add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus);
+
+        static void sub_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus);
 
         static void neg_mod(long *out, long *in_1, int size, long modulus);
 
@@ -36,6 +36,13 @@ class utils{
         static NTL::ZZ_pX get_ring_poly(ring_type ring, long N, long modulus);
  
         static void cp(long *out, long *in, int size);
+
+        // Returns the smallest k, s.t. base**k >= x
+        static int power_times(long x, long base);
+
+        static bool is_power_of(long x, long base);
+
+        static long abs(long x);
 
         // Computes (z**2)/4 mod modulus
         // Its usefull from computing x * y = (x+y)**2/4 - (x-y)**2/4 mod modulus
@@ -94,7 +101,7 @@ class utils{
         static void integer_decomp(long *dec_out, long in , int basis, int k, int ell);
 
         // Below are the gadget (should be perhaps in a separate class?)
-
+        // TODO: All those are in the gadget class - delete from here after testing 
         static void decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell);
 
         static void decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell);
@@ -103,8 +110,29 @@ class utils{
 
         static void compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell);
   
-        static void gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, sample &rand);
+        static void gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, sampler &rand);
  
+
+        // Some stuff for statistics
+        static long max(long* in, int N);
+
+        static long min(long* in, int N);
+
+        static double mean(long* in, int N);
+
+        static double variance(long* in, int N);
+
+        static double variance(long* in, int N, double mean);
+
+        static double standard_deviation(long* in, int N);
+
+        static double standard_deviation(long* in, int N, double mean);
+
+        static long* count_occurences(long* in, int N);
+
+        static long count_positive(long* in, int N);
+
+        static long count_negative(long* in, int N);
 
 };
 

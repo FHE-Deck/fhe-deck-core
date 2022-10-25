@@ -73,7 +73,7 @@ class fft_plan{
     // However, without modular reduction we cannot guarantee that the outcome (for example for multiplication of two polynomails) will not lie outside 64-bits
     //void to_coef_form(long *coef_form, fftw_complex* eval_form);
 
-    void to_coef_form_l(long double *coef_form, fftwl_complex* eval_form);
+    void to_coef_form_l(long *coef_form, fftwl_complex* eval_form);
  
     void add_eval_form_l(fftwl_complex *sum, fftwl_complex* in_1, fftwl_complex* in_2);
 

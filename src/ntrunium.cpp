@@ -56,11 +56,11 @@ void ntrunium::init_ternary_key(){
 
 
 void ntrunium::ntru_to_lwe_key_switch(long *lwe_ct, ntru_ct *ct){ 
-    lwe_g_par.gadget_mul_no_mod_reduction(lwe_ct, ksk[0], ct->c[0]);  
+    lwe_g_par.gadget_mul_lazy(lwe_ct, ksk[0], ct->c[0]);  
     long *temp_lwe_ct = lwe_g_par.lwe_par.init_ct(); 
     for(int i=1; i < ntru_g_par.param.N; ++i){ 
-        lwe_g_par.gadget_mul_no_mod_reduction(temp_lwe_ct, ksk[i], ct->c[i]); 
-        lwe_g_par.lwe_par.add_no_mod_reduction(lwe_ct, lwe_ct, temp_lwe_ct); 
+        lwe_g_par.gadget_mul_lazy(temp_lwe_ct, ksk[i], ct->c[i]); 
+        lwe_g_par.lwe_par.add_lazy(lwe_ct, lwe_ct, temp_lwe_ct); 
     } 
     // Modulus reduction only at the very end
     for(int i = 0; i < lwe_g_par.lwe_par.n+1; ++i){

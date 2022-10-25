@@ -2,17 +2,17 @@
 #include "../include/sample.h"
  
 
-sample::sample(){ 
+sampler::sampler(){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);
     e1 = e; 
 }
 
-sample::sample(double expectation, double stddev){ 
+sampler::sampler(double expectation, double stddev){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
-    std::mt19937_64 e(seed); 
+    std::mt19937_64 e(seed);  
     e1 = e; 
     this->expectation = expectation;
     this->stddev = stddev;
@@ -21,14 +21,14 @@ sample::sample(double expectation, double stddev){
 
  
 
-long sample::binary(){
+long sampler::binary(){
     std::uniform_int_distribution<long> binary_uniform(0, 1);
     return binary_uniform(e1);
 }
 
 
 
-long sample::ternary(){
+long sampler::ternary(){
     std::uniform_int_distribution<long> binary_uniform(0, 2);
     long result = binary_uniform(e1);
     if(result == 2){
@@ -37,13 +37,14 @@ long sample::ternary(){
     return result;
 }
 
-long sample::gaussian(double expectation, double stddev){
+long sampler::gaussian(double expectation, double stddev){
+    // Bloddy hell!!! new instantiation (new object every iteration!!! Bloddy Hell!)
     std::normal_distribution<double> normal_dist(expectation, stddev);
-    return (long)round(normal_dist(e1));
+    return (long)normal_dist(e1);
 }
 
 
-long sample::gaussian(long q, double expectation, double stddev){
+long sampler::gaussian(long q, double expectation, double stddev){
     std::normal_distribution<double> normal_dist(expectation, stddev);
     // TODO: Round to nearest multiple of q
     // For now -> Actually, this should be a propper Gaussian sampler!
@@ -57,44 +58,46 @@ long sample::gaussian(long q, double expectation, double stddev){
 }
 
 
-long sample::gaussian(long q){ 
-    // TODO: Round to nearest multiple of q
-    // For now -> Actually, this should be a propper Gaussian sampler!
+long sampler::gaussian(long q){  
     long u = (long)round(normal_dist(e1));
+    return q * u; 
+    // Round to nearest multiple of q
     // q is a power of two so we mask
+    /*
     long r = u & (q-1);
     if(r < (q>>2)){
         return u - r;
     } 
     return (u - r) + q;
+    */
 }
   
 
 
-long sample::uniform(long Q){
+long sampler::uniform(long Q){
     std::uniform_int_distribution<long> binary_uniform(0, Q-1);
     return binary_uniform(e1);
 }
 
-void sample::binary_array(long *a, int n){
+void sampler::binary_array(long *a, int n){
     for(int i = 0; i < n; ++i){
         a[i] = binary();
     }
 }
 
-void sample::ternary_array(long *a, int n){
+void sampler::ternary_array(long *a, int n){
     for(int i = 0; i < n; ++i){
         a[i] = ternary();
     }
 }
 
-void sample::gaussian_array(long *a, int n, double expectation, double stddev){
+void sampler::gaussian_array(long *a, int n, double expectation, double stddev){
     for(int i = 0; i < n; ++i){
         a[i] = gaussian(expectation, stddev);
     }
 }
 
-void sample::uniform_array(long *a, int n, long Q){
+void sampler::uniform_array(long *a, int n, long Q){
     for(int i = 0; i < n; ++i){
         a[i] = uniform(Q);
     }

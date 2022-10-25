@@ -29,7 +29,7 @@ void lwe_param::scalar_mul(long *out, long *ct, long scalar){
     }
 }
 
-void lwe_param::scalar_mul_no_mod_reduction(long *out, long *ct, long scalar){
+void lwe_param::scalar_mul_lazy(long *out, long *ct, long scalar){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct[i] * scalar);
     }
@@ -41,7 +41,7 @@ void lwe_param::add(long *out, long *ct_1, long *ct_2){
     }
 }
 
-void lwe_param::add_no_mod_reduction(long *out, long *ct_1, long *ct_2){
+void lwe_param::add_lazy(long *out, long *ct_1, long *ct_2){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct_1[i] + ct_2[i]);
     }
@@ -106,7 +106,7 @@ void lwe_gadget_param::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
 
 
 
-void lwe_gadget_param::gadget_mul_no_mod_reduction(long *out_ct, long** gadget_ct, long scalar){  
+void lwe_gadget_param::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar){  
     for(int i = 0; i < lwe_par.n+1; ++i){
         out_ct[i] = 0;
     }
@@ -115,20 +115,18 @@ void lwe_gadget_param::gadget_mul_no_mod_reduction(long *out_ct, long** gadget_c
     if(basis==2){
         for(int i = 0; i < ell; ++i){
             if(scalar_decomposed[i]==1){
-                lwe_par.add_no_mod_reduction(out_ct, out_ct, gadget_ct[i]);
+                lwe_par.add_lazy(out_ct, out_ct, gadget_ct[i]);
             }
         }
     }else{
         long *temp_ct = new long[lwe_par.n+1];
         for(int i = 0; i < ell; ++i){
-            lwe_par.scalar_mul_no_mod_reduction(temp_ct, gadget_ct[i], scalar_decomposed[i]);
-            lwe_par.add_no_mod_reduction(out_ct, out_ct, temp_ct);
+            lwe_par.scalar_mul_lazy(temp_ct, gadget_ct[i], scalar_decomposed[i]);
+            lwe_par.add_lazy(out_ct, out_ct, temp_ct);
         } 
         delete[] temp_ct;
     } 
-    // Modulus reduction only at the very end
-    for(int i = 0; i < lwe_par.n; ++i){
-        out_ct[i] = out_ct[i] % lwe_par.Q;
-    }
+    // Modulus reduction only at the  end
+    utils::array_mod_form(out_ct, out_ct, lwe_par.n+1, lwe_par.Q); 
     delete[] scalar_decomposed;
 }

@@ -245,7 +245,7 @@ void plain_ntru_test(int test_num){
 
 void kdm_plain_ntru_test(int test_num){ 
     std::cout << "=== kdm_plain_ntru_test: Testing Error for Encryption === " << std::endl; 
-    sample rand;
+    sampler rand;
     // Prime number: 2**26 - 5
     long Q = 67108859;  
     // Prime number:  2**11 -9
@@ -917,7 +917,7 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
     // Gadget Encrypt bits
     // If bit was 0, then I check with zero polynomials, if 1, then I check with msg polynomial
 
-    sample rand;
+    sampler rand;
     // Prime: 2**30  
     long Q = 1073741824;  
     Q =  Q-35;
@@ -1050,7 +1050,7 @@ int main(){
     // NOTE: When doing fewer tests, I get a mean that is actually quite far from 0. 
     // For more tests it I get a mean close to 0.
     // That is most likely due to the fact that power of two decomposition will not realy give me uniformly random polynomials.
-    // They will be uniformaly random conditioned that the sign of the coefficient is the same.  
+    // They will be uniformly random conditioned that the sign of the coefficient is the same.  
 */
     gadget_ntru_errors_test(1048576);
     gadget_ntru_power_of_two_errors_test(1048576);

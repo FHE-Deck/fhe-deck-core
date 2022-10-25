@@ -6,7 +6,7 @@
 #include "enums.h"
 #include "sample.h"
 #include "fft_plan.h"
-
+#include "gadget.h"
 
 
 class rlwe_param{
@@ -15,12 +15,14 @@ class rlwe_param{
  
     ring_type ring;
     int N;
-    sample rand;
+    sampler rand;
     double stddev;
     long Q;
     modulus_type mod_type;
     key_dist key_type;
 
+    // TODO: Perhaps we should have a separate engine in each gadget ciphertext for example?
+    // Not sure. Need to think about it. 
     fft_plan *engine;
     bool init = false;
   
@@ -38,6 +40,7 @@ class rlwe_param{
 
     long* init_zero_poly();
 
+  // These FFT poly perhaps should be initialized by fft_plan?
     fftw_complex* init_fft_poly();
 
     fftwl_complex* init_fft_poly_l();
@@ -94,11 +97,16 @@ class rlwe_ct{
 };
 
 
-enum gadget_mul_mode {simul, signed_decomp};
+enum gadget_mul_mode {simul, deter};
+
+
 
 class rlwe_gadget_param{
 
   public:
+
+  polynomial_arithmetic arithmetic;
+
   rlwe_param param;
   // Q = basis**ell
   int ell;
@@ -111,22 +119,15 @@ class rlwe_gadget_param{
   int basis_any;
 
   int ell_max;
-
-  // Standard deviation for the gaussian sampling algorithm (for randomized gadget decomposition) when mode = simul
-  // We will set it always to basis * 4.5. It should be basis * omega(sqrt(log N)), but for practical N, 
-  // 4.5 upperbounds sqrt(log N). E.g. math.sqrt(20) approx 4.47, but we will never use a ring of size N = 2**20. 
-  // According to [MP12] stddev should be basis * omega(sqrt(log N)) for the special case where Q = basis**(ell)
-  double stddev_simul;
-
-  // parameters for binomial distribution 
-  long n_binom;
-  long n_binom_half;
-  double p_binom;
-  sample gadget_rand;
+  int w;
+  int w_any;
+  
+  gadget deter_gadget;
+  gadget rand_gadget;
 
   rlwe_gadget_param();
-    
-  rlwe_gadget_param(rlwe_param &rlwe_par, int basis, double stddev_simul);
+  
+  rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget, polynomial_arithmetic arithmetic);
    
 };
 
@@ -139,14 +140,23 @@ class rlwe_gadget_ct{
 
   rlwe_ct *gadget_ct;
   rlwe_ct *gadget_ct_sk;
-
+ 
   fftw_complex **eval_a;
   fftw_complex **eval_b;
 
   fftw_complex **eval_a_sk;
   fftw_complex **eval_b_sk;
+ 
 
-  bool eval = false;
+  intel::hexl::NTT ntt; 
+  long **ntt_eval_a;
+  long **ntt_eval_b;
+
+  long **ntt_eval_a_sk;
+  long **ntt_eval_b_sk;
+
+
+  //bool eval = false;
   
   // Mask for power of two modulus reduction
   long mask;
@@ -159,42 +169,50 @@ class rlwe_gadget_ct{
 
   ~rlwe_gadget_ct();
 
+  rlwe_gadget_ct(const rlwe_gadget_ct& other);
+
   rlwe_gadget_ct& operator=(const rlwe_gadget_ct other);
 
 
   void mul(rlwe_ct *out, const rlwe_ct *ct, gadget_mul_mode mode);
  
-  void multisum(long *out, long** arr, fftw_complex **c_arr);
+  void multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w);
 
-  void multisum_any(long *out, long** arr, fftw_complex **c_arr);
+  void multisum_any_fft(long *out, long** arr, fftw_complex **c_arr);
+
+  void multisum_ntt(long *out, long** arr, long **c_arr, int ell, int w);
+
+  void multisum_any_ntt(long *out, long** arr, long **c_arr);
    
   void to_eval();
 
   void to_coef();
-
-  // TODO: Acutally, this should be private, but I need to test it separately
-  // Also, for now, only this class uses the method, 
-  //but it makes perfect sense for future to have a separate class with gadgets
-  long** gaussian_sample(long *in);
  
  
   private:
 
-    long** decompose(long *in);
- 
-   //void gadget_mul_fft(long* out, long *c_1, fftw_complex **c_2);
+  void init_fft_eval();
 
-   //void gadget_mul_fft(long* out, long *c_1, fftwl_complex **c_2);
+  void delete_fft_eval();
+
+  void init_ntt_eval();
+
+  void delete_ntt_eval();
+
+  void to_eval_fft();
+
+  void to_coef_fft();
+
+  void to_eval_ntt();
+
+  void to_coef_ntt();
+  
   
     void mod_reduce(long *out_poly, long *in_poly);
 
     void mod_reduce(long *out_poly, long double *in_poly_l);
 
 };
-
-
-
-
-
+  
 
 #endif

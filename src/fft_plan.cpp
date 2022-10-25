@@ -195,7 +195,7 @@ void fft_plan::mul_eval_form(fftw_complex *prod, fftw_complex* in_1, fftw_comple
             temp = in_1[ip][0] * in_2[ip][0] - in_1[ip][1] * in_2[ip][1];
             prod[ip][1] = in_1[ip][0] * in_2[ip][1] + in_1[ip][1] * in_2[ip][0];
             prod[ip][0] = temp; 
-            prod[half+ip][1] =  -prod[ip][1];
+            prod[half+ip][1] = -prod[ip][1];
         }
     } 
 } 
@@ -267,7 +267,7 @@ void fft_plan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly, doub
 }
   
 
-void fft_plan::to_coef_form_l(long double *coef_form_l, fftwl_complex* eval_form_l){
+void fft_plan::to_coef_form_l(long *coef_form_l, fftwl_complex* eval_form_l){
     for(int i = 0; i < plan_size; ++i){
         out_l[i][0] = eval_form_l[i][0];
         out_l[i][1] = eval_form_l[i][1];
