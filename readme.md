@@ -4,7 +4,7 @@ FHE-Deck
 About
 -----------
 
-FHE-Deck is a C++ library that implements Fully Homomorphic Encryption scheme based on functional bootstraping.
+FHE-Deck is a C++ library that implements Fully Homomorphic Encryption schemes based on Functional Bootstraping.
 
 
 Compilation
