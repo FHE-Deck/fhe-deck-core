@@ -7,6 +7,7 @@
 #include "sample.h"
 #include "utils.h"
 #include "fft_plan.h" 
+//#include "ciphertext.h"
 
 #include "hexl/hexl.hpp"
 
@@ -70,11 +71,20 @@ class ntru_ct{
  
     ntru_ct negacyclic_rotate(int rot);
 
+ 
     ntru_ct add(const ntru_ct *ct);
 
     ntru_ct sub(const ntru_ct *ct);
 
-    ntru_ct neg();
+    ntru_ct neg(); 
+
+/*
+    void add(ciphertext *ct);
+  
+    void sub(ciphertext *ct);
+ 
+    void mul(long b);
+*/
 
     ntru_ct mod_switch(long new_modulus);
 

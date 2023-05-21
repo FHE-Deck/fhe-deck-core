@@ -178,12 +178,29 @@ ntru_ct ntru_ct::mod_switch(ntru_param new_param){
       return out;
 }
 
+/*
+void ntru_ct::add(ciphertext *ct){
+      ntru_ct* ct_cast = dynamic_cast<ntru_ct*>(ct);
+      add(this->c, this->c, ct_cast->c);
+}
+ 
+
+void ntru_ct::sub(ciphertext *ct){
+      ntru_ct* ct_cast = dynamic_cast<ntru_ct*>(ct);
+      sub(this->c, this->c, ct_cast->c);
+} 
+
+void ntru_ct::mul(long b){
+      for(int i = 0; i < param.N; ++i){ 
+            c[i] = (c[i] * b) % param.Q;
+      }  
+} 
+*/
 
 std::string ntru_ct::to_string(){
       return utils::to_string(c, param.N);
 }
-
-
+ 
  
 ntru_gadget_param::ntru_gadget_param(){}
 

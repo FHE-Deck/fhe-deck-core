@@ -2,6 +2,7 @@
 #ifndef RLWE_HOM_ACC_SCHEME_GEN_H
 #define RLWE_HOM_ACC_SCHEME_GEN_H
 
+//#include "ciphertext.h"
 #include "lwe.h"
 #include "rlwe.h"
 #include "rlwe_param.h"
@@ -34,11 +35,13 @@ class rlwe_hom_acc_scheme_gen{
     int masking_size;
     double stddev_masking;
 
+    plaintext_encoding default_encoding;
+
     ~rlwe_hom_acc_scheme_gen();
 
     rlwe_hom_acc_scheme_gen();
 
-    rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking);
+    rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
 
     rlwe_hom_acc_scheme* get_public_param();
  
@@ -66,7 +69,7 @@ class rlwe_hom_acc_scheme_gen{
 
 
 enum rlwe_hom_acc_scheme_named_param{ 
-    rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_12_B, rlwe_hom_acc_scheme_C_11_NTT, rlwe_hom_acc_scheme_C_11_NTT_flood
+    rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_11_flood, rlwe_hom_acc_scheme_C_11_NTT, rlwe_hom_acc_scheme_C_11_NTT_flood, rlwe_hom_acc_scheme_C_11_NTT_amortized
 };
 
 
@@ -81,8 +84,12 @@ class rlwe_hom_acc_scheme_named_param_generator{
 
     polynomial_arithmetic sk_arithmetic = ntl;
 
+    plaintext_encoding default_encoding;
+
     int masking_size;
     double stddev_masking;
+
+    rlwe_hom_acc_scheme_named_param_generator() = default;
 
     rlwe_hom_acc_scheme_named_param_generator(rlwe_hom_acc_scheme_named_param name);
  
@@ -96,7 +103,11 @@ class rlwe_hom_acc_scheme_named_param_generator{
 
     void init_rlwe_hom_acc_scheme_C_11_B(); 
 
-    void init_rlwe_hom_acc_scheme_C_12_B(); 
+    void init_rlwe_hom_acc_scheme_C_11_flood();
+
+
+    void init_rlwe_hom_acc_scheme_C_11_NTT_amortized(); 
+ 
 
 };
 

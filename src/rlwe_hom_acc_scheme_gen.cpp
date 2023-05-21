@@ -11,13 +11,14 @@ rlwe_hom_acc_scheme_gen::~rlwe_hom_acc_scheme_gen(){
 rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(){}
 
 
-rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking){ 
+rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding){ 
     rlwe_sk rlwe(rlwe_gadget_par.param, sk_arithmetic);
     this->rlwe_gadget =  gadget_rlwe_sk(rlwe_gadget_par, rlwe);
     lwe_sk g_lwe = lwe_sk(lwe_gadget_par.lwe_par);
     this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe);
     this->masking_size = masking_size;
     this->stddev_masking = stddev_masking;
+    this->default_encoding = default_encoding;
  
     long q = rlwe_gadget_par.param.N * 2; 
     this->lwe = lwe_gadget.lwe.modulus_switch(q);    
@@ -45,7 +46,7 @@ rlwe_hom_acc_scheme* rlwe_hom_acc_scheme_gen::get_public_param(){
     long **masking_key = masking_key_gen();   
     // The blind rotation key
     rlwe_gadget_ct *bk = blind_rotation_key_gen();  
-    return new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking); 
+    return new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking, default_encoding); 
 }
 
 
@@ -129,9 +130,9 @@ rlwe_gadget_ct* rlwe_hom_acc_scheme_gen::blind_rotation_key_gen(){
  }
     
     // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
- void rlwe_hom_acc_scheme_gen::scale_and_encrypt_initial_lwe(long* ct, long m, int t){
+ void rlwe_hom_acc_scheme_gen::scale_and_encrypt_initial_lwe(long* ct, long m, int t){ 
     double scale = (double)lwe.lwe_par.Q/ (2 * t);
-    long m_scaled =  (long)round((double)m*scale); 
+    long m_scaled =  (long)round((double)m * scale); 
     lwe.encrypt(ct, m_scaled);
  }
 
@@ -142,22 +143,25 @@ rlwe_gadget_ct* rlwe_hom_acc_scheme_gen::blind_rotation_key_gen(){
 rlwe_hom_acc_scheme_named_param_generator::rlwe_hom_acc_scheme_named_param_generator(rlwe_hom_acc_scheme_named_param name){
     if(name == rlwe_hom_acc_scheme_C_11_B){
         init_rlwe_hom_acc_scheme_C_11_B();
-    } else if(name == rlwe_hom_acc_scheme_C_12_B){
-        init_rlwe_hom_acc_scheme_C_12_B();
+    } else if(name == rlwe_hom_acc_scheme_C_11_flood){
+        init_rlwe_hom_acc_scheme_C_11_flood();
     } else if(name == rlwe_hom_acc_scheme_small_test){
         init_rlwe_hom_acc_scheme_small_test();
     } else if(name == rlwe_hom_acc_scheme_C_11_NTT){
             init_rlwe_hom_acc_scheme_C_11_NTT();
     }else if(name == rlwe_hom_acc_scheme_C_11_NTT_flood){
             init_rlwe_hom_acc_scheme_C_11_NTT_flood();
-    }else{
+    }else if(name == rlwe_hom_acc_scheme_C_11_NTT_amortized){
+            init_rlwe_hom_acc_scheme_C_11_NTT_amortized();
+    }
+    else{
         std::cout << "No parameter set selected!" <<  std::endl;
     }
 }
  
 
 void rlwe_hom_acc_scheme_named_param_generator::generate_bootstapping_keys(){
-    this->boot_sk = new rlwe_hom_acc_scheme_gen(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking); 
+    this->boot_sk = new rlwe_hom_acc_scheme_gen(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding); 
     this->boot = boot_sk->get_public_param(); 
 } 
 
@@ -171,16 +175,18 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_small_t
     double rlwe_stddev = 0;
     int rlwe_basis = 2;
     double stddev_simul = rlwe_basis;
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft);
     gadget deter_gadget = gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget, double_fft);
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
     
     int n = 10;
     int lwe_basis = 2;
     double lwe_stddev = 0;
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 4, Q);
 } 
 
 
@@ -201,10 +207,10 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     // stddev_simul approx  2**(12.37)
     stddev_masking = 5311;
 
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt);
     gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget, hexl_ntt); 
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
     sk_arithmetic = hexl_ntt;
 
     // 2**9 + 400
@@ -215,6 +221,8 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     double lwe_stddev = 67108864;
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 4, Q);
 } 
 
 
@@ -235,10 +243,10 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     masking_size = 8;
     stddev_masking = 5311;
 
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt);
     gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget, hexl_ntt);
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
     // TODO: The correct one should be ntl or hexl_ntt - but hexl_ntt has a bug, and ntl is slow so for now I leave double_fft (larger error so its rather not the best)
     sk_arithmetic = ntl;
 
@@ -246,14 +254,16 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     int n = 912;
     int lwe_basis = 128;
     // 2**(14)
-    //double lwe_stddev = 16384;
-    double lwe_stddev = 67108864;
+    double lwe_stddev = 16384; 
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 4, Q);
 } 
 
 
 
+// Power of two parameter set
 void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_B(){ 
     // 2**11
     int N = 2048;
@@ -262,50 +272,89 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_B(
     double rlwe_stddev = 3.2;
     // 2**4
     int rlwe_basis = 16; 
-    double stddev_simul = 2686.41;
-    masking_size = 8;
-    stddev_masking = 225812;
+    double stddev_simul = 505;
+    masking_size = 12;
+    stddev_masking = 58385;
 
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev);
-    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft);
+    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget, double_fft);
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
     sk_arithmetic = double_fft;
 
     // 2**9 + 430
-    int n = 977;
-    int lwe_basis = 2;
+    int n = 912;
+    int lwe_basis = 128;
     // 2**(14)
-    //double lwe_stddev = 16384;
-    double lwe_stddev = 4096;
+    double lwe_stddev = 16384; 
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 4, Q);
 } 
 
-
-void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_12_B(){ 
-    // 2**12
-    int N = 4096;
+ 
+void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_flood(){ 
+    // 2**11
+    int N = 2048;
     // 2**36
     long Q = 68719476736;
     double rlwe_stddev = 3.2;
     // 2**4
     int rlwe_basis = 16; 
-    double stddev_simul = 3790.1;
-    masking_size = 8;
-    stddev_masking = 225812;
+    double stddev_simul = 505;
+    masking_size = 12;
+    stddev_masking = 58385;
 
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev);
-    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget, double_fft);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft);
+    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    gadget rand_gadget = gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
     sk_arithmetic = double_fft;
 
-    // 2**9 + 400
-    int n = 977;
-    int lwe_basis = 16;
-    // 2**(14)
+    // 2**9 + 430
+    int n = 912;
+    int lwe_basis = 128;
+    // 2**(14) 
     double lwe_stddev = 16384;
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 4, Q);
+} 
+
+ 
+
+
+void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NTT_amortized(){ 
+    // 2**11
+    int N = 2048; 
+    // 2**51 - 131071 % 2*(2**11) = 1 (NTT Friendly),   
+    long Q = 2251799813554177;
+    double rlwe_stddev = 3.2; 
+    // 2**8
+    int rlwe_basis = 512;  
+    // stddev_simul approx  2**(19.28)
+    double stddev_simul = 638072;  
+
+    masking_size = 8;
+    // stddev_simul approx  2**(11.22)
+    stddev_masking = 2389;
+
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt);
+    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
+    rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
+    sk_arithmetic = hexl_ntt;
+
+    // 2**10
+    int n = 912;
+    // 2**9
+    int lwe_basis = 512;
+    // 2**(23) 
+    double lwe_stddev = 8388608;
+    lwe_param lwe_par(n, Q, binary, lwe_stddev);
+    lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
+
+    default_encoding = plaintext_encoding(full_domain, 16, Q);
 } 

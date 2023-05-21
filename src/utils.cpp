@@ -275,9 +275,6 @@ void utils::array_mod_form(long *out, long *in, int sizeof_in, long Q){
     }
 }
 
-
-
-
  
 
 void utils::round_and_mod_reduce(long *out_poly, double *in_poly, long modulus, int sizeof_in_poly){ 
@@ -597,6 +594,18 @@ double utils::standard_deviation(long* in, int N, double mean){
     return sqrt(utils::variance(in, N, mean)); 
 }
 
+long utils::infinity_norm(long* in, int N){
+    long out = 0 ;
+    long curr;
+    for(int i = 0; i < N; ++i){
+        curr = utils::abs(in[i]);
+        if(curr > out){
+            out = curr;
+        }
+    }
+    return out;
+}
+
 long* utils::count_occurences(long* in, int N){
     long max = utils::max(in, N);
     long min = utils::min(in, N);
@@ -605,9 +614,9 @@ long* utils::count_occurences(long* in, int N){
     for(int i = 0; i < size; ++i){
         occurences[i] = 0;
     }
-    for(int i = 0; i < size; ++i){
+    for(int i = 0; i < N; ++i){ 
         occurences[in[i]-min] += 1;
-    }
+    } 
     return occurences;
 }
 

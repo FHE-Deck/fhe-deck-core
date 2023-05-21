@@ -6,23 +6,23 @@
 void rlwe_test(int test_num){
     std::cout << "=========== rlwe_test ========= " << std::endl;
 
-    int N = 4096;
-    int Q = 268435456;
+    long N = 512;
+    // NTL and FFT can use this:
+    //long Q = 268435456;
+
+    // Lets take Q to be a a NTT friendly prime (for the fft based tests its gonna work anyway)
+    // Q = 67104769 = 2**26 - 4095 
+    long Q = 67104769;
+
     int t = 13;
     sampler rand;
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2);
-    rlwe_sk sk(rlwe_par, ntl);
-    //std::cout << "rlwe_par.init_zero_poly();" << std::endl;
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2, hexl_ntt);
+    rlwe_sk sk(rlwe_par, hexl_ntt); 
+
     long* m = rlwe_par.init_zero_poly();
-    rand.uniform_array(m, N, t);
-    //std::cout << "sk.scale_and_encrypt(m, t);" << std::endl;
-    rlwe_ct ct = sk.scale_and_encrypt(m, t);
-    //std::cout << "sk.decrypt(ct, t);" << std::endl;
-    long* out = rlwe_par.init_poly();
-    //sk.decrypt(&ct, t);
-    //utils::array_mod_form(out, out, N, t);
-    //std::cout << "out: " << utils::to_string(out, rlwe_par.N) << std::endl;  
-    //std::cout << "m: " << utils::to_string(m, rlwe_par.N) << std::endl;  
+    rand.uniform_array(m, N, t); 
+    rlwe_ct ct = sk.scale_and_encrypt(m, t); 
+    long* out = rlwe_par.init_poly(); 
 
     bool test = true;
     for(int i = 0; i < test_num; ++i){
@@ -35,37 +35,70 @@ void rlwe_test(int test_num){
             std::cout << "out: " << utils::to_string(out, rlwe_par.N) << std::endl;  
             std::cout << "m: " << utils::to_string(m, rlwe_par.N) << std::endl;  
             test = false;
+            break;
         }
     }
     if(test){
         std::cout << "rlwe_test: OK" << std::endl;
     } 
 
+ 
     bool add_test = true;
     long* m_1 = rlwe_par.init_zero_poly();
     long* m_2 = rlwe_par.init_zero_poly();
     long* exp = rlwe_par.init_zero_poly();
-    for(int i = 0; i < test_num; ++i){
+    for(int i = 0; i < test_num; ++i){  
         rand.uniform_array(m_1, N, t);
+        //utils::array_mod_form(m_1, m_1, N, t);  
         rand.uniform_array(m_2, N, t);
-        for(int i = 0; i < N; ++i){
-            exp[i] = (m_1[i] + m_2[i]) % t;
-        }
+        //utils::array_mod_form(m_2, m_2, N, t); 
+        for(int j = 0; j < N; ++j){
+            //exp[j] = utils::integer_mod_form(m_1[j] + m_2[j],  t);
+            exp[j] = (m_1[j] + m_2[j]) % t;
+        } 
         rlwe_ct ct_1 = sk.scale_and_encrypt(m_1, t);
         rlwe_ct ct_2 = sk.scale_and_encrypt(m_2, t); 
-        rlwe_ct ct_3;
-        ct_1.add(&ct_3, &ct_2); 
-        sk.decrypt(out, &ct_3, t); 
-        utils::array_mod_form(out, out, N, t); 
+        rlwe_ct ct_3; 
+        ct_1.add(&ct_3, &ct_2);  
+        sk.decrypt(out, &ct_3, t);   
+        utils::array_mod_form(out, out, N, t);  
         if(!utils::is_eq_poly(out, exp, N)){
             std::cout << "rlwe ADD test: Fail" << std::endl;
             std::cout << "out: " << utils::to_string(out, rlwe_par.N) << std::endl;  
             std::cout << "exp: " << utils::to_string(exp, rlwe_par.N) << std::endl;  
+            std::cout << "m_1: " << utils::to_string(m_1, rlwe_par.N) << std::endl;  
+            std::cout << "m_2: " << utils::to_string(m_2, rlwe_par.N) << std::endl;  
             add_test = false;
+            break;
         }
     }
     if(add_test){
         std::cout << "rlwe ADD test: OK" << std::endl;
+    } 
+
+    bool mul_test = true;
+    long* scalar = rlwe_par.init_zero_poly();
+    // Lets do a mul test here 
+    for(int i = 0; i < test_num; ++i){
+        rand.uniform_array(m_1, N, t);   
+        // NOTE: We are doing a quite sparse polynomial here, because the error may blow up and the test will fail
+        rand.uniform_array(scalar, N/64, t);
+        utils::mul_mod(exp, m_1, N, scalar, N, N, t, negacyclic);
+        rlwe_ct ct_1 = sk.scale_and_encrypt(m_1, t); 
+        rlwe_ct ct_3;
+        ct_1.mul(&ct_3, scalar); 
+        sk.decrypt(out, &ct_3, t); 
+        utils::array_mod_form(out, out, N, t); 
+        if(!utils::is_eq_poly(out, exp, N)){
+            std::cout << "rlwe MUL test: Fail" << std::endl;
+            std::cout << "out: " << utils::to_string(out, rlwe_par.N) << std::endl;  
+            std::cout << "exp: " << utils::to_string(exp, rlwe_par.N) << std::endl;  
+            mul_test = false;
+            break;
+        }
+    }
+    if(mul_test){
+        std::cout << "rlwe MUL test: OK" << std::endl;
     } 
 
 }
@@ -80,12 +113,12 @@ void gadget_rlwe_encrypt_test(int test_num, gadget_mul_mode mode, polynomial_ari
     //int Q = 67108864;
     int t = 13; 
     sampler rand;
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2, hexl_ntt);
     rlwe_sk sk(rlwe_par, hexl_ntt);
     int basis = 8;
     gadget deter_gadget = gadget(N, Q, basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, basis, 0.0, discrete_gaussian_gadget);
-    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget, arithmetic);
+    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget);
     gadget_rlwe_sk gadget_sk(gadget_rlwe_par, sk);
 
     long* gadget_m = rlwe_par.init_zero_poly();
@@ -144,12 +177,12 @@ void gadget_rlwe_basic_test(int test_num, gadget_mul_mode mode, polynomial_arith
     //int Q = 67108864;
     int t = 13; 
     sampler rand;
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2, hexl_ntt);
     rlwe_sk sk(rlwe_par, hexl_ntt);
     int basis = 8;
     gadget deter_gadget = gadget(N, Q, basis*basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, basis, 0.0, discrete_gaussian_gadget);
-    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget, arithmetic);
+    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget);
     gadget_rlwe_sk gadget_sk(gadget_rlwe_par, sk);
  
 
@@ -195,12 +228,12 @@ void gadget_rlwe_test(int test_num, gadget_mul_mode mode, polynomial_arithmetic 
     long Q = 67104769;
     int t = 5; 
     sampler rand;
-    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2);
+    rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2, arithmetic);
     rlwe_sk sk(rlwe_par, hexl_ntt);
     int basis = 8;
     gadget deter_gadget = gadget(N, Q, basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, basis, 0.0, discrete_gaussian_gadget);
-    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget, arithmetic);
+    rlwe_gadget_param gadget_rlwe_par(rlwe_par, basis, deter_gadget, rand_gadget);
     gadget_rlwe_sk gadget_sk(gadget_rlwe_par, sk);
 
     long* m = rlwe_par.init_zero_poly(); 
@@ -245,7 +278,6 @@ int main(){
     gadget_rlwe_encrypt_test(100, deter, hexl_ntt);
     gadget_rlwe_basic_test(1, deter, hexl_ntt);
     gadget_rlwe_test(100, deter, hexl_ntt);
- 
-
+  
     return 0;
 }

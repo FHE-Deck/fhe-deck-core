@@ -92,8 +92,8 @@ rlwe_ct rlwe_sk::scale_and_encrypt(long* m, int t){
 }
 
 
-void rlwe_sk::phase(long *phase, const rlwe_ct *ct){ 
-    if(arithmetic == double_fft){  
+void rlwe_sk::phase(long *phase, const rlwe_ct *ct){  
+    if(arithmetic == double_fft){   
         fftw_complex *eval_a = new fftw_complex[param.engine->plan_size]; 
         param.engine->to_eval_form(eval_a, ct->a);
         param.engine->mul_eval_form(eval_a, eval_s, eval_a);
@@ -104,7 +104,7 @@ void rlwe_sk::phase(long *phase, const rlwe_ct *ct){
         }  
         delete[] eval_a;
         delete[] as; 
-    }else if(arithmetic == hexl_ntt){   
+    }else if(arithmetic == hexl_ntt){    
         long* eval_a_ntt = param.init_poly(); 
         long* a_mod_form = param.init_poly();
         utils::array_mod_form(a_mod_form, ct->a, param.N, param.Q);
@@ -114,7 +114,7 @@ void rlwe_sk::phase(long *phase, const rlwe_ct *ct){
         utils::sub_mod(phase, ct->b, param.N, eval_a_ntt, param.N, param.N, param.Q); 
         delete[] eval_a_ntt;   
         delete[] a_mod_form;
-    }else if(arithmetic == ntl){ 
+    }else if(arithmetic == ntl){  
         utils::mul_mod(phase, ct->a, param.N, s, param.N, param.N, param.Q, negacyclic);
         utils::sub_mod(phase, ct->b, param.N, phase, param.N, param.N, param.Q);
     }else{
@@ -130,10 +130,11 @@ long* rlwe_sk::decrypt(const rlwe_ct *ct, int t){
 }
 
 // Uses SK
-void rlwe_sk::decrypt(long *out, const rlwe_ct *ct, int t){
-    long *phase = new long[param.N];
+void rlwe_sk::decrypt(long *out, const rlwe_ct *ct, int t){ 
+    long *phase = new long[param.N]; 
     this->phase(phase, ct); 
     utils::array_rounding(out, phase, param.N, param.Q, t);
+    //delete phase;
 }
 
 

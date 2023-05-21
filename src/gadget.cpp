@@ -151,19 +151,20 @@ void gadget::gaussian_sample(long **out, long* in){
 
 
 void gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
-    int mask = basis-1;
-    int shift;  
+    long mask = basis-1; 
+    long shift;  
     long* gaussians = new long[N];
-    for(int j = 0; j < N; ++j){
+    for(long j = 0; j < N; ++j){
         gaussians[j] = 0;
     }
     long prev_gauss;
-    for(int i = 0; i < ell; ++i){
+    for(long i = 0; i < ell; ++i){
         shift = k*i;
-        for(int j=0; j < N; ++j){
+        for(long j=0; j < N; ++j){
             prev_gauss = gaussians[j];
             // Here we sample the new gaussian  
-            gaussians[j] = rand.gaussian(basis);
+            //gaussians[j] = rand.gaussian(basis);
+            gaussians[j] =   (long)rand.normal_dist(rand.e1) << k;
             // The jth coefficients of the ith (decomposed) polynomial 
             out[i][j] = (in[j] & mask) >> shift; 
             out[i][j] += gaussians[j] - prev_gauss; 
@@ -207,7 +208,6 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
     // Additional stuff for perturb_D
     double temp;
 
-
     for(int k = 0; k < N; ++k){ 
         // Start of perturb_B(p)
         z_pert[0] = (long)(rand_sigmas[0].normal_dist(rand_sigmas[0].e1)); 
@@ -229,7 +229,7 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 
  
         // Additional stuff for base decompositon
-        long  mask = basis-1;
+        long mask = basis-1;
         long shift; 
         // Start base_decomposition(u, in[k]);  
         for(long i = 0; i < ell; ++i){

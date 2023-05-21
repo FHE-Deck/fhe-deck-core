@@ -678,24 +678,15 @@ void over_64_fft_plan_test(ring_type ring, int num_of_tests){
 
 
 
-void fft_negacyclic_convolution_test(int num_of_tests){
-    std::cout << "================= fft_plan_test =================" << std::endl; 
-   int N = 2048; 
+void fft_negacyclic_convolution_test(int N, long Q, long B){
+    std::cout << "================= fft_negacyclic_convolution_test =================" << std::endl; 
+   //int N = 2048; 
     // Around .. bits modulus
-   long Q = 16777216;
+   //long Q = 4294967296;
    // ... bits  
-   long B = 2; 
-   /*
-   int N = 4; 
-    // Around .. bits modulus
-   long Q = 13;
-   // ... bits  
-   long B = 13;
-   */
+   //long B = 262144;  
     
-   double stddev = 3.2;
-   sampler rand; 
-   //ntru_param param(negacyclic, N, Q, any, stddev); 
+   sampler rand;  
  
     // Choose uniformly random polynomials
     long poly_1[N];
@@ -718,7 +709,7 @@ void fft_negacyclic_convolution_test(int num_of_tests){
     long *prod_mod = new long[N];
 
     rand.uniform_array(poly_1, N, Q);
-    rand.uniform_array(poly_2, B, Q);
+    rand.uniform_array(poly_2, N, B);
     rand.uniform_array(poly_3, N, Q); 
 
     utils::mul_mod(prod, poly_1, N, poly_2, N, N, Q, negacyclic); 
@@ -739,18 +730,18 @@ void fft_negacyclic_convolution_test(int num_of_tests){
         for(int j = 0; j < N; ++j){
             diff[j] = prod[j] - prod_mod[j];
         }
-        std::cout << "diff: " << utils::to_string(diff, N) << std::endl;
+        //std::cout << "diff: " << utils::to_string(diff, N) << std::endl;
         int max = utils::max(diff, N);
         int min = utils::min(diff, N);
         std::cout << "max: " << max <<std::endl;
         std::cout << "min: " << min << std::endl;
-        std::cout << "meaen: " << utils::mean(diff, N) << std::endl;
+        std::cout << "mean: " << utils::mean(diff, N) << std::endl;
         std::cout << "variance: " << utils::variance(diff, N) << std::endl;
         std::cout << "stddev: " << utils::standard_deviation(diff, N) << std::endl; 
-        int size = max - min + 1;
-        std::cout << "size: " << size << std::endl; 
-        long* occurences = utils::count_occurences(diff, N);
-        std::cout << "occurences: " << utils::to_string(occurences, size) << std::endl;
+        //int size = max - min + 1;
+        //std::cout << "size: " << size << std::endl; 
+        //long* occurences = utils::count_occurences(diff, N);
+        //std::cout << "occurences: " << utils::to_string(occurences, size) << std::endl;
     } 
 }
 
@@ -836,6 +827,16 @@ int main(){
     //over_64_fft_plan_test(negacyclic, 100);
     // NOTE: pay attention to the ring - for negacyclic we need a power of two cyclotomic.
     //fft_plan_test(cyclic, 100);  
-    fft_negacyclic_convolution_test(100);
+    
     //fft_negacyclic_convolution_test_long_double(100);
+
+    fft_negacyclic_convolution_test(4096, 4398046511104, 16);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 64);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 256);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 1024);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 4096);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 16384);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 65536);
+    fft_negacyclic_convolution_test(4096, 4398046511104, 262144);
+     
 }

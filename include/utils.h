@@ -6,6 +6,7 @@
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>
 #include <string>
+#include "sample.h"
 #include "ntru_param.h"
 
 
@@ -127,6 +128,8 @@ class utils{
         static double standard_deviation(long* in, int N);
 
         static double standard_deviation(long* in, int N, double mean);
+
+        static long infinity_norm(long* in, int N);
 
         static long* count_occurences(long* in, int N);
 

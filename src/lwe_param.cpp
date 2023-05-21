@@ -13,13 +13,24 @@ lwe_param::lwe_param(int n, long Q, key_dist key_d, double stddev){
 }
  
 
-lwe_param lwe_param::modulus_switch(long new_modulus){ 
-    lwe_param new_param(this->n, new_modulus, this->key_d, this->stddev); 
+lwe_param lwe_param::modulus_switch(long new_modulus){  
+    double new_stddev = (new_modulus * this->stddev)/this->Q;
+    if(new_stddev < 3.2){
+        // TODO: This is a solrt of hack solution.
+        // Actually we should choose it based on the key distribution, and the expected rounding error for the key distribution.
+        // But to do this, perhaps the key_d parameter should be a more complex struct with hamming weight etc.  
+        new_stddev = 3.2;
+    } 
+    lwe_param new_param(this->n, new_modulus, this->key_d, new_stddev); 
     return new_param;
 }
 
-long* lwe_param::init_ct(){
-    return new long[this->n+1]; 
+long* lwe_param::init_ct(){ 
+    long* ct = new long[this->n+1]; 
+    for(int i = 0; i < n+1; ++i){
+        ct[i] = 0;
+    }
+    return ct;
 }
   
  
@@ -56,6 +67,228 @@ void lwe_param::switch_modulus(long *out_ct, long *in_ct, lwe_param &new_param){
         out_ct[i] = (long)round(temp/(double)Q); 
     }
 }
+
+/*
+template <class Archive>
+void lwe_param::serialize(Archive & ar ){ 
+    ar(n, Q, key_d, stddev); 
+}
+
+*/
+
+
+lwe_ct::lwe_ct(lwe_param lwe_param){
+    this->lwe_par = lwe_param;
+    this->ct = lwe_par.init_ct();
+    this->init = true;
+    
+}
+
+lwe_ct::lwe_ct(lwe_param lwe_param, long* ct){
+    this->lwe_par = lwe_param;
+    this->ct = lwe_par.init_ct();
+    this->init = true;
+    for(int i = 0; i < lwe_par.n+1; ++i){
+        this->ct[i] = ct[i];
+    }
+}
+
+
+lwe_ct::lwe_ct(const lwe_ct &c){  
+    this->lwe_par = c.lwe_par;
+    this->ct = lwe_par.init_ct();
+    //this->pe = c.pe;
+    for(int i = 0; i < lwe_par.n+1; ++i){
+        this->ct[i] = c.ct[i];
+    }
+    this->init = true;
+}
+
+
+
+
+lwe_ct::lwe_ct(lwe_ct &c){  
+    this->lwe_par = c.lwe_par;
+    this->ct = lwe_par.init_ct();
+    //this->pe = c.pe;
+    for(int i = 0; i < lwe_par.n+1; ++i){
+        this->ct[i] = c.ct[i];
+    }
+    this->init = true;
+}
+
+
+lwe_ct::lwe_ct(lwe_ct *c){  
+    this->lwe_par = c->lwe_par;
+    this->ct = lwe_par.init_ct();
+    //this->pe = c.pe;
+    for(int i = 0; i < lwe_par.n+1; ++i){
+        this->ct[i] = c->ct[i];
+    }
+    this->init = true;
+}
+ 
+
+
+lwe_ct::~lwe_ct(){    
+    delete[] ct;
+}
+
+void lwe_ct::scalar_mul(long scalar){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        ct[i] = (ct[i] * scalar) % lwe_par.Q;
+    }
+}
+
+void lwe_ct::mul(long scalar){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        ct[i] = (ct[i] * scalar) % lwe_par.Q;
+    }
+}
+
+void lwe_ct::scalar_mul_lazy(long scalar){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        ct[i] = (ct[i] * scalar);
+    }
+}
+
+void lwe_ct::add(lwe_ct *c){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        this->ct[i] = (this->ct[i] + c->ct[i]) % lwe_par.Q;
+    }
+}
+
+void lwe_ct::sub(lwe_ct *c){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        this->ct[i] = utils::integer_mod_form(this->ct[i] - c->ct[i], lwe_par.Q);
+    }
+}
+
+void lwe_ct::add_lazy(lwe_ct *c){
+    for(int i = 0; i <= lwe_par.n; ++i){
+        this->ct[i] = this->ct[i] + c->ct[i] ;
+    }
+}
+
+/*
+void lwe_ct::add(ciphertext* b){
+    //lwe_ct* ct_cast = dynamic_cast<lwe_ct*>(b);
+    lwe_ct ct_cast(b);
+    add(&ct_cast);
+}
+*/
+
+
+void lwe_ct::add(long b){ 
+    this->ct[0] = (this->ct[0] + b) % this->lwe_par.Q;
+}
+
+/*
+void lwe_ct::sub(ciphertext* b){
+    //lwe_ct* ct_cast = dynamic_cast<lwe_ct*>(b);
+    lwe_ct ct_cast(b);
+    sub(&ct_cast);
+}
+*/
+
+void lwe_ct::sub(long b){
+    this->ct[0] = utils::integer_mod_form(this->ct[0] - b, lwe_par.Q);
+}
+
+
+lwe_ct& lwe_ct::operator=(const lwe_ct other){  
+    if (this == &other)
+    {
+        return *this;
+    }   
+    if(init && (lwe_par.n == other.lwe_par.n)){ 
+        lwe_par = other.lwe_par;
+        for(int i = 0; i < lwe_par.n+1; ++i){
+            ct[i] = other.ct[i];
+        }
+    }else{
+        throw 0;
+    } 
+    return *this;
+} 
+
+ 
+lwe_ct lwe_ct::operator+(long b){   
+    lwe_ct ct_out(this);   
+    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] + b, lwe_par.Q);
+    return ct_out; 
+}
+   
+
+lwe_ct lwe_ct::operator+(lwe_ct b){  
+    lwe_ct ct_out(this);  
+    ct_out.add(&b); 
+    return ct_out;
+}
+   
+
+lwe_ct lwe_ct::operator+(lwe_ct *b){  
+    lwe_ct ct_out(this);  
+    ct_out.add(b); 
+    return ct_out;
+}
+
+
+lwe_ct lwe_ct::operator-(long b){  
+    lwe_ct ct_out(this);  
+    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] - b, lwe_par.Q); 
+    return ct_out; 
+}
+    
+lwe_ct lwe_ct::operator-(lwe_ct b){  
+    lwe_ct ct_out(this);  
+    ct_out.sub(&b); 
+    return ct_out;
+}
+
+lwe_ct lwe_ct::operator-(lwe_ct *b){  
+    lwe_ct ct_out(this);  
+    ct_out.sub(b); 
+    return ct_out;
+}
+
+lwe_ct lwe_ct::operator-(){  
+    lwe_ct ct_out(this);  
+    for(int i = 0; i < lwe_par.n+1; ++i){
+        ct_out.ct[i] = utils::integer_mod_form(-this->ct[i], lwe_par.Q);
+    } 
+    return ct_out;
+}
+
+
+lwe_ct lwe_ct::operator*(long b){
+    lwe_ct ct_out = new lwe_ct(this);  
+    ct_out.mul(b);
+    return ct_out; 
+}  
+
+   
+lwe_ct operator+(long b, lwe_ct ct){ 
+    lwe_ct ct_out(&ct);  
+    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] +  b, ct_out.lwe_par.Q);
+    return ct_out; 
+}
+
+lwe_ct operator-(long b, lwe_ct ct){
+    lwe_ct temp = -ct;
+    lwe_ct ct_out(&temp);
+    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] + b, ct_out.lwe_par.Q);
+    return ct_out; 
+}
+
+lwe_ct operator*(long b, lwe_ct ct){
+    lwe_ct ct_out(&ct);  
+    ct_out.mul(b);
+    return ct_out; 
+}
+ 
+
+
 
  lwe_gadget_param::lwe_gadget_param(){}
 

@@ -48,8 +48,18 @@ long* lwe_sk::encrypt(long m){
     return ct;
 }
 
+lwe_ct lwe_sk::encrypt_ct(long m){
+    lwe_ct ct(lwe_par);
+    encrypt(ct.ct, m);
+    return ct;
+}
+
+
+
+
+
 void lwe_sk::encrypt(long *ct, long m){    
-    ct[0] = (long)round(rand.gaussian(0, lwe_par.stddev)) + (long)m;   
+    ct[0] = (long)round(rand.gaussian(0, lwe_par.stddev)) + (long)m;  
     for(int i=1; i < lwe_par.n+1; ++i){   
         ct[i] = utils::integer_mod_form(rand.uniform(lwe_par.Q), lwe_par.Q); 
         ct[0] -= s[i-1] * ct[i];
@@ -78,18 +88,18 @@ long lwe_sk::phase(long *ct){
         phase += ct[i] * s[i-1];
         phase = phase % lwe_par.Q; 
     }   
-    return utils::integer_mod_form(phase, lwe_par.Q);;
+    return utils::integer_mod_form(phase, lwe_par.Q);
 }
 
 
 long lwe_sk::error(long *ct,  long m){   
-    return utils::integer_signed_form((lwe_sk::phase(ct) - m) % lwe_par.Q, lwe_par.Q);;
+    return utils::integer_signed_form((lwe_sk::phase(ct) - m) % lwe_par.Q, lwe_par.Q); 
 }
 
 long lwe_sk::decrypt(long *ct, int t){ 
-    double d_phase = (double)lwe_sk::phase(ct); 
-    long out = round(((double)t/lwe_par.Q) * d_phase);
-    return utils::integer_signed_form(out % t, lwe_par.Q);
+    long d_phase = lwe_sk::phase(ct);  
+    long out = round(((double)t/lwe_par.Q) * d_phase); 
+    return utils::integer_mod_form(out, t);
 }
    
 lwe_sk lwe_sk::modulus_switch(long new_modulus){

@@ -54,12 +54,12 @@ public:
       
 };
 
-
+ 
 enum ntrunium_named_param{
     ntrunium_C_11_T, ntrunium_C_12_T, ntrunium_C_13_T, ntrunium_C_14_T,
     ntrunium_C_11_B, ntrunium_C_12_B, ntrunium_C_13_B, ntrunium_C_14_B,
     ntrunium_small_test_params_B
-};
+}; 
 
 class ntrunium_named_param_generator{ 
     
@@ -94,6 +94,8 @@ class ntrunium_named_param_generator{
     ntrunium* boot; 
 
     ~ntrunium_named_param_generator();
+
+    ntrunium_named_param_generator() = default;
 
     ntrunium_named_param_generator(ntrunium_named_param name);
  

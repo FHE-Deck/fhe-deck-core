@@ -1,20 +1,107 @@
 #include "../include/rotation_poly.h"
  
 
-// Computes the identity (should be used only with functional bootstrapping, for the negacyclic bootstrap this will output some nonsense)
-long* rotation_poly::rot_identity(int t, long N, long Q){
+rotation_poly::~rotation_poly(){
+    delete[] this->lookup_polynomial;
+}
+
+
+
+rotation_poly::rotation_poly(const rotation_poly &poly){ 
+    this->lookup_polynomial = new long[poly.N];
+    this->t = poly.t;
+    this->N = poly.N;
+    this->Q = poly.Q;
+    for(int i = 0; i < this->N; ++i){   
+        this->lookup_polynomial[i] = poly.lookup_polynomial[i]; 
+    } 
+}
+
+rotation_poly::rotation_poly(long* lookup_polynomial, long t, long N, long Q){
+    this->lookup_polynomial = new long[N];
+    this->t = t;
+    this->N = N;
+    this->Q = Q;
+    for(int i = 0; i < N; ++i){   
+        this->lookup_polynomial[i] = lookup_polynomial[i]; 
+    } 
+}
+
+
+rotation_poly::rotation_poly(long (*f)(long message, long plaintext_space), long t, long N, long Q){
+    this->t = t;
+    this->N = N;
+    this->Q = Q;
+    lookup_polynomial = new long[N];
     long delta_Q_t = (long)round((double)Q/(double)t); 
-    long* acc = new long[N];  
-    // The scale is right - in FB we rotate for phase [0, N)
-    // And the message is also scaled with N/t
     double scale = (double)t/N;
-    for(int i = 0; i < N; ++i){ 
-        acc[N-i-1] = -delta_Q_t * round(scale * i) ;
-        acc[N-i-1] = acc[N-i-1] % Q;
-    }
-    return acc;
+    long arg;
+    for(int i = 0; i < N; ++i){  
+            // Compute  your function here
+        arg = f(round(scale * i), t); 
+        lookup_polynomial[N-i-1] = utils::integer_mod_form(-delta_Q_t *  arg, Q); 
+    } 
+}
+
+
+rotation_poly::rotation_poly(long (*f)(long message), long t, long N, long Q){
+    this->t = t;
+    this->N = N;
+    this->Q = Q;
+    lookup_polynomial = new long[N];
+    set_polynomial(lookup_polynomial, f, t, N, Q);
+    /*
+    long delta_Q_t = (long)round((double)Q/(double)t); 
+    double scale = (double)t/N;
+    long arg; 
+    for(int i = 0; i < N; ++i){  
+            // Compute  your function here
+        arg = f(round(scale * i)); 
+        lookup_polynomial[N-i-1] = utils::integer_mod_form(-delta_Q_t *  arg, Q); 
+    } 
+    */
+}
+
+void rotation_poly::set_polynomial(long* lookup_polynomial, long (*f)(long message), long t, long N, long Q){
+    long delta_Q_t = (long)round((double)Q/(double)t);  
+    double scale = (double)t/N;
+    long arg; 
+    for(int i = 0; i < N; ++i){  
+            // Compute  your function here
+        arg = f(round(scale * i)); 
+        lookup_polynomial[N-i-1] = utils::integer_mod_form(-delta_Q_t *  arg, Q); 
+    } 
+}
+
+
+ 
+long* rotation_poly::rot_identity(int t, long N, long Q){
+    auto id = [](long m) -> long {
+        return m;
+    }; 
+    long* acc = new long[N]; 
+    set_polynomial(acc, id, t, N, Q);
+    return acc; 
 }
   
+
+void rotation_poly::flip_scale(){
+    if(is_scaled){
+        double scale = (double)t/Q; 
+        for(int i = 0; i < N; ++i){   
+            lookup_polynomial[i] = utils::integer_mod_form(scale * lookup_polynomial[i], t); 
+        }
+        is_scaled = false; 
+    }else{
+        double scale = (long)round((double)Q/(double)t); 
+        for(int i = 0; i < N; ++i){   
+            lookup_polynomial[i] = utils::integer_mod_form(round(scale * lookup_polynomial[i]), Q); 
+        }
+        is_scaled = true;
+    }
+}
+
+
 /* Note: this doesn't realy compute the sign function. For zero for example it computes 1
 */
 long* rotation_poly::rot_msb(int t, long N, long Q){
@@ -26,6 +113,14 @@ long* rotation_poly::rot_msb(int t, long N, long Q){
     return acc;
 }
 
+long* rotation_poly::rot_one(long N){
+    long* acc = new long[N]; 
+    for(int i = 0; i < N; ++i){
+        acc[i] =  0;
+    }  
+    return acc;
+}
+
 
 // Computes the a univariate polynomial (should be used only with functional bootstrapping, for the negacyclic bootstrap this will output some nonsense)
 long* rotation_poly::rot_uni_poly(int* poly, int poly_size, int t, long N, long Q){ 
@@ -34,20 +129,7 @@ long* rotation_poly::rot_uni_poly(int* poly, int poly_size, int t, long N, long 
     long* acc = new long[N];
     double scale = (double)t/N;
     long arg;
-    for(int i = 0; i < N; ++i){
-        /*
-        arg = utils::integer_mod_form((long)round(((double)t * i /N)), t);  
-        // Compute your function on arg
-        if(i == N-1){
-            arg = utils::eval_poly_mod(arg, poly, poly_size, t);
-            acc[N-i-1] = delta_Q_t * arg;
-            acc[N-i-1] = acc[N-i-1] % Q;
-        }else{
-            arg = utils::eval_poly_mod(arg, poly, poly_size, t);
-            acc[N-i-1] = - delta_Q_t * arg;
-            acc[N-i-1] = acc[N-i-1] % Q; 
-        }
-        */
+    for(int i = 0; i < N; ++i){ 
         arg = utils::integer_mod_form((long)round(((double)t * i /N)), t);  
         // Compute your function on arg
         // TODO: I think the alg never (or almost never) enters this if, and actually the code in the else is enough

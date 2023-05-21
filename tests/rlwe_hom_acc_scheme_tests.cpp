@@ -60,24 +60,6 @@ void extract_and_key_switch_test(){
 
 }
 
-void test_negacyclic_rotate_poly(){
-
-    int N = 16;
-    long* poly = new long[N];
-    for(int i = 0; i < N; ++i){
-        poly[i] = i;
-    }
-    std::cout << "poly:    " << utils::to_string(poly, N) << std::endl ;
-
-    long* rot_poly = new long[N];
-
-    // Note that rot may be in [0, 2*N)!
-    int rot = 16 + 4;
-    utils::negacyclic_rotate_poly(rot_poly, poly, N, rot);
-    std::cout << "rot_poly: " << utils::to_string(rot_poly, N) << std::endl ;
-
-
-}
 
 void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_name, gadget_mul_mode mode){
     std::cout << "============ blind_rotation_test =============" << std::endl; 
@@ -91,7 +73,8 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
     long* ct = params.boot->lwe_par.init_ct();
     params.boot_sk->lwe.encrypt(ct, 0);
     long e = params.boot_sk->lwe.error(ct, 0);
-    ct[0] = (ct[0] - e) % params.boot_sk->lwe.lwe_par.Q; 
+    ct[0] = utils::integer_mod_form(ct[0] - e, params.boot_sk->lwe.lwe_par.Q); 
+    
 
     // Create a rotation polynomial for the (not realy) identity function
     // Initiate these messages
@@ -104,7 +87,7 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
     long phase;
     for(int i = 0; i < test_num; ++i){
         // Iterate the phase for the LWE ciphertext
-        ct[0] = ct[0]+1 % params.boot_sk->lwe.lwe_par.Q;
+        ct[0] = ct[0]+1 % params.boot_sk->lwe.lwe_par.Q; 
         phase = params.boot_sk->lwe.phase(ct); 
         // Blind rotate the LWE ciphertext
         params.boot->blind_rotate(&out_ct, ct, acc, mode);
@@ -119,6 +102,7 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
             std::cout << "acc: " << utils::to_string(acc, params.boot->rlwe_gadget_par.param.N) << std::endl;
             std::cout << "out: " << utils::to_string(out, params.boot->rlwe_gadget_par.param.N) << std::endl;
             std::cout << "acc_rotation: " << utils::to_string(acc_rotation, params.boot->rlwe_gadget_par.param.N) << std::endl;
+            std::cout << "phase: " << phase << std::endl;
             br_test = false;
             break;
         }
@@ -135,14 +119,25 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
     delete[] acc_rotation;
 }
 
+ 
 
-void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, gadget_mul_mode mode){
+
+void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, gadget_mul_mode mode, bool is_amortized = false){
     std::cout << "============ bootstrap_test =============" << std::endl; 
+    if(is_amortized){
+        std::cout << "Amortization: ON" << std::endl;
+    }else{
+        std::cout << "Amortization: OFF" << std::endl;
+    } 
+    if(mode == deter){
+        std::cout << "Mode: Deterministic" << std::endl;
+    }else{
+        std::cout << "Mode: Sanitization" << std::endl;
+    }
     rlwe_hom_acc_scheme_named_param_generator params(param_name); 
     params.generate_bootstapping_keys();
     int t = 4; 
      
- 
     long* ct = params.boot->extract_lwe_par.init_ct();  
     long* ct_out = params.boot->extract_lwe_par.init_ct(); 
  
@@ -157,39 +152,71 @@ void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, g
 
     std::chrono::high_resolution_clock::time_point start, end; 
     float single_psi_loop_time = 0.0;
-  
+
+    // This is used only for testing amortized bootstrapping
+    std::vector<lwe_ct> out_vec;
+    std::vector<rotation_poly> acc_vec;
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[0].flip_scale();
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[1].flip_scale();
+   
+
     std::cout << "------ rot_identity_test start" << std::endl;
     for(int i = 0; i < test_num; ++i){   
-        params.boot_sk->extract_lwe.scale_and_encrypt(ct, 0, t);  
+         
+        params.boot_sk->extract_lwe.scale_and_encrypt(ct, i % t, t);  
         phase = params.boot_sk->extract_lwe.phase(ct);   
         phase = (params.boot->rlwe_gadget_par.param.N * 2 * phase)/params.boot_sk->extract_lwe.lwe_par.Q; 
         
         utils::negacyclic_rotate_poly(acc_rot, acc, params.boot->rlwe_gadget_par.param.N, phase);  
         
-        start = std::chrono::high_resolution_clock::now(); 
-        params.boot->bootstrap(ct_out, acc, ct, mode); 
-        end = std::chrono::high_resolution_clock::now(); 
-        single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-        
-        out = params.boot_sk->extract_lwe.decrypt(ct_out, t); 
-        exp =  (long)round((t * (double)acc_rot[0])/params.boot->rlwe_gadget_par.param.Q) % t;
-        if(!(out == exp)){
-            std::cout << "rot_identity_test: Fail" << std::endl;
-            std::cout << "i: " << i << std::endl;
-            std::cout << "out: " << out << std::endl; 
-            std::cout << "exp: " << exp << std::endl;
-            std::cout << "phase: " << phase << std::endl;
-            //std::cout << "ct: " << utils::to_string(ct, params.boot_sk->extract_lwe.lwe_par.n+1) << std::endl; 
-            br_test = false;
-            break;
-        }
+        if(is_amortized){
+            start = std::chrono::high_resolution_clock::now();  
+            out_vec = params.boot->bootstrap(acc_vec, ct, mode, t); 
+            end = std::chrono::high_resolution_clock::now();  
+            single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
+            for(lwe_ct ele: out_vec){ 
+                out = params.boot_sk->extract_lwe.decrypt(ele.ct, t); 
+                exp =  (long)round((t * (double)acc_rot[0])/params.boot->rlwe_gadget_par.param.Q);
+                exp = utils::integer_mod_form(exp, t);  
+                if(!(out == exp)){
+                    std::cout << "rot_identity_test: Fail" << std::endl;
+                    std::cout << "i: " << i << std::endl;
+                    std::cout << "out: " << out << std::endl; 
+                    std::cout << "exp: " << exp << std::endl;
+                    std::cout << "phase: " << phase << std::endl; 
+                    br_test = false;
+                    break;
+                }
+            }
+        }else{ 
+            start = std::chrono::high_resolution_clock::now(); 
+            params.boot->bootstrap(ct_out, acc, ct, mode); 
+            end = std::chrono::high_resolution_clock::now(); 
+            single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+            
+            out = params.boot_sk->extract_lwe.decrypt(ct_out, t); 
+            exp =  (long)round((t * (double)acc_rot[0])/params.boot->rlwe_gadget_par.param.Q);
+            exp = utils::integer_mod_form(exp, t); 
+            //std::cout << "out: " << out << std::endl;
+            //std::cout << "exp: " << exp << std::endl;
+            if(!(out == exp)){
+                std::cout << "rot_identity_test: Fail" << std::endl;
+                std::cout << "i: " << i << std::endl;
+                std::cout << "out: " << out << std::endl; 
+                std::cout << "exp: " << exp << std::endl;
+                std::cout << "phase: " << phase << std::endl;
+                //std::cout << "ct: " << utils::to_string(ct, params.boot_sk->extract_lwe.lwe_par.n+1) << std::endl; 
+                br_test = false;
+                break;
+            }
+        } 
     }
     if(br_test){
         std::cout << "rot_identity_test: OK" << std::endl;
     } 
     std::cout << "Time for Single Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
-
- 
 
     delete params.boot;
     delete params.boot_sk;
@@ -200,11 +227,22 @@ void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, g
     delete[] acc_rot; 
 }
 
+ 
 
+ 
 
-
-void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param param_name,  gadget_mul_mode mode){
+void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param param_name,  gadget_mul_mode mode, bool is_amortized = false){
     std::cout << "============ functional_bootstrap_test =============" << std::endl; 
+    if(is_amortized){
+        std::cout << "Amortization: ON" << std::endl;
+    }else{
+        std::cout << "Amortization: OFF" << std::endl;
+    } 
+    if(mode == deter){
+        std::cout << "Mode: Deterministic" << std::endl;
+    }else{
+        std::cout << "Mode: Sanitization" << std::endl;
+    }
     rlwe_hom_acc_scheme_named_param_generator params(param_name); 
     params.generate_bootstapping_keys();
     int t = 5; 
@@ -214,7 +252,6 @@ void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param par
     lwe_sk *extract_lwe = &params.boot_sk->extract_lwe;
     rlwe_sk *br_lwe = &params.boot_sk->rlwe_gadget.sk; 
     
-
     long* ct = params.boot->extract_lwe_par.init_ct();  
     long* ct_out = params.boot->extract_lwe_par.init_ct(); 
  
@@ -223,40 +260,62 @@ void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param par
     // Initiate these messages
     long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);  
     bool br_test = true;  
-    long out;
-    long phase;
-    long exp;
-    long m;
+    long out; 
+    long exp; 
     long* lwe_c = params.boot->lwe_gadget_par.lwe_par.init_ct();
+
+
+    // This is used only for testing amortized bootstrapping
+    std::vector<lwe_ct> out_vec;
+    std::vector<rotation_poly> acc_vec;
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[0].flip_scale();
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[1].flip_scale();
 
     std::chrono::high_resolution_clock::time_point start, end; 
     float single_psi_loop_time = 0.0;
 
-    for(int i = 0; i < test_num; ++i){   
-        m = i; 
-        params.boot_sk->extract_lwe.scale_and_encrypt(ct, m, t);   
-        // Lets get the phase of this ciphertexts - rotate the accumulator according to this phase, and see what we get   
-        start = std::chrono::high_resolution_clock::now();  
-        params.boot->functional_bootstrap(ct_out, acc, ct, mode, t);  
-        end = std::chrono::high_resolution_clock::now(); 
-        single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-
-        out = params.boot_sk->extract_lwe.decrypt(ct_out, t);   
-        exp = i; 
-        if(!(out == exp)){
-            std::cout << "rot_identity_test: Fail" << std::endl;
-            std::cout << "i: " << i << std::endl;
-            std::cout << "out: " << out << std::endl; 
-            std::cout << "exp: " << exp << std::endl;
-            std::cout << "phase: " << phase << std::endl;  
-            br_test = false;
-            break;
-        }
+    for(int i = 0; i < test_num; ++i){    
+        params.boot_sk->extract_lwe.scale_and_encrypt(ct, i % t, t);   
+        // Lets get the phase of this ciphertexts - rotate the accumulator according to this phase, and see what we get    
+        if(is_amortized){
+            start = std::chrono::high_resolution_clock::now();  
+            out_vec = params.boot->functional_bootstrap(acc_vec, ct, mode, t); 
+            end = std::chrono::high_resolution_clock::now();  
+            single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
+            for(lwe_ct ele: out_vec){ 
+                out = params.boot_sk->extract_lwe.decrypt(ele.ct, t); 
+                exp = utils::integer_mod_form(i, t); 
+                if(!(out == exp)){
+                    std::cout << "rot_identity_test: Fail" << std::endl;
+                    std::cout << "i: " << i << std::endl;
+                    std::cout << "out: " << out << std::endl; 
+                    std::cout << "exp: " << exp << std::endl; 
+                    br_test = false;
+                    break;
+                }
+            }
+        }else{
+            start = std::chrono::high_resolution_clock::now();   
+            params.boot->functional_bootstrap(ct_out, acc, ct, mode, t);   
+            end = std::chrono::high_resolution_clock::now(); 
+            single_psi_loop_time  += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count(); 
+            out = params.boot_sk->extract_lwe.decrypt(ct_out, t);   
+            exp = utils::integer_mod_form(i, t); 
+            if(!(out == exp)){
+                std::cout << "rot_identity_test: Fail" << std::endl;
+                std::cout << "i: " << i << std::endl;
+                std::cout << "out: " << out << std::endl; 
+                std::cout << "exp: " << exp << std::endl; 
+                br_test = false;
+                break;
+            }
+        } 
     }
     if(br_test){
         std::cout << "rot_identity_test: OK" << std::endl;
-    } 
-
+    }  
     std::cout << "Time for Single Functional Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
 
     delete params.boot;
@@ -272,45 +331,93 @@ void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param par
 
 
 
-void functional_bootstrap_initial_test(int test_num, rlwe_hom_acc_scheme_named_param param_name,  gadget_mul_mode mode){
+void functional_bootstrap_initial_test(int test_num, rlwe_hom_acc_scheme_named_param param_name,  gadget_mul_mode mode, bool is_amortized = false){
     std::cout << "============ functional_bootstrap_initial_test =============" << std::endl; 
+    if(is_amortized){
+        std::cout << "Amortization: ON" << std::endl;
+    }else{
+        std::cout << "Amortization: OFF" << std::endl;
+    } 
+    if(mode == deter){
+        std::cout << "Mode: Deterministic" << std::endl;
+    }else{
+        std::cout << "Mode: Sanitization" << std::endl;
+    }
     rlwe_hom_acc_scheme_named_param_generator params(param_name);
     // FBTFHE_named_param_generator params(FBTFHE_small_test); 
     params.generate_bootstapping_keys();
     int t = 5; 
-      
-    long* ct = params.boot->extract_lwe_par.init_ct();  
+       
     long* ct_out = params.boot->extract_lwe_par.init_ct(); 
  
     std::cout << "------ rot_identity_test start" << std::endl;
     // Create a rotation polynomial for the (not realy) identity function
     // Initiate these messages
-    long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);  
+    long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);
+    long* acc_rot = new long[params.boot->rlwe_gadget_par.param.N];
+    
     bool br_test = true;  
     long out;
     long phase;
     long exp;
+    long exp_rot;
     long m;
+    long error;
     long* lwe_c = params.boot->lwe_gadget_par.lwe_par.init_ct();
-    for(int i = 0; i < test_num; ++i){  
-        //m = params.boot_sk.lwe.rand.uniform(t); 
-        m = i; 
-        // params.boot_sk.extract_lwe.scale_and_encrypt(ct, m, t);    
-        params.boot_sk->scale_and_encrypt_initial_lwe(ct, m, t);
-        // Lets get the phase of this ciphertexts - rotate the accumulator according to this phase, and see what we get 
-        //params.boot.functional_bootstrap_testing(ct_out, acc, ct, mode, t, gadget_lwe, small_lwe, extract_lwe, br_lwe); 
-        params.boot->functional_bootstrap_initial(ct_out, acc, ct, mode); 
-        out = params.boot_sk->extract_lwe.decrypt(ct_out, t);   
-        exp = i; 
-        if(!(out == exp)){
-            std::cout << "rot_identity_test: Fail" << std::endl;
-            std::cout << "i: " << i << std::endl;
-            std::cout << "out: " << out << std::endl; 
-            std::cout << "exp: " << exp << std::endl;
-            std::cout << "phase: " << phase << std::endl;  
-            br_test = false;
-            break;
+    double scale = (double)params.boot->rlwe_gadget_par.param.N/t;
+
+
+    // This is used only for testing amortized bootstrapping
+    std::vector<lwe_ct> out_vec;
+    std::vector<rotation_poly> acc_vec;
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[0].flip_scale();
+    acc_vec.push_back(rotation_poly(acc, t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q));
+    acc_vec[1].flip_scale();
+ 
+
+    for(int i = 0; i < test_num; ++i){   
+        params.boot_sk->lwe.encrypt(lwe_c, scale * (i % t));
+        m = params.boot_sk->lwe.decrypt(lwe_c, t);
+        phase = params.boot_sk->lwe.phase(lwe_c);
+        error = params.boot_sk->lwe.error(lwe_c, i * (double)params.boot->lwe_par.Q/t);
+        utils::negacyclic_rotate_poly(acc_rot, acc, params.boot->rlwe_gadget_par.param.N, phase);  
+        exp_rot =  (long)round((t * (double)acc_rot[0])/params.boot->rlwe_gadget_par.param.Q);
+
+        if(is_amortized){ 
+            out_vec = params.boot->functional_bootstrap_initial(acc_vec, lwe_c, mode, t);   
+            for(lwe_ct ele: out_vec){ 
+                out = params.boot_sk->extract_lwe.decrypt(ele.ct, t); 
+                exp = utils::integer_mod_form(i, t); 
+                if(!(out == exp)){
+                    std::cout << "rot_identity_test: Fail" << std::endl;
+                    std::cout << "i: " << i << std::endl;
+                    std::cout << "out: " << out << std::endl; 
+                    std::cout << "exp: " << exp << std::endl; 
+                    std::cout << "exp_rot: " << exp_rot << std::endl;
+                    br_test = false;
+                    break;
+                }
+            }
+        }else{
+            params.boot->functional_bootstrap_initial(ct_out, acc, lwe_c, mode);  
+            out = params.boot_sk->extract_lwe.decrypt(ct_out, t);   
+            exp = utils::integer_mod_form(i, t); 
+            if(!(out == exp)){
+                std::cout << "rot_identity_test: Fail" << std::endl;
+                std::cout << "i: " << i << std::endl;
+                std::cout << "out: " << out << std::endl; 
+                std::cout << "exp: " << exp << std::endl;
+                std::cout << "m: " << m << std::endl;  
+                std::cout << "phase: " << phase << std::endl;  
+                std::cout << "error: " << error << std::endl;
+                std::cout << "exp_rot: " << exp_rot << std::endl;
+                //std::cout << "acc: " << utils::to_string(acc, params.boot->rlwe_gadget_par.param.N) << std::endl;
+                br_test = false;
+                break;
+            }
         }
+        
     }
     if(br_test){
         std::cout << "rot_identity_test: OK" << std::endl;
@@ -322,10 +429,19 @@ void functional_bootstrap_initial_test(int test_num, rlwe_hom_acc_scheme_named_p
 
 int main(){
  
-    // extract_and_key_switch_test();
-    blind_rotation_test(10, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+    blind_rotation_test(10, rlwe_hom_acc_scheme_C_11_B, simul); 
 
     bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
-    //functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+ 
+    functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul);  
+
+    functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+
+
+    std::cout << "--------------- Testing Amortized Bootstrapping --------------------" << std::endl;
+  
+    bootstrap_test(2, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
+    functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
+    functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
  
 }

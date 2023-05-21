@@ -25,11 +25,14 @@ class lwe_sk {
     lwe_sk(lwe_param lwe_par, long* key);
 
     lwe_param get_lwe_param();
-  
-    // Secret
+   
     long* encrypt(long m);
+    
+    lwe_ct encrypt_ct(long m);
+
     // Secret
     void encrypt(long* ct, long m);
+
 
     // Secret
     long* scale_and_encrypt(long m, int t);

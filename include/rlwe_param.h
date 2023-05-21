@@ -21,20 +21,27 @@ class rlwe_param{
     modulus_type mod_type;
     key_dist key_type;
 
+    polynomial_arithmetic arithmetic = ntl;
+
     // TODO: Perhaps we should have a separate engine in each gadget ciphertext for example?
     // Not sure. Need to think about it. 
+    // TODO: Also if arithmetic is not FFT but NTT or NTL then we don't need to initialize this at all
     fft_plan *engine;
-    bool init = false;
+    //bool init = false;
   
+    intel::hexl::NTT ntt; 
+
     long mask;
 
     ~rlwe_param(); 
 
     rlwe_param(); 
      
-    rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev);
+    //rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev);
 
-    rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, bool long_arithmetic);
+    //rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, bool long_arithmetic = false);
+
+    rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic);
        
     long* init_poly();
 
@@ -51,6 +58,7 @@ class rlwe_param{
 class rlwe_ct{
 
     public:
+ 
 
     rlwe_param *param;
     long *b;
@@ -74,7 +82,13 @@ class rlwe_ct{
 
     void add(rlwe_ct *out, const rlwe_ct *ct);
 
+    void add(rlwe_ct *out, long* x);
+
     void sub(rlwe_ct *out, const rlwe_ct *ct);
+
+    void sub(rlwe_ct *out, long* x); 
+
+    void mul(rlwe_ct *out, long *x);
 
     void neg(rlwe_ct *out);
  
@@ -93,6 +107,12 @@ class rlwe_ct{
     void neg(long *out, long *in);
 
     long* neg(long *in);
+
+    void mul(long *out, long *in_1, long *in_2);
+
+    void mul_fft(long *out, long *in_1, long *in_2);
+
+    void mul_ntt(long *out, long *in_1, long *in_2);
   
 };
 
@@ -105,7 +125,7 @@ class rlwe_gadget_param{
 
   public:
 
-  polynomial_arithmetic arithmetic;
+  //polynomial_arithmetic arithmetic;
 
   rlwe_param param;
   // Q = basis**ell
@@ -126,9 +146,10 @@ class rlwe_gadget_param{
   gadget rand_gadget;
 
   rlwe_gadget_param();
-  
-  rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget, polynomial_arithmetic arithmetic);
    
+   
+  rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget);
+
 };
 
 
@@ -155,8 +176,7 @@ class rlwe_gadget_ct{
   long **ntt_eval_a_sk;
   long **ntt_eval_b_sk;
 
-
-  //bool eval = false;
+ 
   
   // Mask for power of two modulus reduction
   long mask;

@@ -101,4 +101,5 @@ void sampler::uniform_array(long *a, int n, long Q){
     for(int i = 0; i < n; ++i){
         a[i] = uniform(Q);
     }
+     
 }
