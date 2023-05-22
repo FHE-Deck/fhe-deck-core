@@ -144,6 +144,7 @@ class lwe_ct{
       for(int i = 0; i < lwe_par.n; ++i){
         ct[i] = ct_arr[i];
       }
+      this->init = true;
     } 
 
 
@@ -176,6 +177,21 @@ class lwe_gadget_param{
     // Public Gadget
     void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
   
+
+  
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(lwe_par, basis, ell, k);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(lwe_par, basis, ell, k);
+    } 
+
+
 };
  
 #endif

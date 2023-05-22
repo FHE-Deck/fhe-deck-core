@@ -49,6 +49,32 @@ class lwe_sk {
     // Public
     lwe_sk modulus_switch(long new_modulus);
 
+
+
+    
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(lwe_par);  
+      std::vector<long> s_arr; 
+      for(int i = 0; i < lwe_par.n; ++i){
+        s_arr.push_back(s[i]);
+      }
+      ar(s_arr) ;
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(lwe_par);
+      std::vector<long> s_arr;
+      ar(s_arr);
+      this->s = new long[lwe_par.n];
+      for(int i = 0; i < lwe_par.n; ++i){
+        this->s[i] = s_arr[i];
+      } 
+    } 
+
 };
 
 
@@ -66,7 +92,20 @@ class lwe_gadget_sk{
     long** gadget_encrypt(long m);
     // Secret Gadget
     void gadget_encrypt(long** gadget_ct, long m);
+
+
     
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(lwe_g_par, lwe);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(lwe_g_par, lwe);  
+    }   
   
 };
 

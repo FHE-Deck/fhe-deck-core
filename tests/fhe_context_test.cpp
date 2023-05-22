@@ -597,8 +597,7 @@ void amortized_partial_domain_bootstrap_test(){
     auto first_bit = [](long m) -> long {
         return m % 2;
     };  
- 
-
+  
     auto second_bit = [](long m) -> long {
         return (m % 4)/2;
     };  
@@ -624,8 +623,6 @@ void amortized_partial_domain_bootstrap_test(){
 
     std::vector<ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
 
-    
-    
     std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
     std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
     std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
@@ -768,17 +765,17 @@ void serialization_test(){
 
 int main(){   
     
-    basic_ciphertext_tests();
+    //basic_ciphertext_tests();
  
-    test_for_default_full_domain_encoding();
+    //test_for_default_full_domain_encoding();
 
-    test_for_partial_domain_encoding();
+    //test_for_partial_domain_encoding();
 
-    test_for_signed_limied_short_int();
+    //test_for_signed_limied_short_int();
 
     //amortized_full_domain_bootstrap_test();
 
-    //amortized_partial_domain_bootstrap_test();
+    amortized_partial_domain_bootstrap_test();
 
     //serialization_test();
 

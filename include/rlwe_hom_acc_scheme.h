@@ -90,6 +90,48 @@ class rlwe_hom_acc_scheme{
     std::vector<lwe_ct> functional_bootstrap(std::vector<rotation_poly> acc_in_vec, long *lwe_ct_in, gadget_mul_mode mode, int t);
     
 
+
+    
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
+        // TODO Save the Bk, ksk and masking keys.....
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
+        this->rlwe_gadget_par = rlwe_gadget_par;
+        this->lwe_gadget_par = lwe_gadget_par;
+        this->lwe_par = lwe_par;
+        this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
+        this->masking_key = masking_key;
+        this->masking_size = masking_size; 
+        this->stddev_masking = stddev_masking;
+        this->rand_masking = sampler(0.0, stddev_masking);
+        this->default_encoding = default_encoding;
+
+        extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
+        this->key_d = lwe_par.key_d;
+        if(this->key_d == binary){  
+            init_binary_key(); 
+        }else{ 
+            init_ternary_key();
+        } 
+        set_key_switch_type();
+        this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
+        this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
+
+        // TODO Read the Bk, ksk and masking keys.....
+
+    } 
+
+
+
+
+
     private:
 
     void init_binary_key();

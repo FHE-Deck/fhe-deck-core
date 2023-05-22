@@ -9,7 +9,9 @@ rlwe_sk::rlwe_sk(){}
 rlwe_sk::rlwe_sk(rlwe_param param, polynomial_arithmetic arithmetic){
     this->param = param;
     s = new long[param.N];
-    this->arithmetic = arithmetic;
+    this->arithmetic = param.arithmetic;
+
+    
     if(param.key_type == uniform){
         param.rand.uniform_array(s, param.N, param.Q);
     }else if(param.key_type == ternary){
@@ -23,7 +25,7 @@ rlwe_sk::rlwe_sk(rlwe_param param, polynomial_arithmetic arithmetic){
 rlwe_sk::rlwe_sk(rlwe_param param, long *s, polynomial_arithmetic arithmetic){
     this->param = param;
     this->s = s;
-    this->arithmetic = arithmetic; 
+    this->arithmetic = param.arithmetic; 
     set_arithmetic_specific_variables(); 
 }
  

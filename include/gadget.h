@@ -49,6 +49,8 @@ class gadget{
 
     gadget(int N, long Q, int basis, double stddev, gadget_type type);
 
+    void setup_type_specific_parameters(); 
+
     void sample(long** out, long *in);
 
     long** sample(long *in);
@@ -82,6 +84,27 @@ class gadget{
     void precompute_constants_for_general_modulus_gaussian_sampling();
 
     void base_decomposition(long* out, long in);
+
+
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(type, N, Q, basis);   
+        if(type == discrete_gaussian_gadget){
+            ar(stddev);
+        } 
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(type, N, Q, basis);
+        if(type == discrete_gaussian_gadget){
+            ar(stddev);
+            this->rand = sampler(0.0, stddev);
+        } 
+    } 
 
 
 };

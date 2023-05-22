@@ -65,6 +65,32 @@ class rlwe_hom_acc_scheme_gen{
 
     void init_ternary_key();
 
+    
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(rlwe_gadget, lwe_gadget, extract_lwe);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(rlwe_gadget, lwe_gadget, extract_lwe);   
+        long q = rlwe_gadget.gadget_param.param.N * 2; 
+        this->lwe = lwe_gadget.lwe.modulus_switch(q);   
+        lwe_param extract_lwe_par = lwe_param(rlwe_gadget.gadget_param.param.N, rlwe_gadget.gadget_param.param.Q, lwe_gadget.lwe_g_par.lwe_par.key_d, lwe_gadget.lwe_g_par.lwe_par.stddev);
+        long* extract_key = extract_rlwe_key();
+        extract_lwe = lwe_sk(extract_lwe_par, extract_key); 
+ 
+        if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
+            this->init_binary_key(); 
+        }else{  
+            this->init_ternary_key();
+        }   
+        delete[] extract_key; 
+    } 
+
+
 };
 
 

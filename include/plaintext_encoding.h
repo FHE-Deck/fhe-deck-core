@@ -20,6 +20,18 @@ public:
     long encode_message(long message);
 
     long decode_message(long phase);
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(type, plaintext_space, ciphertext_modulus);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(type, plaintext_space, ciphertext_modulus);
+    } 
   
 };
 

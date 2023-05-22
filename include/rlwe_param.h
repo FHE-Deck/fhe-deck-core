@@ -43,6 +43,12 @@ class rlwe_param{
 
     rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic);
        
+    rlwe_param(const rlwe_param &c);
+
+    rlwe_param& operator=(const rlwe_param other);
+   
+    void set_computing_engine();
+
     long* init_poly();
 
     long* init_zero_poly();
@@ -51,6 +57,22 @@ class rlwe_param{
     fftw_complex* init_fft_poly();
 
     fftwl_complex* init_fft_poly_l();
+
+
+    
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(ring, N, stddev, Q, mod_type, key_type, arithmetic);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(ring, N, stddev, Q, mod_type, key_type, arithmetic);  
+      set_computing_engine(); 
+    } 
+
 
 };
 
@@ -93,6 +115,9 @@ class rlwe_ct{
     void neg(rlwe_ct *out);
  
     std::string to_string();
+
+
+
 
    private:
 
@@ -149,6 +174,22 @@ class rlwe_gadget_param{
    
    
   rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget);
+
+
+  
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(param, deter_gadget, rand_gadget);    
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(param, deter_gadget, rand_gadget);  
+         
+    } 
+  
 
 };
 
@@ -208,6 +249,9 @@ class rlwe_gadget_ct{
 
   void to_coef();
  
+ 
+
+
  
   private:
 

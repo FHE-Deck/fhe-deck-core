@@ -39,18 +39,19 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     this->rand_masking = sampler(0.0, stddev_masking);
     this->default_encoding = default_encoding;
     
+    this->ksk = ksk;
+    this->bk = bk;  
+    
     extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
-    key_d = lwe_par.key_d;
-    if(key_d == binary){  
+    this->key_d = lwe_par.key_d;
+    if(this->key_d == binary){  
         init_binary_key(); 
     }else{ 
         init_ternary_key();
     } 
-    this->ksk = ksk;
-    this->bk = bk;  
+    set_key_switch_type();
     this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
     this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
-    set_key_switch_type();
 }
 
 void rlwe_hom_acc_scheme::set_key_switch_type(){ 

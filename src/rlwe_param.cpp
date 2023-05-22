@@ -227,7 +227,8 @@ rlwe_param::rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus
     this->stddev = stddev; 
     this->ring = ring;  
     this->arithmetic = arithmetic;
-    
+    set_computing_engine();
+    /*
     if(arithmetic == double_fft){ 
         engine = new fft_plan(ring, N, false);  
         //init = true;
@@ -242,8 +243,36 @@ rlwe_param::rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus
     }else{
         throw std::exception();
     }
+    */
 }
         
+
+rlwe_param::rlwe_param(const rlwe_param &c){
+    this->Q = c.Q;
+    this->mod_type = c.mod_type;
+    this->key_type = c.key_type; 
+    this->mask = c.Q-1;
+    this->N = c.N; 
+    this->stddev = c.stddev; 
+    this->ring = c.ring;  
+    this->arithmetic = c.arithmetic;
+
+
+}
+
+rlwe_param& rlwe_param::operator=(const rlwe_param other){
+    this->Q = other.Q;
+    this->mod_type = other.mod_type;
+    this->key_type = other.key_type; 
+    this->mask = other.Q-1;
+    this->N = other.N; 
+    this->stddev = other.stddev; 
+    this->ring = other.ring;  
+    this->arithmetic = other.arithmetic;
+    set_computing_engine();
+    return *this;
+}
+
 
 long* rlwe_param::init_poly(){
     return new long[this->N]; 
@@ -255,6 +284,23 @@ long* rlwe_param::init_zero_poly(){
             out[i] = 0;
       }
       return out;
+}
+
+void rlwe_param::set_computing_engine(){
+    if(arithmetic == double_fft){ 
+        engine = new fft_plan(ring, N, false);  
+        //init = true;
+    }else if(arithmetic == long_double_fft){
+        engine = new fft_plan(ring, N, true);  
+        //init = true;
+    }
+    else if(arithmetic == hexl_ntt){
+        ntt = intel::hexl::NTT(N, Q);
+    }else if(arithmetic == ntl){
+        // Do nothing here
+    }else{
+        throw std::exception();
+    }
 }
 
 fftw_complex* rlwe_param::init_fft_poly(){

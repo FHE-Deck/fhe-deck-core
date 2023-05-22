@@ -14,17 +14,18 @@ rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(){}
 rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding){ 
     rlwe_sk rlwe(rlwe_gadget_par.param, sk_arithmetic);
     this->rlwe_gadget =  gadget_rlwe_sk(rlwe_gadget_par, rlwe);
-    lwe_sk g_lwe = lwe_sk(lwe_gadget_par.lwe_par);
-    this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe);
     this->masking_size = masking_size;
     this->stddev_masking = stddev_masking;
     this->default_encoding = default_encoding;
+
+    lwe_sk g_lwe = lwe_sk(lwe_gadget_par.lwe_par);
+    this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe);
  
-    long q = rlwe_gadget_par.param.N * 2; 
+    long q = rlwe.param.N * 2; 
     this->lwe = lwe_gadget.lwe.modulus_switch(q);    
     // Another LWE for the extracted 
     // TODO: It should be based on the RLWE secret key!!!
-    lwe_param extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_gadget.lwe_g_par.lwe_par.key_d, lwe_gadget.lwe_g_par.lwe_par.stddev);
+    lwe_param extract_lwe_par = lwe_param(rlwe.param.N, rlwe.param.Q, lwe_gadget.lwe_g_par.lwe_par.key_d, lwe_gadget.lwe_g_par.lwe_par.stddev);
     long* extract_key = extract_rlwe_key();
     extract_lwe = lwe_sk(extract_lwe_par, extract_key); 
  
@@ -34,6 +35,8 @@ rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_p
         this->init_ternary_key();
     }   
     delete[] extract_key;
+
+    
 }
 
 

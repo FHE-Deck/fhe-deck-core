@@ -7,6 +7,11 @@ gadget::gadget(int N, long Q, int basis, gadget_type type){
     this->N = N;
     this->Q = Q;
     this->basis = basis;
+
+
+    gadget::setup_type_specific_parameters();
+
+    /*
     this->k = 1;
     // Compute the k, parameter (remind k is such that 2**k = basis)  
     // meaning that for now we support only power of two basis
@@ -22,6 +27,7 @@ gadget::gadget(int N, long Q, int basis, gadget_type type){
         temp *= basis;
         this->ell++;
     }  
+    */
 }
 
 
@@ -35,7 +41,8 @@ gadget::gadget(int N, long Q, int basis, double stddev, gadget_type type){
     this->Q = Q;
     this->basis = basis;
  
-
+    gadget::setup_type_specific_parameters();
+    /*
     if(!utils::is_power_of(basis, 2)){
         std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
     }
@@ -47,6 +54,42 @@ gadget::gadget(int N, long Q, int basis, double stddev, gadget_type type){
         is_power_of_base_modulus = false;
         precompute_constants_for_general_modulus_gaussian_sampling();
     }  
+    */
+}
+
+
+void gadget::setup_type_specific_parameters(){
+    if(this->type == signed_decomposition_gadget){
+        this->k = 1;
+        // Compute the k, parameter (remind k is such that 2**k = basis)  
+        // meaning that for now we support only power of two basis
+        // TODO: Compute these values with functions from utils
+        long temp = 2;
+        while(temp < basis){
+            temp *= 2;
+            this->k++;
+        }
+        this->ell = 1;
+        temp = basis; 
+        while(temp < Q){
+            temp *= basis;
+            this->ell++;
+        }  
+    }else if(this->type == discrete_gaussian_gadget){
+        if(!utils::is_power_of(basis, 2)){
+            std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
+        }
+        this->k = utils::power_times(basis, 2);
+        this->ell = utils::power_times(Q, basis);
+        if(utils::is_power_of(Q, basis)){
+            is_power_of_base_modulus = true;
+        }else{ 
+            is_power_of_base_modulus = false;
+            precompute_constants_for_general_modulus_gaussian_sampling();
+        }  
+    }else{
+        throw 0;
+    }
 }
 
 
