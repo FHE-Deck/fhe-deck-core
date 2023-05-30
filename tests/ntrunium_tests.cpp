@@ -1,4 +1,5 @@
  
+#include <chrono>
 #include <iostream> 
 #include "../include/ntrunium.h"  
 #include "../include/ntrunium_gen.h"
