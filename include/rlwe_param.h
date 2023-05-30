@@ -23,24 +23,16 @@ class rlwe_param{
 
     polynomial_arithmetic arithmetic = ntl;
 
-    // TODO: Perhaps we should have a separate engine in each gadget ciphertext for example?
-    // Not sure. Need to think about it. 
-    // TODO: Also if arithmetic is not FFT but NTT or NTL then we don't need to initialize this at all
-    fft_plan *engine;
-    //bool init = false;
+    // TODO: Perhaps we should have a separate engine in each gadget ciphertext for example instead of each rlwe_param?
+    // Not sure. Need to think about it.  
+    fft_plan engine; 
   
     intel::hexl::NTT ntt; 
 
     long mask;
-
-    ~rlwe_param(); 
-
-    rlwe_param(); 
-     
-    //rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev);
-
-    //rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, bool long_arithmetic = false);
-
+ 
+    rlwe_param() = default; 
+       
     rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic);
        
     rlwe_param(const rlwe_param &c);
@@ -53,7 +45,7 @@ class rlwe_param{
 
     long* init_zero_poly();
 
-  // These FFT poly perhaps should be initialized by fft_plan?
+   // TODO: These FFT poly perhaps should be initialized by fft_plan?
     fftw_complex* init_fft_poly();
 
     fftwl_complex* init_fft_poly_l();
@@ -80,23 +72,25 @@ class rlwe_param{
 class rlwe_ct{
 
     public:
- 
+  
+    rlwe_param param;
 
-    rlwe_param *param;
     long *b;
     long *a;
 
     long mask;
 
-    bool init = false;
+    bool is_init = false;
   
     rlwe_ct();
 
-    rlwe_ct(rlwe_param *param);
+    rlwe_ct(rlwe_param param);
 
-    rlwe_ct(rlwe_param *param, long *b, long *a);
+    rlwe_ct(rlwe_param param, long *b, long *a);
   
     ~rlwe_ct();
+
+    rlwe_ct(const rlwe_ct &other);
 
     rlwe_ct& operator=(const rlwe_ct other);
   
@@ -115,12 +109,10 @@ class rlwe_ct{
     void neg(rlwe_ct *out);
  
     std::string to_string();
-
-
-
+ 
 
    private:
-
+  
     void add(long *out, long *in_1, long *in_2);
 
     long* add(long *in_1, long *in_2);
@@ -149,9 +141,7 @@ enum gadget_mul_mode {simul, deter};
 class rlwe_gadget_param{
 
   public:
-
-  //polynomial_arithmetic arithmetic;
-
+  
   rlwe_param param;
   // Q = basis**ell
   int ell;
@@ -170,12 +160,13 @@ class rlwe_gadget_param{
   gadget deter_gadget;
   gadget rand_gadget;
 
-  rlwe_gadget_param();
-   
-   
+  rlwe_gadget_param() = default;
+    
   rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget);
-
-
+ 
+  rlwe_gadget_param(const rlwe_gadget_param &other);
+ 
+  rlwe_gadget_param& operator=(const rlwe_gadget_param other);
   
     template <class Archive>
     void save( Archive & ar ) const
@@ -189,8 +180,12 @@ class rlwe_gadget_param{
       ar(param, deter_gadget, rand_gadget);  
          
     } 
-  
 
+
+    private:
+
+    void setup_the_other_parametrs();
+   
 };
 
 
@@ -200,9 +195,10 @@ class rlwe_gadget_ct{
 
   rlwe_gadget_param gadget_param;
 
+  bool is_init = false;
   rlwe_ct *gadget_ct;
   rlwe_ct *gadget_ct_sk;
- 
+  
   fftw_complex **eval_a;
   fftw_complex **eval_b;
 
@@ -216,15 +212,11 @@ class rlwe_gadget_ct{
 
   long **ntt_eval_a_sk;
   long **ntt_eval_b_sk;
-
- 
   
   // Mask for power of two modulus reduction
   long mask;
-
-  bool init = false;
-
-  rlwe_gadget_ct();
+ 
+  rlwe_gadget_ct() = default;
 
   rlwe_gadget_ct(rlwe_gadget_param gadget_param);
 
@@ -250,10 +242,12 @@ class rlwe_gadget_ct{
   void to_coef();
  
  
-
-
+ 
  
   private:
+
+  // Temporary variable needed for multiplication. Its initialized in already in the constructors because initialization is expensive
+  rlwe_ct out_minus;
 
   void init_fft_eval();
 

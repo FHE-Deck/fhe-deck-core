@@ -2,6 +2,14 @@
 
 #include "../include/lwe.h"
    
+
+lwe_sk::~lwe_sk(){
+    if(is_init){
+        delete[] s;
+    }
+}
+
+
 lwe_sk::lwe_sk(){}
 
 
@@ -14,6 +22,7 @@ lwe_sk::lwe_sk(int n, long Q,  double stddev, key_dist key_d){
     }else{
         rand.ternary_array(this->s, lwe_par.n); 
     }
+    is_init = true;
 }
 
 lwe_sk::lwe_sk(lwe_param lwe_par){
@@ -24,6 +33,7 @@ lwe_sk::lwe_sk(lwe_param lwe_par){
     }else{
         rand.ternary_array(this->s, lwe_par.n); 
     }
+    is_init = true;
 }
 
 
@@ -33,9 +43,42 @@ lwe_sk::lwe_sk(lwe_param lwe_par, long* key){
     for(int i = 0; i < lwe_par.n; ++i){
         this->s[i] = key[i];
     } 
+    is_init = true;
 }
 
+
+lwe_sk::lwe_sk(const lwe_sk &other){
+    this->lwe_par = other.lwe_par;
+     this->s = new long[lwe_par.n];
+    for(int i = 0; i < lwe_par.n; ++i){
+        this->s[i] = other.s[i];
+    } 
+    this->is_init = true;
+    is_init = true;
+}
  
+
+lwe_sk& lwe_sk::operator=(const lwe_sk other){
+    if (this == &other)
+    {
+        return *this;
+    }
+    if(this->is_init == false){
+        this->lwe_par = other.lwe_par;
+        this->s = new long[lwe_par.n];
+        for(int i = 0; i < lwe_par.n; ++i){
+            this->s[i] = other.s[i];
+        } 
+        this->is_init = true;
+    }else if(this->is_init && lwe_par.n == other.lwe_par.n){
+        for(int i = 0; i < lwe_par.n; ++i){
+            this->s[i] = other.s[i];
+        } 
+    }else{
+        throw 0;
+    } 
+    return *this;
+}
 
 lwe_param lwe_sk::get_lwe_param(){
     return lwe_par;
@@ -115,6 +158,18 @@ lwe_gadget_sk::lwe_gadget_sk(){}
 lwe_gadget_sk::lwe_gadget_sk(lwe_gadget_param lwe_g_par, lwe_sk lwe){
     this->lwe = lwe;
     this->lwe_g_par = lwe_g_par;
+}
+
+lwe_gadget_sk::lwe_gadget_sk(const lwe_gadget_sk &other){
+    this->lwe_g_par = other.lwe_g_par;
+    this->lwe = other.lwe;
+}
+
+
+lwe_gadget_sk& lwe_gadget_sk::operator=(const lwe_gadget_sk other){
+    this->lwe_g_par = other.lwe_g_par;
+    this->lwe = other.lwe;
+    return *this;
 }
 
 long** lwe_gadget_sk::gadget_encrypt(long m){ 

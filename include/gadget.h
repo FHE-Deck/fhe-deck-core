@@ -42,12 +42,21 @@ class gadget{
     double inv_basis;
     double* inv_l;
     long two_times_basis_plus_one;
+
+    bool is_precomputed = false;
  
+    ~gadget();
+
     gadget();
 
     gadget(int N, long Q, int basis, gadget_type type);
 
     gadget(int N, long Q, int basis, double stddev, gadget_type type);
+
+   gadget(const gadget &other);
+
+    gadget& operator=(const gadget other);
+ 
 
     void setup_type_specific_parameters(); 
 

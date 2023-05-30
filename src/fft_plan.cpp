@@ -8,40 +8,62 @@
   
 
 fft_plan::~fft_plan(){    
-    fftw_destroy_plan(plan_to_eval_form);
-    fftw_destroy_plan(plan_to_coef_form);
-    fftw_free(in); 
-    fftw_free(out);    
+    if(is_init == false){
+        return;
+    }
+    if(long_arithmetic){
+        fftwl_destroy_plan(plan_to_eval_form_l);
+        fftwl_destroy_plan(plan_to_coef_form_l);
+        fftwl_free(in_l); 
+        fftwl_free(out_l); 
+    }else{
+        fftw_destroy_plan(plan_to_eval_form);
+        fftw_destroy_plan(plan_to_coef_form);
+        fftw_free(in); 
+        fftw_free(out);  
+    } 
 }
 
-
-// TODO: Need to take information on whether we have cyclic or nagacyclic convolution
+ 
 fft_plan::fft_plan(ring_type ring, int N){   
     this->ring = ring;
-    this->N = N;
-    if(ring == cyclic){ 
-     this->plan_size = N; 
-    }else if(ring == negacyclic){
-        this->plan_size = 2*N; 
-    }
-    
-    in = (double*) fftw_malloc(sizeof(double) * plan_size);
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) *  plan_size);
-    plan_to_eval_form = fftw_plan_dft_r2c_1d(plan_size, in, out,  FFTW_PATIENT);
-    plan_to_coef_form = fftw_plan_dft_c2r_1d(plan_size, out, in,  FFTW_PATIENT); 
-    //plan_init = true;  
+    this->N = N; 
+    init_tables(); 
 }
-
-// TODO: Need to take information on whether we have cyclic or nagacyclic convolution
+ 
 fft_plan::fft_plan(ring_type ring, int N, bool long_arithmetic){   
     this->ring = ring;
     this->N = N;
+    this->long_arithmetic = long_arithmetic;
+    init_tables();   
+}
+
+
+fft_plan::fft_plan(const fft_plan& other){
+    this->ring = other.ring;
+    this->N = other.N;
+    this->long_arithmetic = other.long_arithmetic;
+    init_tables();
+}
+
+fft_plan& fft_plan::operator=(const fft_plan other){
+    if (this == &other)
+    {
+        return *this;
+    } 
+    this->ring = other.ring;
+    this->N = other.N;
+    this->long_arithmetic = other.long_arithmetic;
+    init_tables();
+    return *this;
+}
+
+void fft_plan::init_tables(){
     if(ring == cyclic){ 
      this->plan_size = N; 
     }else if(ring == negacyclic){
         this->plan_size = 2*N; 
-    }
-    this->long_arithmetic = long_arithmetic;
+    } 
     if(!long_arithmetic){
         in = (double*) fftw_malloc(sizeof(double) * plan_size);
         out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) *  plan_size);
@@ -53,9 +75,8 @@ fft_plan::fft_plan(ring_type ring, int N, bool long_arithmetic){
         plan_to_eval_form_l = fftwl_plan_dft_r2c_1d(plan_size, in_l, out_l,  FFTW_PATIENT);
         plan_to_coef_form_l = fftwl_plan_dft_c2r_1d(plan_size, out_l, in_l,  FFTW_PATIENT); 
     } 
-    //plan_init = true;   
+    this->is_init = true;
 }
-
 
 void fft_plan::to_eval_form(fftw_complex* eval_form, long *poly){ 
     for(int i = 0; i < N; ++i){ 

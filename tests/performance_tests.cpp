@@ -132,7 +132,7 @@ void rlwe_performance_test(rlwe_hom_acc_scheme_named_param param_name, int test_
  
     // Initiate these messages
     long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);
-    rlwe_ct out_ct(&params.boot->rlwe_gadget_par.param);
+    rlwe_ct out_ct(params.boot->rlwe_gadget_par.param);
 
     // Time
     std::chrono::high_resolution_clock::time_point start, end; 

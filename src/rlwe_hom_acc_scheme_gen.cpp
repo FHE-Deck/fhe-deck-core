@@ -11,21 +11,20 @@ rlwe_hom_acc_scheme_gen::~rlwe_hom_acc_scheme_gen(){
 rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(){}
 
 
-rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding){ 
-    rlwe_sk rlwe(rlwe_gadget_par.param, sk_arithmetic);
+rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding){   
+    rlwe_sk rlwe(rlwe_gadget_par.param, sk_arithmetic); 
     this->rlwe_gadget =  gadget_rlwe_sk(rlwe_gadget_par, rlwe);
     this->masking_size = masking_size;
     this->stddev_masking = stddev_masking;
     this->default_encoding = default_encoding;
-
+ 
     lwe_sk g_lwe = lwe_sk(lwe_gadget_par.lwe_par);
     this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe);
  
     long q = rlwe.param.N * 2; 
     this->lwe = lwe_gadget.lwe.modulus_switch(q);    
-    // Another LWE for the extracted 
-    // TODO: It should be based on the RLWE secret key!!!
-    lwe_param extract_lwe_par = lwe_param(rlwe.param.N, rlwe.param.Q, lwe_gadget.lwe_g_par.lwe_par.key_d, lwe_gadget.lwe_g_par.lwe_par.stddev);
+    // Another LWE for the extracted  
+    lwe_param extract_lwe_par = lwe_param(rlwe.param.N, rlwe.param.Q, rlwe_gadget_par.param.key_type, rlwe_gadget_par.param.stddev);
     long* extract_key = extract_rlwe_key();
     extract_lwe = lwe_sk(extract_lwe_par, extract_key); 
  
@@ -34,21 +33,20 @@ rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_p
     }else{  
         this->init_ternary_key();
     }   
-    delete[] extract_key;
-
-    
+    delete[] extract_key; 
+  
 }
 
 
 
-rlwe_hom_acc_scheme* rlwe_hom_acc_scheme_gen::get_public_param(){  
+rlwe_hom_acc_scheme* rlwe_hom_acc_scheme_gen::get_public_param(){   
     // The key switching key
     long ***ksk = key_switching_key_gen(); 
      
     // Masking Key Gen
     long **masking_key = masking_key_gen();   
-    // The blind rotation key
-    rlwe_gadget_ct *bk = blind_rotation_key_gen();  
+    // The blind rotation key 
+    rlwe_gadget_ct *bk = blind_rotation_key_gen();   
     return new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking, default_encoding); 
 }
 
@@ -112,13 +110,13 @@ long** rlwe_hom_acc_scheme_gen::masking_key_gen(){
     
 
 rlwe_gadget_ct* rlwe_hom_acc_scheme_gen::blind_rotation_key_gen(){  
-    long *ext_key_mono = rlwe_gadget.gadget_param.param.init_zero_poly();
-    rlwe_gadget_ct* bk = new rlwe_gadget_ct[sizeof_ext_s];  
-    for(int i = 0; i < sizeof_ext_s; ++i){ 
+    long *ext_key_mono = rlwe_gadget.gadget_param.param.init_zero_poly(); 
+    rlwe_gadget_ct* bk = new rlwe_gadget_ct[sizeof_ext_s];   
+    for(int i = 0; i < sizeof_ext_s; ++i){  
         ext_key_mono[0] = ext_s[i];    
         bk[i] = rlwe_gadget.gadget_encrypt(ext_key_mono); 
-    } 
-    delete[] ext_key_mono;
+    }  
+    delete[] ext_key_mono; 
     return bk;
 }
 
@@ -206,9 +204,9 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     int rlwe_basis = 256;  
     // stddev_simul approx  2**(17.78)
     double stddev_simul = 225812;  
-    masking_size = 8;
+    masking_size = 8192;
     // stddev_simul approx  2**(12.37)
-    stddev_masking = 5311;
+    stddev_masking = 8192;
 
     rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt);
     gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
@@ -240,15 +238,16 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     long Q = 281474976694273;
     double rlwe_stddev = 3.2;
     // 2**4 -> 2**12
-    int rlwe_basis = 32; 
+    int rlwe_basis = 256; 
     // Set to dummy 1 (here we tests noise flooding which will perform similarly to deter)
-    double stddev_simul = 1; 
-    masking_size = 8;
-    stddev_masking = 5311;
+    double stddev_simul = 225812;  
+    masking_size = 8192;
+    // stddev_simul approx  2**(12.37)
+    stddev_masking = 8192;
 
     rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt);
-    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
+    gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    gadget rand_gadget = gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
     rlwe_gadget_par = rlwe_gadget_param(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
     // TODO: The correct one should be ntl or hexl_ntt - but hexl_ntt has a bug, and ntl is slow so for now I leave double_fft (larger error so its rather not the best)
     sk_arithmetic = ntl;
@@ -257,7 +256,7 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_NT
     int n = 912;
     int lwe_basis = 128;
     // 2**(14)
-    double lwe_stddev = 16384; 
+    double lwe_stddev = 67108864; 
     lwe_param lwe_par(n, Q, binary, lwe_stddev);
     lwe_gadget_par = lwe_gadget_param(lwe_par, lwe_basis); 
 
@@ -276,8 +275,8 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_B(
     // 2**4
     int rlwe_basis = 16; 
     double stddev_simul = 505;
-    masking_size = 12;
-    stddev_masking = 58385;
+    masking_size = 3370;
+    stddev_masking = 4010391;
 
     rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft);
     gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
@@ -306,8 +305,8 @@ void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_C_11_fl
     // 2**4
     int rlwe_basis = 16; 
     double stddev_simul = 505;
-    masking_size = 12;
-    stddev_masking = 58385;
+    masking_size = 3370;
+    stddev_masking = 4010391;
 
     rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft);
     gadget deter_gadget = gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);

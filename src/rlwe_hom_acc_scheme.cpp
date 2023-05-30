@@ -15,8 +15,7 @@ rlwe_hom_acc_scheme::~rlwe_hom_acc_scheme(){
     delete[] ksk; 
     delete[] bk;
 }
-
-rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(){}
+ 
 
 
 rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par, 
@@ -43,6 +42,11 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     this->bk = bk;  
     
     extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
+
+    this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
+    this->next_acc = rlwe_ct(rlwe_gadget_par.param);
+    this->out_ct = rlwe_ct(rlwe_gadget_par.param);
+
     this->key_d = lwe_par.key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
@@ -96,7 +100,7 @@ void rlwe_hom_acc_scheme::blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_
         out->a[i] = 0;
     }  
     utils::negacyclic_rotate_poly(out->b, acc_msg, rlwe_gadget_par.param.N, lwe_ct_in[0]);   
-    rlwe_ct next_acc(&rlwe_gadget_par.param);  
+     
     if(key_d==binary){    
         for(int i = 0; i < lwe_par.n; ++i){   
             out->negacyclic_rotate(&next_acc, lwe_ct_in[i+1]);   
@@ -216,15 +220,14 @@ void rlwe_hom_acc_scheme::bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct
     }
     // 2) Mod switch to \ZZ_2N^{n+1} 
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c, lwe_c, lwe_par);  
-    // 3) Blind rotate 
-    rlwe_ct out_ct(&rlwe_gadget_par.param); 
+    // 3) Blind rotate  
     blind_rotate(&out_ct, lwe_c, acc_in, mode);  
     // 4) Sample Extract  
     extract_lwe_from_rlwe(lwe_ct_out, &out_ct);
-    // 5) If simulation mode, then rerandomize the ciphertext  
-    if(mode == simul){  
+    // 5) If simulation mode, then rerandomize the ciphertext   
+    if(mode == simul){   
         mask_ciphertext(lwe_ct_out); 
-    } 
+    }  
     delete[] lwe_c; 
 }
 
@@ -233,8 +236,7 @@ void rlwe_hom_acc_scheme::bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct
 This bootstrapping assumes that the input ciphertext is mod 2N, but with message < N
 */
 void rlwe_hom_acc_scheme::functional_bootstrap_initial(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode){   
-    // 3) Blind rotate
-    rlwe_ct out_ct(&rlwe_gadget_par.param);
+    // 3) Blind rotate 
     blind_rotate(&out_ct, lwe_ct_in, acc_in, mode); 
     // 4) Sample Extract
     extract_lwe_from_rlwe(lwe_ct_out, &out_ct);
@@ -256,8 +258,7 @@ void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, l
         lwe_to_lwe_key_switch_partial_lazy(lwe_c_N, lwe_ct_in);  
     }else{
         lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in);  
-    }  
-    //lwe_to_lwe_key_switch_lazy(lwe_c_N, lwe_ct_in); 
+    }   
   
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
@@ -276,8 +277,7 @@ void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, l
     for(int i = 1; i < lwe_par_tiny.n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
-    // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!) 
-    rlwe_ct out_ct(&rlwe_gadget_par.param); 
+    // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)  
     blind_rotate(&out_ct, lwe_c, acc_msb, deter);  
 
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)
@@ -290,8 +290,7 @@ void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, l
         lwe_to_lwe_key_switch_partial_lazy(lwe_c, lwe_ct_out);  
     }else{
         lwe_to_lwe_key_switch(lwe_c, lwe_ct_out);  
-    }  
-    //lwe_to_lwe_key_switch_lazy(lwe_c, lwe_ct_out);  
+    }   
     
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c, lwe_c, lwe_par);  
@@ -338,20 +337,18 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::bootstrap(std::vector<rotation_poly> ac
     }
     // 2) Mod switch to \ZZ_2N^{n+1} 
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c, lwe_c, lwe_par);  
-    // 3) Blind rotate 
-    rlwe_ct out_ct(&rlwe_gadget_par.param); 
+    // 3) Blind rotate  
     
     acc_one[1] = (long)round((double)rlwe_gadget_par.param.Q/(double)t); 
      
     blind_rotate(&out_ct, lwe_c, acc_one, mode);   
   
-    std::vector<lwe_ct> out_vec;
-    rlwe_ct ct(&rlwe_gadget_par.param); 
+    std::vector<lwe_ct> out_vec; 
   
     long* lwe_ct_out = extract_lwe_par.init_ct();
     for(rotation_poly i:  acc_in_vec){   
-        out_ct.mul(&ct, i.lookup_polynomial);  
-        extract_lwe_from_rlwe(lwe_ct_out, &ct);  
+        out_ct.mul(&temp_ct, i.lookup_polynomial);  
+        extract_lwe_from_rlwe(lwe_ct_out, &temp_ct);  
         if(mode == simul){   
             mask_ciphertext(lwe_ct_out); 
         }   
@@ -367,18 +364,16 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::bootstrap(std::vector<rotation_poly> ac
 This bootstrapping assumes that the input ciphertext is mod 2N, but with message < N
 */
 std::vector<lwe_ct> rlwe_hom_acc_scheme::functional_bootstrap_initial(std::vector<rotation_poly> acc_in_vec, long *lwe_ct_in, gadget_mul_mode mode, int t){   
-    // 3) Blind rotate
-    rlwe_ct out_ct(&rlwe_gadget_par.param);
+    // 3) Blind rotate 
     acc_one[1] = (long)round((double)rlwe_gadget_par.param.Q/(double)t); 
     blind_rotate(&out_ct, lwe_ct_in, acc_one, mode); 
     
-    std::vector<lwe_ct> out_vec;
-    rlwe_ct ct(&rlwe_gadget_par.param); 
+    std::vector<lwe_ct> out_vec; 
   
     long* lwe_ct_out = extract_lwe_par.init_ct();
     for(rotation_poly i:  acc_in_vec){   
-        out_ct.mul(&ct, i.lookup_polynomial);  
-        extract_lwe_from_rlwe(lwe_ct_out, &ct);  
+        out_ct.mul(&temp_ct, i.lookup_polynomial);  
+        extract_lwe_from_rlwe(lwe_ct_out, &temp_ct);  
         if(mode == simul){   
             mask_ciphertext(lwe_ct_out); 
         }   
@@ -402,8 +397,7 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::functional_bootstrap(std::vector<rotati
         lwe_to_lwe_key_switch_partial_lazy(lwe_c_N, lwe_ct_in);  
     }else{
         lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in);  
-    }  
-    //lwe_to_lwe_key_switch_lazy(lwe_c_N, lwe_ct_in);
+    }   
   
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
@@ -422,8 +416,7 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::functional_bootstrap(std::vector<rotati
     for(int i = 1; i < lwe_par_tiny.n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
-    // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!) 
-    rlwe_ct out_ct(&rlwe_gadget_par.param); 
+    // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)  
     blind_rotate(&out_ct, lwe_c, acc_msb, deter);  
 
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)
@@ -436,8 +429,7 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::functional_bootstrap(std::vector<rotati
         lwe_to_lwe_key_switch_partial_lazy(lwe_c, lwe_ct_out);  
     }else{
         lwe_to_lwe_key_switch(lwe_c, lwe_ct_out);  
-    }  
-    //lwe_to_lwe_key_switch_lazy(lwe_c, lwe_ct_out); 
+    }   
     
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c, lwe_c, lwe_par);  
@@ -456,12 +448,11 @@ std::vector<lwe_ct> rlwe_hom_acc_scheme::functional_bootstrap(std::vector<rotati
     acc_one[1] = (long)round((double)rlwe_gadget_par.param.Q/(double)t); 
     blind_rotate(&out_ct, lwe_c, acc_one, mode);
        
-    std::vector<lwe_ct> out_vec;
-    rlwe_ct ct(&rlwe_gadget_par.param);  
+    std::vector<lwe_ct> out_vec; 
     for(rotation_poly i:  acc_in_vec){  
-        out_ct.mul(&ct, i.lookup_polynomial); 
+        out_ct.mul(&temp_ct, i.lookup_polynomial); 
         // 4) Sample Extract   
-        extract_lwe_from_rlwe(lwe_ct_out, &ct); 
+        extract_lwe_from_rlwe(lwe_ct_out, &temp_ct); 
         // 5) If simulation mode, then rerandomize the ciphertext  
         if(mode == simul){  
             mask_ciphertext(lwe_ct_out); 

@@ -1,5 +1,3 @@
- 
-
 #include "../include/lwe_param.h"
 #include <iostream>
  

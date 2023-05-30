@@ -15,7 +15,7 @@ NTRU_FILES = ntrunium_lib.a ntrunium.o ntrunium_gen.o ntru_param.o ntru.o
 TEST_FILES = fhe_context_test rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test gadget_tests rotation_poly_test
 
 
-all: clean rlwe_lib.a ntrunium_lib.a tests 
+all: rlwe_lib.a ntrunium_lib.a tests 
 
  
 tests: $(TEST_FILES) 
@@ -70,10 +70,10 @@ ntrunium_tests: sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils
 
 
 ntru_tests: sample.o ntru_param.o utils.o ntru.o fft_plan.o
-	$(CC) -o ntru_test tests/ntru_tests.cpp sample.o fft_plan.o ntru_param.o utils.o ntru.o $(EXTERN)
+	$(CC) -o ntru_tests tests/ntru_tests.cpp sample.o fft_plan.o ntru_param.o utils.o ntru.o $(EXTERN)
 
 lwe_tests: sample.o utils.o lwe_param.o lwe.o  
-	$(CC)  -o lwe_test tests/lwe_tests.cpp sample.o utils.o lwe_param.o lwe.o ciphertext.o plaintext_encoding.o $(NTL)
+	$(CC)  -o lwe_tests tests/lwe_tests.cpp sample.o utils.o lwe_param.o lwe.o ciphertext.o plaintext_encoding.o $(NTL)
 
 
 rotation_poly_test: rotation_poly.o sample.o utils.o

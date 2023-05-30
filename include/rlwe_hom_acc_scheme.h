@@ -53,7 +53,7 @@ class rlwe_hom_acc_scheme{
 
     ~rlwe_hom_acc_scheme();
 
-    rlwe_hom_acc_scheme();
+    rlwe_hom_acc_scheme() = default;
 
     // TODO: In ntrunium.h the key distribution (for the LWE gadget param) is given as input
     // But actually it should be in the corresponding LWE_param.
@@ -133,6 +133,11 @@ class rlwe_hom_acc_scheme{
 
 
     private:
+
+    // Temporary variables. Initialized in the constructors because initialization is expensive
+    rlwe_ct out_ct;
+    rlwe_ct temp_ct;
+    rlwe_ct next_acc;
 
     void init_binary_key();
     void init_ternary_key();

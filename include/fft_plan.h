@@ -21,19 +21,23 @@ class fft_plan{
     fftw_complex *out;
     fftw_plan plan_to_eval_form, plan_to_coef_form;
     
-    //  bool plan_init=false;
+    bool is_init = false;
 
     // Long Arithmetic Related
     fftwl_plan plan_to_eval_form_l, plan_to_coef_form_l;
     long double *in_l;
     fftwl_complex *out_l;
     bool long_arithmetic = false;
-
-    // fft_plan();
+ 
+    fft_plan() = default;
 
     fft_plan(ring_type ring, int N);
 
     fft_plan(ring_type ring, int N, bool long_arithmetic);
+
+    fft_plan(const fft_plan& other);
+
+    fft_plan& operator=(const fft_plan other);
 
     ~fft_plan();
  
@@ -79,6 +83,11 @@ class fft_plan{
 
     void mul_eval_form_l(fftwl_complex *prod, fftwl_complex* in_1, fftwl_complex* in_2);
  
+
+    private:
+
+    void init_tables();
+
 
 };
 

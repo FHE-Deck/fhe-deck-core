@@ -1,8 +1,7 @@
 
 #ifndef RLWE_HOM_ACC_SCHEME_GEN_H
 #define RLWE_HOM_ACC_SCHEME_GEN_H
-
-//#include "ciphertext.h"
+ 
 #include "lwe.h"
 #include "rlwe.h"
 #include "rlwe_param.h"
@@ -41,6 +40,7 @@ class rlwe_hom_acc_scheme_gen{
 
     rlwe_hom_acc_scheme_gen();
 
+    // Generates the secret keys 
     rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
 
     rlwe_hom_acc_scheme* get_public_param();
@@ -88,9 +88,7 @@ class rlwe_hom_acc_scheme_gen{
             this->init_ternary_key();
         }   
         delete[] extract_key; 
-    } 
-
-
+    }  
 };
 
 
@@ -130,7 +128,6 @@ class rlwe_hom_acc_scheme_named_param_generator{
     void init_rlwe_hom_acc_scheme_C_11_B(); 
 
     void init_rlwe_hom_acc_scheme_C_11_flood();
-
 
     void init_rlwe_hom_acc_scheme_C_11_NTT_amortized(); 
  

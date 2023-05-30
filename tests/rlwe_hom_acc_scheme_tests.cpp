@@ -81,7 +81,7 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
     long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);
     long* acc_rotation = params.boot->rlwe_gadget_par.param.init_poly();
     bool br_test = true;
-    rlwe_ct out_ct(&params.boot->rlwe_gadget_par.param);
+    rlwe_ct out_ct(params.boot->rlwe_gadget_par.param);
     long* out = params.boot->rlwe_gadget_par.param.init_poly();
     std::cout << "Start Test: " << std::endl;
     long phase;
@@ -429,19 +429,25 @@ void functional_bootstrap_initial_test(int test_num, rlwe_hom_acc_scheme_named_p
 
 int main(){
  
-    blind_rotation_test(10, rlwe_hom_acc_scheme_C_11_B, simul); 
+    //blind_rotation_test(10, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+    
+    //bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
 
-    bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+    //bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT_flood, deter); 
+
+    bootstrap_test(5, rlwe_hom_acc_scheme_C_11_B, simul); 
+
+    //bootstrap_test(5, rlwe_hom_acc_scheme_C_11_flood, deter); 
  
-    functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul);  
+    //functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul);  
 
-    functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+    //functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
 
 
     std::cout << "--------------- Testing Amortized Bootstrapping --------------------" << std::endl;
   
-    bootstrap_test(2, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
-    functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
-    functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
+    //bootstrap_test(2, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
+    //functional_bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
+    //functional_bootstrap_initial_test(5, rlwe_hom_acc_scheme_C_11_NTT_amortized, deter, true); 
  
 }

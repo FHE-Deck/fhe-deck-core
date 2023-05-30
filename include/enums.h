@@ -12,9 +12,7 @@ enum gadget_type {signed_decomposition_gadget, discrete_gaussian_gadget};
 
 enum key_switch_type {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
  
-enum fhe_scheme_type {
-    NTRUNIUM, FHEW
-}; 
+  
 
 
 enum plaintext_encoding_type {signed_limied_short_int, full_domain, partial_domain};

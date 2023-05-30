@@ -15,7 +15,10 @@ class lwe_sk {
     // This is all secret  
     sampler rand; 
     long *s;
+    bool is_init = false;
   
+    ~lwe_sk();
+
     lwe_sk();
 
     lwe_sk(int n, long Q, double stddev, key_dist key_d);
@@ -23,6 +26,10 @@ class lwe_sk {
     lwe_sk(lwe_param lwe_par);
 
     lwe_sk(lwe_param lwe_par, long* key);
+ 
+    lwe_sk(const lwe_sk &other);
+
+    lwe_sk& operator=(const lwe_sk other);
 
     lwe_param get_lwe_param();
    
@@ -88,6 +95,10 @@ class lwe_gadget_sk{
 
     lwe_gadget_sk(lwe_gadget_param lwe_g_par, lwe_sk lwe);
   
+    lwe_gadget_sk(const lwe_gadget_sk& other);
+
+    lwe_gadget_sk& operator=(const lwe_gadget_sk other);
+ 
     // Secret Gadget
     long** gadget_encrypt(long m);
     // Secret Gadget

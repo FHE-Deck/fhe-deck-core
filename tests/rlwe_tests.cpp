@@ -123,8 +123,11 @@ void gadget_rlwe_encrypt_test(int test_num, gadget_mul_mode mode, polynomial_ari
 
     long* gadget_m = rlwe_par.init_zero_poly();
     
+    std::cout << "Encrypt something" << std::endl;
     rlwe_gadget_ct g_ct = gadget_sk.gadget_encrypt(gadget_m);  
+    std::cout << "Copy gadget ciphertext..." << std::endl;
     rlwe_gadget_ct g_ct_copy = g_ct;  
+    std::cout << "Run to coef form" << std::endl;
     g_ct.to_coef();
     bool test = true;
     for(int i = 0; i < test_num; ++i){ 
@@ -200,7 +203,7 @@ void gadget_rlwe_basic_test(int test_num, gadget_mul_mode mode, polynomial_arith
         rlwe_ct ct = sk.scale_and_encrypt(m, t);
         rlwe_gadget_ct g_ct = gadget_sk.gadget_encrypt(gadget_m); 
         
-        rlwe_ct ct_prod(&rlwe_par);
+        rlwe_ct ct_prod(rlwe_par);
         g_ct.mul(&ct_prod, &ct, mode);  
 
         sk.decrypt(out, &ct_prod, t);
@@ -229,7 +232,7 @@ void gadget_rlwe_test(int test_num, gadget_mul_mode mode, polynomial_arithmetic 
     int t = 5; 
     sampler rand;
     rlwe_param rlwe_par(negacyclic, N, Q, ternary, any, 3.2, arithmetic);
-    rlwe_sk sk(rlwe_par, hexl_ntt);
+    rlwe_sk sk(rlwe_par, arithmetic);
     int basis = 8;
     gadget deter_gadget = gadget(N, Q, basis, signed_decomposition_gadget);
     gadget rand_gadget = gadget(N, Q, basis, 0.0, discrete_gaussian_gadget);
@@ -249,7 +252,7 @@ void gadget_rlwe_test(int test_num, gadget_mul_mode mode, polynomial_arithmetic 
         utils::mul_mod(exp_poly, m, N, gadget_m, N, N, t, negacyclic);
         rlwe_ct ct = sk.scale_and_encrypt(m, t);
         rlwe_gadget_ct g_ct = gadget_sk.gadget_encrypt(gadget_m);
-        rlwe_ct ct_prod(&rlwe_par);
+        rlwe_ct ct_prod(rlwe_par);
         g_ct.mul(&ct_prod, &ct, mode); 
         sk.decrypt(out, &ct_prod, t);
         utils::array_mod_form(out, out, N, t);

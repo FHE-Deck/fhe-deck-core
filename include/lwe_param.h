@@ -79,8 +79,7 @@ class lwe_ct{
  
     lwe_ct(lwe_ct &c);
 
-    lwe_ct(lwe_ct *c);
-   
+    lwe_ct(lwe_ct *c); 
 
     ~lwe_ct();
 
@@ -190,8 +189,7 @@ class lwe_gadget_param{
     {  
       ar(lwe_par, basis, ell, k);
     } 
-
-
+ 
 };
  
 #endif

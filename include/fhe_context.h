@@ -13,21 +13,22 @@ class fhe_context{
     public:
 
     ntrunium_named_param_generator ntrunium_par;
-    rlwe_hom_acc_scheme_named_param_generator rlwe_hom_acc_par;
+    bool is_ntrunium = false;
+ 
+    rlwe_hom_acc_scheme_gen* tfhe_boot_sk; 
+    rlwe_hom_acc_scheme* tfhe_boot_pk;
+    bool is_tfhe = false;
 
-    //long plaintext_space;
-    // TODO: Actually this default encoding could be specified by the parameter set
-    //message_encoding default_encoding = full_domain;
-    plaintext_encoding default_encoding;
-    fhe_scheme_type scheme_type;
+    // Flags to check whether the sk or pk are initialized.
+    bool is_sk_init = false;
+    bool is_pk_init = false;
+  
+    plaintext_encoding default_encoding; 
+
+    ~fhe_context(); 
 
     fhe_context() = default; 
-
-
-    // TODO: Specify input paramters
-    // - Type of scheme (parameter set)
-    // FDFB mode or negacyclic mode or maybe just standard binary gates?
-    // I may also have in the future: import context (from file for instance)
+ 
     void generate_context(ntrunium_named_param name);
 
     void generate_context(rlwe_hom_acc_scheme_named_param name);
@@ -60,16 +61,10 @@ class fhe_context{
     ciphertext encrypt_public(long message, plaintext_encoding encoding); 
 
     ciphertext encrypt_public(long message);
-
-    //lwe_ct encrypt_temp(long message);
- 
+  
     // Decrypt an LWE ciphertext
     long decrypt(ciphertext *ct);
- 
-    //long decrypt(ciphertext ct);
- 
-    // Return a ciphertext of zero (its not necesarily a fresh ciphertext - for fresh use encrypt)
-    //ciphertext& get_zero_ct();
+  
 
     plaintext_encoding get_default_plaintext_encoding();
 
@@ -115,21 +110,10 @@ class fhe_context{
  
 
     std::vector<ciphertext> eval_lut_amortized(ciphertext *ct_in, std::vector<rotation_poly> luts);
-
-
-    // Does the same as eval_lut, but perform binary decomposition at the end
-    // Genius -- I would need to first translate the rotation polynomial into polynomials, that output separate LUTs -- Not the best DUDE....
-    //std::vector<ciphertext> eval_lut_bin_decomp(ciphertext *ct_in, rotation_poly lut);
-
-    // Perform binary composition of the input ciphertexts, eval the LUT, and return binary decomposed value
-    // Same comment as above....
-    //std::vector<ciphertext> bin_comp_eval_lut_bin_decomp(std::vector<ciphertext> ct_vec, rotation_poly lut);
-
+  
     // Evaluates scalar + Sum_i(scalars[i] * ct_vec[i]) 
     ciphertext eval_affine_function(std::vector<ciphertext> ct_vec, std::vector<long> scalars, long scalar);
-  
- 
-    //void temp_test(long (*f)(long message), lwe_ct *ct);
+   
 
 private:
  

@@ -2,61 +2,59 @@
 
 gadget::gadget(){}
 
+
+gadget::~gadget(){
+    if(is_precomputed){
+        delete[] q_decomp;
+        delete[] sigmas;
+        delete[] l;
+        delete[] h;
+        delete[] d;
+        delete[] inv_l;
+        delete[] rand_sigmas;
+    }
+}
+
 gadget::gadget(int N, long Q, int basis, gadget_type type){
     this->type = type;
     this->N = N;
     this->Q = Q;
-    this->basis = basis;
-
-
-    gadget::setup_type_specific_parameters();
-
-    /*
-    this->k = 1;
-    // Compute the k, parameter (remind k is such that 2**k = basis)  
-    // meaning that for now we support only power of two basis
-    // TODO: Compute these values with functions from utils
-    long temp = 2;
-    while(temp < basis){
-        temp *= 2;
-        this->k++;
-    }
-    this->ell = 1;
-    temp = basis; 
-    while(temp < Q){
-        temp *= basis;
-        this->ell++;
-    }  
-    */
+    this->basis = basis; 
+    setup_type_specific_parameters(); 
 }
-
-
-
+ 
 
 gadget::gadget(int N, long Q, int basis, double stddev, gadget_type type){
     this->type = type;
     this->stddev = stddev;
-    this->rand = sampler(0.0, stddev);
     this->N = N;
     this->Q = Q;
-    this->basis = basis;
- 
-    gadget::setup_type_specific_parameters();
-    /*
-    if(!utils::is_power_of(basis, 2)){
-        std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
-    }
-    this->k = utils::power_times(basis, 2);
-    this->ell = utils::power_times(Q, basis);
-    if(utils::is_power_of(Q, basis)){
-        is_power_of_base_modulus = true;
-    }else{ 
-        is_power_of_base_modulus = false;
-        precompute_constants_for_general_modulus_gaussian_sampling();
-    }  
-    */
+    this->basis = basis; 
+    setup_type_specific_parameters(); 
 }
 
+
+gadget::gadget(const gadget &other){ 
+    this->type = other.type; 
+    this->stddev = other.stddev; 
+    this->N = other.N; 
+    this->Q = other.Q;
+    this->basis = other.basis; 
+    setup_type_specific_parameters();  
+} 
+gadget& gadget::operator=(const gadget other){
+    if (this == &other)
+    {
+        return *this;
+    } 
+    this->type = other.type;
+    this->stddev = other.stddev;
+    this->N = other.N;
+    this->Q = other.Q;
+    this->basis = other.basis;  
+    setup_type_specific_parameters();  
+    return *this;
+} 
 
 void gadget::setup_type_specific_parameters(){
     if(this->type == signed_decomposition_gadget){
@@ -75,7 +73,8 @@ void gadget::setup_type_specific_parameters(){
             temp *= basis;
             this->ell++;
         }  
-    }else if(this->type == discrete_gaussian_gadget){
+    }else if(this->type == discrete_gaussian_gadget){ 
+        this->rand = sampler(0.0, this->stddev); 
         if(!utils::is_power_of(basis, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
@@ -235,6 +234,8 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 
   
 void gadget::gaussian_sample_general_modulus(long **out, long* in){   
+    // TODO: All these values should be initialized earlier
+    // TODO: May it make sense to compute everything over int and float, but convert at the end when setting the out table?
     long* p = new long[ell];
     double* c = new double[ell];
     long* u = new long[ell]; 
@@ -272,7 +273,8 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 
  
         // Additional stuff for base decompositon
-        long mask = basis-1;
+        // TODO: The masks and shifts can be precomputed
+        long mask = basis-1; 
         long shift; 
         // Start base_decomposition(u, in[k]);  
         for(long i = 0; i < ell; ++i){
@@ -389,8 +391,7 @@ long gadget::sample_Zt(double sigma, double center){
 
 void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){ 
     q_decomp = new long[ell];
-    gadget::base_decomposition(q_decomp, Q);
-     
+    gadget::base_decomposition(q_decomp, Q); 
     sigma = stddev/(double)(basis + 1); 
     rand_sigma = sampler(0.0, stddev);  
     sigmas = new double[ell];
@@ -405,19 +406,15 @@ void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
     d = new double[ell];
     d[0] = (double)q_decomp[0]/(double)basis;
 
-     
-     
     for(int i = 1; i < ell; ++i){
         l[i] = sqrt(basis + (double)basis/(double)(ell-i)); 
         h[i] = sqrt(basis - (double)basis/(double)(ell-i));
         d[i] = (d[i-1] + (double)q_decomp[i])/(double)basis;
         inv_l[i] = 1.0/l[i];
          
-
         sigmas[i] = sigma/l[i];   
          
-        rand_sigmas[i] = sampler(0.0, sigmas[i]);
-        
+        rand_sigmas[i] = sampler(0.0, sigmas[i]); 
     }
 
     d_stddev = sigma / d[ell-1];  
@@ -425,7 +422,8 @@ void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
      
     inv_basis = (double)1.0/basis; 
     two_times_basis_plus_one = 2 * basis + 1;
- 
+
+    is_precomputed = true;
 }
 
 
