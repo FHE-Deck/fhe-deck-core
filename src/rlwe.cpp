@@ -24,11 +24,11 @@ rlwe_sk::rlwe_sk(rlwe_param param, polynomial_arithmetic sk_arithmetic){
     this->sk_arithmetic = sk_arithmetic;
 
     if(param.key_type == uniform){
-        param.rand.uniform_array(s, param.N, param.Q);
+        rand.uniform_array(s, param.N, param.Q);
     }else if(param.key_type == ternary){
-        param.rand.ternary_array(s, param.N);
+        rand.ternary_array(s, param.N);
     }else if(param.key_type == ternary){
-        param.rand.binary_array(s, param.N);
+        rand.binary_array(s, param.N);
     } 
     set_arithmetic_specific_variables(); 
     this->is_init = true;
@@ -82,10 +82,11 @@ rlwe_sk& rlwe_sk::operator=(const rlwe_sk other){
     return *this;
 }
  
-void rlwe_sk::set_arithmetic_specific_variables(){
+void rlwe_sk::set_arithmetic_specific_variables(){ 
     if(sk_arithmetic == double_fft){
-        eval_s = new fftw_complex[param.engine.plan_size]; 
-        param.engine.to_eval_form_scale(eval_s, s, 2.0);
+        engine = fft_plan(param.ring, param.N, false);  
+        eval_s = new fftw_complex[engine.plan_size]; 
+        engine.to_eval_form_scale(eval_s, s, 2.0);
         this->is_fft_init = true;
     }else if(sk_arithmetic == hexl_ntt){ 
         ntt = intel::hexl::NTT(param.N, param.Q);
@@ -102,16 +103,16 @@ void rlwe_sk::set_arithmetic_specific_variables(){
     }
 }
 
-rlwe_ct rlwe_sk::encrypt(long* m){ 
+rlwe_ct rlwe_sk::encrypt(long* m){  
     rlwe_ct out(param);  
-    param.rand.uniform_array(out.a, param.N, param.Q); 
+    rand.uniform_array(out.a, param.N, param.Q); 
     long* e = new long[param.N];
-    param.rand.gaussian_array(e, param.N, 0.0, param.stddev);    
+    rand.gaussian_array(e, param.N, 0.0, param.stddev);    
     if(sk_arithmetic == double_fft){ 
-        fftw_complex *eval_b = new fftw_complex[param.engine.plan_size];  
-        param.engine.to_eval_form(eval_b, out.a); 
-        param.engine.mul_eval_form(eval_b, eval_s, eval_b); 
-        param.engine.to_coef_form(out.b, eval_b);    
+        fftw_complex *eval_b = new fftw_complex[engine.plan_size];  
+        engine.to_eval_form(eval_b, out.a); 
+        engine.mul_eval_form(eval_b, eval_s, eval_b); 
+        engine.to_coef_form(out.b, eval_b);    
         for(int i = 0; i < param.N; ++i){
             out.b[i] = utils::integer_mod_form(out.b[i] + e[i] + m[i], param.Q);
         } 
@@ -150,11 +151,11 @@ rlwe_ct rlwe_sk::scale_and_encrypt(long* m, int t){
 
 void rlwe_sk::phase(long *phase, const rlwe_ct *ct){  
     if(sk_arithmetic == double_fft){   
-        fftw_complex *eval_a = new fftw_complex[param.engine.plan_size]; 
-        param.engine.to_eval_form(eval_a, ct->a);
-        param.engine.mul_eval_form(eval_a, eval_s, eval_a);
+        fftw_complex *eval_a = new fftw_complex[engine.plan_size]; 
+        engine.to_eval_form(eval_a, ct->a);
+        engine.mul_eval_form(eval_a, eval_s, eval_a);
         long *as = new long[param.N];
-        param.engine.to_coef_form(as, eval_a);
+        engine.to_coef_form(as, eval_a);
         for(int i = 0; i < param.N; ++i){
             phase[i] = (ct->b[i] - as[i]) % param.Q;
         }  
@@ -239,8 +240,7 @@ rlwe_gadget_ct gadget_rlwe_sk::gadget_encrypt(long* msg){
         for(int j=0; j < gadget_param.param.N; ++j){
             msg_x_sk[j] = (msg_x_sk[j] * gadget_param.basis) % gadget_param.param.Q;
         } 
-        // Encrypt - msg * sk * basis**i 
- 
+        // Encrypt - msg * sk * basis**i  
         out.gadget_ct_sk[i] = sk.encrypt(msg_x_sk);  
     } 
     delete(msg_cpy);

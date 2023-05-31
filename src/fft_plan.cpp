@@ -25,6 +25,7 @@ fft_plan::~fft_plan(){
 }
 
  
+ 
 fft_plan::fft_plan(ring_type ring, int N){   
     this->ring = ring;
     this->N = N; 
@@ -77,6 +78,18 @@ void fft_plan::init_tables(){
     } 
     this->is_init = true;
 }
+
+
+
+fftw_complex* fft_plan::init_fft_poly(){
+    return new fftw_complex[plan_size]; 
+}
+
+fftwl_complex* fft_plan::init_fft_poly_l(){
+    return new fftwl_complex[plan_size]; 
+}
+  
+
 
 void fft_plan::to_eval_form(fftw_complex* eval_form, long *poly){ 
     for(int i = 0; i < N; ++i){ 

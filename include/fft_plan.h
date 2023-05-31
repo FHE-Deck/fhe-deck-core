@@ -40,6 +40,10 @@ class fft_plan{
     fft_plan& operator=(const fft_plan other);
 
     ~fft_plan();
+
+    fftw_complex* init_fft_poly();
+
+    fftwl_complex* init_fft_poly_l();
  
     void to_eval_form(fftw_complex* eval_form, long *poly); 
 

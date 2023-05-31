@@ -37,17 +37,43 @@ class gadget{
     double d_stddev;
     sampler rand_d_stddev;
     // Tail bound parameter
-    // TODO: For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
+    // For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
     long tail_bound;
     double inv_basis;
     double* inv_l;
-    long two_times_basis_plus_one;
+    long two_times_basis_plus_one;  
+    // Precomputed temp variables for general modulus Gaussian Sampling
+    long* p;
+    double* c;
+    long* u;
+    long* z;
+    // Stuff for perturb_B
+    double* c_pert;
+    long* z_pert;
 
     bool is_precomputed = false;
+
+
+
+    // Precomputed temp arrays for determinitic decomp 
+    bool is_deter_temp_init = false;
+    long* signed_poly; 
+    long* sign;
+
+
+    // Precomputed temp variables for power_of_two Gaussian Sampling   
+    bool is_power_of_basis_gaussian_temp_init = false;
+    long* gaussians;
+    long mask; 
+    long shift; 
+    long prev_gauss;
+
+
+    
  
     ~gadget();
 
-    gadget();
+    gadget() = default;
 
     gadget(int N, long Q, int basis, gadget_type type);
 
@@ -89,6 +115,8 @@ class gadget{
     void sample_D(long* out, double* c);
 
     long sample_Zt(double stddev, double center);
+
+    void precompute_constants_for_power_of_base_gaussian_sampling();
 
     void precompute_constants_for_general_modulus_gaussian_sampling();
 

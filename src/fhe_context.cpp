@@ -15,16 +15,14 @@
     }
  }
 
-void fhe_context::generate_context(ntrunium_named_param name){ 
-        //scheme_type = NTRUNIUM;
+void fhe_context::generate_context(ntrunium_named_param name){  
         ntrunium_par = ntrunium_named_param_generator(name);  
         ntrunium_par.generate_bootstapping_keys();   
         is_ntrunium = true;
 }
  
 
-void fhe_context::generate_context(rlwe_hom_acc_scheme_named_param name){ 
-    //scheme_type = FHEW;
+void fhe_context::generate_context(rlwe_hom_acc_scheme_named_param name){  
     rlwe_hom_acc_scheme_named_param_generator rlwe_hom_acc_par = rlwe_hom_acc_scheme_named_param_generator(name);
     rlwe_hom_acc_par.generate_bootstapping_keys(); 
     tfhe_boot_pk = rlwe_hom_acc_par.boot;
@@ -234,10 +232,8 @@ ciphertext fhe_context::eval_lut(ciphertext *ct_in, rotation_poly lut){
     if(is_ntrunium){
         std::cout << "TODO: NTRUnium not supported yet!" << std::endl;
         throw 0;
-    }else if(is_tfhe && ct_in->is_lwe_ct){   
-        //lwe_ct ct_cast(dynamic_cast<lwe_ct*>(ciphertext)); 
-        lwe_ct ct_out(tfhe_boot_pk->extract_lwe_par);
-        //ct_out->pe = ciphertext->pe; 
+    }else if(is_tfhe && ct_in->is_lwe_ct){    
+        lwe_ct ct_out(tfhe_boot_pk->extract_lwe_par); 
         if(ct_in->encoding.type == full_domain){ 
             tfhe_boot_pk->functional_bootstrap(ct_out.ct,  lut.lookup_polynomial, ct_in->lwe_c->ct, deter, ct_in->encoding.plaintext_space);
         }else if(ct_in->encoding.type == partial_domain){

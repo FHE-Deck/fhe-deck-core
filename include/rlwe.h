@@ -13,13 +13,17 @@ class rlwe_sk{
     bool is_init = false;
     polynomial_arithmetic sk_arithmetic;
 
-    intel::hexl::NTT ntt; 
+    sampler rand;
 
+    intel::hexl::NTT ntt; 
+    bool is_ntt_init = false;
+    long *eval_s_ntt;
+
+
+    fft_plan engine; 
     bool is_fft_init = false;
     fftw_complex *eval_s;
     
-    bool is_ntt_init = false;
-    long *eval_s_ntt;
 
     ~rlwe_sk();
 

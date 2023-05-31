@@ -1,7 +1,5 @@
 #include "../include/gadget.h"
-
-gadget::gadget(){}
-
+ 
 
 gadget::~gadget(){
     if(is_precomputed){
@@ -12,6 +10,21 @@ gadget::~gadget(){
         delete[] d;
         delete[] inv_l;
         delete[] rand_sigmas;
+        // Free the temporary tables:
+        delete[] p;
+        delete[] c;
+        delete[] u; 
+        delete[] z;
+
+        delete[] c_pert;
+        delete[] z_pert; 
+    }
+    if(is_deter_temp_init){
+        delete[] signed_poly; 
+        delete[] sign;
+    }
+    if(is_power_of_basis_gaussian_temp_init){
+        delete[] gaussians;
     }
 }
 
@@ -73,6 +86,10 @@ void gadget::setup_type_specific_parameters(){
             temp *= basis;
             this->ell++;
         }  
+        // Initialize temporary arrays:
+        signed_poly = new long[N]; 
+        sign = new long[N]; 
+        is_deter_temp_init = true;
     }else if(this->type == discrete_gaussian_gadget){ 
         this->rand = sampler(0.0, this->stddev); 
         if(!utils::is_power_of(basis, 2)){
@@ -82,6 +99,7 @@ void gadget::setup_type_specific_parameters(){
         this->ell = utils::power_times(Q, basis);
         if(utils::is_power_of(Q, basis)){
             is_power_of_base_modulus = true;
+            precompute_constants_for_power_of_base_gaussian_sampling();
         }else{ 
             is_power_of_base_modulus = false;
             precompute_constants_for_general_modulus_gaussian_sampling();
@@ -156,9 +174,7 @@ void gadget::decomp(long **d_ct, long* poly){
 
 
  
-void gadget::signed_decomp(long **d_ct, long* poly){
-    long* signed_poly = new long[N]; 
-    long* sign = new long[N];
+void gadget::signed_decomp(long **d_ct, long* poly){ 
     utils::array_signed_form(signed_poly, poly, N, Q); 
     long half = Q/2;
     for(int i = 0; i < N; ++i){  
@@ -175,9 +191,7 @@ void gadget::signed_decomp(long **d_ct, long* poly){
         for(int i = 0; i < N; ++i){
             d_ct[j][i] = d_ct[j][i] * sign[i];
         }
-    }
-    delete[] sign;
-    delete[] signed_poly;
+    } 
 }
 
  
@@ -193,13 +207,10 @@ void gadget::gaussian_sample(long **out, long* in){
 
 
 void gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
-    long mask = basis-1; 
-    long shift;  
-    long* gaussians = new long[N];
+    mask = basis-1;  
     for(long j = 0; j < N; ++j){
         gaussians[j] = 0;
-    }
-    long prev_gauss;
+    }  
     for(long i = 0; i < ell; ++i){
         shift = k*i;
         for(long j=0; j < N; ++j){
@@ -214,8 +225,6 @@ void gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
         }
         mask = mask << k;
     }
-    delete[] gaussians; 
-    
 }
 
 /*
@@ -234,16 +243,8 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 
   
 void gadget::gaussian_sample_general_modulus(long **out, long* in){   
-    // TODO: All these values should be initialized earlier
-    // TODO: May it make sense to compute everything over int and float, but convert at the end when setting the out table?
-    long* p = new long[ell];
-    double* c = new double[ell];
-    long* u = new long[ell]; 
-    long* z = new long[ell];
+ 
 
-    // Stuff for perturb_B
-    double* c_pert = new double[ell];
-    long* z_pert = new long[ell+1];
     long beta;
  
     long integer;
@@ -312,13 +313,7 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
         } 
         out[ell-1][k] =  q_decomp[ell-1] * out_ell_minus_one -  z[ell-2] + u[ell-1];  
     } 
-    delete[] p;
-    delete[] c;
-    delete[] u; 
-    delete[] z;
-
-    delete[] c_pert;
-    delete[] z_pert; 
+ 
 } 
 
 
@@ -389,6 +384,15 @@ long gadget::sample_Zt(double sigma, double center){
     return rand.gaussian(center, sigma);  
 }
 
+void gadget::precompute_constants_for_power_of_base_gaussian_sampling(){
+    is_power_of_basis_gaussian_temp_init = true;
+    mask = basis-1;  
+    gaussians = new long[N];
+    for(long j = 0; j < N; ++j){
+        gaussians[j] = 0;
+    }  
+}
+
 void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){ 
     q_decomp = new long[ell];
     gadget::base_decomposition(q_decomp, Q); 
@@ -422,6 +426,16 @@ void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
      
     inv_basis = (double)1.0/basis; 
     two_times_basis_plus_one = 2 * basis + 1;
+
+
+    // Temporary variables:
+    p = new long[ell];
+    c = new double[ell];
+    u = new long[ell]; 
+    z = new long[ell]; 
+    // Stuff for perturb_B
+    c_pert = new double[ell];
+    z_pert = new long[ell+1];
 
     is_precomputed = true;
 }

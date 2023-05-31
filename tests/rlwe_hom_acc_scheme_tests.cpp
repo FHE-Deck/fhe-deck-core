@@ -431,7 +431,7 @@ int main(){
  
     //blind_rotation_test(10, rlwe_hom_acc_scheme_C_11_NTT, simul); 
     
-    //bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
+    bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT, simul); 
 
     //bootstrap_test(5, rlwe_hom_acc_scheme_C_11_NTT_flood, deter); 
 

@@ -15,22 +15,14 @@ class rlwe_param{
  
     ring_type ring;
     int N;
-    sampler rand;
+    //sampler rand;
     double stddev;
     long Q;
     modulus_type mod_type;
     key_dist key_type;
 
     polynomial_arithmetic arithmetic = ntl;
-
-    // TODO: Perhaps we should have a separate engine in each gadget ciphertext for example instead of each rlwe_param?
-    // Not sure. Need to think about it.  
-    fft_plan engine; 
-  
-    intel::hexl::NTT ntt; 
-
-    long mask;
- 
+    
     rlwe_param() = default; 
        
     rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic);
@@ -38,20 +30,12 @@ class rlwe_param{
     rlwe_param(const rlwe_param &c);
 
     rlwe_param& operator=(const rlwe_param other);
-   
-    void set_computing_engine();
+    
 
     long* init_poly();
 
     long* init_zero_poly();
-
-   // TODO: These FFT poly perhaps should be initialized by fft_plan?
-    fftw_complex* init_fft_poly();
-
-    fftwl_complex* init_fft_poly_l();
-
-
-    
+   
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -61,8 +45,7 @@ class rlwe_param{
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(ring, N, stddev, Q, mod_type, key_type, arithmetic);  
-      set_computing_engine(); 
+      ar(ring, N, stddev, Q, mod_type, key_type, arithmetic);   
     } 
 
 
@@ -81,6 +64,10 @@ class rlwe_ct{
     long mask;
 
     bool is_init = false;
+
+    fft_plan engine; 
+  
+    intel::hexl::NTT ntt; 
   
     rlwe_ct();
 
@@ -112,7 +99,9 @@ class rlwe_ct{
  
 
    private:
-  
+
+    void set_computing_engine();
+
     void add(long *out, long *in_1, long *in_2);
 
     long* add(long *in_1, long *in_2);
@@ -198,7 +187,8 @@ class rlwe_gadget_ct{
   bool is_init = false;
   rlwe_ct *gadget_ct;
   rlwe_ct *gadget_ct_sk;
-  
+
+  fft_plan engine;
   fftw_complex **eval_a;
   fftw_complex **eval_b;
 
@@ -212,6 +202,14 @@ class rlwe_gadget_ct{
 
   long **ntt_eval_a_sk;
   long **ntt_eval_b_sk;
+
+
+  // Temorary arrays for gadget decomposition
+  long** simul_ct_a_dec;
+  long** simul_ct_b_dec;
+  long** deter_ct_a_dec;
+  long** deter_ct_b_dec;
+
   
   // Mask for power of two modulus reduction
   long mask;
@@ -240,15 +238,22 @@ class rlwe_gadget_ct{
   void to_eval();
 
   void to_coef();
- 
- 
- 
- 
+  
   private:
 
   // Temporary variable needed for multiplication. Its initialized in already in the constructors because initialization is expensive
   rlwe_ct out_minus;
 
+  // Temporary arrays for ntt multiplication
+  long *ntt_multisum_eval;
+  long *ntt_prod;
+
+  // Temporary arrays for fft multiplication
+  fftw_complex *fft_multisum_eval;
+  fftw_complex *fft_prod;   
+ 
+  void set_computing_engine();
+ 
   void init_fft_eval();
 
   void delete_fft_eval();

@@ -37,6 +37,7 @@ rlwe_ct::rlwe_ct(const rlwe_ct &other){
         b[i] = other.b[i];
     }
     this->is_init = true;
+    set_computing_engine();
 }
  
 rlwe_ct& rlwe_ct::operator=(const rlwe_ct other){  
@@ -57,15 +58,33 @@ rlwe_ct& rlwe_ct::operator=(const rlwe_ct other){
             a[i] = other.a[i];
             b[i] = other.b[i];
         }
-        this->is_init = true;
+        this->is_init = true; 
+        set_computing_engine();
     }else{
         throw 0;
     }
     return *this;
 }
 
-void rlwe_ct::negacyclic_rotate(rlwe_ct *out, int rot){
-    // Like rotate by the first rot coefficients change their sign.  
+
+
+void rlwe_ct::set_computing_engine(){
+    if(param.arithmetic == double_fft){ 
+        engine = fft_plan(param.ring, param.N, false);   
+    }else if(param.arithmetic == long_double_fft){
+        engine = fft_plan(param.ring, param.N, true);   
+    }
+    else if(param.arithmetic == hexl_ntt){
+        ntt = intel::hexl::NTT(param.N, param.Q);
+    }else if(param.arithmetic == ntl){
+        // Do nothing here
+    }else{
+        throw std::exception();
+    }
+}
+
+
+void rlwe_ct::negacyclic_rotate(rlwe_ct *out, int rot){ 
     utils::negacyclic_rotate_poly(out->a, a, param.N, rot);
     utils::negacyclic_rotate_poly(out->b, b, param.N, rot);  
 }
@@ -166,73 +185,64 @@ void rlwe_ct::mul(long *out, long *in_1, long *in_2){
 }
 
 void rlwe_ct::mul_fft(long *out, long* in_1, long *in_2){
-    fftw_complex *eval_in_1 = new fftw_complex[param.engine.plan_size];  
-    fftw_complex *eval_in_2 = new fftw_complex[param.engine.plan_size];  
-    fftw_complex *eval_out = new fftw_complex[param.engine.plan_size];
-    param.engine.to_eval_form(eval_in_1, in_1); 
-    param.engine.to_eval_form_scale(eval_in_2, in_2, 2.0); 
-    param.engine.mul_eval_form(eval_out, eval_in_1, eval_in_2); 
-    param.engine.to_coef_form(out, eval_out);    
+    fftw_complex *eval_in_1 = new fftw_complex[engine.plan_size];  
+    fftw_complex *eval_in_2 = new fftw_complex[engine.plan_size];  
+    fftw_complex *eval_out = new fftw_complex[engine.plan_size];
+    engine.to_eval_form(eval_in_1, in_1); 
+    engine.to_eval_form_scale(eval_in_2, in_2, 2.0); 
+    engine.mul_eval_form(eval_out, eval_in_1, eval_in_2); 
+    engine.to_coef_form(out, eval_out);    
     delete[] eval_in_1;
     delete[] eval_in_2;
     delete[] eval_out;
 }
 
 
-void rlwe_ct::mul_ntt(long *out, long *in_1, long *in_2){
-   
+void rlwe_ct::mul_ntt(long *out, long *in_1, long *in_2){ 
     long* eval_in_1 = param.init_poly();  
     long* eval_in_2 = param.init_poly();  
     long* eval_out = param.init_poly();  
-    param.ntt.ComputeForward((uint64_t*) eval_in_1, (uint64_t*) in_1, 1, 1); 
-    param.ntt.ComputeForward((uint64_t*) eval_in_2, (uint64_t*) in_2, 1, 1); 
+    ntt.ComputeForward((uint64_t*) eval_in_1, (uint64_t*) in_1, 1, 1); 
+    ntt.ComputeForward((uint64_t*) eval_in_2, (uint64_t*) in_2, 1, 1); 
     intel::hexl::EltwiseMultMod((uint64_t*) eval_out, (uint64_t*) eval_in_1, (uint64_t*) eval_in_2, param.N, param.Q, 1);
-    param.ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  eval_out, 1, 1); 
+    ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  eval_out, 1, 1); 
     delete[] eval_in_1;
     delete[] eval_in_2;
-    delete[] eval_out;
-    
+    delete[] eval_out; 
 }
- 
- 
+  
      
   
 rlwe_param::rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic){
     this->Q = Q;
     this->mod_type = mod_type;
-    this->key_type = key_type;
-    // TODO: Actually the mask is useless when Q is not a power of two
-    this->mask = Q-1;
+    this->key_type = key_type; 
     this->N = N; 
     this->stddev = stddev; 
     this->ring = ring;  
     this->arithmetic = arithmetic;
-    set_computing_engine(); 
+    //set_computing_engine(); 
 }
         
 
 rlwe_param::rlwe_param(const rlwe_param &other){
     this->Q = other.Q;
     this->mod_type = other.mod_type;
-    this->key_type = other.key_type; 
-    this->mask = other.Q-1;
+    this->key_type = other.key_type;  
     this->N = other.N; 
     this->stddev = other.stddev; 
     this->ring = other.ring;  
-    this->arithmetic = other.arithmetic;
-    set_computing_engine(); 
+    this->arithmetic = other.arithmetic; 
 }
 
 rlwe_param& rlwe_param::operator=(const rlwe_param other){
     this->Q = other.Q;
     this->mod_type = other.mod_type;
-    this->key_type = other.key_type; 
-    this->mask = other.Q-1;
+    this->key_type = other.key_type;  
     this->N = other.N; 
     this->stddev = other.stddev; 
     this->ring = other.ring;  
-    this->arithmetic = other.arithmetic;
-    set_computing_engine();
+    this->arithmetic = other.arithmetic; 
     return *this;
 }
 
@@ -248,30 +258,6 @@ long* rlwe_param::init_zero_poly(){
       }
       return out;
 }
-
-void rlwe_param::set_computing_engine(){
-    if(arithmetic == double_fft){ 
-        engine = fft_plan(ring, N, false);   
-    }else if(arithmetic == long_double_fft){
-        engine = fft_plan(ring, N, true);   
-    }
-    else if(arithmetic == hexl_ntt){
-        ntt = intel::hexl::NTT(N, Q);
-    }else if(arithmetic == ntl){
-        // Do nothing here
-    }else{
-        throw std::exception();
-    }
-}
-
-fftw_complex* rlwe_param::init_fft_poly(){
-    return new fftw_complex[engine.plan_size]; 
-}
-
-fftwl_complex* rlwe_param::init_fft_poly_l(){
-    return new fftwl_complex[engine.plan_size]; 
-}
- 
  
 
 rlwe_gadget_ct::rlwe_gadget_ct(rlwe_gadget_param gadget_param){  
@@ -283,13 +269,12 @@ rlwe_gadget_ct::rlwe_gadget_ct(rlwe_gadget_param gadget_param){
         gadget_ct_sk[i] = rlwe_ct(gadget_param.param);
     }    
     out_minus = rlwe_ct(gadget_param.param);
+    set_computing_engine();
     if(gadget_param.param.arithmetic == double_fft){
         init_fft_eval();
     }else if(gadget_param.param.arithmetic == hexl_ntt){ 
-        init_ntt_eval();
-        this->ntt = intel::hexl::NTT(gadget_param.param.N, gadget_param.param.Q);
-    }else{
-        // TODO: Actually NTL Should work.... Check that later
+        init_ntt_eval(); 
+    }else{ 
         std::cout << "Arithmetic Currently Not Supported" << std::endl;
     }
     this->is_init = true;
@@ -308,6 +293,22 @@ rlwe_gadget_ct::~rlwe_gadget_ct(){
     }else{
         std::cout << "Arithmetic Currently Not Supported" << std::endl;
     }  
+
+    // Delete the temporary arrays for gadget decomposition
+    for(int i = 0; i < gadget_param.ell; ++i){  
+        delete[] simul_ct_a_dec[i];
+        delete[] simul_ct_b_dec[i];
+    }  
+    delete[] simul_ct_a_dec;
+    delete[] simul_ct_b_dec;  
+    // The same for deter mode
+    for(int i = 0; i < gadget_param.ell_any; ++i){  
+        delete[] deter_ct_a_dec[i];
+        delete[] deter_ct_b_dec[i];
+    }  
+    delete[] deter_ct_a_dec;
+    delete[] deter_ct_b_dec;  
+ 
 }
 
 
@@ -319,11 +320,11 @@ rlwe_gadget_ct::rlwe_gadget_ct(const rlwe_gadget_ct& other){
     if(is_init == false){ 
         gadget_ct = new rlwe_ct[gadget_param.ell_max];
         gadget_ct_sk = new rlwe_ct[gadget_param.ell_max];
+        set_computing_engine();
         if(gadget_param.param.arithmetic == double_fft){
             init_fft_eval();
         }else if(gadget_param.param.arithmetic == hexl_ntt){
-            init_ntt_eval();
-            this->ntt = intel::hexl::NTT(gadget_param.param.N, gadget_param.param.Q);
+            init_ntt_eval(); 
         }else{
             std::cout << "Arithmetic Currently Not Supported" << std::endl;
         }
@@ -333,7 +334,7 @@ rlwe_gadget_ct::rlwe_gadget_ct(const rlwe_gadget_ct& other){
         gadget_ct[i] = other.gadget_ct[i];
         gadget_ct_sk[i] =  other.gadget_ct_sk[i]; 
         if(gadget_param.param.arithmetic == double_fft){
-            for(int j = 0; j < gadget_param.param.engine.plan_size; ++j){
+            for(int j = 0; j < engine.plan_size; ++j){
                 eval_a[i][j][0] = other.eval_a[i][j][0];
                 eval_a[i][j][1] = other.eval_a[i][j][1];
                 eval_b[i][j][0] = other.eval_b[i][j][0];
@@ -362,21 +363,21 @@ rlwe_gadget_ct& rlwe_gadget_ct::operator=(const rlwe_gadget_ct other){
     if(is_init == false){ 
         gadget_ct = new rlwe_ct[gadget_param.ell_max];
         gadget_ct_sk = new rlwe_ct[gadget_param.ell_max];
+        set_computing_engine();
         if(gadget_param.param.arithmetic == double_fft){
             init_fft_eval();
         }else if(gadget_param.param.arithmetic == hexl_ntt){
-            init_ntt_eval();
-            this->ntt = intel::hexl::NTT(gadget_param.param.N, gadget_param.param.Q);
+            init_ntt_eval(); 
         }else{
             std::cout << "Arithmetic Currently Not Supported" << std::endl;
         }
-        is_init = true;  
+        is_init = true;   
     }  
     for(int i = 0; i < gadget_param.ell_max; ++i){  
         gadget_ct[i] = other.gadget_ct[i];
         gadget_ct_sk[i] =  other.gadget_ct_sk[i]; 
         if(gadget_param.param.arithmetic == double_fft){
-            for(int j = 0; j < gadget_param.param.engine.plan_size; ++j){
+            for(int j = 0; j < engine.plan_size; ++j){
                 eval_a[i][j][0] = other.eval_a[i][j][0];
                 eval_a[i][j][1] = other.eval_a[i][j][1];
                 eval_b[i][j][0] = other.eval_b[i][j][0];
@@ -421,144 +422,142 @@ void rlwe_gadget_ct::to_coef(){
 
  
  
-void rlwe_gadget_ct::mul(rlwe_ct *out, const rlwe_ct *ct, gadget_mul_mode mode){    
-    long** ct_a_dec;
-    long** ct_b_dec;
-    int ell_delete;
+void rlwe_gadget_ct::mul(rlwe_ct *out, const rlwe_ct *ct, gadget_mul_mode mode){      
     // Depending on whether we do randomized or deterministic:
     // We use either decompose, or gaussian sample.
-    if(mode == simul){   
-        ell_delete = gadget_param.ell;
-        ct_a_dec = gadget_param.rand_gadget.sample(ct->a);
-        ct_b_dec = gadget_param.rand_gadget.sample(ct->b); 
+    if(mode == simul){     
+
+        //simul_ell_delete = gadget_param.ell;
+        gadget_param.rand_gadget.sample(simul_ct_a_dec, ct->a);
+        gadget_param.rand_gadget.sample(simul_ct_b_dec, ct->b); 
         if(gadget_param.param.arithmetic == double_fft){ 
-            multisum_fft(out->b, ct_b_dec, eval_b, gadget_param.ell, gadget_param.w);
-            multisum_fft(out->a, ct_b_dec, eval_a, gadget_param.ell, gadget_param.w);
-            multisum_fft(out_minus.b, ct_a_dec, eval_b_sk, gadget_param.ell, gadget_param.w);
-            multisum_fft(out_minus.a, ct_a_dec, eval_a_sk, gadget_param.ell, gadget_param.w);
+            multisum_fft(out->b, simul_ct_b_dec, eval_b, gadget_param.ell, gadget_param.w);
+            multisum_fft(out->a, simul_ct_b_dec, eval_a, gadget_param.ell, gadget_param.w);
+            multisum_fft(out_minus.b, simul_ct_a_dec, eval_b_sk, gadget_param.ell, gadget_param.w);
+            multisum_fft(out_minus.a, simul_ct_a_dec, eval_a_sk, gadget_param.ell, gadget_param.w);
         }else if(gadget_param.param.arithmetic == hexl_ntt){ 
-            multisum_ntt(out->b, ct_b_dec, ntt_eval_b, gadget_param.ell, gadget_param.w);
-            multisum_ntt(out->a, ct_b_dec, ntt_eval_a, gadget_param.ell, gadget_param.w);
-            multisum_ntt(out_minus.b, ct_a_dec, ntt_eval_b_sk, gadget_param.ell, gadget_param.w);
-            multisum_ntt(out_minus.a, ct_a_dec, ntt_eval_a_sk, gadget_param.ell, gadget_param.w);
+            multisum_ntt(out->b, simul_ct_b_dec, ntt_eval_b, gadget_param.ell, gadget_param.w);
+            multisum_ntt(out->a, simul_ct_b_dec, ntt_eval_a, gadget_param.ell, gadget_param.w);
+            multisum_ntt(out_minus.b, simul_ct_a_dec, ntt_eval_b_sk, gadget_param.ell, gadget_param.w);
+            multisum_ntt(out_minus.a, simul_ct_a_dec, ntt_eval_a_sk, gadget_param.ell, gadget_param.w);
         }else{
             std::cout << "Arithmetic not supported." << std::endl;
-        }
-        
-    }else if(mode == deter){ 
-        ell_delete = gadget_param.ell_any;
+        }  
+    }else if(mode == deter){  
+        gadget_param.ell_any;
         // Signed decomposition
-        ct_a_dec = gadget_param.deter_gadget.sample(ct->a);
-        ct_b_dec = gadget_param.deter_gadget.sample(ct->b); 
+        gadget_param.deter_gadget.sample(deter_ct_a_dec, ct->a);
+        gadget_param.deter_gadget.sample(deter_ct_b_dec, ct->b); 
         if(gadget_param.param.arithmetic == double_fft){  
-            multisum_fft(out->b, ct_b_dec, eval_b, gadget_param.ell_any, gadget_param.w_any);
-            multisum_fft(out->a, ct_b_dec, eval_a, gadget_param.ell_any, gadget_param.w_any);
-            multisum_fft(out_minus.b, ct_a_dec, eval_b_sk, gadget_param.ell_any, gadget_param.w_any);
-            multisum_fft(out_minus.a, ct_a_dec, eval_a_sk, gadget_param.ell_any, gadget_param.w_any); 
+            multisum_fft(out->b, deter_ct_b_dec, eval_b, gadget_param.ell_any, gadget_param.w_any);
+            multisum_fft(out->a, deter_ct_b_dec, eval_a, gadget_param.ell_any, gadget_param.w_any);
+            multisum_fft(out_minus.b, deter_ct_a_dec, eval_b_sk, gadget_param.ell_any, gadget_param.w_any);
+            multisum_fft(out_minus.a, deter_ct_a_dec, eval_a_sk, gadget_param.ell_any, gadget_param.w_any); 
         }else if(gadget_param.param.arithmetic == hexl_ntt){  
-            multisum_ntt(out->b, ct_b_dec, ntt_eval_b, gadget_param.ell_any, gadget_param.w_any);
-            multisum_ntt(out->a, ct_b_dec, ntt_eval_a, gadget_param.ell_any, gadget_param.w_any);
-            multisum_ntt(out_minus.b, ct_a_dec, ntt_eval_b_sk, gadget_param.ell_any, gadget_param.w_any);
-            multisum_ntt(out_minus.a, ct_a_dec, ntt_eval_a_sk, gadget_param.ell_any, gadget_param.w_any); 
+            multisum_ntt(out->b, deter_ct_b_dec, ntt_eval_b, gadget_param.ell_any, gadget_param.w_any);
+            multisum_ntt(out->a, deter_ct_b_dec, ntt_eval_a, gadget_param.ell_any, gadget_param.w_any);
+            multisum_ntt(out_minus.b, deter_ct_a_dec, ntt_eval_b_sk, gadget_param.ell_any, gadget_param.w_any);
+            multisum_ntt(out_minus.a, deter_ct_a_dec, ntt_eval_a_sk, gadget_param.ell_any, gadget_param.w_any); 
  
         }else{
             std::cout << "Arithmetic not supported." << std::endl;
         } 
+  
+ 
     }  
     out->add(out, &out_minus);
- 
-    for(int i = 0; i < ell_delete; ++i){  
-        delete[] ct_a_dec[i];
-        delete[] ct_b_dec[i];
-    }  
-    delete[] ct_a_dec;
-    delete[] ct_b_dec;  
+  
 }
 
  
  
  
 // Currently multisum_fft is lazy - modulus reduction happends only at the end.
-void rlwe_gadget_ct::multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w){
-    fftw_complex *multisum_eval = new fftw_complex[gadget_param.param.engine.plan_size]; 
-    fftw_complex *prod = new fftw_complex[gadget_param.param.engine.plan_size];    
+void rlwe_gadget_ct::multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w){ 
     
-    gadget_param.param.engine.to_eval_form(multisum_eval, arr[0]);   
-    gadget_param.param.engine.mul_eval_form(multisum_eval, multisum_eval, c_arr[0]);  
+    engine.to_eval_form(fft_multisum_eval, arr[0]);   
+    engine.mul_eval_form(fft_multisum_eval, fft_multisum_eval, c_arr[0]);  
   
     for(int i = 1; i < ell; ++i){ 
-        gadget_param.param.engine.to_eval_form(prod, arr[i]);     
-        gadget_param.param.engine.mul_eval_form(prod, prod, c_arr[w*i]); 
-        gadget_param.param.engine.add_eval_form(multisum_eval, multisum_eval, prod); 
- 
+        engine.to_eval_form(fft_prod, arr[i]);     
+        engine.mul_eval_form(fft_prod, fft_prod, c_arr[w*i]); 
+        engine.add_eval_form(fft_multisum_eval, fft_multisum_eval, fft_prod); 
     } 
-
-    gadget_param.param.engine.to_coef_form(out, multisum_eval);  
-    mod_reduce(out, out); 
-    delete[] multisum_eval;
-    delete[] prod; 
- 
+    engine.to_coef_form(out, fft_multisum_eval);  
+    mod_reduce(out, out);  
 }
    
 // Multisum any multiplies every second ciphertext
-void rlwe_gadget_ct::multisum_any_fft(long *out, long** arr, fftw_complex **c_arr){
-    fftw_complex *multisum_eval = new fftw_complex[gadget_param.param.engine.plan_size]; 
-    fftw_complex *prod = new fftw_complex[gadget_param.param.engine.plan_size];    
+void rlwe_gadget_ct::multisum_any_fft(long *out, long** arr, fftw_complex **c_arr){ 
     
-    gadget_param.param.engine.to_eval_form(multisum_eval, arr[0]);   
-    gadget_param.param.engine.mul_eval_form(multisum_eval, multisum_eval, c_arr[0]);  
+    engine.to_eval_form(fft_multisum_eval, arr[0]);   
+    engine.mul_eval_form(fft_multisum_eval, fft_multisum_eval, c_arr[0]);  
   
     for(int i = 1; i < gadget_param.ell_any; ++i){ 
-        gadget_param.param.engine.to_eval_form(prod, arr[i]);     
-        gadget_param.param.engine.mul_eval_form(prod, prod, c_arr[2*i]); 
-        gadget_param.param.engine.add_eval_form(multisum_eval, multisum_eval, prod); 
- 
-    } 
-
-    gadget_param.param.engine.to_coef_form(out, multisum_eval);  
-    mod_reduce(out, out); 
-    delete[] multisum_eval;
-    delete[] prod; 
+        engine.to_eval_form(fft_prod, arr[i]);     
+        engine.mul_eval_form(fft_prod, fft_prod, c_arr[2*i]); 
+        engine.add_eval_form(fft_multisum_eval, fft_multisum_eval, fft_prod); 
+    }  
+    engine.to_coef_form(out, fft_multisum_eval);  
+    mod_reduce(out, out);  
 }
 
 
 
-void rlwe_gadget_ct::multisum_ntt(long *out, long** arr, long **c_arr, int ell, int w){
-    long *multisum_eval = new long[gadget_param.param.N]; 
-    long *prod = new long[gadget_param.param.N];   
+void rlwe_gadget_ct::multisum_ntt(long *out, long** arr, long **c_arr, int ell, int w){ 
     utils::array_mod_form(arr[0], arr[0], gadget_param.param.N, gadget_param.param.Q); 
-    ntt.ComputeForward((uint64_t*) multisum_eval, (uint64_t*) arr[0], 1, 1);
-    intel::hexl::EltwiseMultMod((uint64_t*) multisum_eval, (uint64_t*) multisum_eval, (uint64_t*) c_arr[0], gadget_param.param.N, gadget_param.param.Q, 1);
+    ntt.ComputeForward((uint64_t*) ntt_multisum_eval, (uint64_t*) arr[0], 1, 1);
+    intel::hexl::EltwiseMultMod((uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_multisum_eval, (uint64_t*) c_arr[0], gadget_param.param.N, gadget_param.param.Q, 1);
    
     for(int i = 1; i < ell; ++i){ 
         utils::array_mod_form(arr[i], arr[i], gadget_param.param.N, gadget_param.param.Q); 
-        ntt.ComputeForward((uint64_t*) prod, (uint64_t*) arr[i], 1, 1);  
-        intel::hexl::EltwiseMultMod((uint64_t*) prod, (uint64_t*) prod, (uint64_t*) c_arr[w*i], gadget_param.param.N, gadget_param.param.Q, 1); 
-        intel::hexl::EltwiseAddMod((uint64_t*) multisum_eval, (uint64_t*) multisum_eval, (uint64_t*) prod, gadget_param.param.N, gadget_param.param.Q);   
+        ntt.ComputeForward((uint64_t*) ntt_prod, (uint64_t*) arr[i], 1, 1);  
+        intel::hexl::EltwiseMultMod((uint64_t*) ntt_prod, (uint64_t*) ntt_prod, (uint64_t*) c_arr[w*i], gadget_param.param.N, gadget_param.param.Q, 1); 
+        intel::hexl::EltwiseAddMod((uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_prod, gadget_param.param.N, gadget_param.param.Q);   
     }  
-    ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  multisum_eval, 1, 1);
-    delete[] multisum_eval;
-    delete[] prod;   
+    ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  ntt_multisum_eval, 1, 1); 
 }
 
 
  
-void rlwe_gadget_ct::multisum_any_ntt(long *out, long** arr, long **c_arr){
-    long *multisum_eval = new long[gadget_param.param.N]; 
-    long *prod = new long[gadget_param.param.N];   
+void rlwe_gadget_ct::multisum_any_ntt(long *out, long** arr, long **c_arr){ 
     utils::array_mod_form(arr[0], arr[0], gadget_param.param.N, gadget_param.param.Q); 
-    ntt.ComputeForward((uint64_t*) multisum_eval, (uint64_t*) arr[0], 1, 1);
-    intel::hexl::EltwiseMultMod((uint64_t*) multisum_eval, (uint64_t*) multisum_eval, (uint64_t*) c_arr[0], gadget_param.param.N, gadget_param.param.Q, 1);
+    ntt.ComputeForward((uint64_t*) ntt_multisum_eval, (uint64_t*) arr[0], 1, 1);
+    intel::hexl::EltwiseMultMod((uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_multisum_eval, (uint64_t*) c_arr[0], gadget_param.param.N, gadget_param.param.Q, 1);
    
     for(int i = 1; i < gadget_param.ell_any; ++i){ 
         utils::array_mod_form(arr[i], arr[i], gadget_param.param.N, gadget_param.param.Q); 
-        ntt.ComputeForward((uint64_t*) prod, (uint64_t*) arr[i], 1, 1);  
-        intel::hexl::EltwiseMultMod((uint64_t*) prod, (uint64_t*) prod, (uint64_t*) c_arr[2*i], gadget_param.param.N, gadget_param.param.Q, 1); 
-        intel::hexl::EltwiseAddMod((uint64_t*) multisum_eval, (uint64_t*) multisum_eval, (uint64_t*) prod, gadget_param.param.N, gadget_param.param.Q);   
+        ntt.ComputeForward((uint64_t*) ntt_prod, (uint64_t*) arr[i], 1, 1);  
+        intel::hexl::EltwiseMultMod((uint64_t*) ntt_prod, (uint64_t*) ntt_prod, (uint64_t*) c_arr[2*i], gadget_param.param.N, gadget_param.param.Q, 1); 
+        intel::hexl::EltwiseAddMod((uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_multisum_eval, (uint64_t*) ntt_prod, gadget_param.param.N, gadget_param.param.Q);   
     }  
-    ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  multisum_eval, 1, 1);
-    delete[] multisum_eval;
-    delete[] prod;  
+    ntt.ComputeInverse((uint64_t*) out, (uint64_t*)  ntt_multisum_eval, 1, 1); 
+}
+
+
+
+void rlwe_gadget_ct::set_computing_engine(){
+    if(gadget_param.param.arithmetic == double_fft){ 
+        engine = fft_plan(gadget_param.param.ring, gadget_param.param.N, false);  
+        fft_multisum_eval = new fftw_complex[engine.plan_size]; 
+        fft_prod = new fftw_complex[engine.plan_size];     
+    }else if(gadget_param.param.arithmetic == long_double_fft){
+        engine = fft_plan(gadget_param.param.ring, gadget_param.param.N, true);   
+    }
+    else if(gadget_param.param.arithmetic == hexl_ntt){
+        ntt = intel::hexl::NTT(gadget_param.param.N, gadget_param.param.Q);
+        ntt_multisum_eval = new long[gadget_param.param.N]; 
+        ntt_prod = new long[gadget_param.param.N];  
+    }else if(gadget_param.param.arithmetic == ntl){
+        // Do nothing here
+    }else{
+        throw std::exception();
+    }
+    // Set up also precomputed arrays for gadget decomposition
+    simul_ct_a_dec = gadget_param.rand_gadget.init_out();
+    simul_ct_b_dec = gadget_param.rand_gadget.init_out();
+    deter_ct_a_dec = gadget_param.deter_gadget.init_out();
+    deter_ct_b_dec = gadget_param.deter_gadget.init_out();
 }
 
 
@@ -570,10 +569,10 @@ void rlwe_gadget_ct::multisum_any_ntt(long *out, long** arr, long **c_arr){
     eval_b_sk = new fftw_complex*[gadget_param.ell_max];   
     mask = gadget_param.param.Q-1; 
     for(int i = 0; i < gadget_param.ell_max; ++i){  
-        eval_a[i] = gadget_param.param.init_fft_poly();
-        eval_b[i] = gadget_param.param.init_fft_poly();
-        eval_a_sk[i] = gadget_param.param.init_fft_poly();
-        eval_b_sk[i] = gadget_param.param.init_fft_poly();
+        eval_a[i] = engine.init_fft_poly();
+        eval_b[i] = engine.init_fft_poly();
+        eval_a_sk[i] = engine.init_fft_poly();
+        eval_b_sk[i] = engine.init_fft_poly();
     }
 }
 
@@ -589,6 +588,9 @@ void rlwe_gadget_ct::delete_fft_eval(){
     delete[] eval_b;
     delete[] eval_a_sk;
     delete[] eval_b_sk;  
+    // Delete temporary arrays:
+    delete[] fft_multisum_eval; 
+    delete[] fft_prod;    
 }
 
  void rlwe_gadget_ct::init_ntt_eval(){ 
@@ -615,25 +617,28 @@ void rlwe_gadget_ct::delete_fft_eval(){
     delete[] ntt_eval_b;
     delete[] ntt_eval_a_sk;
     delete[] ntt_eval_b_sk;  
+    // Delete the temporary arrays:
+    delete[] ntt_multisum_eval;
+    delete[] ntt_prod; 
 }
 
 
 void rlwe_gadget_ct::to_eval_fft(){
     for(int i = 0; i < gadget_param.ell_max; ++i){
         // Note: we scale this one up, because we prepare the gadget ciphertext for multiplication
-        gadget_param.param.engine.to_eval_form_scale(eval_a[i], gadget_ct[i].a, 2.0); 
-        gadget_param.param.engine.to_eval_form_scale(eval_b[i], gadget_ct[i].b, 2.0); 
-        gadget_param.param.engine.to_eval_form_scale(eval_a_sk[i], gadget_ct_sk[i].a, 2.0); 
-        gadget_param.param.engine.to_eval_form_scale(eval_b_sk[i], gadget_ct_sk[i].b, 2.0); 
+        engine.to_eval_form_scale(eval_a[i], gadget_ct[i].a, 2.0); 
+        engine.to_eval_form_scale(eval_b[i], gadget_ct[i].b, 2.0); 
+        engine.to_eval_form_scale(eval_a_sk[i], gadget_ct_sk[i].a, 2.0); 
+        engine.to_eval_form_scale(eval_b_sk[i], gadget_ct_sk[i].b, 2.0); 
     }   
 } 
 
 void rlwe_gadget_ct::to_coef_fft(){
     for(int i = 0; i < gadget_param.ell_max; ++i){ 
-        gadget_param.param.engine.to_coef_form(gadget_ct[i].a, eval_a[i]);
-        gadget_param.param.engine.to_coef_form(gadget_ct[i].b, eval_b[i]);
-        gadget_param.param.engine.to_coef_form(gadget_ct_sk[i].a, eval_a_sk[i]);
-        gadget_param.param.engine.to_coef_form(gadget_ct_sk[i].b, eval_b_sk[i]);
+        engine.to_coef_form(gadget_ct[i].a, eval_a[i]);
+        engine.to_coef_form(gadget_ct[i].b, eval_b[i]);
+        engine.to_coef_form(gadget_ct_sk[i].a, eval_a_sk[i]);
+        engine.to_coef_form(gadget_ct_sk[i].b, eval_b_sk[i]);
     }    
 } 
 
@@ -658,11 +663,11 @@ void rlwe_gadget_ct::to_coef_ntt(){
 
 void rlwe_gadget_ct::mod_reduce(long *out_poly, long *in_poly){
     if(gadget_param.param.mod_type == power_of_two){
-        for(int i = 0; i < gadget_param.param.engine.N; ++i){   
+        for(int i = 0; i < gadget_param.param.N; ++i){   
             out_poly[i] = in_poly[i] & this->mask; 
         }
     }else{
-        for(int i = 0; i < gadget_param.param.engine.N; ++i){   
+        for(int i = 0; i < gadget_param.param.N; ++i){   
             out_poly[i] = in_poly[i] % gadget_param.param.Q; 
         }
     } 
@@ -671,7 +676,7 @@ void rlwe_gadget_ct::mod_reduce(long *out_poly, long *in_poly){
  
 void rlwe_gadget_ct::mod_reduce(long *out_poly, long double *in_poly_l){
       long double Q_l = (long double) gadget_param.param.Q;
-      for(int i = 0; i < gadget_param.param.engine.N; ++i){  
+      for(int i = 0; i < gadget_param.param.N; ++i){  
       out_poly[i] = round(fmodl(in_poly_l[i], Q_l));  
    }
 }
