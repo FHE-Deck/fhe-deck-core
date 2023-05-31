@@ -14,6 +14,8 @@ class rlwe_hom_acc_scheme{
         
     rlwe_gadget_param rlwe_gadget_par; 
 
+    bool is_init = false;
+
     // The blind rotation key
     rlwe_gadget_ct *bk;
     
@@ -54,11 +56,13 @@ class rlwe_hom_acc_scheme{
     ~rlwe_hom_acc_scheme();
 
     rlwe_hom_acc_scheme() = default;
-
-    // TODO: In ntrunium.h the key distribution (for the LWE gadget param) is given as input
-    // But actually it should be in the corresponding LWE_param.
-    // TODO: rlwe_gadget_par is already pointed to in rlwe_gadget_ct
+ 
     rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, lwe_param lwe_par, rlwe_gadget_ct *bk, long ***ksk, long **masking_key, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
+
+    rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other);
+  
+
+    rlwe_hom_acc_scheme& operator=(const rlwe_hom_acc_scheme other);
 
     void blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode);
 
@@ -127,10 +131,7 @@ class rlwe_hom_acc_scheme{
         // TODO Read the Bk, ksk and masking keys.....
 
     } 
-
-
-
-
+ 
 
     private:
 
@@ -141,7 +142,12 @@ class rlwe_hom_acc_scheme{
 
     void init_binary_key();
     void init_ternary_key();
- 
+  
+    void copy_blind_rotation_key(rlwe_gadget_ct *bk);
+
+    void copy_key_switching_key(long ***ksk);
+
+    void copy_masking_key(long **masking_key);
  
 };
 

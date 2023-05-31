@@ -6,12 +6,12 @@
     if(is_ntrunium){
         // Do Nothing
     }else if(is_tfhe){
-        if(is_pk_init){
-            delete tfhe_boot_pk;
-        }
-        if(is_sk_init){
-            delete tfhe_boot_sk;
-        } 
+        //if(is_pk_init){
+        //    delete tfhe_boot_pk;
+        //}
+        //if(is_sk_init){
+        //    delete tfhe_boot_sk;
+        //} 
     }
  }
 
@@ -23,10 +23,9 @@ void fhe_context::generate_context(ntrunium_named_param name){
  
 
 void fhe_context::generate_context(rlwe_hom_acc_scheme_named_param name){  
-    rlwe_hom_acc_scheme_named_param_generator rlwe_hom_acc_par = rlwe_hom_acc_scheme_named_param_generator(name);
-    rlwe_hom_acc_par.generate_bootstapping_keys(); 
-    tfhe_boot_pk = rlwe_hom_acc_par.boot;
-    tfhe_boot_sk = rlwe_hom_acc_par.boot_sk;
+    rlwe_hom_acc_scheme_named_param_generator rlwe_hom_acc_par = rlwe_hom_acc_scheme_named_param_generator(name); 
+    tfhe_boot_sk = rlwe_hom_acc_par.generate_secret_key();  
+    tfhe_boot_pk = tfhe_boot_sk.get_public_param();  
     // TODO: Need to rewrite rlwe_hom_acc_scheme_named_param_generator to generate parameters, return a copy of them, and then free resources. 
     default_encoding = rlwe_hom_acc_par.default_encoding;
     is_tfhe = true;
@@ -60,7 +59,7 @@ ciphertext fhe_context::encrypt(long message, plaintext_encoding encoding){
         std::cout << "TODO: NTRUnium not supported yet!" << std::endl;
         throw 0;
     }else if(is_tfhe){       
-       lwe_ct c(tfhe_boot_sk->extract_lwe.encrypt_ct(encoding.encode_message(message))); 
+       lwe_ct c(tfhe_boot_sk.extract_lwe.encrypt_ct(encoding.encode_message(message))); 
        return ciphertext(c, encoding);
     }else{
         std::cout << "Scheme not set" << std::endl;
@@ -119,7 +118,7 @@ long fhe_context::decrypt(ciphertext *c_in){
         std::cout << "TODO: NTRUnium not supported yet!" << std::endl;
         throw 0;
     }else if(is_tfhe){  
-        long phase = tfhe_boot_sk->extract_lwe.phase(c_in->lwe_c->ct);   
+        long phase = tfhe_boot_sk.extract_lwe.phase(c_in->lwe_c->ct);   
         return c_in->encoding.decode_message(phase); 
     }else{
         std::cout << "Scheme not set" << std::endl;

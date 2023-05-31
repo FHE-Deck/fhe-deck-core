@@ -3,6 +3,9 @@
 
  
 rlwe_hom_acc_scheme::~rlwe_hom_acc_scheme(){ 
+    if(is_init == false){
+        return;
+    }
     delete[] u;
     delete[] acc_msb;
     delete[] acc_one;
@@ -16,6 +19,79 @@ rlwe_hom_acc_scheme::~rlwe_hom_acc_scheme(){
     delete[] bk;
 }
  
+ 
+
+rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other){
+    this->rlwe_gadget_par = other.rlwe_gadget_par;
+    this->lwe_gadget_par = other.lwe_gadget_par;
+    this->lwe_par = other.lwe_par; 
+    this->masking_size = other.masking_size; 
+    this->stddev_masking = other.stddev_masking;
+    this->default_encoding = other.default_encoding;
+ 
+
+    // Sets other variables
+    this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
+    this->rand_masking = sampler(0.0, stddev_masking);
+    this->extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev);  
+    this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
+    this->next_acc = rlwe_ct(rlwe_gadget_par.param);
+    this->out_ct = rlwe_ct(rlwe_gadget_par.param); 
+    this->key_d = lwe_par.key_d;
+    if(this->key_d == binary){  
+        init_binary_key(); 
+    }else{ 
+        init_ternary_key();
+    } 
+    set_key_switch_type();
+    this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
+    this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
+ 
+    // Copy the key switching, bilind rotation and masking keys
+    copy_blind_rotation_key(other.bk);
+    copy_key_switching_key(other.ksk);
+    copy_masking_key(other.masking_key);
+    is_init = true;
+}
+
+ 
+
+
+rlwe_hom_acc_scheme& rlwe_hom_acc_scheme::operator=(const rlwe_hom_acc_scheme other){
+    this->rlwe_gadget_par = other.rlwe_gadget_par;
+    this->lwe_gadget_par = other.lwe_gadget_par;
+    this->lwe_par = other.lwe_par; 
+    this->masking_size = other.masking_size; 
+    this->stddev_masking = other.stddev_masking;
+    this->default_encoding = other.default_encoding;
+ 
+
+    // Sets other variables
+    this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
+    this->rand_masking = sampler(0.0, stddev_masking);
+    this->extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev);  
+    this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
+    this->next_acc = rlwe_ct(rlwe_gadget_par.param);
+    this->out_ct = rlwe_ct(rlwe_gadget_par.param); 
+    this->key_d = lwe_par.key_d;
+    if(this->key_d == binary){  
+        init_binary_key(); 
+    }else{ 
+        init_ternary_key();
+    } 
+    set_key_switch_type();
+    this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
+    this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
+
+    // Copy the key switching, bilind rotation and masking keys
+    // Copy the key switching, bilind rotation and masking keys
+    copy_blind_rotation_key(other.bk);
+    copy_key_switching_key(other.ksk);
+    copy_masking_key(other.masking_key);
+    is_init = true;
+    return *this;
+}
+
 
 
 rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par, 
@@ -31,18 +107,14 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     this->rlwe_gadget_par = rlwe_gadget_par;
     this->lwe_gadget_par = lwe_gadget_par;
     this->lwe_par = lwe_par;
-    this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
-    this->masking_key = masking_key;
     this->masking_size = masking_size; 
     this->stddev_masking = stddev_masking;
-    this->rand_masking = sampler(0.0, stddev_masking);
     this->default_encoding = default_encoding;
-    
-    this->ksk = ksk;
-    this->bk = bk;  
-    
-    extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
-
+     
+    // Sets other variables 
+    this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
+    this->rand_masking = sampler(0.0, stddev_masking);
+    this->extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev);  
     this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
     this->next_acc = rlwe_ct(rlwe_gadget_par.param);
     this->out_ct = rlwe_ct(rlwe_gadget_par.param);
@@ -56,7 +128,16 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     set_key_switch_type();
     this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
     this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
+ 
+    // Set the key switching, bilind rotation and masking keys
+    this->ksk = ksk;
+    this->bk = bk;  
+    this->masking_key = masking_key;
+    is_init = true;
 }
+
+
+
 
 void rlwe_hom_acc_scheme::set_key_switch_type(){ 
     long bits_Q = utils::power_times(lwe_gadget_par.lwe_par.Q, 2);
@@ -92,6 +173,39 @@ void rlwe_hom_acc_scheme::init_ternary_key(){
         sizeof_ext_s = 2*lwe_par.n; 
 }
 
+
+void rlwe_hom_acc_scheme::copy_blind_rotation_key(rlwe_gadget_ct *bk){
+    this->bk = new rlwe_gadget_ct[this->sizeof_ext_s];
+    for(int i = 0; i < this->sizeof_ext_s; ++i){
+        this->bk[i] = bk[i];
+    }
+}
+
+void rlwe_hom_acc_scheme::copy_key_switching_key(long ***ksk){
+    // Initialize the key switching key
+    this->ksk = new long**[rlwe_gadget_par.param.N]; 
+    for(int i = 0; i < rlwe_gadget_par.param.N; ++i){
+        this->ksk[i] = new long*[lwe_gadget_par.ell];
+        for(int j = 0; j < lwe_gadget_par.ell; ++j){ 
+            this->ksk[i][j] = lwe_gadget_par.lwe_par.init_ct();
+        }
+    } 
+    for(int i = 0; i < rlwe_gadget_par.param.N; ++i){  
+        for(int j = 0; j < lwe_gadget_par.ell; ++j){ 
+            utils::cp(this->ksk[i][j], ksk[i][j], lwe_gadget_par.lwe_par.n+1); 
+        }
+    }  
+}
+
+
+void rlwe_hom_acc_scheme::copy_masking_key(long **masking_key){
+    // Initialize the key switching key
+    this->masking_key = new long*[masking_size]; 
+    for(int i = 0; i < masking_size; ++i){ 
+        this->masking_key[i] = extract_lwe_par.init_ct();
+        utils::cp(this->masking_key[i], masking_key[i], extract_lwe_par.n+1); 
+    } 
+}
 
 
 void rlwe_hom_acc_scheme::blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode){    

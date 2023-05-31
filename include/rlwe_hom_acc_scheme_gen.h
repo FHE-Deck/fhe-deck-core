@@ -9,8 +9,7 @@
 
 
 class rlwe_hom_acc_scheme_gen{
-
-
+ 
     public:
  
     gadget_rlwe_sk rlwe_gadget;
@@ -25,6 +24,8 @@ class rlwe_hom_acc_scheme_gen{
  
     // Parameteres of the encoding of the LWE key in the blind rotation. These are paramters about the secret key of lwe_par (and lwe_g_par as lwe_par is a modulus switch of lwe_g_par)
     key_dist key_d;
+
+    bool is_ext_init = false;
     int sizeof_ext_s;
     long *u;
     int sizeof_u;
@@ -38,12 +39,19 @@ class rlwe_hom_acc_scheme_gen{
 
     ~rlwe_hom_acc_scheme_gen();
 
-    rlwe_hom_acc_scheme_gen();
+    rlwe_hom_acc_scheme_gen() = default;
 
     // Generates the secret keys 
     rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
 
-    rlwe_hom_acc_scheme* get_public_param();
+    rlwe_hom_acc_scheme_gen(const rlwe_hom_acc_scheme_gen& other);
+
+    rlwe_hom_acc_scheme_gen& operator=(const rlwe_hom_acc_scheme_gen other);
+
+
+    std::unique_ptr<rlwe_hom_acc_scheme> get_public_param();
+
+    void set_public_params(rlwe_hom_acc_scheme *boot_pk);
  
     // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
     long* scale_and_encrypt_initial_lwe(long m, int t);
@@ -100,8 +108,8 @@ enum rlwe_hom_acc_scheme_named_param{
 class rlwe_hom_acc_scheme_named_param_generator{ 
     
     public:  
-    rlwe_hom_acc_scheme_gen* boot_sk; 
-    rlwe_hom_acc_scheme* boot;
+    std::unique_ptr<rlwe_hom_acc_scheme_gen> boot_sk; 
+    std::unique_ptr<rlwe_hom_acc_scheme> boot;
  
     rlwe_gadget_param rlwe_gadget_par;
     lwe_gadget_param lwe_gadget_par;
@@ -118,6 +126,8 @@ class rlwe_hom_acc_scheme_named_param_generator{
     rlwe_hom_acc_scheme_named_param_generator(rlwe_hom_acc_scheme_named_param name);
  
     void generate_bootstapping_keys(); 
+
+    rlwe_hom_acc_scheme_gen generate_secret_key();
 
     void init_rlwe_hom_acc_scheme_small_test();
  

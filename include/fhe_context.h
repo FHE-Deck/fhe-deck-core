@@ -15,8 +15,9 @@ class fhe_context{
     ntrunium_named_param_generator ntrunium_par;
     bool is_ntrunium = false;
  
-    rlwe_hom_acc_scheme_gen* tfhe_boot_sk; 
-    rlwe_hom_acc_scheme* tfhe_boot_pk;
+    rlwe_hom_acc_scheme_gen tfhe_boot_sk; 
+    std::unique_ptr<rlwe_hom_acc_scheme> tfhe_boot_pk;
+    //rlwe_hom_acc_scheme tfhe_boot_pk;
     bool is_tfhe = false;
 
     // Flags to check whether the sk or pk are initialized.

@@ -3,12 +3,14 @@
 
 
 rlwe_hom_acc_scheme_gen::~rlwe_hom_acc_scheme_gen(){
-    delete[] u;
-    delete[] ext_s;
+    if(is_ext_init){ 
+        delete[] u;
+        delete[] ext_s;
+    }
 }
 
 
-rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(){}
+//rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(){}
 
 
 rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding){   
@@ -19,8 +21,7 @@ rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_p
     this->default_encoding = default_encoding;
  
     lwe_sk g_lwe = lwe_sk(lwe_gadget_par.lwe_par);
-    this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe);
- 
+    this->lwe_gadget = lwe_gadget_sk(lwe_gadget_par, g_lwe); 
     long q = rlwe.param.N * 2; 
     this->lwe = lwe_gadget.lwe.modulus_switch(q);    
     // Another LWE for the extracted  
@@ -33,21 +34,66 @@ rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_p
     }else{  
         this->init_ternary_key();
     }   
-    delete[] extract_key; 
-  
+    delete[] extract_key;  
 }
 
 
+rlwe_hom_acc_scheme_gen::rlwe_hom_acc_scheme_gen(const rlwe_hom_acc_scheme_gen& other){
+    this->rlwe_gadget =  other.rlwe_gadget;
+    this->masking_size = masking_size;
+    this->stddev_masking = stddev_masking;
+    this->default_encoding = default_encoding;
+ 
+    this->lwe_gadget = other.lwe_gadget;  
+    this->lwe = other.lwe; 
+ 
+    this->extract_lwe = other.extract_lwe;
+ 
+    if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
+        this->init_binary_key(); 
+    }else{  
+        this->init_ternary_key();
+    }    
+}
 
-rlwe_hom_acc_scheme* rlwe_hom_acc_scheme_gen::get_public_param(){   
+rlwe_hom_acc_scheme_gen& rlwe_hom_acc_scheme_gen::operator=(const rlwe_hom_acc_scheme_gen other){
+    this->rlwe_gadget =  other.rlwe_gadget;
+    this->masking_size = masking_size;
+    this->stddev_masking = stddev_masking;
+    this->default_encoding = default_encoding;
+ 
+    this->lwe_gadget = other.lwe_gadget;  
+    this->lwe = other.lwe; 
+ 
+    this->extract_lwe = other.extract_lwe;
+ 
+    if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
+        this->init_binary_key(); 
+    }else{  
+        this->init_ternary_key();
+    }    
+    return *this;
+}
+
+
+std::unique_ptr<rlwe_hom_acc_scheme> rlwe_hom_acc_scheme_gen::get_public_param(){   
     // The key switching key
-    long ***ksk = key_switching_key_gen(); 
-     
+    long ***ksk = key_switching_key_gen();  
     // Masking Key Gen
     long **masking_key = masking_key_gen();   
     // The blind rotation key 
     rlwe_gadget_ct *bk = blind_rotation_key_gen();   
-    return new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking, default_encoding); 
+    return std::unique_ptr<rlwe_hom_acc_scheme>(new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking, default_encoding)); 
+}
+
+void rlwe_hom_acc_scheme_gen::set_public_params(rlwe_hom_acc_scheme *boot_pk){
+    // The key switching key
+    long ***ksk = key_switching_key_gen();  
+    // Masking Key Gen
+    long **masking_key = masking_key_gen();   
+    // The blind rotation key 
+    rlwe_gadget_ct *bk = blind_rotation_key_gen();   
+    boot_pk = new rlwe_hom_acc_scheme(rlwe_gadget.gadget_param, lwe_gadget.lwe_g_par, lwe.lwe_par, bk, ksk, masking_key, masking_size, stddev_masking, default_encoding); 
 }
 
 
@@ -69,6 +115,7 @@ void rlwe_hom_acc_scheme_gen::init_binary_key(){
         for(int i = 0; i < lwe.lwe_par.n; ++i){
             this->ext_s[i] = lwe.s[i];
         }
+        is_ext_init = true;
 }
 
 void rlwe_hom_acc_scheme_gen::init_ternary_key(){
@@ -80,6 +127,7 @@ void rlwe_hom_acc_scheme_gen::init_ternary_key(){
         for(int i = 0; i < lwe.lwe_par.n; ++i){
             this->ext_s[i] = lwe.s[i];
         }
+        is_ext_init = true;
 }
 
 
@@ -122,7 +170,6 @@ rlwe_gadget_ct* rlwe_hom_acc_scheme_gen::blind_rotation_key_gen(){
 
 
 
-
 // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
  long* rlwe_hom_acc_scheme_gen::scale_and_encrypt_initial_lwe(long m, int t){
      long* out = lwe.lwe_par.init_ct();
@@ -162,11 +209,14 @@ rlwe_hom_acc_scheme_named_param_generator::rlwe_hom_acc_scheme_named_param_gener
  
 
 void rlwe_hom_acc_scheme_named_param_generator::generate_bootstapping_keys(){
-    this->boot_sk = new rlwe_hom_acc_scheme_gen(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding); 
+    this->boot_sk = std::unique_ptr<rlwe_hom_acc_scheme_gen>(new rlwe_hom_acc_scheme_gen(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding)); 
     this->boot = boot_sk->get_public_param(); 
 } 
 
-
+rlwe_hom_acc_scheme_gen rlwe_hom_acc_scheme_named_param_generator::generate_secret_key(){
+    return rlwe_hom_acc_scheme_gen(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding);
+}
+ 
 
 void rlwe_hom_acc_scheme_named_param_generator::init_rlwe_hom_acc_scheme_small_test(){
     // TODO: For now I just put some parameters for testing

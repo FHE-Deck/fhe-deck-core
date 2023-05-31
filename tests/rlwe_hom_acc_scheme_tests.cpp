@@ -22,7 +22,7 @@ void extract_and_key_switch_test(){
     // Extract the LWE ciphertext 
     long *ext_ct = params.boot_sk->extract_lwe.lwe_par.init_ct();
     std::cout << "r_ct: " << r_ct.to_string() << std::endl;
-    std::cout << "params.boot.extract_lwe_from_rlwe(ext_ct, r_ct);" << std::endl;
+    std::cout << "params.boot->extract_lwe_from_rlwe(ext_ct, r_ct);" << std::endl;
     params.boot->extract_lwe_from_rlwe(ext_ct, &r_ct);
  
     std::cout << "ext_ct: " << utils::to_string(ext_ct, params.boot->rlwe_gadget_par.param.N+1) << std::endl;
@@ -111,8 +111,8 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
         std::cout << "blind_rotation_test: OK" << std::endl;
     } 
 
-    delete params.boot;
-    delete params.boot_sk;
+    //delete params.boot;
+    //delete params->boot_sk;
     delete[] ct; 
     delete[] out;
     delete[] acc; 
@@ -218,8 +218,8 @@ void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, g
     } 
     std::cout << "Time for Single Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
 
-    delete params.boot;
-    delete params.boot_sk;
+    //delete params.boot;
+    //delete params.boot_sk;
 
     delete[] ct;
     delete[] ct_out;
@@ -318,8 +318,8 @@ void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param par
     }  
     std::cout << "Time for Single Functional Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
 
-    delete params.boot;
-    delete params.boot_sk;
+    //delete params.boot;
+    //delete params.boot_sk;
     delete[] ct;
     delete[] ct_out;
     delete[] acc; 
