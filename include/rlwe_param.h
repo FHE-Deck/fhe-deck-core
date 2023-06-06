@@ -8,6 +8,8 @@
 #include "fft_plan.h"
 #include "gadget.h"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
 
 class rlwe_param{
 
@@ -30,8 +32,7 @@ class rlwe_param{
     rlwe_param(const rlwe_param &c);
 
     rlwe_param& operator=(const rlwe_param other);
-    
-
+     
     long* init_poly();
 
     long* init_zero_poly();
@@ -60,11 +61,10 @@ class rlwe_ct{
 
     long *b;
     long *a;
-
-    long mask;
-
+   
     bool is_init = false;
 
+    bool is_engine_set = false;
     fft_plan engine; 
   
     intel::hexl::NTT ntt; 
@@ -96,11 +96,36 @@ class rlwe_ct{
     void neg(rlwe_ct *out);
  
     std::string to_string();
- 
+    
+    void set_computing_engine();
+  
+  template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(param);  
+        for(int i = 0; i < param.N; ++i){
+          ar(a[i]);
+          ar(b[i]);
+        }  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(param);    
+        a = this->param.init_poly();
+        b = this->param.init_poly(); 
+        for(int i = 0; i < param.N; ++i){
+          ar(a[i]);
+          ar(b[i]);
+        }
+        set_computing_engine(); 
+        is_init = true;
+    } 
+
 
    private:
 
-    void set_computing_engine();
 
     void add(long *out, long *in_1, long *in_2);
 
@@ -167,10 +192,9 @@ class rlwe_gadget_param{
     void load( Archive & ar )
     {  
       ar(param, deter_gadget, rand_gadget);  
-         
+      setup_the_other_parametrs(); 
     } 
-
-
+ 
     private:
 
     void setup_the_other_parametrs();
@@ -223,8 +247,7 @@ class rlwe_gadget_ct{
   rlwe_gadget_ct(const rlwe_gadget_ct& other);
 
   rlwe_gadget_ct& operator=(const rlwe_gadget_ct other);
-
-
+ 
   void mul(rlwe_ct *out, const rlwe_ct *ct, gadget_mul_mode mode);
  
   void multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w);
@@ -238,6 +261,43 @@ class rlwe_gadget_ct{
   void to_eval();
 
   void to_coef();
+
+ 
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(gadget_param);    
+        for(int i = 0; i < gadget_param.ell_max; ++i){
+            ar(gadget_ct[i]);
+            ar(gadget_ct_sk[i]);
+        }   
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(gadget_param);   
+        gadget_ct = new rlwe_ct[gadget_param.ell_max];
+        gadget_ct_sk = new rlwe_ct[gadget_param.ell_max]; 
+        for(int i = 0; i < gadget_param.ell_max; ++i){
+            ar(gadget_ct[i]); 
+            ar(gadget_ct_sk[i]); 
+        }   
+
+        out_minus = rlwe_ct(gadget_param.param);
+        set_computing_engine();
+        if(gadget_param.param.arithmetic == double_fft){
+            init_fft_eval();
+        }else if(gadget_param.param.arithmetic == hexl_ntt){ 
+            init_ntt_eval(); 
+        }else{ 
+            std::cout << "Arithmetic Currently Not Supported" << std::endl;
+        }
+        this->to_eval();
+        this->is_init = true;
+    } 
+ 
+
   
   private:
 

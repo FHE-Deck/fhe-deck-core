@@ -16,8 +16,7 @@ rlwe_sk::~rlwe_sk(){
         delete[] eval_s_ntt;
     }
 }
- 
-   
+  
 rlwe_sk::rlwe_sk(rlwe_param param, polynomial_arithmetic sk_arithmetic){
     this->param = param;
     s = new long[param.N];
@@ -54,19 +53,19 @@ rlwe_sk::rlwe_sk(const rlwe_sk &other){
     this->is_init = true;
 }
 
-rlwe_sk& rlwe_sk::operator=(const rlwe_sk other){ 
+rlwe_sk& rlwe_sk::operator=(const rlwe_sk other){  
     if (this == &other)
     {
         return *this;
     }   
-    if(is_init && (param.N == other.param.N)){ 
+    if(this->is_init && (param.N == other.param.N)){  
         this->param = other.param;
         for(int i = 0; i < this->param.N; ++i){
             s[i] = other.s[i];
         }
         this->sk_arithmetic = other.sk_arithmetic;
         set_arithmetic_specific_variables(); 
-    }if(this->is_init == false){
+    }else if(this->is_init == false){ 
         this->param = other.param;
         this->s = new long[param.N];
         for(int i = 0; i < this->param.N; ++i){
@@ -75,8 +74,7 @@ rlwe_sk& rlwe_sk::operator=(const rlwe_sk other){
         this->sk_arithmetic = other.sk_arithmetic;
         set_arithmetic_specific_variables(); 
         this->is_init = true;
-    }
-    else{
+    }else{ 
         throw 0;
     } 
     return *this;
@@ -207,9 +205,9 @@ gadget_rlwe_sk::gadget_rlwe_sk(rlwe_gadget_param gadget_param, rlwe_sk sk){
     this->sk = sk; 
 }
 
-gadget_rlwe_sk& gadget_rlwe_sk::operator=(const gadget_rlwe_sk other){ 
-    this->gadget_param = other.gadget_param; 
-    this->sk = other.sk; 
+gadget_rlwe_sk& gadget_rlwe_sk::operator=(const gadget_rlwe_sk other){  
+    this->gadget_param = other.gadget_param;  
+    this->sk = other.sk;  
     return *this;
 }
 

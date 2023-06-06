@@ -7,6 +7,8 @@
 #include "rlwe_param.h"
 #include "rlwe_hom_acc_scheme.h"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
 
 class rlwe_hom_acc_scheme_gen{
  
@@ -21,10 +23,7 @@ class rlwe_hom_acc_scheme_gen{
 
     // Need to have a LWE instance for the input to the bootstrapping (currently we don't have!!!)
     lwe_sk extract_lwe;
- 
-    // Parameteres of the encoding of the LWE key in the blind rotation. These are paramters about the secret key of lwe_par (and lwe_g_par as lwe_par is a modulus switch of lwe_g_par)
-    key_dist key_d;
-
+   
     bool is_ext_init = false;
     int sizeof_ext_s;
     long *u;
@@ -49,7 +48,7 @@ class rlwe_hom_acc_scheme_gen{
     rlwe_hom_acc_scheme_gen& operator=(const rlwe_hom_acc_scheme_gen other);
 
 
-    std::unique_ptr<rlwe_hom_acc_scheme> get_public_param();
+    std::shared_ptr<rlwe_hom_acc_scheme> get_public_param();
 
     void set_public_params(rlwe_hom_acc_scheme *boot_pk);
  
@@ -59,6 +58,28 @@ class rlwe_hom_acc_scheme_gen{
     // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
     void scale_and_encrypt_initial_lwe(long* ct, long m, int t);
 
+ 
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(rlwe_gadget, lwe_gadget, extract_lwe, masking_size, stddev_masking, default_encoding);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(rlwe_gadget, lwe_gadget, extract_lwe, masking_size, stddev_masking, default_encoding);  
+          
+        long q = rlwe_gadget.gadget_param.param.N * 2;  
+        this->lwe = lwe_gadget.lwe.modulus_switch(q);    
+        if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
+            this->init_binary_key(); 
+        }else{  
+            this->init_ternary_key();
+        }     
+    }  
+
+ 
     private:
 
     long* extract_rlwe_key();
@@ -73,30 +94,6 @@ class rlwe_hom_acc_scheme_gen{
 
     void init_ternary_key();
 
-    
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-        ar(rlwe_gadget, lwe_gadget, extract_lwe);  
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-        ar(rlwe_gadget, lwe_gadget, extract_lwe);   
-        long q = rlwe_gadget.gadget_param.param.N * 2; 
-        this->lwe = lwe_gadget.lwe.modulus_switch(q);   
-        lwe_param extract_lwe_par = lwe_param(rlwe_gadget.gadget_param.param.N, rlwe_gadget.gadget_param.param.Q, lwe_gadget.lwe_g_par.lwe_par.key_d, lwe_gadget.lwe_g_par.lwe_par.stddev);
-        long* extract_key = extract_rlwe_key();
-        extract_lwe = lwe_sk(extract_lwe_par, extract_key); 
- 
-        if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
-            this->init_binary_key(); 
-        }else{  
-            this->init_ternary_key();
-        }   
-        delete[] extract_key; 
-    }  
 };
 
 
@@ -109,7 +106,7 @@ class rlwe_hom_acc_scheme_named_param_generator{
     
     public:  
     std::unique_ptr<rlwe_hom_acc_scheme_gen> boot_sk; 
-    std::unique_ptr<rlwe_hom_acc_scheme> boot;
+    std::shared_ptr<rlwe_hom_acc_scheme> boot;
  
     rlwe_gadget_param rlwe_gadget_par;
     lwe_gadget_param lwe_gadget_par;

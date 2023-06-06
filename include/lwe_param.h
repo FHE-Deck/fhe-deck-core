@@ -6,7 +6,6 @@
 #include "utils.h" 
 #include "enums.h"
 //#include "ciphertext.h" 
-
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
@@ -39,7 +38,6 @@ class lwe_param{
     lwe_param modulus_switch(long new_modulus);
 
     void switch_modulus(long *out_ct, long *in_ct, lwe_param &new_param);
-
  
     template <class Archive>
     void save( Archive & ar ) const
@@ -127,7 +125,7 @@ class lwe_ct{
       ar(lwe_par); 
 
       std::vector<long> ct_arr; 
-      for(int i = 0; i < lwe_par.n; ++i){
+      for(int i = 0; i < lwe_par.n+1; ++i){
         ct_arr.push_back(ct[i]);
       }
       ar(ct_arr) ;
@@ -139,8 +137,8 @@ class lwe_ct{
       ar(lwe_par);
       std::vector<long> ct_arr;
       ar(ct_arr);
-      ct = new long[lwe_par.n];
-      for(int i = 0; i < lwe_par.n; ++i){
+      ct = new long[lwe_par.n+1];
+      for(int i = 0; i < lwe_par.n+1; ++i){
         ct[i] = ct_arr[i];
       }
       this->init = true;
@@ -175,8 +173,7 @@ class lwe_gadget_param{
     void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
     // Public Gadget
     void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
-  
-
+   
   
     template <class Archive>
     void save( Archive & ar ) const

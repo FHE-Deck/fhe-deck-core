@@ -65,9 +65,8 @@ class rlwe_sk{
     template <class Archive>
     void load( Archive & ar )
     {  
-        std::vector<long> s_arr;
-      ar(param, sk_arithmetic, s_arr);  
-      sk_arithmetic = sk_arithmetic;  
+      std::vector<long> s_arr;
+      ar(param, sk_arithmetic, s_arr);   
       this->s = new long[param.N];
       for(int i = 0; i < param.N; ++i){
         this->s[i] = s_arr[i];

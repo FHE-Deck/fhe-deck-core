@@ -7,12 +7,14 @@
 #include "lwe_param.h"  
 #include "utils.h"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+
 class lwe_sk {
  
     public:  
     lwe_param lwe_par;
-
-    // This is all secret  
+ 
     sampler rand; 
     long *s;
     bool is_init = false;
@@ -37,26 +39,20 @@ class lwe_sk {
     
     lwe_ct encrypt_ct(long m);
 
-    // Secret
     void encrypt(long* ct, long m);
-
-
-    // Secret
+    
     long* scale_and_encrypt(long m, int t);
-    // Secret
+    
     void scale_and_encrypt(long* ct, long m, int t);
 
-    // Secret
+
     long phase(long *ct);
-    // Secret 
+    
     long error(long *ct, long m);
-    // Secret
+    
     long decrypt(long *ct,  int t); 
-
-    // Public
+ 
     lwe_sk modulus_switch(long new_modulus);
-
-
 
     
     template <class Archive>
@@ -103,9 +99,7 @@ class lwe_gadget_sk{
     long** gadget_encrypt(long m);
     // Secret Gadget
     void gadget_encrypt(long** gadget_ct, long m);
-
-
-    
+ 
     template <class Archive>
     void save( Archive & ar ) const
     { 

@@ -8,6 +8,7 @@
 #include "../include/rotation_poly.h"
 #include "ciphertext.h"
  
+ 
 class rlwe_hom_acc_scheme{
 
     public:
@@ -17,7 +18,7 @@ class rlwe_hom_acc_scheme{
     bool is_init = false;
 
     // The blind rotation key
-    rlwe_gadget_ct *bk;
+    rlwe_gadget_ct *bk; 
     
     // The key switching key
     long ***ksk;
@@ -60,8 +61,7 @@ class rlwe_hom_acc_scheme{
     rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, lwe_param lwe_par, rlwe_gadget_ct *bk, long ***ksk, long **masking_key, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
 
     rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other);
-  
-
+   
     rlwe_hom_acc_scheme& operator=(const rlwe_hom_acc_scheme other);
 
     void blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode);
@@ -98,26 +98,41 @@ class rlwe_hom_acc_scheme{
     
     template <class Archive>
     void save( Archive & ar ) const
-    {  
+    {    
         ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
-        // TODO Save the Bk, ksk and masking keys.....
+        
+        for(int i = 0; i < this->sizeof_ext_s; ++i){ 
+            ar(this->bk[i]);
+        } 
+ 
+        for(int i = 0; i < this->rlwe_gadget_par.param.N; ++i){  
+            for(int j = 0; j < this->lwe_gadget_par.ell; ++j){  
+                for(int k = 0; k < this->lwe_gadget_par.lwe_par.n+1; ++k){
+                    ar(this->ksk[i][j][k]);
+                }
+            }
+        }  
+  
+        for(int i = 0; i < masking_size; ++i){   
+            for(int j = 0; j < extract_lwe_par.n+1; ++j)
+            {
+                ar(this->masking_key[i][j]);
+            } 
+        }  
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {   
+    {    
         ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
-        this->rlwe_gadget_par = rlwe_gadget_par;
-        this->lwe_gadget_par = lwe_gadget_par;
-        this->lwe_par = lwe_par;
-        this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N);
-        this->masking_key = masking_key;
-        this->masking_size = masking_size; 
-        this->stddev_masking = stddev_masking;
-        this->rand_masking = sampler(0.0, stddev_masking);
-        this->default_encoding = default_encoding;
 
+        this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N); 
+        this->rand_masking = sampler(0.0, stddev_masking); 
         extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
+        this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
+        this->next_acc = rlwe_ct(rlwe_gadget_par.param);
+        this->out_ct = rlwe_ct(rlwe_gadget_par.param);  
+        this->out_ct.set_computing_engine();
         this->key_d = lwe_par.key_d;
         if(this->key_d == binary){  
             init_binary_key(); 
@@ -127,9 +142,32 @@ class rlwe_hom_acc_scheme{
         set_key_switch_type();
         this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
         this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
-
-        // TODO Read the Bk, ksk and masking keys.....
-
+         
+        this->bk = new rlwe_gadget_ct[this->sizeof_ext_s];
+        for(int i = 0; i < this->sizeof_ext_s; ++i){
+            ar(this->bk[i]);
+        }
+ 
+        this->ksk = new long**[rlwe_gadget_par.param.N]; 
+        for(int i = 0; i < this->rlwe_gadget_par.param.N; ++i){
+            this->ksk[i] = new long*[this->lwe_gadget_par.ell];
+            for(int j = 0; j < this->lwe_gadget_par.ell; ++j){ 
+                this->ksk[i][j] = new long[this->lwe_gadget_par.lwe_par.n+1];
+                for(int k = 0; k < this->lwe_gadget_par.lwe_par.n+1; ++k){ 
+                    ar(this->ksk[i][j][k]);
+                }
+            }
+        } 
+ 
+        this->masking_key = new long*[masking_size]; 
+        for(int i = 0; i < masking_size; ++i){ 
+            this->masking_key[i] = extract_lwe_par.init_ct();
+            for(int j = 0; j < extract_lwe_par.n+1; ++j)
+            {
+                ar(this->masking_key[i][j]);
+            } 
+        } 
+        this->is_init = true;
     } 
  
 
@@ -144,7 +182,7 @@ class rlwe_hom_acc_scheme{
     void init_ternary_key();
   
     void copy_blind_rotation_key(rlwe_gadget_ct *bk);
-
+  
     void copy_key_switching_key(long ***ksk);
 
     void copy_masking_key(long **masking_key);

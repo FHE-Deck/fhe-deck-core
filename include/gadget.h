@@ -5,6 +5,9 @@
 #include "utils.h" 
 #include "sample.h"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+
 class gadget{
 
 
@@ -52,15 +55,12 @@ class gadget{
     long* z_pert;
 
     bool is_precomputed = false;
-
-
-
+ 
     // Precomputed temp arrays for determinitic decomp 
     bool is_deter_temp_init = false;
     long* signed_poly; 
     long* sign;
-
-
+ 
     // Precomputed temp variables for power_of_two Gaussian Sampling   
     bool is_power_of_basis_gaussian_temp_init = false;
     long* gaussians;
@@ -68,8 +68,6 @@ class gadget{
     long shift; 
     long prev_gauss;
 
-
-    
  
     ~gadget();
 
@@ -96,6 +94,30 @@ class gadget{
 
     void delete_out(long** out);
 
+ 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(type, N, Q, basis);   
+        if(type == discrete_gaussian_gadget){
+            ar(stddev);
+        } 
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(type, N, Q, basis);
+        if(type == discrete_gaussian_gadget){
+            ar(stddev);
+            this->rand = sampler(0.0, stddev);
+        } 
+        setup_type_specific_parameters();
+    } 
+
+
+
     private:
 
     void decomp(long **d_ct, long* poly);
@@ -121,29 +143,7 @@ class gadget{
     void precompute_constants_for_general_modulus_gaussian_sampling();
 
     void base_decomposition(long* out, long in);
-
-
-
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-        ar(type, N, Q, basis);   
-        if(type == discrete_gaussian_gadget){
-            ar(stddev);
-        } 
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-        ar(type, N, Q, basis);
-        if(type == discrete_gaussian_gadget){
-            ar(stddev);
-            this->rand = sampler(0.0, stddev);
-        } 
-    } 
-
-
+ 
 };
 
 #endif

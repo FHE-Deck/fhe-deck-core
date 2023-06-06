@@ -43,7 +43,7 @@ gadget_tests: sample.o gadget.o utils.o
 
 hexl_test: utils.o sample.o
 	$(CC) -o hexl_test tests/hexl_test.cpp utils.o sample.o $(EXTERN) 
-
+  
 rlwe_hom_acc_scheme_tests: rlwe_lib.a lwe.o lwe_param.o 
 	$(CC) -o rlwe_hom_acc_scheme_tests tests/rlwe_hom_acc_scheme_tests.cpp rlwe_lib.a lwe.o lwe_param.o ciphertext.o $(EXTERN)  
 

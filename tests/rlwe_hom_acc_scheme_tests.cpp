@@ -110,9 +110,7 @@ void blind_rotation_test(int test_num, rlwe_hom_acc_scheme_named_param param_nam
     if(br_test){
         std::cout << "blind_rotation_test: OK" << std::endl;
     } 
-
-    //delete params.boot;
-    //delete params->boot_sk;
+ 
     delete[] ct; 
     delete[] out;
     delete[] acc; 
@@ -217,10 +215,7 @@ void bootstrap_test(int test_num,  rlwe_hom_acc_scheme_named_param param_name, g
         std::cout << "rot_identity_test: OK" << std::endl;
     } 
     std::cout << "Time for Single Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
-
-    //delete params.boot;
-    //delete params.boot_sk;
-
+ 
     delete[] ct;
     delete[] ct_out;
     delete[] acc;
@@ -317,9 +312,7 @@ void functional_bootstrap_test(int test_num, rlwe_hom_acc_scheme_named_param par
         std::cout << "rot_identity_test: OK" << std::endl;
     }  
     std::cout << "Time for Single Functional Bootstrap: " << single_psi_loop_time/test_num/1000 << " [s]" << std::endl;
-
-    //delete params.boot;
-    //delete params.boot_sk;
+ 
     delete[] ct;
     delete[] ct_out;
     delete[] acc; 

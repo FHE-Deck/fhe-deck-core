@@ -4,6 +4,7 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/xml.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/types/memory.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -696,74 +697,49 @@ void amortized_partial_domain_bootstrap_test(){
 
 }
 
+ 
 
-void write(){ 
-    std::ofstream os("z.cereal");
-  
-    cereal::XMLOutputArchive oarchive(os);
-   
-    lwe_param param(10, 1000, binary, 3.2);
-  
-    oarchive(param); 
-}
-
-void read(){ 
-    std::cout << "Obene...." << std::endl;
-
-    std::ifstream is("z.cereal");
-    cereal::XMLInputArchive iarchive(is);
-
-    lwe_param par;
-    iarchive(par);
-
-    std::cout << "par.n: " << par.n << std::endl;
-    std::cout << "par.Q: " << par.Q << std::endl;
-    std::cout << "par.stddev: " << par.stddev << std::endl;
-    std::cout << "par.key_d: " << par.key_d << std::endl; 
-}
-
-void write_ct(lwe_ct ct){
-    std::ofstream os("z_ct.cereal");
-  
-    cereal::XMLOutputArchive oarchive(os);
-     
-    oarchive(ct); 
-}
-
-lwe_ct read_ct(){
-    std::ifstream is("z_ct.cereal");
-    cereal::XMLInputArchive iarchive(is);
-
-    lwe_ct ct;
-    iarchive(ct);
-    return ct;
-}
 
 
 void serialization_test(){
+    std::cout << "=========== serialization_test =============" << std::endl;
 
-    write();
-    read(); 
-
-
-    fhe_context context; 
+    fhe_context first_context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_NTT_amortized);
+    first_context.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+   
+     
+    first_context.save_secret_key("z_sk.cereal"); 
+    first_context.save_public_key("z_pk.cereal");
+ 
+    fhe_context context;
+    context.load_secret_key("z_sk.cereal"); 
+    context.load_public_key("z_pk.cereal");
+    
+    ciphertext ct0 = context.encrypt_public(1);   
+    assert(context.decrypt(&ct0) == 1);
+    std::cout << "Test Encrypt/Decrypt: OK" << std::endl;
 
-    ciphertext ct0 = context.encrypt_public(1); 
-
-    write_ct(ct0.lwe_c);
-
-    lwe_ct in_ct = read_ct();
-
-    ciphertext ct_out(in_ct, context.default_encoding);
-
-    std::cout << "context.decrypt(ct_out): " << context.decrypt(&ct_out) << std::endl;
-
+    auto id = [](long m, long t) -> long {
+        return m % t;
+    }; 
+      
+    ct0 = context.eval_lut(&ct0, id);  
+ 
+    context.save_ciphertext("z_ct.cereal", ct0);  
+    ciphertext ct_out = context.load_ciphertext("z_ct.cereal"); 
+    assert(context.decrypt(&ct_out) == 1);
+    std::cout << "Test Eval-Lut/Save and Load Ciphertext: OK" << std::endl;
+     
+    std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
+    os << ct_out; 
+    ciphertext ct_from_stream = context.load_ciphertext("z_rlwe_ct.cereal");
+    assert(context.decrypt(&ct_from_stream) == 1);
+    std::cout << "Test Writa and Save from Stream: OK" << std::endl;
 }
 
 
-int main(){   
+int main(){  
     
     basic_ciphertext_tests();
  
@@ -777,6 +753,6 @@ int main(){
 
     amortized_partial_domain_bootstrap_test();
 
-    //serialization_test();
+    serialization_test();
 
 }

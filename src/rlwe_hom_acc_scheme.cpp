@@ -2,21 +2,25 @@
 #include "../include/rlwe_hom_acc_scheme.h"
 
  
-rlwe_hom_acc_scheme::~rlwe_hom_acc_scheme(){ 
+rlwe_hom_acc_scheme::~rlwe_hom_acc_scheme(){  
     if(is_init == false){
         return;
-    }
+    } 
     delete[] u;
     delete[] acc_msb;
-    delete[] acc_one;
+    delete[] acc_one; 
     for(int i = 0; i < rlwe_gadget_par.param.N; ++i){ 
         for(int j = 0; j < lwe_gadget_par.ell; ++j){ 
             delete[] ksk[i][j];
         }
         delete[] ksk[i];
     } 
-    delete[] ksk; 
-    delete[] bk;
+    delete[] ksk;  
+    for(int i = 0; i < masking_size; ++i){
+        delete[] masking_key[i];
+    }
+    delete[] masking_key; 
+    delete[] bk; 
 }
  
  
@@ -37,6 +41,7 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other){
     this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
     this->next_acc = rlwe_ct(rlwe_gadget_par.param);
     this->out_ct = rlwe_ct(rlwe_gadget_par.param); 
+    this->out_ct.set_computing_engine();
     this->key_d = lwe_par.key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
@@ -46,8 +51,7 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other){
     set_key_switch_type();
     this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
     this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
- 
-    // Copy the key switching, bilind rotation and masking keys
+  
     copy_blind_rotation_key(other.bk);
     copy_key_switching_key(other.ksk);
     copy_masking_key(other.masking_key);
@@ -73,6 +77,7 @@ rlwe_hom_acc_scheme& rlwe_hom_acc_scheme::operator=(const rlwe_hom_acc_scheme ot
     this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
     this->next_acc = rlwe_ct(rlwe_gadget_par.param);
     this->out_ct = rlwe_ct(rlwe_gadget_par.param); 
+    this->out_ct.set_computing_engine();
     this->key_d = lwe_par.key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
@@ -82,9 +87,7 @@ rlwe_hom_acc_scheme& rlwe_hom_acc_scheme::operator=(const rlwe_hom_acc_scheme ot
     set_key_switch_type();
     this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
     this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
-
-    // Copy the key switching, bilind rotation and masking keys
-    // Copy the key switching, bilind rotation and masking keys
+  
     copy_blind_rotation_key(other.bk);
     copy_key_switching_key(other.ksk);
     copy_masking_key(other.masking_key);
@@ -118,6 +121,7 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
     this->next_acc = rlwe_ct(rlwe_gadget_par.param);
     this->out_ct = rlwe_ct(rlwe_gadget_par.param);
+    this->out_ct.set_computing_engine();
 
     this->key_d = lwe_par.key_d;
     if(this->key_d == binary){  
@@ -130,8 +134,9 @@ rlwe_hom_acc_scheme::rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par,
     this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
  
     // Set the key switching, bilind rotation and masking keys
-    this->ksk = ksk;
-    this->bk = bk;  
+    this->bk = bk;
+    //copy_blind_rotation_key(bk);
+    this->ksk = ksk;  
     this->masking_key = masking_key;
     is_init = true;
 }
@@ -180,6 +185,7 @@ void rlwe_hom_acc_scheme::copy_blind_rotation_key(rlwe_gadget_ct *bk){
         this->bk[i] = bk[i];
     }
 }
+  
 
 void rlwe_hom_acc_scheme::copy_key_switching_key(long ***ksk){
     // Initialize the key switching key
@@ -208,15 +214,15 @@ void rlwe_hom_acc_scheme::copy_masking_key(long **masking_key){
 }
 
 
-void rlwe_hom_acc_scheme::blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode){    
+void rlwe_hom_acc_scheme::blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode){     
     // Set curr_acc.a to zero
     for(int i = 0; i < rlwe_gadget_par.param.N; ++i){
         out->a[i] = 0;
-    }  
+    }   
     utils::negacyclic_rotate_poly(out->b, acc_msg, rlwe_gadget_par.param.N, lwe_ct_in[0]);   
-     
+      
     if(key_d==binary){    
-        for(int i = 0; i < lwe_par.n; ++i){   
+        for(int i = 0; i < lwe_par.n; ++i){    
             out->negacyclic_rotate(&next_acc, lwe_ct_in[i+1]);   
             next_acc.sub(&next_acc, out);      
             bk[i].mul(&next_acc, &next_acc, mode);    
@@ -305,6 +311,7 @@ lwe_ct rlwe_hom_acc_scheme::encrypt(long message){
         extract_lwe_par.add(out.ct, out.ct, temp);
     }
     out = out + message;
+    delete[] temp;
     return out;
 }
 
@@ -360,12 +367,11 @@ void rlwe_hom_acc_scheme::functional_bootstrap_initial(long *lwe_ct_out, long *a
 }
 
 
-void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode, int t){  
+void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode, int t){   
     // 1) Key switch to \ZZ_Q^{n+1}
     long *lwe_c_N = lwe_gadget_par.lwe_par.init_ct();
     long *lwe_c = lwe_gadget_par.lwe_par.init_ct();
-
-
+ 
     if(ks_type == lazy_key_switch){ 
         lwe_to_lwe_key_switch_lazy(lwe_c_N, lwe_ct_in);  
     }else if(ks_type == partial_lazy_key_switch){
@@ -373,7 +379,7 @@ void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, l
     }else{
         lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in);  
     }   
-  
+    
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_par.lwe_par.switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
 
@@ -391,9 +397,10 @@ void rlwe_hom_acc_scheme::functional_bootstrap(long *lwe_ct_out, long *acc_in, l
     for(int i = 1; i < lwe_par_tiny.n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
+  
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)  
     blind_rotate(&out_ct, lwe_c, acc_msb, deter);  
-
+ 
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)
     extract_lwe_from_rlwe(lwe_ct_out, &out_ct);  
   

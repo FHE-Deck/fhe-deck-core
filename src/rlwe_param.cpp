@@ -6,16 +6,14 @@ rlwe_ct::rlwe_ct(){}
 rlwe_ct::rlwe_ct(rlwe_param param){
     this->param = param; 
     a = this->param.init_poly();
-    b = this->param.init_poly(); 
-    mask = param.Q - 1;
+    b = this->param.init_poly();  
     is_init = true;
 }
 
 rlwe_ct::rlwe_ct(rlwe_param param, long *b, long *a){
     this->param = param; 
     this->a = a;
-    this->b = b; 
-    mask = param.Q - 1;
+    this->b = b;  
     is_init = true;
 }
   
@@ -37,7 +35,9 @@ rlwe_ct::rlwe_ct(const rlwe_ct &other){
         b[i] = other.b[i];
     }
     this->is_init = true;
-    set_computing_engine();
+    if(other.is_engine_set){
+        set_computing_engine();
+    } 
 }
  
 rlwe_ct& rlwe_ct::operator=(const rlwe_ct other){  
@@ -58,10 +58,12 @@ rlwe_ct& rlwe_ct::operator=(const rlwe_ct other){
             a[i] = other.a[i];
             b[i] = other.b[i];
         }
-        this->is_init = true; 
-        set_computing_engine();
+        this->is_init = true;  
     }else{
         throw 0;
+    }
+    if(other.is_engine_set){
+        set_computing_engine();
     }
     return *this;
 }
@@ -81,6 +83,7 @@ void rlwe_ct::set_computing_engine(){
     }else{
         throw std::exception();
     }
+    is_engine_set = true;
 }
 
 
@@ -118,6 +121,9 @@ void rlwe_ct::neg(rlwe_ct *out){
 
 
 void rlwe_ct::mul(rlwe_ct *out,  long *x){
+    if(is_engine_set == false){
+        set_computing_engine();
+    }
     mul(out->a, this->a, x);
     mul(out->b, this->b, x); 
 }
@@ -220,8 +226,7 @@ rlwe_param::rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus
     this->N = N; 
     this->stddev = stddev; 
     this->ring = ring;  
-    this->arithmetic = arithmetic;
-    //set_computing_engine(); 
+    this->arithmetic = arithmetic; 
 }
         
 
@@ -732,7 +737,7 @@ void rlwe_gadget_param::setup_the_other_parametrs(){
         w_any = 1;
         w = utils::power_times(basis, basis_any);
         if(!utils::is_power_of(basis, basis_any)){
-            std::cout << "WARNING: basis is not a powr of basis_any!!!" << std::endl;
+            std::cout << "WARNING: basis_any is not a power of basis!!!" << std::endl;
         }
         if(w * ell > ell_any){
             this->ell_max = w * ell;
@@ -743,7 +748,7 @@ void rlwe_gadget_param::setup_the_other_parametrs(){
         w = 1;
         w_any = utils::power_times(basis_any, basis);
         if(!utils::is_power_of(basis_any, basis)){
-            std::cout << "WARNING: basis is not a powr of basis_any!!!" << std::endl;
+            std::cout << "WARNING: basis is not a power of basis_any!!!" << std::endl;
         }
         if(w_any * ell_any > ell){
             this->ell_max = w_any * ell_any;
