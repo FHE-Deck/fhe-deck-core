@@ -5,7 +5,7 @@
 #include "../include/utils.h"
 
 
-
+using namespace fhe_deck;
 
 
 double mean(long* errors, int size_of_errors){
@@ -17,17 +17,14 @@ double mean(long* errors, int size_of_errors){
 }
 
 double variance(long* errors, int size_of_errors){
-    double m = mean(errors, size_of_errors);
-    //std::cout << "In Variance - mean: " << m << std::endl;
+    double m = mean(errors, size_of_errors); 
     double sum = 0.0;
     double square = 0.0;
     for(int i = 0; i < size_of_errors; ++i){
         square = errors[i] - m;
         square *= square;
         sum += square;
-    }
-    //std::cout << "In Variance - sum: " << sum << std::endl;
-    //std::cout << "In Variance - size_of_errors: " << size_of_errors << std::endl;
+    } 
     return sum/(double)size_of_errors;
 }
 
@@ -42,9 +39,9 @@ void plain_lwe_test(int test_num){
     int n = 512;
     double stddev = 3.2;
     long Q = 101; 
-    lwe_sk lwe(n, Q, stddev, binary); 
+    LWESK lwe(n, Q, stddev, binary); 
 
-    long *ct = lwe.lwe_par.init_ct();
+    long *ct = lwe.param->init_ct();
     long* errors = new long[test_num];
     for(int i = 0; i < test_num; ++i){
         // Measure time here - do we need to measure stuff here?
@@ -245,7 +242,7 @@ void plain_ntru_test(int test_num){
 
 void kdm_plain_ntru_test(int test_num){ 
     std::cout << "=== kdm_plain_ntru_test: Testing Error for Encryption === " << std::endl; 
-    sampler rand;
+    Sampler rand;
     // Prime number: 2**26 - 5
     long Q = 67108859;  
     // Prime number:  2**11 -9
@@ -272,16 +269,16 @@ void kdm_plain_ntru_test(int test_num){
         rand.uniform_array(msg, N, t);   
         ntru.kdm_scale_and_encrypt(&ct, msg, t);     
         ntru.decrypt(dec, &ct, t);   
-        utils::array_mod_form(dec, dec, ntru_par.N, t);   
-        if(!utils::is_eq_poly(dec, msg, ntru_par.N)){   
+        Utils::array_mod_form(dec, dec, ntru_par.N, t);   
+        if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){   
             correctness_test++;   
         }  
         //ntru.phase(phase, ct); 
         // Here actually rounding the phase (calling decrypt) should give us the message msg. 
         // Now need to subtract scaled msg from phase! 
-        utils::mul_scalar(msg_scaled, msg, N, scale); 
+        Utils::mul_scalar(msg_scaled, msg, N, scale); 
         //TODO: Here is a bug: I need to have msg in signed form
-        utils::array_signed_form(msg_scaled, msg_scaled, N, Q);
+        Utils::array_signed_form(msg_scaled, msg_scaled, N, Q);
         // phase - msg
         // ntru_par.sub(err, phase, msg_scaled);
         ntru.error(err, &ct, msg_scaled);
@@ -292,13 +289,13 @@ void kdm_plain_ntru_test(int test_num){
     rand.uniform_array(msg, N, t);
     ntru.kdm_scale_and_encrypt(&ct, msg, t);   
     ntru.decrypt(dec, &ct, t); 
-    utils::array_mod_form(dec, dec, ntru_par.N, t); 
-    if(!utils::is_eq_poly(dec, msg, ntru_par.N)){
+    Utils::array_mod_form(dec, dec, ntru_par.N, t); 
+    if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){
         correctness_test++;
     } 
     //ntru.phase(phase, ct);
-    utils::mul_scalar(msg_scaled, msg, N, scale);
-    utils::array_signed_form(msg_scaled, msg_scaled, N, Q);
+    Utils::mul_scalar(msg_scaled, msg, N, scale);
+    Utils::array_signed_form(msg_scaled, msg_scaled, N, Q);
     //ntru_par.sub(err, phase, msg_scaled);
     ntru.error(err, &ct, msg_scaled);
     int rest = test_num % N;
@@ -307,8 +304,8 @@ void kdm_plain_ntru_test(int test_num){
     }   
     if(correctness_test>0){
         std::cout << "Correctness Check: Fail(" << correctness_test << ")" << std::endl;
-        std::cout << "msg: " << utils::to_string(msg, N) << std::endl;
-        std::cout << "dec: " << utils::to_string(dec, N) << std::endl;
+        std::cout << "msg: " << Utils::to_string(msg, N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, N) << std::endl;
     }else{
         std::cout << "Correctness Check: OK" << std::endl; 
     }
@@ -336,14 +333,14 @@ void kdm_plain_ntru_test(int test_num){
         // ntru_sk::switch_modulus(ct_small, ct, ntru_par_small, ntru_par);
         ct_small = ct.mod_switch(ntru_par_small);
         ntru_small.decrypt(dec, &ct_small, t); 
-        utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
-        if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
+        Utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
+        if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
             correctness_test++; 
         }   
         // Modulus switch the ciphertext 
         //ntru_small.phase(phase, ct_small);
-        utils::mul_scalar(msg_scaled, msg, N, small_scale);
-        utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+        Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+        Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
         //ntru_par_small.sub(err, phase, msg_scaled);
         ntru.error(err, &ct_small, msg_scaled);
         for(int j = 0; j < N; ++j){ 
@@ -355,14 +352,14 @@ void kdm_plain_ntru_test(int test_num){
     // ntru_sk::switch_modulus(ct_small, ct, ntru_par_small, ntru_par); 
     ct_small = ct.mod_switch(ntru_par_small);
     ntru_small.decrypt(dec, &ct_small, t);
-    utils::array_mod_form(dec, dec, ntru_par_small.N, t);  
-    if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){
+    Utils::array_mod_form(dec, dec, ntru_par_small.N, t);  
+    if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){
         correctness_test++;
     }  
     // Lets check  
     //ntru_small.phase(phase, ct_small); 
-    utils::mul_scalar(msg_scaled, msg, N, small_scale);
-    utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+    Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+    Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
 
     // std::cout << "small_scale: " << small_scale << std::endl;
     // std::cout << "msg: " << utils::to_string(msg, N) << std::endl << std::endl;
@@ -376,8 +373,8 @@ void kdm_plain_ntru_test(int test_num){
     }  
     if(correctness_test>0){
         std::cout << "Correctness Check: Fail(" << correctness_test << ")" << std::endl;
-        std::cout << "msg: " << utils::to_string(msg, N) << std::endl;
-        std::cout << "dec: " << utils::to_string(dec, N) << std::endl;
+        std::cout << "msg: " << Utils::to_string(msg, N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, N) << std::endl;
     }else{
         std::cout << "Correctness Check: OK" << std::endl; 
     }
@@ -401,13 +398,13 @@ void kdm_plain_ntru_test(int test_num){
         rand.uniform_array(msg, N, t);
         ntru_small.kdm_scale_and_encrypt(&ct, msg, t);   
         ntru_small.decrypt(dec, &ct, t); 
-        utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
-        if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
+        Utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
+        if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
             correctness_test++; 
         }   
         // ntru_small.phase(phase, ct);
-        utils::mul_scalar(msg_scaled, msg, N, small_scale);
-        utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+        Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+        Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
         // ntru_par_small.sub(err, phase, msg_scaled); 
         ntru.error(err, &ct, msg_scaled);
         for(int j = 0; j < N; ++j){ 
@@ -417,13 +414,13 @@ void kdm_plain_ntru_test(int test_num){
     rand.uniform_array(msg, N, t);
     ntru_small.kdm_scale_and_encrypt(&ct, msg, t);   
     ntru_small.decrypt(dec, &ct, t); 
-    utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
-    if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
+    Utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
+    if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
         correctness_test++; 
     }   
     //ntru_small.phase(phase, ct);
-    utils::mul_scalar(msg_scaled, msg, N, small_scale);
-    utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+    Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+    Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
     //ntru_par_small.sub(err, phase, msg_scaled); 
     ntru.error(err, &ct, msg_scaled);
     //rest = test_num % N;
@@ -432,8 +429,8 @@ void kdm_plain_ntru_test(int test_num){
     }  
     if(correctness_test>0){
         std::cout << "Correctness Check: Fail(" << correctness_test << ")" << std::endl;
-        std::cout << "msg: " << utils::to_string(msg, N) << std::endl;
-        std::cout << "dec: " << utils::to_string(dec, N) << std::endl;
+        std::cout << "msg: " << Utils::to_string(msg, N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, N) << std::endl;
     }else{
         std::cout << "Correctness Check: OK" << std::endl; 
     }
@@ -456,13 +453,13 @@ void kdm_plain_ntru_test(int test_num){
         rand.uniform_array(msg, N, t);
         ntru_small.kdm_scale_and_encrypt(&ct, msg, t);   
         ntru_small.decrypt(dec, &ct, t); 
-        utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
-        if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
+        Utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
+        if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
             correctness_test++; 
         }   
         //ntru_small.phase(phase, ct);
-        utils::mul_scalar(msg_scaled, msg, N, small_scale);
-        utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+        Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+        Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
         //ntru_par_small.sub(err, phase, msg_scaled); 
         ntru.error(err, &ct, msg_scaled);
         for(int j = 0; j < N; ++j){ 
@@ -472,13 +469,13 @@ void kdm_plain_ntru_test(int test_num){
     rand.uniform_array(msg, N, t);
     ntru_small.kdm_scale_and_encrypt(&ct, msg, t);   
     ntru_small.decrypt(dec, &ct, t); 
-    utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
-    if(!utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
+    Utils::array_mod_form(dec, dec, ntru_par_small.N, t);   
+    if(!Utils::is_eq_poly(dec, msg, ntru_par_small.N)){ 
         correctness_test++; 
     }   
     //ntru_small.phase(phase, ct);
-    utils::mul_scalar(msg_scaled, msg, N, small_scale);
-    utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
+    Utils::mul_scalar(msg_scaled, msg, N, small_scale);
+    Utils::array_signed_form(msg_scaled, msg_scaled, N, small_Q);
     //ntru_par_small.sub(err, phase, msg_scaled); 
     ntru.error(err, &ct, msg_scaled);
     //rest = test_num % N;
@@ -487,8 +484,8 @@ void kdm_plain_ntru_test(int test_num){
     }  
     if(correctness_test>0){
         std::cout << "Correctness Check: Fail(" << correctness_test << ")" << std::endl;
-        std::cout << "msg: " << utils::to_string(msg, N) << std::endl;
-        std::cout << "dec: " << utils::to_string(dec, N) << std::endl;
+        std::cout << "msg: " << Utils::to_string(msg, N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, N) << std::endl;
     }else{
         std::cout << "Correctness Check: OK" << std::endl; 
     }
@@ -523,7 +520,7 @@ void mod_switch_keys_only(){
     long *inv_key = ntru.inv_f;
 
     long *out = new long[ntru_par.N];
-    utils::mul_mod(out, key, ntru_par.N, inv_key, ntru_par.N, ntru_par.N, ntru_par.Q, ntru_par.ring);
+    Utils::mul_mod(out, key, ntru_par.N, inv_key, ntru_par.N, ntru_par.N, ntru_par.Q, ntru_par.ring);
     //std::cout << "key * inv_key mod Q: " << utils::to_string(out, ntru_par.N) << std::endl;
      
     // Prime: 2**20 - 3
@@ -537,8 +534,8 @@ void mod_switch_keys_only(){
         temp = (double)inv_key[i] * small_Q;
         inv_key_scaled[i] = (long)round(temp/Q);
     }
-    utils::mul_mod(out, key, ntru_par_small.N, inv_key_scaled, ntru_par_small.N, ntru_par_small.N, ntru_par_small.Q, ntru_par.ring);
-    utils::array_signed_form(out, out, ntru_par_small.N, ntru_par_small.Q);
+    Utils::mul_mod(out, key, ntru_par_small.N, inv_key_scaled, ntru_par_small.N, ntru_par_small.N, ntru_par_small.Q, ntru_par.ring);
+    Utils::array_signed_form(out, out, ntru_par_small.N, ntru_par_small.Q);
     //std::cout << "key: " << utils::to_string(out, ntru_par.N) << std::endl;
 
     double emp_mean = mean(out, ntru_par_small.N);
@@ -594,7 +591,7 @@ void bogus_power_of_two_modulus_switch_tests(int test_num){
         } 
         // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
         ntru.decrypt(dec, &ct, t); 
-        if(!utils::is_eq_poly(dec, msg_pot, ntru_par.N)){
+        if(!Utils::is_eq_poly(dec, msg_pot, ntru_par.N)){
             correctness_test++;
         }
     }
@@ -608,7 +605,7 @@ void bogus_power_of_two_modulus_switch_tests(int test_num){
     }  
     // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
     ntru.decrypt(dec, &ct, t); 
-    if(!utils::is_eq_poly(dec, msg_pot, ntru_par.N)){
+    if(!Utils::is_eq_poly(dec, msg_pot, ntru_par.N)){
         correctness_test++;
         // std::cout << "dec: " << utils::to_string(dec, ntru_par.N) << std::endl;
     }
@@ -675,7 +672,7 @@ void correct_power_of_two_modulus_switch_tests(int test_num){
         } 
         // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
         ntru.decrypt(dec, &ct, t); 
-        if(!utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
+        if(!Utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
             correctness_test++;
         }
     }
@@ -691,7 +688,7 @@ void correct_power_of_two_modulus_switch_tests(int test_num){
     }  
     // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
     ntru.decrypt(dec, &ct, t); 
-    if(!utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
+    if(!Utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
         correctness_test++;
         // std::cout << "dec: " << utils::to_string(dec, ntru_par.N) << std::endl;
     }
@@ -723,7 +720,7 @@ void correct_power_of_two_modulus_switch_tests(int test_num){
         } 
         // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
         ntru.decrypt(dec, &ct, t); 
-        if(!utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
+        if(!Utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
             correctness_test++;
         }
     }
@@ -739,7 +736,7 @@ void correct_power_of_two_modulus_switch_tests(int test_num){
     }  
     // Decrypt for t = 2 - in this test it doesn't matter because the decryption should be 0 anyway
     ntru.decrypt(dec, &ct, t); 
-    if(!utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
+    if(!Utils::is_eq_poly(dec, msg_zero, ntru_par.N)){
         correctness_test++;
         // std::cout << "dec: " << utils::to_string(dec, ntru_par.N) << std::endl;
     }
@@ -803,7 +800,7 @@ void gadget_ntru_errors_test(int test_num){
             errors[N * i + j] = phase[j];
         } 
         ntru.decrypt(dec, &out_ct, t); 
-        if(!utils::is_eq_poly(dec, msg, ntru_par.N)){
+        if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){
             correctness_test++; 
         }
     }
@@ -816,9 +813,9 @@ void gadget_ntru_errors_test(int test_num){
         errors[N * iterations + j] = phase[j];
     }  
     ntru.decrypt(dec, &out_ct, t); 
-    if(!utils::is_eq_poly(dec, msg, ntru_par.N)){
+    if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){
         correctness_test++;
-        std::cout << "dec: " << utils::to_string(dec, ntru_g_par.param.N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, ntru_g_par.param.N) << std::endl;
     }
     if(correctness_test >0){
         std::cout << "Correctness test: Fail (" << correctness_test << ")" << std::endl;
@@ -875,7 +872,7 @@ void gadget_ntru_power_of_two_errors_test(int test_num){
             errors[N * i + j] = phase[j];
         } 
         ntru.decrypt(dec, &out_ct, t); 
-        if(!utils::is_eq_poly(dec, msg, ntru_par.N)){
+        if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){
             correctness_test++;
         }
     }
@@ -888,7 +885,7 @@ void gadget_ntru_power_of_two_errors_test(int test_num){
         errors[N * iterations + j] = phase[j];
     }  
     ntru.decrypt(dec, &out_ct, t); 
-    if(!utils::is_eq_poly(dec, msg, ntru_par.N)){
+    if(!Utils::is_eq_poly(dec, msg, ntru_par.N)){
         correctness_test++;
     }
     if(correctness_test >0){
@@ -917,7 +914,7 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
     // Gadget Encrypt bits
     // If bit was 0, then I check with zero polynomials, if 1, then I check with msg polynomial
 
-    sampler rand;
+    Sampler rand;
     // Prime: 2**30  
     long Q = 1073741824;  
     Q =  Q-35;
@@ -970,16 +967,16 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
         g_ct.gadget_mul(&out_ct, &ct);
         // Need to check whether it decrypts correctly.
         ntru.decrypt(dec, &out_ct, t);
-        utils::array_mod_form(dec, dec, ntru_par.N, t);   
-        utils::mul_scalar(exp_msg, msg, N, g_msg[0]);
-        if(!utils::is_eq_poly(exp_msg, dec, N)){
+        Utils::array_mod_form(dec, dec, ntru_par.N, t);   
+        Utils::mul_scalar(exp_msg, msg, N, g_msg[0]);
+        if(!Utils::is_eq_poly(exp_msg, dec, N)){
             correctness_test++;
         }
         // Compute the error
         //ntru.phase(phase, out_ct);   
         //utils::array_signed_form(phase, phase, N, Q); 
-        utils::mul_scalar(msg_scaled, exp_msg, N, scale);  
-        utils::array_signed_form(msg_scaled, msg_scaled, N, Q); 
+        Utils::mul_scalar(msg_scaled, exp_msg, N, scale);  
+        Utils::array_signed_form(msg_scaled, msg_scaled, N, Q); 
         //ntru_par.sub(err, phase, msg_scaled);
         ntru.error(err, &out_ct, msg_scaled);
         for(int j = 0; j < N; ++j){ 
@@ -998,18 +995,18 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
     g_ct.gadget_mul(&out_ct, &ct);
     // Need to check whether it decrypts correctly.
     ntru.decrypt(dec, &out_ct, t);
-    utils::array_mod_form(dec, dec, ntru_par.N, t);   
+    Utils::array_mod_form(dec, dec, ntru_par.N, t);   
     // Need dec in mod form
-    utils::mul_scalar(exp_msg, msg, N, g_msg[0]);
-    if(!utils::is_eq_poly(exp_msg, dec, N)){
+    Utils::mul_scalar(exp_msg, msg, N, g_msg[0]);
+    if(!Utils::is_eq_poly(exp_msg, dec, N)){
         correctness_test++;
     }
     // Compute the error
     //ntru.phase(phase, out_ct);   
     //utils::array_signed_form(phase, phase, N, Q); 
     //std::cout << "phase: " << utils::to_string(phase, N) << std::endl;
-    utils::mul_scalar(msg_scaled, exp_msg, N, scale);  
-    utils::array_signed_form(msg_scaled, msg_scaled, N, Q); 
+    Utils::mul_scalar(msg_scaled, exp_msg, N, scale);  
+    Utils::array_signed_form(msg_scaled, msg_scaled, N, Q); 
     //ntru_par.sub(err, phase, msg_scaled);
     ntru.error(err, &out_ct, msg_scaled);
     //std::cout << "g_msg[0]: " << g_msg[0] << std::endl;
@@ -1020,10 +1017,10 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
     if(correctness_test >0){
         std::cout << "Correctness test: Fail (" << correctness_test << ")" << std::endl;
         std::cout << "Number of Multiplications: " << iterations+1 << std::endl; 
-        std::cout << "msg: " << utils::to_string(msg, N) << std::endl;
-        std::cout << "exp_msg: " << utils::to_string(exp_msg, N) << std::endl;
-        std::cout << "g_msg" << utils::to_string(g_msg, N) << std::endl;
-        std::cout << "dec: " << utils::to_string(dec, N) << std::endl;
+        std::cout << "msg: " << Utils::to_string(msg, N) << std::endl;
+        std::cout << "exp_msg: " << Utils::to_string(exp_msg, N) << std::endl;
+        std::cout << "g_msg" << Utils::to_string(g_msg, N) << std::endl;
+        std::cout << "dec: " << Utils::to_string(dec, N) << std::endl;
     }else{
         std::cout << "Correctness test: OK" << std::endl;
     }

@@ -6,63 +6,62 @@
 #include "enums.h"  
 #include "plaintext_encoding.h" 
 
-class fhe_context; // Forward declaration
+namespace fhe_deck{
+    
+class FHEContext; // Forward declaration
 
-class ciphertext{
+class Ciphertext{
 
     public: 
  
-        lwe_ct *lwe_c;
+        LWECT *lwe_c;
         bool is_lwe_ct = false;
 
         bool is_init = false;
  
-        plaintext_encoding encoding;
+        PlaintextEncoding encoding;
 
-        fhe_context* context;
+        FHEContext* context;
 
-        ~ciphertext();
+        ~Ciphertext();
 
-        ciphertext() = default;
+        Ciphertext() = default;
   
-        ciphertext(lwe_ct &lwe_c, plaintext_encoding encoding, fhe_context* context);
+        Ciphertext(LWECT &lwe_c, PlaintextEncoding encoding, FHEContext* context);
  
-        ciphertext(const ciphertext &c);
+        Ciphertext(const Ciphertext &c);
 
-        ciphertext(ciphertext &other);
+        Ciphertext(Ciphertext &other);
  
-        ciphertext& operator=(const ciphertext other);
+        Ciphertext& operator=(const Ciphertext other);
  
-        void add(ciphertext* ct);
+        void add(Ciphertext* ct);
 
-        void sub(ciphertext* ct) ;
+        void sub(Ciphertext* ct) ;
 
         void mul(long b);
   
-        ciphertext operator+(long b);
+        Ciphertext operator+(long b);
 
-        ciphertext operator+(ciphertext ct);
+        Ciphertext operator+(Ciphertext ct);
 
-        ciphertext operator-(long b);
+        Ciphertext operator-(long b);
 
-        ciphertext operator-(ciphertext ct);
+        Ciphertext operator-(Ciphertext ct);
 
-        ciphertext operator-();
+        Ciphertext operator-();
     
-        ciphertext operator*(long b);
+        Ciphertext operator*(long b);
  
 };
 
 
-
-ciphertext operator+(long b, ciphertext ct);
-
-ciphertext operator-(long b, ciphertext ct);
-
-ciphertext operator*(long b, ciphertext ct);
-
-
+}
   
- 
+fhe_deck::Ciphertext operator+(long b, fhe_deck::Ciphertext ct);
+
+fhe_deck::Ciphertext operator-(long b, fhe_deck::Ciphertext ct);
+
+fhe_deck::Ciphertext operator*(long b, fhe_deck::Ciphertext ct);
 
 #endif

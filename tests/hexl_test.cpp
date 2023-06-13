@@ -11,6 +11,7 @@
 
 #include "hexl/hexl.hpp"
 
+using namespace fhe_deck;
 
 bool CheckEqual(const std::vector<uint64_t>& x,
                 const std::vector<uint64_t>& y) {
@@ -246,9 +247,9 @@ void random_mul_test(){
     for(int i=1; i < N; ++i){
         psi[i] = 0;
     } 
-    sampler rand;
+    Sampler rand;
     NTL::ZZ_pX psi_poly;
-    utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
+    Utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
 
     uint64_t poly_1[N];
     uint64_t poly_2[N]; 
@@ -265,7 +266,7 @@ void random_mul_test(){
     {
         rand.uniform_array((long*) poly_1, N, Q);
         rand.uniform_array((long*) poly_2, N, Q); 
-        utils::mul_mod(prod, (long*) poly_1, N, (long*) poly_2, N, N, Q, negacyclic);  
+        Utils::mul_mod(prod, (long*) poly_1, N, (long*) poly_2, N, N, Q, negacyclic);  
         ntt.ComputeForward(x, poly_1, 1, 1);
         ntt.ComputeForward(y, poly_2, 1, 1);
         intel::hexl::EltwiseMultMod(z, x, y, N, Q, 1);
@@ -299,9 +300,9 @@ void random_multisum_test(){
     for(int i=1; i < N; ++i){
         psi[i] = 0;
     } 
-    sampler rand;
+    Sampler rand;
     NTL::ZZ_pX psi_poly;
-    utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
+    Utils::set_polynomial_from_array(psi_poly, psi, N+1, Q); 
 
     uint64_t poly_1[N];
     uint64_t poly_2[N]; 
@@ -324,8 +325,8 @@ void random_multisum_test(){
     {
         rand.uniform_array((long*) poly_1, N, Q);
         rand.uniform_array((long*) poly_2, N, Q); 
-        utils::mul_mod(prod, (long*) poly_1, N, (long*) poly_2, N, N, Q, negacyclic);  
-        utils::add_mod(multisum_ntl, multisum_ntl,  N, prod, N, N, Q);
+        Utils::mul_mod(prod, (long*) poly_1, N, (long*) poly_2, N, N, Q, negacyclic);  
+        Utils::add_mod(multisum_ntl, multisum_ntl,  N, prod, N, N, Q);
         ntt.ComputeForward(x, poly_1, 1, 1);
         ntt.ComputeForward(y, poly_2, 1, 1);
         intel::hexl::EltwiseMultMod(z, x, y, N, Q, 1);

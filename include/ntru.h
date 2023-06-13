@@ -11,6 +11,7 @@
 #include "ntru_param.h"
 #include "fft_plan.h"
  
+namespace fhe_deck{
 
 class ntru_sk {
   
@@ -106,5 +107,6 @@ class gadget_ntru{
 
 };
 
+}
 
 #endif

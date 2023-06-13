@@ -1,9 +1,9 @@
 #include "../include/lwe_param.h"
 #include <iostream>
  
-lwe_param::lwe_param(){}
+using namespace fhe_deck; 
 
-lwe_param::lwe_param(int n, long Q, key_dist key_d, double stddev){
+LWEParam::LWEParam(int n, long Q, KeyDistribution key_d, double stddev){
     this->n = n;
     this->Q = Q;
     this->key_d = key_d;
@@ -11,7 +11,7 @@ lwe_param::lwe_param(int n, long Q, key_dist key_d, double stddev){
 }
  
 
-lwe_param lwe_param::modulus_switch(long new_modulus){  
+LWEParam LWEParam::modulus_switch(long new_modulus){  
     double new_stddev = (new_modulus * this->stddev)/this->Q;
     if(new_stddev < 3.2){
         // TODO: This is a solrt of hack solution.
@@ -19,11 +19,11 @@ lwe_param lwe_param::modulus_switch(long new_modulus){
         // But to do this, perhaps the key_d parameter should be a more complex struct with hamming weight etc.  
         new_stddev = 3.2;
     } 
-    lwe_param new_param(this->n, new_modulus, this->key_d, new_stddev); 
+    LWEParam new_param(this->n, new_modulus, this->key_d, new_stddev); 
     return new_param;
 }
 
-long* lwe_param::init_ct(){ 
+long* LWEParam::init_ct(){ 
     long* ct = new long[this->n+1]; 
     for(int i = 0; i < n+1; ++i){
         ct[i] = 0;
@@ -32,36 +32,44 @@ long* lwe_param::init_ct(){
 }
   
  
-void lwe_param::scalar_mul(long *out, long *ct, long scalar){
+void LWEParam::scalar_mul(long *out, long *ct, long scalar){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct[i] * scalar) % Q;
     }
 }
 
-void lwe_param::scalar_mul_lazy(long *out, long *ct, long scalar){
+void LWEParam::scalar_mul_lazy(long *out, long *ct, long scalar){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct[i] * scalar);
     }
 }
 
-void lwe_param::add(long *out, long *ct_1, long *ct_2){
+void LWEParam::add(long *out, long *ct_1, long *ct_2){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct_1[i] + ct_2[i]) % Q;
     }
 }
 
-void lwe_param::add_lazy(long *out, long *ct_1, long *ct_2){
+void LWEParam::add_lazy(long *out, long *ct_1, long *ct_2){
     for(int i = 0; i <= n; ++i){
         out[i] = (ct_1[i] + ct_2[i]);
     }
 }
 
 
-
-void lwe_param::switch_modulus(long *out_ct, long *in_ct, lwe_param &new_param){ 
+void LWEParam::switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param){ 
     double temp; 
     for(int i = 0; i < n+1; ++i){
         temp =  new_param.Q *  in_ct[i];
+        out_ct[i] = (long)round(temp/(double)Q); 
+    }
+}
+
+
+void LWEParam::switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param){ 
+    double temp; 
+    for(int i = 0; i < n+1; ++i){
+        temp =  new_param->Q *  in_ct[i];
         out_ct[i] = (long)round(temp/(double)Q); 
     }
 }
@@ -75,28 +83,28 @@ void lwe_param::serialize(Archive & ar ){
 */
 
 
-lwe_ct::lwe_ct(lwe_param lwe_param){
-    this->lwe_par = lwe_param;
-    this->ct = lwe_par.init_ct();
+LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
+    this->param = lwe_param;
+    this->ct = param->init_ct();
     this->init = true;
     
 }
 
-lwe_ct::lwe_ct(lwe_param lwe_param, long* ct){
-    this->lwe_par = lwe_param;
-    this->ct = lwe_par.init_ct();
+LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
+    this->param = lwe_param;
+    this->ct = param->init_ct();
     this->init = true;
-    for(int i = 0; i < lwe_par.n+1; ++i){
+    for(int i = 0; i < param->n+1; ++i){
         this->ct[i] = ct[i];
     }
 }
 
 
-lwe_ct::lwe_ct(const lwe_ct &c){  
-    this->lwe_par = c.lwe_par;
-    this->ct = lwe_par.init_ct();
+LWECT::LWECT(const LWECT &c){  
+    this->param = c.param;
+    this->ct = param->init_ct();
     //this->pe = c.pe;
-    for(int i = 0; i < lwe_par.n+1; ++i){
+    for(int i = 0; i < param->n+1; ++i){
         this->ct[i] = c.ct[i];
     }
     this->init = true;
@@ -105,22 +113,20 @@ lwe_ct::lwe_ct(const lwe_ct &c){
 
 
 
-lwe_ct::lwe_ct(lwe_ct &c){  
-    this->lwe_par = c.lwe_par;
-    this->ct = lwe_par.init_ct();
-    //this->pe = c.pe;
-    for(int i = 0; i < lwe_par.n+1; ++i){
+LWECT::LWECT(LWECT &c){  
+    this->param = c.param;
+    this->ct = param->init_ct(); 
+    for(int i = 0; i < param->n+1; ++i){
         this->ct[i] = c.ct[i];
     }
     this->init = true;
 }
 
 
-lwe_ct::lwe_ct(lwe_ct *c){  
-    this->lwe_par = c->lwe_par;
-    this->ct = lwe_par.init_ct();
-    //this->pe = c.pe;
-    for(int i = 0; i < lwe_par.n+1; ++i){
+LWECT::LWECT(LWECT *c){  
+    this->param = c->param;
+    this->ct = param->init_ct(); 
+    for(int i = 0; i < param->n+1; ++i){
         this->ct[i] = c->ct[i];
     }
     this->init = true;
@@ -128,170 +134,160 @@ lwe_ct::lwe_ct(lwe_ct *c){
  
 
 
-lwe_ct::~lwe_ct(){    
+LWECT::~LWECT(){    
     delete[] ct;
 }
 
-void lwe_ct::scalar_mul(long scalar){
-    for(int i = 0; i <= lwe_par.n; ++i){
-        ct[i] = (ct[i] * scalar) % lwe_par.Q;
+void LWECT::scalar_mul(long scalar){
+    for(int i = 0; i <= param->n; ++i){
+        ct[i] = (ct[i] * scalar) % param->Q;
     }
 }
 
-void lwe_ct::mul(long scalar){
-    for(int i = 0; i <= lwe_par.n; ++i){
-        ct[i] = (ct[i] * scalar) % lwe_par.Q;
+void LWECT::mul(long scalar){
+    for(int i = 0; i <= param->n; ++i){
+        ct[i] = (ct[i] * scalar) % param->Q;
     }
 }
 
-void lwe_ct::scalar_mul_lazy(long scalar){
-    for(int i = 0; i <= lwe_par.n; ++i){
+void LWECT::scalar_mul_lazy(long scalar){
+    for(int i = 0; i <= param->n; ++i){
         ct[i] = (ct[i] * scalar);
     }
 }
 
-void lwe_ct::add(lwe_ct *c){
-    for(int i = 0; i <= lwe_par.n; ++i){
-        this->ct[i] = (this->ct[i] + c->ct[i]) % lwe_par.Q;
+void LWECT::add(LWECT *c){
+    for(int i = 0; i <= param->n; ++i){
+        this->ct[i] = (this->ct[i] + c->ct[i]) % param->Q;
     }
 }
 
-void lwe_ct::sub(lwe_ct *c){
-    for(int i = 0; i <= lwe_par.n; ++i){
-        this->ct[i] = utils::integer_mod_form(this->ct[i] - c->ct[i], lwe_par.Q);
+void LWECT::sub(LWECT *c){
+    for(int i = 0; i <= param->n; ++i){
+        this->ct[i] = Utils::integer_mod_form(this->ct[i] - c->ct[i], param->Q);
     }
 }
 
-void lwe_ct::add_lazy(lwe_ct *c){
-    for(int i = 0; i <= lwe_par.n; ++i){
+void LWECT::add_lazy(LWECT *c){
+    for(int i = 0; i <= param->n; ++i){
         this->ct[i] = this->ct[i] + c->ct[i] ;
     }
 }
+ 
 
-/*
-void lwe_ct::add(ciphertext* b){
-    //lwe_ct* ct_cast = dynamic_cast<lwe_ct*>(b);
-    lwe_ct ct_cast(b);
-    add(&ct_cast);
+void LWECT::add(long b){ 
+    this->ct[0] = (this->ct[0] + b) % this->param->Q;
 }
-*/
+ 
 
-
-void lwe_ct::add(long b){ 
-    this->ct[0] = (this->ct[0] + b) % this->lwe_par.Q;
-}
-
-/*
-void lwe_ct::sub(ciphertext* b){
-    //lwe_ct* ct_cast = dynamic_cast<lwe_ct*>(b);
-    lwe_ct ct_cast(b);
-    sub(&ct_cast);
-}
-*/
-
-void lwe_ct::sub(long b){
-    this->ct[0] = utils::integer_mod_form(this->ct[0] - b, lwe_par.Q);
+void LWECT::sub(long b){
+    this->ct[0] = Utils::integer_mod_form(this->ct[0] - b, param->Q);
 }
 
 
-lwe_ct& lwe_ct::operator=(const lwe_ct other){  
+LWECT& LWECT::operator=(const LWECT other){  
     if (this == &other)
     {
         return *this;
     }   
-    if(init && (lwe_par.n == other.lwe_par.n)){ 
-        lwe_par = other.lwe_par;
-        for(int i = 0; i < lwe_par.n+1; ++i){
+    if(init==false){
+        this->param = other.param;
+        this->ct = param->init_ct(); 
+        for(int i = 0; i < param->n+1; ++i){
+            this->ct[i] = other.ct[i];
+        }
+        this->init = true;
+    }
+    else if(init && (param->n == other.param->n)){ 
+        param = other.param;
+        for(int i = 0; i < param->n+1; ++i){
             ct[i] = other.ct[i];
         }
     }else{
-        throw 0;
+        throw std::logic_error("Wrong case in lwe_ct::operator=");
     } 
     return *this;
 } 
 
  
-lwe_ct lwe_ct::operator+(long b){   
-    lwe_ct ct_out(this);   
-    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] + b, lwe_par.Q);
+LWECT LWECT::operator+(long b){   
+    LWECT ct_out(this);   
+    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] + b, param->Q);
     return ct_out; 
 }
    
 
-lwe_ct lwe_ct::operator+(lwe_ct b){  
-    lwe_ct ct_out(this);  
+LWECT LWECT::operator+(LWECT b){  
+    LWECT ct_out(this);  
     ct_out.add(&b); 
     return ct_out;
 }
    
 
-lwe_ct lwe_ct::operator+(lwe_ct *b){  
-    lwe_ct ct_out(this);  
+LWECT LWECT::operator+(LWECT *b){  
+    LWECT ct_out(this);  
     ct_out.add(b); 
     return ct_out;
 }
 
 
-lwe_ct lwe_ct::operator-(long b){  
-    lwe_ct ct_out(this);  
-    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] - b, lwe_par.Q); 
+LWECT LWECT::operator-(long b){  
+    LWECT ct_out(this);  
+    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] - b, param->Q); 
     return ct_out; 
 }
     
-lwe_ct lwe_ct::operator-(lwe_ct b){  
-    lwe_ct ct_out(this);  
+LWECT LWECT::operator-(LWECT b){  
+    LWECT ct_out(this);  
     ct_out.sub(&b); 
     return ct_out;
 }
 
-lwe_ct lwe_ct::operator-(lwe_ct *b){  
-    lwe_ct ct_out(this);  
+LWECT LWECT::operator-(LWECT *b){  
+    LWECT ct_out(this);  
     ct_out.sub(b); 
     return ct_out;
 }
 
-lwe_ct lwe_ct::operator-(){  
-    lwe_ct ct_out(this);  
-    for(int i = 0; i < lwe_par.n+1; ++i){
-        ct_out.ct[i] = utils::integer_mod_form(-this->ct[i], lwe_par.Q);
+LWECT LWECT::operator-(){  
+    LWECT ct_out(this);  
+    for(int i = 0; i < param->n+1; ++i){
+        ct_out.ct[i] = Utils::integer_mod_form(-this->ct[i], param->Q);
     } 
     return ct_out;
 }
 
 
-lwe_ct lwe_ct::operator*(long b){
-    lwe_ct ct_out = new lwe_ct(this);  
+LWECT LWECT::operator*(long b){
+    LWECT ct_out = new LWECT(this);  
     ct_out.mul(b);
     return ct_out; 
 }  
 
    
-lwe_ct operator+(long b, lwe_ct ct){ 
-    lwe_ct ct_out(&ct);  
-    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] +  b, ct_out.lwe_par.Q);
+LWECT operator+(long b, LWECT ct){ 
+    LWECT ct_out(&ct);  
+    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] +  b, ct_out.param->Q);
     return ct_out; 
 }
 
-lwe_ct operator-(long b, lwe_ct ct){
-    lwe_ct temp = -ct;
-    lwe_ct ct_out(&temp);
-    ct_out.ct[0] = utils::integer_mod_form(ct_out.ct[0] + b, ct_out.lwe_par.Q);
+LWECT operator-(long b, LWECT ct){
+    LWECT temp = -ct;
+    LWECT ct_out(&temp);
+    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] + b, ct_out.param->Q);
     return ct_out; 
 }
 
-lwe_ct operator*(long b, lwe_ct ct){
-    lwe_ct ct_out(&ct);  
+LWECT operator*(long b, LWECT ct){
+    LWECT ct_out(&ct);  
     ct_out.mul(b);
     return ct_out; 
 }
  
 
-
-
- lwe_gadget_param::lwe_gadget_param(){}
-
-lwe_gadget_param::lwe_gadget_param(lwe_param lwe_par, int basis){
-      this->lwe_par = lwe_par;
+ 
+LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, int basis){
+      this->lwe_param = lwe_par;
       this->basis = basis; 
       // Note that for now, we accept only power of two basis (because our decomposition is written this way)
       this->k = 1;
@@ -303,33 +299,33 @@ lwe_gadget_param::lwe_gadget_param(lwe_param lwe_par, int basis){
       this->ell = 1;
       temp = basis;
        
-      while(temp < this->lwe_par.Q){
+      while(temp < this->lwe_param->Q){
             temp *= basis;
             this->ell++;
       }
 }
 
 
-long** lwe_gadget_param::init_gadget_ct(){
+long** LWEGadgetParam::init_gadget_ct(){
     long **gadget_ct = new long*[this->ell];
     for(int i = 0; i < this->ell; ++i){
-        gadget_ct[i] = this->lwe_par.init_ct();
+        gadget_ct[i] = this->lwe_param->init_ct();
     } 
     return gadget_ct;
 }
 
 
 
-void lwe_gadget_param::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
-    for(int i = 0; i < lwe_par.n+1; ++i){
+void LWEGadgetParam::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
+    for(int i = 0; i < lwe_param->n+1; ++i){
         out_ct[i] = 0;
     }
     long *scalar_decomposed = new long[ell]; 
-    utils::integer_decomp(scalar_decomposed, scalar, basis, k, ell);
-    long *temp_ct = new long[lwe_par.n+1];
+    Utils::integer_decomp(scalar_decomposed, scalar, basis, k, ell);
+    long *temp_ct = new long[lwe_param->n+1];
     for(int i = 0; i < ell; ++i){
-        lwe_par.scalar_mul(temp_ct, gadget_ct[i], scalar_decomposed[i]);
-        lwe_par.add(out_ct, out_ct, temp_ct);
+        lwe_param->scalar_mul(temp_ct, gadget_ct[i], scalar_decomposed[i]);
+        lwe_param->add(out_ct, out_ct, temp_ct);
     }
     delete[] scalar_decomposed;
     delete[] temp_ct;
@@ -337,27 +333,27 @@ void lwe_gadget_param::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
 
 
 
-void lwe_gadget_param::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar){  
-    for(int i = 0; i < lwe_par.n+1; ++i){
+void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar){  
+    for(int i = 0; i < lwe_param->n+1; ++i){
         out_ct[i] = 0;
     }
     long *scalar_decomposed = new long[ell]; 
-    utils::integer_decomp(scalar_decomposed, scalar, basis, k, ell);
+    Utils::integer_decomp(scalar_decomposed, scalar, basis, k, ell);
     if(basis==2){
         for(int i = 0; i < ell; ++i){
             if(scalar_decomposed[i]==1){
-                lwe_par.add_lazy(out_ct, out_ct, gadget_ct[i]);
+                lwe_param->add_lazy(out_ct, out_ct, gadget_ct[i]);
             }
         }
     }else{
-        long *temp_ct = new long[lwe_par.n+1];
+        long *temp_ct = new long[lwe_param->n+1];
         for(int i = 0; i < ell; ++i){
-            lwe_par.scalar_mul_lazy(temp_ct, gadget_ct[i], scalar_decomposed[i]);
-            lwe_par.add_lazy(out_ct, out_ct, temp_ct);
+            lwe_param->scalar_mul_lazy(temp_ct, gadget_ct[i], scalar_decomposed[i]);
+            lwe_param->add_lazy(out_ct, out_ct, temp_ct);
         } 
         delete[] temp_ct;
     } 
     // Modulus reduction only at the  end
-    utils::array_mod_form(out_ct, out_ct, lwe_par.n+1, lwe_par.Q); 
+    Utils::array_mod_form(out_ct, out_ct, lwe_param->n+1, lwe_param->Q); 
     delete[] scalar_decomposed;
 }

@@ -11,6 +11,8 @@
 #include <random>
 #include <math.h>
 
+using namespace fhe_deck;
+
 /*
 void ntru_param_test(){
 
@@ -131,7 +133,7 @@ void large_modulu_ntru_tests(){
    std::cout << "Decrypt..." << std::endl;
    long *out_msg = ntru.decrypt(&ct_ntru, t); 
    std::cout << "Testing..." << std::endl;
-   if(utils::is_eq_poly(out_msg, msg, param.N)){
+   if(Utils::is_eq_poly(out_msg, msg, param.N)){
       std::cout << "- Decryption 1 test: OK" << std::endl;
    }else{
       std::cout << "- Decryption 1 test: Fail"  << std::endl;
@@ -144,12 +146,12 @@ void large_modulu_ntru_tests(){
    //long *key_signed = param.init_poly();
    //utils::array_signed_form(key_signed, key, param.N, param.Q);
    // Remind that msg_expected_poly is the message multiplied by the secret key 
-   if(utils::is_eq_poly(out_msg_2, key, param.N)){
+   if(Utils::is_eq_poly(out_msg_2, key, param.N)){
       std::cout << "- Decryption 2 test: OK" << std::endl;
    }else{
       std::cout << "- Decryption 2 test: Fail"  << std::endl;
-      std::cout << "out_msg_2: " << utils::to_string(out_msg_2, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
+      std::cout << "out_msg_2: " << Utils::to_string(out_msg_2, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
    } 
  
 }
@@ -190,13 +192,13 @@ void kdm_ntru_tests(){
 
    ntru_ct ct_ntru = ntru.kdm_encrypt(msg); 
    long *out_msg = ntru.decrypt(&ct_ntru, t); 
-   if(utils::is_eq_poly(out_msg, exp_msg, param.N)){
+   if(Utils::is_eq_poly(out_msg, exp_msg, param.N)){
       std::cout << "- KDM Decryption Test: OK" << std::endl;
    }else{
       std::cout << "- KDM Decryption Test: Fail"  << std::endl;
-      std::cout << "out_msg: " << utils::to_string(out_msg, param.N) << std::endl;
-      std::cout << "msg: " << utils::to_string(msg, param.N) << std::endl;
-      std::cout << "exp_msg: " << utils::to_string(exp_msg, param.N) << std::endl;
+      std::cout << "out_msg: " << Utils::to_string(out_msg, param.N) << std::endl;
+      std::cout << "msg: " << Utils::to_string(msg, param.N) << std::endl;
+      std::cout << "exp_msg: " << Utils::to_string(exp_msg, param.N) << std::endl;
    } 
    
  
@@ -325,9 +327,9 @@ void temp_test_decryption_single_coefficient(){
    //std::cout << "out: " << utils::to_string(out, param.N) << std::endl;
  
    // ``Decrypting'' the first coefficient only.   
-   long first_coef = utils::integer_mod_form(ntru.decrypt_coef(&ct, t), param.Q);  
+   long first_coef = Utils::integer_mod_form(ntru.decrypt_coef(&ct, t), param.Q);  
    first_coef = first_coef % param.Q;
-   if(first_coef == utils::integer_mod_form(out[0], param.Q)){
+   if(first_coef == Utils::integer_mod_form(out[0], param.Q)){
       std::cout << "Decrypting Constant Coefficient Test: OK" << std::endl;
    }else{
       std::cout << "Decrypting Constant Coefficient Test: Fail" << std::endl;
@@ -369,7 +371,7 @@ void test_ntru_mod_switching(){
    long new_Q = 1073741827; 
    //long* key_signed = param.init_poly();
    //utils::array_signed_form(key_signed, key, param.N, param.Q);
-   std::cout << "key_signed: " << utils::to_string(key, param.N) << std::endl;  
+   std::cout << "key_signed: " << Utils::to_string(key, param.N) << std::endl;  
    long *new_key = key;
    long* new_inv_key = inv_key;
    ntru_param new_param(negacyclic, N, new_Q, any, stddev); 
@@ -380,7 +382,7 @@ void test_ntru_mod_switching(){
    ntru_ct new_ct = ct.mod_switch(new_param);
    
    long *new_out = new_ntru.decrypt(&new_ct, t); 
-   if(utils::is_eq_poly(new_out, out, new_param.N)){
+   if(Utils::is_eq_poly(new_out, out, new_param.N)){
       std::cout << "Modulus Switching Test: OK"  <<   std::endl;
    }else{
       std::cout << "Modulus Switching Test: Fail"  <<   std::endl;
@@ -391,7 +393,7 @@ void test_ntru_mod_switching(){
    //long *new_kdm_ct = ntru_sk::switch_modulus(ct, new_param, param); 
    ntru_ct new_kdm_ct = ct.mod_switch(new_param);
    long *new_kdm_out = new_ntru.decrypt(&kdm_ct, t); 
-   if(utils::is_eq_poly(new_kdm_out, kdm_out, new_param.N)){
+   if(Utils::is_eq_poly(new_kdm_out, kdm_out, new_param.N)){
       std::cout << "KDM Modulus Switching Test: OK"  <<   std::endl;
    }else{
       std::cout << "KDM Modulus Switching Test: Fail"  <<   std::endl;
@@ -406,7 +408,7 @@ void test_ntru_mod_switching(){
    //long *new_kdm_ct_2 = ntru_sk::switch_modulus(kdm_ct_2, new_param, param); 
    ntru_ct new_kdm_ct_2 = kdm_ct_2.mod_switch(new_param);
    long *new_kdm_out_2 = new_ntru.decrypt(&new_kdm_ct_2, t); 
-   if(utils::is_eq_poly(kdm_out_2, new_kdm_out_2, new_param.N)){
+   if(Utils::is_eq_poly(kdm_out_2, new_kdm_out_2, new_param.N)){
       std::cout << "KDM Modulus Switching Test 2: OK"  <<   std::endl;
    }else{
       std::cout << "KDM Modulus Switching Test 2: Fail"  <<   std::endl;
@@ -466,12 +468,12 @@ void test_power_of_two_ntru_mod_switching(){
    //out[0] = 1;
    //long* signed_key = param.init_poly();
    //utils::array_signed_form(signed_key, key, param.N, param.Q);
-   if(utils::is_eq_poly(new_out, key, param.N)){
+   if(Utils::is_eq_poly(new_out, key, param.N)){
       std::cout << "Power of Two Modulus Switching Test: OK"  <<   std::endl;
    }else{
       std::cout << "Power of Two Modulus Switching Test: Fail"  <<   std::endl;
-      std::cout << "new_out: " << utils::to_string(new_out, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
+      std::cout << "new_out: " << Utils::to_string(new_out, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
    } 
  
    
@@ -481,19 +483,19 @@ void test_power_of_two_ntru_mod_switching(){
    msg[3] = {delta_Q_t_pot * 3}; 
    msg[4] = {delta_Q_t_pot * 4}; 
    long *msg_round = param_pot.init_poly();
-   utils::array_rounding(msg_round, msg, param_pot.N, param_pot.Q, t);
+   Utils::array_rounding(msg_round, msg, param_pot.N, param_pot.Q, t);
    // long *kdm_ct = ntru.kdm_encrypt(msg);  
    ntru_ct kdm_ct = ntru.kdm_encrypt(msg);  
    // long *new_kdm_ct = ntru_sk::switch_modulus(ct, param, param_pot); 
    ntru_ct new_kdm_ct = ct.mod_switch(param);
    long *new_kdm_out = ntru.decrypt(&kdm_ct, t); 
-   utils::array_mod_form(new_kdm_out, new_kdm_out, param.N, t);
-   if(utils::is_eq_poly(new_kdm_out, msg_round, param.N)){
+   Utils::array_mod_form(new_kdm_out, new_kdm_out, param.N, t);
+   if(Utils::is_eq_poly(new_kdm_out, msg_round, param.N)){
       std::cout << "KDM Power of Two Modulus Switching Test: OK"  <<   std::endl;
    }else{
       std::cout << "KDM  Power of Two Modulus Switching Test: Fail"  <<   std::endl;
-      std::cout << "new_kdm_out: " << utils::to_string(new_kdm_out, param.N) << std::endl;
-      std::cout << "msg_round: " << utils::to_string(msg_round, param.N) << std::endl;
+      std::cout << "new_kdm_out: " << Utils::to_string(new_kdm_out, param.N) << std::endl;
+      std::cout << "msg_round: " << Utils::to_string(msg_round, param.N) << std::endl;
    }
 }
 
@@ -548,12 +550,12 @@ void gadget_ntru_tests(){
    ntru_sk ntru(param, key, inv_key);
 
    NTL::ZZ_pX key_poly;
-   utils::set_polynomial_from_array(key_poly, key, N, Q);
+   Utils::set_polynomial_from_array(key_poly, key, N, Q);
    NTL::ZZ_pX inv_key_poly;
-   utils::set_polynomial_from_array(inv_key_poly, inv_key, N, Q);
+   Utils::set_polynomial_from_array(inv_key_poly, inv_key, N, Q);
    // Lets multiply both, and check whether we get 1, modulo psi 
    NTL::ZZ_pX res; 
-   NTL::MulMod(res, key_poly, inv_key_poly, utils::get_ring_poly(param.ring, N, Q));
+   NTL::MulMod(res, key_poly, inv_key_poly, Utils::get_ring_poly(param.ring, N, Q));
    if(res == 1){
       std::cout << "- Test Key generation: OK" << std::endl;
    }else{
@@ -581,9 +583,9 @@ void gadget_ntru_tests(){
    scalar[1] = delta_Q_t * 1;
 
    long* scalar_key = param.init_poly();
-   utils::mul_mod(scalar_key, scalar, param.N, key, param.N, N, Q, negacyclic); 
+   Utils::mul_mod(scalar_key, scalar, param.N, key, param.N, N, Q, negacyclic); 
    long* scalar_key_rounded = param.init_poly();
-   utils::array_rounding(scalar_key_rounded, scalar_key, param.N, Q, t); 
+   Utils::array_rounding(scalar_key_rounded, scalar_key, param.N, Q, t); 
  
    //long **gadget_ct = g_ntru.gadget_encrypt(gadget_msg);
    ntru_gadget_ct gadget_ct = g_ntru.gadget_encrypt(gadget_msg);
@@ -596,13 +598,13 @@ void gadget_ntru_tests(){
    //std::cout << "out_ct after multiplication: " << out_ct.to_string() << std::endl;
    long *out_msg = ntru.decrypt(&out_ct, t);
 
-   if(utils::is_eq_poly(out_msg, scalar_key_rounded, param.N)){
+   if(Utils::is_eq_poly(out_msg, scalar_key_rounded, param.N)){
       std::cout << "Gadget Scalar Multiplication Test 1: OK" << std::endl;
    }
    else{
       std::cout << "Gadget Scalar Multiplication Test 1: Fail" << std::endl;
-      std::cout << "out_msg: " << utils::to_string(out_msg, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
+      std::cout << "out_msg: " << Utils::to_string(out_msg, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
    }
 
  
@@ -615,13 +617,13 @@ void gadget_ntru_tests(){
    gadget_ct.gadget_mul(&out_ct_2, &ct_1);
    // Decryption of out_ct_2 should give us the scalar multiplied by the secret key because the gadget ciphertext encrypts 1.
    long *out_msg_2 = ntru.decrypt(&out_ct_2, t);
-   if(utils::is_eq_poly(out_msg_2, scalar_key_rounded, param.N)){
+   if(Utils::is_eq_poly(out_msg_2, scalar_key_rounded, param.N)){
       std::cout << "Gadget Ciphertext Multiplication Test 2: OK" << std::endl;
    }
    else{
       std::cout << "Gadget Ciphertext Multiplication Test 2: Fail" << std::endl;
-      std::cout << "out_msg_2: " << utils::to_string(out_msg_2, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
+      std::cout << "out_msg_2: " << Utils::to_string(out_msg_2, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
    }
 
 }
@@ -668,9 +670,9 @@ void gadget_ntru_fft_tests(){
         
    // Set up the key multiplied by the scalar
    long* scalar_key = param.init_poly();
-   utils::mul_mod(scalar_key, msg_scaled, param.N, key, N, N, Q, negacyclic); 
+   Utils::mul_mod(scalar_key, msg_scaled, param.N, key, N, N, Q, negacyclic); 
    long* scalar_key_rounded = param.init_poly();
-   utils::array_rounding(scalar_key_rounded, scalar_key, param.N, Q, t);
+   Utils::array_rounding(scalar_key_rounded, scalar_key, param.N, Q, t);
   
     
    ntru_ct out_ct(param);
@@ -679,14 +681,14 @@ void gadget_ntru_fft_tests(){
    gadget_ct.gadget_mul(&out_ct, scalar);  
    long *out_msg = ntru.decrypt(&out_ct, t);
 
-   if(utils::is_eq_poly(out_msg, scalar_key_rounded, param.N)){
+   if(Utils::is_eq_poly(out_msg, scalar_key_rounded, param.N)){
       std::cout << "Gadget Scalar Multiplication Test 1: OK" << std::endl;
    }
    else{
       std::cout << "Gadget Scalar Multiplication Test 1: Fail" << std::endl;
-      std::cout << "out_msg: " << utils::to_string(out_msg, param.N) << std::endl;
-      std::cout << "scalar_key_rounded: " << utils::to_string(scalar_key_rounded, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
+      std::cout << "out_msg: " << Utils::to_string(out_msg, param.N) << std::endl;
+      std::cout << "scalar_key_rounded: " << Utils::to_string(scalar_key_rounded, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
    }
    
    // Encrypting scalar_key
@@ -699,15 +701,15 @@ void gadget_ntru_fft_tests(){
    // This modulus reduced gadget multiplication should be in out_ct_2
    // Decryption of out_ct_2 should give us the scalar multiplied by the secret key because the gadget ciphertext encrypts 1.
    long *out_msg_2 = ntru.decrypt(&out_ct_2, t);  
-   utils::array_mod_form(out_msg_2, out_msg_2, N, t); 
-   if(utils::is_eq_poly(out_msg_2, msg, param.N)){
+   Utils::array_mod_form(out_msg_2, out_msg_2, N, t); 
+   if(Utils::is_eq_poly(out_msg_2, msg, param.N)){
       std::cout << "Gadget Ciphertext Multiplication Test 2: OK" << std::endl;
    }
    else{
       std::cout << "Gadget Ciphertext Multiplication Test 2: Fail" << std::endl;
-      std::cout << "out_msg_2: " << utils::to_string(out_msg_2, param.N) << std::endl;
-      std::cout << "key: " << utils::to_string(key, param.N) << std::endl;
-      std::cout << "msg: " << utils::to_string(msg, param.N) << std::endl;
+      std::cout << "out_msg_2: " << Utils::to_string(out_msg_2, param.N) << std::endl;
+      std::cout << "key: " << Utils::to_string(key, param.N) << std::endl;
+      std::cout << "msg: " << Utils::to_string(msg, param.N) << std::endl;
    } 
 }
 

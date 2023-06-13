@@ -2,35 +2,45 @@
 #define ROTATION_POLY_H
 
 #include "utils.h"
+#include "plaintext_encoding.h"
 
-class rotation_poly{
 
+namespace fhe_deck{
 
+class RotationPoly{
+ 
 public:
 
     long* lookup_polynomial;
-    long N;
-    long Q;
-    long t;
-    bool is_scaled = true;
+    long N; 
+    PlaintextEncoding output_encoding;
+    bool is_encoded = true; 
+    bool is_amortized_form = false;
 
-    ~rotation_poly();
+    ~RotationPoly();
 
-    rotation_poly() = default;
+    RotationPoly() = default;
 
-    rotation_poly(long* lookup_polynomial, long t, long N, long Q);
+    
+    RotationPoly(long (*f)(long message, long plaintext_space), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
-    rotation_poly(long (*f)(long message, long plaintext_space), long t, long N, long Q);
+    RotationPoly(long (*f)(long message), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+ 
+    RotationPoly(long* lookup_polynomial, long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+  
+    RotationPoly(const RotationPoly &poly);
 
-    rotation_poly(long (*f)(long message), long t, long N, long Q);
+    void encode();
 
-    rotation_poly(const rotation_poly &poly);
+    void decode();
 
+    void to_amortization_form();
+
+    void to_non_amortized_form();
 
     static void set_polynomial(long* lookup_polynomial, long (*f)(long message), long t, long N, long Q);
 
-    void flip_scale();
-    
+ 
     static long* rot_msb(int t, long N, long Q); 
 
     static long* rot_one(long N); 
@@ -63,5 +73,7 @@ public:
     static long* cyclic_rot_uni_poly(int* poly, int poly_size, int t, long N, long Q);  
 
 };
+
+}
 
 #endif

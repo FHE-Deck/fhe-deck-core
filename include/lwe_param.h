@@ -10,7 +10,10 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-class lwe_param{
+
+namespace fhe_deck{
+
+class LWEParam{
 
   public:  
 
@@ -18,12 +21,12 @@ class lwe_param{
   long Q; 
 
   // TODO: Actually key_d and stddev should be rather in secret key params
-  key_dist key_d;
+  KeyDistribution key_d;
   double stddev;
 
-  lwe_param();
+  LWEParam() = default;
  
-  lwe_param(int n, long Q, key_dist key_d, double stddev); 
+  LWEParam(int n, long Q, KeyDistribution key_d, double stddev); 
    
     long* init_ct();
  
@@ -35,9 +38,11 @@ class lwe_param{
 
     void add_lazy(long *out, long *ct_1, long *ct_2); 
 
-    lwe_param modulus_switch(long new_modulus);
+    LWEParam modulus_switch(long new_modulus);
 
-    void switch_modulus(long *out_ct, long *in_ct, lwe_param &new_param);
+    void switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param);
+
+    void switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param);
  
     template <class Archive>
     void save( Archive & ar ) const
@@ -50,38 +55,38 @@ class lwe_param{
     void load( Archive & ar )
     {  
       ar(n, Q);
-      ar(key_d, stddev );
+      ar(key_d, stddev);
       
     } 
   
 };
 
-class lwe_ct{
+class LWECT{
  
   public:
  
-    lwe_param lwe_par;
+    std::shared_ptr<LWEParam> param;
 
     bool init = false;
  
     long *ct;
 
-    lwe_ct() = default;
+    LWECT() = default;
 
     // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
-    lwe_ct(lwe_param lwe_par);
+    LWECT(std::shared_ptr<LWEParam> lwe_par);
 
-    lwe_ct(lwe_param lwe_par, long* ct);
+    LWECT(std::shared_ptr<LWEParam> lwe_par, long* ct);
 
-    lwe_ct(const lwe_ct &c);
+    LWECT(const LWECT &c);
  
-    lwe_ct(lwe_ct &c);
+    LWECT(LWECT &c);
 
-    lwe_ct(lwe_ct *c); 
+    LWECT(LWECT *c); 
 
-    ~lwe_ct();
+    ~LWECT();
 
-    lwe_ct& operator=(const lwe_ct other);
+    LWECT& operator=(const LWECT other);
    
     void scalar_mul(long scalar);
     
@@ -89,43 +94,43 @@ class lwe_ct{
  
     void mul(long b);
     
-    void add(lwe_ct *ct);
+    void add(LWECT *ct);
  
-    void sub(lwe_ct *ct);
+    void sub(LWECT *ct);
     
-    void add_lazy(lwe_ct *ct); 
+    void add_lazy(LWECT *ct); 
     
-    void switch_modulus(lwe_param &new_param);
+    void switch_modulus(LWEParam &new_param);
   
     void add(long b);
   
     void sub(long b);
    
-    lwe_ct operator+(long b);
+    LWECT operator+(long b);
 
-    lwe_ct operator+(lwe_ct ct);
+    LWECT operator+(LWECT ct);
 
-    lwe_ct operator+(lwe_ct *ct);
+    LWECT operator+(LWECT *ct);
 
-    lwe_ct operator-(long b);
+    LWECT operator-(long b);
 
-    lwe_ct operator-(lwe_ct ct);
+    LWECT operator-(LWECT ct);
 
-    lwe_ct operator-(lwe_ct *ct);
+    LWECT operator-(LWECT *ct);
 
-    lwe_ct operator-();
+    LWECT operator-();
     
-    lwe_ct operator*(long b);  
+    LWECT operator*(long b);  
 
 
 
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_par); 
+      ar(param); 
 
       std::vector<long> ct_arr; 
-      for(int i = 0; i < lwe_par.n+1; ++i){
+      for(int i = 0; i < param->n+1; ++i){
         ct_arr.push_back(ct[i]);
       }
       ar(ct_arr) ;
@@ -134,11 +139,11 @@ class lwe_ct{
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_par);
+      ar(param);
       std::vector<long> ct_arr;
       ar(ct_arr);
-      ct = new long[lwe_par.n+1];
-      for(int i = 0; i < lwe_par.n+1; ++i){
+      ct = new long[param->n+1];
+      for(int i = 0; i < param->n+1; ++i){
         ct[i] = ct_arr[i];
       }
       this->init = true;
@@ -148,24 +153,24 @@ class lwe_ct{
 };
 
 
-lwe_ct operator+(long b, lwe_ct ct);
+LWECT operator+(long b, LWECT ct);
 
-lwe_ct operator-(long b, lwe_ct ct);
+LWECT operator-(long b, LWECT ct);
 
-lwe_ct operator*(long b, lwe_ct ct);
+LWECT operator*(long b, LWECT ct);
 
 
-class lwe_gadget_param{
+class LWEGadgetParam{
 
   public:
     int basis;
     int ell;
     int k;
-    lwe_param lwe_par;
+    std::shared_ptr<LWEParam> lwe_param;
 
-    lwe_gadget_param();
+    LWEGadgetParam() = default;
 
-    lwe_gadget_param(lwe_param lwe_par, int basis);
+    LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, int basis);
 
     long** init_gadget_ct(); 
 
@@ -178,15 +183,17 @@ class lwe_gadget_param{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_par, basis, ell, k);
+      ar(lwe_param, basis, ell, k);
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_par, basis, ell, k);
+      ar(lwe_param, basis, ell, k);
     } 
  
 };
+
+}
  
 #endif

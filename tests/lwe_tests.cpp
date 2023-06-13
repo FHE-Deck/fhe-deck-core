@@ -9,14 +9,15 @@
 #include <random>
 
 
+using namespace fhe_deck;
 void basic_lwe_test(){ 
    std::cout << "========= Testing LWE ============" << std::endl;
     
     int n = 10;
     long Q = 1073741827; 
     double stddev = 3.2;
-    lwe_sk lwe(n, Q, stddev, binary); 
-    lwe_param param = lwe.get_lwe_param(); 
+    LWESK lwe(n, Q, stddev, binary); 
+    LWEParam param = lwe.get_lwe_param(); 
 
     long t = 8;
     long delta_Q_t = (long)round((double)Q/(double)t);
@@ -82,8 +83,8 @@ void gadget_multiplication_test(){
     int n = 10;
     long Q = 1073741827; 
     double stddev = 3.2;
-    lwe_sk lwe(n, Q, stddev, binary); 
-    lwe_param param = lwe.get_lwe_param(); 
+    LWESK lwe(n, Q, stddev, binary); 
+    LWEParam param = lwe.get_lwe_param(); 
       
     long t = 8;
     long delta_Q_t = (long)round((double)Q/(double)t);
@@ -97,8 +98,9 @@ void gadget_multiplication_test(){
    // From python
    // 11 = math.ceil(math.log(1073741827, 8))
    //int ell = 11;
-   lwe_gadget_param lwe_g_par(param, basis);
-   lwe_gadget_sk lwe_g(lwe_g_par, lwe);
+   LWEGadgetParam lwe_g_par(std::shared_ptr<LWEParam>(&param), basis);
+
+   LWEGadgetSK lwe_g(lwe_g_par, lwe);
 
 /*
     long **gadget_ct = new long*[ell];
@@ -128,8 +130,8 @@ void mod_switching_test(){
     int n = 10;
     long Q = 1073741827; 
     double stddev = 3.2;
-    lwe_sk lwe(n, Q, stddev, binary); 
-    lwe_param param = lwe.get_lwe_param(); 
+    LWESK lwe(n, Q, stddev, binary); 
+    LWEParam param = lwe.get_lwe_param(); 
  
 
     long t = 8;
@@ -149,7 +151,7 @@ void mod_switching_test(){
     long new_Q = 1073741827;
     
     long delta_new_Q_t = (long)round((double)new_Q/(double)t);
-    lwe_param new_param = param.modulus_switch(new_Q); 
+    LWEParam new_param = param.modulus_switch(new_Q); 
     long *new_ct = param.init_ct();
     param.switch_modulus(new_ct, ct, new_param);
     long new_dec = lwe.decrypt(new_ct, t);  

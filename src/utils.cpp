@@ -2,8 +2,9 @@
 #include "../include/utils.h"
 
  
+using namespace fhe_deck;
 
-void utils::set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, long Q){
+void Utils::set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, long Q){
     NTL::ZZ_p coef;
     coef.init(NTL::ZZ(Q));
     for(int i = 0; i < sizeof_f; ++i){
@@ -12,7 +13,7 @@ void utils::set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, l
     } 
 }
 
-void utils::set_array_from_polynomial(long *f, int sizeof_array, NTL::ZZ_pX poly){ 
+void Utils::set_array_from_polynomial(long *f, int sizeof_array, NTL::ZZ_pX poly){ 
     for(int i = 0; i < sizeof_array; ++i){
         f[i] = 0;
     }
@@ -23,7 +24,7 @@ void utils::set_array_from_polynomial(long *f, int sizeof_array, NTL::ZZ_pX poly
 }
 
 
-void utils::add_polynomials(long *out, long *in_1, long *in_2, int sizeof_in_1, int sizeof_in_2){
+void Utils::add_polynomials(long *out, long *in_1, long *in_2, int sizeof_in_1, int sizeof_in_2){
     if(sizeof_in_1 < sizeof_in_2){
         for(int i = 0; i < sizeof_in_1; ++i){
             out[i] = in_1[i] + in_2[i];
@@ -42,57 +43,57 @@ void utils::add_polynomials(long *out, long *in_1, long *in_2, int sizeof_in_1, 
 }
 
 
-void utils::mod_polynomial(long *out, long *in, int sizeof_in, long modulus){
+void Utils::mod_polynomial(long *out, long *in, int sizeof_in, long modulus){
     for(int i = 0; i < sizeof_in; +i){
         out[i] = in[i] % modulus;
     }
 }
 
 
-void utils::mul_scalar(long *out, long *in, int sizeof_in, long scalar){
+void Utils::mul_scalar(long *out, long *in, int sizeof_in, long scalar){
     for(int i = 0; i < sizeof_in; ++i){
         out[i] = in[i] * scalar;
     }
 }
 
 
-void utils::mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus, ring_type ring){
+void Utils::mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus, RingType ring){
    NTL::ZZ_pX in_1_poly;
-   utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
+   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
    NTL::ZZ_pX in_2_poly;
-   utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
+   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
    NTL::ZZ_pX res = NTL::MulMod(in_1_poly, in_2_poly, get_ring_poly(ring, N, modulus)); 
-   utils::set_array_from_polynomial(out, N, res);
+   Utils::set_array_from_polynomial(out, N, res);
 }
 
 
-void utils::add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus){
+void Utils::add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus){
    NTL::ZZ_pX in_1_poly;
-   utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
+   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
    NTL::ZZ_pX in_2_poly;
-   utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
+   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
    NTL::ZZ_pX res = in_1_poly + in_2_poly;
-   utils::set_array_from_polynomial(out, N, res);
+   Utils::set_array_from_polynomial(out, N, res);
 }
 
-void utils::sub_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus){
+void Utils::sub_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus){
    NTL::ZZ_pX in_1_poly;
-   utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
+   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
    NTL::ZZ_pX in_2_poly;
-   utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
+   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
    NTL::ZZ_pX res = in_1_poly - in_2_poly;
-   utils::set_array_from_polynomial(out, N, res);
+   Utils::set_array_from_polynomial(out, N, res);
 }
 
 
-void utils::neg_mod(long *out, long *in, int size, long modulus){
+void Utils::neg_mod(long *out, long *in, int size, long modulus){
     for(int i = 0; i < size; ++i){
-        out[i] = utils::integer_mod_form(-in[i], modulus);
+        out[i] = Utils::integer_mod_form(-in[i], modulus);
     }
 
 }
 
-NTL::ZZ_pX utils::get_ring_poly(ring_type ring, long N, long modulus){
+NTL::ZZ_pX Utils::get_ring_poly(RingType ring, long N, long modulus){
     NTL::ZZ_pX out;
     long *psi_arr = new long[N+1]; 
     psi_arr[N] = 1;
@@ -104,19 +105,19 @@ NTL::ZZ_pX utils::get_ring_poly(ring_type ring, long N, long modulus){
     }else{
         psi_arr[0] = 1;
     }
-    utils::set_polynomial_from_array(out, psi_arr, N+1, modulus); 
+    Utils::set_polynomial_from_array(out, psi_arr, N+1, modulus); 
     return out;
 }
 
 
-void utils::cp(long *out, long *in, int size){
+void Utils::cp(long *out, long *in, int size){
     for(int i =0; i < size; ++i){
         out[i] = in[i];
     }
 }
 
 
-int utils::power_times(long x, long base){
+int Utils::power_times(long x, long base){
     long temp = base; 
     int k = 1;
     while(temp < x){
@@ -127,7 +128,7 @@ int utils::power_times(long x, long base){
 }
 
 
-bool utils::is_power_of(long x, long base){
+bool Utils::is_power_of(long x, long base){
     long temp = base; 
     int k = 1;
     while(temp < x){
@@ -142,7 +143,7 @@ bool utils::is_power_of(long x, long base){
 }
 
 
-long utils::abs(long x){
+long Utils::abs(long x){
     if(x >= 0){
         return x;
     }
@@ -150,18 +151,18 @@ long utils::abs(long x){
 }
 
 
-long utils::mod_inv(long in, long modulus){
+long Utils::mod_inv(long in, long modulus){
     return NTL::InvMod(in, modulus);
 }
 
-long utils::square_and_div_by_4(long in, long modulus){
+long Utils::square_and_div_by_4(long in, long modulus){
     long square = NTL::MulMod(in, in, modulus);
     long inv_four = NTL::InvMod(4, modulus);
     return NTL::MulMod(square, inv_four, modulus);
 }
 
 
-long utils::eval_poly_mod(long in, int* poly, int poly_size, long modulus){
+long Utils::eval_poly_mod(long in, int* poly, int poly_size, long modulus){
     long ret = poly[0];
     long powers_of_in = 1;
     long term = 0;
@@ -175,7 +176,7 @@ long utils::eval_poly_mod(long in, int* poly, int poly_size, long modulus){
 
 
 
-bool utils::is_eq_poly(long *in_1, long *in_2, int sizeof_in){
+bool Utils::is_eq_poly(long *in_1, long *in_2, int sizeof_in){
     for(int i = 0; i < sizeof_in; ++i){
         if(in_1[i] != in_2[i]){
             return false;
@@ -185,7 +186,7 @@ bool utils::is_eq_poly(long *in_1, long *in_2, int sizeof_in){
 }
 
 
-void utils::rotate_poly(long *out_poly, long *in_poly, int poly_size, int rot){
+void Utils::rotate_poly(long *out_poly, long *in_poly, int poly_size, int rot){
     int overflow= poly_size - rot ;  
       for(int i = 0; i < overflow; ++i){   
             out_poly[i+rot] = in_poly[i];
@@ -198,7 +199,7 @@ void utils::rotate_poly(long *out_poly, long *in_poly, int poly_size, int rot){
 
 
 
-void utils::negacyclic_rotate_poly(long *out_poly, long *in_poly, int poly_size, int rot){
+void Utils::negacyclic_rotate_poly(long *out_poly, long *in_poly, int poly_size, int rot){
 
     long* temp = new long[poly_size];
     if(rot >= poly_size){
@@ -224,19 +225,19 @@ void utils::negacyclic_rotate_poly(long *out_poly, long *in_poly, int poly_size,
 
 
 
-long utils::integer_rounding(long in, long Q, long t){
-    long signed_in = utils::integer_signed_form(in, Q);
+long Utils::integer_rounding(long in, long Q, long t){
+    long signed_in = Utils::integer_signed_form(in, Q);
     double scale = (double)t/(double)Q; 
     return (long)std::round(scale * (double)signed_in);
 }
 
-void utils::array_rounding(long *out, long *in, int sizeof_in, long Q, long t){
+void Utils::array_rounding(long *out, long *in, int sizeof_in, long Q, long t){
     for(int i = 0; i < sizeof_in; ++i){
-        out[i] = utils::integer_rounding(in[i], Q, t);
+        out[i] = Utils::integer_rounding(in[i], Q, t);
     }  
 }
  
-long utils::integer_signed_form(long in, long Q){
+long Utils::integer_signed_form(long in, long Q){
     long half = Q/2;
     long minus_half = -half;
     // If its between 0, and -half, then return in
@@ -253,14 +254,14 @@ long utils::integer_signed_form(long in, long Q){
     //return in-Q ;
 }
  
-void utils::array_signed_form(long *out, long *in, int sizeof_in, long Q){ 
+void Utils::array_signed_form(long *out, long *in, int sizeof_in, long Q){ 
     for(int i = 0; i < sizeof_in; ++i){ 
-        out[i] =  utils::integer_signed_form(in[i], Q);
+        out[i] =  Utils::integer_signed_form(in[i], Q);
     }
 }
 
 
-long utils::integer_mod_form(long in, long Q){ 
+long Utils::integer_mod_form(long in, long Q){ 
     if(in >= 0){
         return in % Q;
     }else{
@@ -269,15 +270,15 @@ long utils::integer_mod_form(long in, long Q){
     }
 }
 
-void utils::array_mod_form(long *out, long *in, int sizeof_in, long Q){ 
+void Utils::array_mod_form(long *out, long *in, int sizeof_in, long Q){ 
     for(int i = 0; i < sizeof_in; ++i){ 
-        out[i] = utils::integer_mod_form(in[i], Q);
+        out[i] = Utils::integer_mod_form(in[i], Q);
     }
 }
 
  
 
-void utils::round_and_mod_reduce(long *out_poly, double *in_poly, long modulus, int sizeof_in_poly){ 
+void Utils::round_and_mod_reduce(long *out_poly, double *in_poly, long modulus, int sizeof_in_poly){ 
       for(int i = 0; i < sizeof_in_poly; ++i){
             out_poly[i] = (long)round(in_poly[i]) % modulus;
             
@@ -285,7 +286,7 @@ void utils::round_and_mod_reduce(long *out_poly, double *in_poly, long modulus, 
 }
 
 
-void utils::round_and_mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int sizeof_in_poly){ 
+void Utils::round_and_mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int sizeof_in_poly){ 
       long double Q_l = (long double) modulus;
       for(int i = 0; i < sizeof_in_poly; ++i){
             
@@ -293,35 +294,35 @@ void utils::round_and_mod_reduce(long *out_poly, long double *in_poly_l, long mo
       }  
 }
 
-void utils::round_and_mod_reduce_power_of_two(long *out_poly, double *in_poly, long mask, int sizeof_in_poly){
+void Utils::round_and_mod_reduce_power_of_two(long *out_poly, double *in_poly, long mask, int sizeof_in_poly){
       for(int i = 0; i < sizeof_in_poly; ++i){
             
             out_poly[i] = ((long)in_poly[i]) & mask; 
       }
 }
 
-void utils::round_and_mod_reduce_power_of_two(long *out_poly, long double *in_poly, long mask, int sizeof_in_poly){
+void Utils::round_and_mod_reduce_power_of_two(long *out_poly, long double *in_poly, long mask, int sizeof_in_poly){
       for(int i = 0; i < sizeof_in_poly; ++i){ 
             out_poly[i] = ((long)in_poly[i]) & mask;
             
       }
 }
 
-void utils::mod_reduce_power_of_two(long *out_poly, long *in_poly, long mask, int sizeof_in_poly){
+void Utils::mod_reduce_power_of_two(long *out_poly, long *in_poly, long mask, int sizeof_in_poly){
       for(int i = 0; i < sizeof_in_poly; ++i){
             out_poly[i] = in_poly[i] & mask; 
       }
 } 
 
 
-void utils::mod_reduce(long *out_poly, long *in_poly, long modulus, int sizeof_in_poly){
+void Utils::mod_reduce(long *out_poly, long *in_poly, long modulus, int sizeof_in_poly){
       for(int i = 0; i < sizeof_in_poly; ++i){  
       out_poly[i] = in_poly[i] % modulus;
    }
 } 
 
 
-void utils::mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int sizeof_in_poly){
+void Utils::mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int sizeof_in_poly){
       //long double coef;
       long double Q_l = (long double) modulus;
       for(int i = 0; i < sizeof_in_poly; ++i){  
@@ -341,7 +342,7 @@ void utils::mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int
 
 
 
-std::string utils::to_string(long *poly, int sizeof_poly){
+std::string Utils::to_string(long *poly, int sizeof_poly){
     if(sizeof_poly==0){
         return "[]";
     }
@@ -356,23 +357,7 @@ std::string utils::to_string(long *poly, int sizeof_poly){
     return str;
 }
 
-std::string utils::to_string(double *poly, int sizeof_poly){
-    if(sizeof_poly==0){
-        return "[]";
-    }
-    if(sizeof_poly==1){
-        return "[" + std::to_string(poly[0]) + "]" ;
-    }
-    std::string str = "[";
-    for(int i = 0; i < sizeof_poly-1; ++i){
-        str += std::to_string(poly[i]) + ", ";
-    }
-    str += std::to_string(poly[sizeof_poly-1]) + "]";
-    return str;
-}
-
-
-std::string utils::to_string(int *poly, int sizeof_poly){
+std::string Utils::to_string(double *poly, int sizeof_poly){
     if(sizeof_poly==0){
         return "[]";
     }
@@ -388,14 +373,30 @@ std::string utils::to_string(int *poly, int sizeof_poly){
 }
 
 
-void utils::set(long* out, long* in, int sizeof_in){
+std::string Utils::to_string(int *poly, int sizeof_poly){
+    if(sizeof_poly==0){
+        return "[]";
+    }
+    if(sizeof_poly==1){
+        return "[" + std::to_string(poly[0]) + "]" ;
+    }
+    std::string str = "[";
+    for(int i = 0; i < sizeof_poly-1; ++i){
+        str += std::to_string(poly[i]) + ", ";
+    }
+    str += std::to_string(poly[sizeof_poly-1]) + "]";
+    return str;
+}
+
+
+void Utils::set(long* out, long* in, int sizeof_in){
     for(int i = 0; i < sizeof_in; ++i){
         out[i] = in[i];
     }
 }
 
 
-void utils::integer_decomp(long *dec_out, long in , int basis, int k, int ell){
+void Utils::integer_decomp(long *dec_out, long in , int basis, int k, int ell){
     long mask = basis-1;
     long shift;
     for(int i = 0; i < ell; ++i){
@@ -405,7 +406,7 @@ void utils::integer_decomp(long *dec_out, long in , int basis, int k, int ell){
     }
 }
 
-long utils::integer_compose(long *dec_in, int basis, int ell){
+long Utils::integer_compose(long *dec_in, int basis, int ell){
     long out = dec_in[0];
     long temp_basis = 1;
     for(int i = 1; i < ell; ++i){
@@ -421,7 +422,7 @@ long utils::integer_compose(long *dec_in, int basis, int ell){
 - ell = log_basis(limit) (usually limit is the modulus)
 - param are the ntru parameters
 */
-void utils::decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell){
+void Utils::decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell){
     long mask = basis-1;
     long shift;
     for(int i = 0; i < ell; ++i){
@@ -438,10 +439,10 @@ void utils::decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, i
 /*
 Note that we assume the input polynomial has coefficients in [0, Q-1]
 */
-void utils::signed_decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell, long Q){
+void Utils::signed_decomp(long **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell, long Q){
     long* signed_poly = new long[sizeof_poly]; 
     long* sign = new long[sizeof_poly];
-    utils::array_signed_form(signed_poly, poly, sizeof_poly, Q); 
+    Utils::array_signed_form(signed_poly, poly, sizeof_poly, Q); 
     long half = Q/2;
     for(int i = 0; i < sizeof_poly; ++i){ 
         //signed_poly[i] =  utils::integer_signed_form(poly[i], Q);
@@ -453,7 +454,7 @@ void utils::signed_decomp(long **d_ct, long* poly, int sizeof_poly, int basis, i
             sign[i] = -1;
         }
     }
-    utils::decomp(d_ct, signed_poly, sizeof_poly, basis, k, ell);
+    Utils::decomp(d_ct, signed_poly, sizeof_poly, basis, k, ell);
     for(int j = 0; j < ell; ++j){
         for(int i = 0; i < sizeof_poly; ++i){
             d_ct[j][i] = d_ct[j][i] * sign[i];
@@ -471,7 +472,7 @@ void utils::signed_decomp(long **d_ct, long* poly, int sizeof_poly, int basis, i
 - ell = log_basis(limit) (usually limit is the modulus)
 - param are the ntru parameters
 */ 
-void utils::decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell){
+void Utils::decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, int ell){
     int mask = basis-1;
     int shift;
     for(int i = 0; i < ell; ++i){
@@ -485,17 +486,17 @@ void utils::decomp(int **d_ct, long* poly, int sizeof_poly, int basis, int k, in
 } 
 
 
-void utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell){
-    utils::set(out, d_ct[0], sizeof_poly);
+void Utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell){
+    Utils::set(out, d_ct[0], sizeof_poly);
     //std::cout << "In the loop: " << std::endl;
     int temp_basis = 1; 
     long* temp_array = new long[sizeof_poly];
     for(int i=1; i < ell; ++i){
         temp_basis = temp_basis * basis;
         //std::cout << "d_ct[" << i << "]: " << utils::to_string(d_ct[i], sizeof_poly) << std::endl;
-        utils::mul_scalar(temp_array, d_ct[i], sizeof_poly, temp_basis);
+        Utils::mul_scalar(temp_array, d_ct[i], sizeof_poly, temp_basis);
         //std::cout << "temp_array: " << utils::to_string(temp_array, sizeof_poly) << std::endl;
-        utils::add_polynomials(out, out, temp_array, sizeof_poly, sizeof_poly); 
+        Utils::add_polynomials(out, out, temp_array, sizeof_poly, sizeof_poly); 
     } 
     delete[] temp_array;
 }
@@ -504,7 +505,7 @@ void utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell)
 /*
 TODO: Deprecated: its implemented now in the gadget class
 */
-void utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, sampler &rand){
+void Utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, Sampler &rand){
     int mask = basis-1;
     int shift;  
     long* gaussians = new long[sizeof_poly];
@@ -533,7 +534,7 @@ void utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, in
  
 
 
-long utils::max(long* in, int N){
+long Utils::max(long* in, int N){
     long max = in[0];
     for(int i = 1; i < N; ++i){
         if(max < in[i]){
@@ -543,7 +544,7 @@ long utils::max(long* in, int N){
     return max;
 }
 
-long utils::min(long* in, int N){
+long Utils::min(long* in, int N){
     long max = in[0];
     for(int i = 1; i < N; ++i){
         if(max > in[i]){
@@ -553,7 +554,7 @@ long utils::min(long* in, int N){
     return max;
 }
 
-double utils::mean(long* in, int N){
+double Utils::mean(long* in, int N){
     double sum = 0;
     for(int i = 0; i < N; ++i){
         sum += (double)in[i];
@@ -561,7 +562,7 @@ double utils::mean(long* in, int N){
     return sum / (double)N;
 }
 
-double utils::variance(long* in, int N){
+double Utils::variance(long* in, int N){
     double m = mean(in, N); 
     double sum = 0.0;
     double square = 0.0;
@@ -573,7 +574,7 @@ double utils::variance(long* in, int N){
     return sum/(double)N;
 }
 
-double utils::variance(long* in, int N, double mean){
+double Utils::variance(long* in, int N, double mean){
     double m = mean;
     double sum = 0.0;
     double square = 0.0;
@@ -585,20 +586,20 @@ double utils::variance(long* in, int N, double mean){
     return sum/(double)N;
 }
 
-double utils::standard_deviation(long* in, int N){ 
-    return sqrt(utils::variance(in, N)); 
+double Utils::standard_deviation(long* in, int N){ 
+    return sqrt(Utils::variance(in, N)); 
 }
 
  
-double utils::standard_deviation(long* in, int N, double mean){ 
-    return sqrt(utils::variance(in, N, mean)); 
+double Utils::standard_deviation(long* in, int N, double mean){ 
+    return sqrt(Utils::variance(in, N, mean)); 
 }
 
-long utils::infinity_norm(long* in, int N){
+long Utils::infinity_norm(long* in, int N){
     long out = 0 ;
     long curr;
     for(int i = 0; i < N; ++i){
-        curr = utils::abs(in[i]);
+        curr = Utils::abs(in[i]);
         if(curr > out){
             out = curr;
         }
@@ -606,9 +607,9 @@ long utils::infinity_norm(long* in, int N){
     return out;
 }
 
-long* utils::count_occurences(long* in, int N){
-    long max = utils::max(in, N);
-    long min = utils::min(in, N);
+long* Utils::count_occurences(long* in, int N){
+    long max = Utils::max(in, N);
+    long min = Utils::min(in, N);
     int size = max - min + 1;
     long* occurences = new long[size];
     for(int i = 0; i < size; ++i){
@@ -620,7 +621,7 @@ long* utils::count_occurences(long* in, int N){
     return occurences;
 }
 
-long utils::count_positive(long* in, int N){
+long Utils::count_positive(long* in, int N){
     long out = 0;
     for(int i = 0; i < N; ++i){
         if(in[i] > 0){
@@ -630,7 +631,7 @@ long utils::count_positive(long* in, int N){
     return out;
 }
 
-long utils::count_negative(long* in, int N){
+long Utils::count_negative(long* in, int N){
     long out = 0;
     for(int i = 0; i < N; ++i){
         if(in[i] < 0){

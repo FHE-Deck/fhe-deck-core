@@ -8,12 +8,14 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-class gadget{
 
+namespace fhe_deck{
 
+class Gadget{
+ 
     public: 
 
-    gadget_type type;
+    GadgetType type;
 
     int basis;
     int ell;
@@ -23,22 +25,22 @@ class gadget{
     int N;
     long Q;
   
-    sampler rand;
+    Sampler rand;
     double stddev;
 
 
     // Tables/values precomputed for genralized Gaussian sampling from [EC:GenMic18]. We are use the smae notation as in the paper, except that I use q_decomp instead of q ofor the decomposition of the modulus Q.
     long* q_decomp;
     double sigma;
-    sampler rand_sigma;
+    Sampler rand_sigma;
     double* sigmas;
-    sampler* rand_sigmas;
+    Sampler* rand_sigmas;
     long r;
     double* l;
     double* h;
     double* d;
     double d_stddev;
-    sampler rand_d_stddev;
+    Sampler rand_d_stddev;
     // Tail bound parameter
     // For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
     long tail_bound;
@@ -69,17 +71,17 @@ class gadget{
     long prev_gauss;
 
  
-    ~gadget();
+    ~Gadget();
 
-    gadget() = default;
+    Gadget() = default;
 
-    gadget(int N, long Q, int basis, gadget_type type);
+    Gadget(int N, long Q, int basis, GadgetType type);
 
-    gadget(int N, long Q, int basis, double stddev, gadget_type type);
+    Gadget(int N, long Q, int basis, double stddev, GadgetType type);
 
-   gadget(const gadget &other);
+   Gadget(const Gadget &other);
 
-    gadget& operator=(const gadget other);
+    Gadget& operator=(const Gadget other);
  
 
     void setup_type_specific_parameters(); 
@@ -111,7 +113,7 @@ class gadget{
         ar(type, N, Q, basis);
         if(type == discrete_gaussian_gadget){
             ar(stddev);
-            this->rand = sampler(0.0, stddev);
+            this->rand = Sampler(0.0, stddev);
         } 
         setup_type_specific_parameters();
     } 
@@ -145,5 +147,7 @@ class gadget{
     void base_decomposition(long* out, long in);
  
 };
+
+}
 
 #endif

@@ -9,34 +9,38 @@
 #include "ciphertext.h"
  
  
-class rlwe_hom_acc_scheme{
+namespace fhe_deck{
+
+
+class TFHEPublicKey{
 
     public:
         
-    rlwe_gadget_param rlwe_gadget_par; 
+    RLWEGadgetParam rlwe_gadget_param; 
 
     bool is_init = false;
 
     // The blind rotation key
-    rlwe_gadget_ct *bk; 
+    RLWEGadgetCT *bk; 
     
     // The key switching key
     long ***ksk;
-    lwe_gadget_param lwe_gadget_par;
-    key_switch_type ks_type;
+    LWEGadgetParam lwe_gadget_param;
+
+    KeySwitchType ks_type;
 
     // Masking size
     int masking_size;
     // Masking key
     long **masking_key;   
     double stddev_masking;
-    sampler rand_masking;
+    Sampler rand_masking;
 
     // LWE after modulus switching to 2*N;
-    lwe_param lwe_par;
+    std::shared_ptr<LWEParam> lwe_par;
 
     // LWE after modulus switching to N
-    lwe_param lwe_par_tiny;
+    LWEParam lwe_par_tiny;
 
     // Special Accumulator for computing the MSB in Full Domain Functional Bootstrapping
     long* acc_msb;
@@ -44,29 +48,29 @@ class rlwe_hom_acc_scheme{
     long* acc_one;
 
     // LWE after extracting from RLWE. So the modulus is the same as the RLWE modulus.
-    lwe_param extract_lwe_par;
+    std::shared_ptr<LWEParam> extract_lwe_par;
 
     // Parameteres of the encoding of the LWE key in the blind rotation. These are paramters about the secret key of lwe_par (and lwe_g_par as lwe_par is a modulus switch of lwe_g_par)
-    key_dist key_d;
+    KeyDistribution key_d;
     int sizeof_ext_s;
     long *u;
     int sizeof_u;
 
-    plaintext_encoding default_encoding;
+    PlaintextEncoding default_encoding;
 
-    ~rlwe_hom_acc_scheme();
+    ~TFHEPublicKey();
 
-    rlwe_hom_acc_scheme() = default;
+    TFHEPublicKey() = default;
  
-    rlwe_hom_acc_scheme(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, lwe_param lwe_par, rlwe_gadget_ct *bk, long ***ksk, long **masking_key, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
+    TFHEPublicKey(RLWEGadgetParam rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, std::shared_ptr<LWEParam> lwe_par, RLWEGadgetCT *bk, long ***ksk, long **masking_key, int masking_size, double stddev_masking, PlaintextEncoding default_encoding);
 
-    rlwe_hom_acc_scheme(const rlwe_hom_acc_scheme &other);
+    TFHEPublicKey(const TFHEPublicKey &other);
    
-    rlwe_hom_acc_scheme& operator=(const rlwe_hom_acc_scheme other);
+    TFHEPublicKey& operator=(const TFHEPublicKey other);
 
-    void blind_rotate(rlwe_ct *out, long* lwe_ct_in, long *acc_msg, gadget_mul_mode mode);
+    void blind_rotate(RLWECT *out, long* lwe_ct_in, long *acc_msg, GadgetMulMode mode);
 
-    void extract_lwe_from_rlwe(long *lwe_ct_out, const rlwe_ct *rlwe_ct_in);
+    void extract_lwe_from_rlwe(long *lwe_ct_out, const RLWECT *rlwe_ct_in);
 
     void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
 
@@ -78,20 +82,19 @@ class rlwe_hom_acc_scheme{
 
     void mask_ciphertext(long *lwe_ct_out);
 
-    lwe_ct encrypt(long message);
+    LWECT encrypt(long message);
  
-    void bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode);
+    void bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, GadgetMulMode mode);
  
-    void functional_bootstrap_initial(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode);
+    void functional_bootstrap_initial(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, GadgetMulMode mode);
 
-    void functional_bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, gadget_mul_mode mode, int t);
-   
-
-    std::vector<lwe_ct> bootstrap(std::vector<rotation_poly> acc_in_vec, long *lwe_ct_in, gadget_mul_mode mode, int t);
+    void functional_bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, GadgetMulMode mode, int t);
+    
+    std::vector<LWECT> bootstrap(std::vector<RotationPoly> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
  
-    std::vector<lwe_ct> functional_bootstrap_initial(std::vector<rotation_poly> acc_in_vec, long *lwe_ct_in, gadget_mul_mode mode, int t);
+    std::vector<LWECT> functional_bootstrap_initial(std::vector<RotationPoly> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
 
-    std::vector<lwe_ct> functional_bootstrap(std::vector<rotation_poly> acc_in_vec, long *lwe_ct_in, gadget_mul_mode mode, int t);
+    std::vector<LWECT> functional_bootstrap(std::vector<RotationPoly> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
     
 
 
@@ -99,22 +102,22 @@ class rlwe_hom_acc_scheme{
     template <class Archive>
     void save( Archive & ar ) const
     {    
-        ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
+        ar(rlwe_gadget_param, lwe_gadget_param, lwe_par, masking_size, stddev_masking, default_encoding);  
         
         for(int i = 0; i < this->sizeof_ext_s; ++i){ 
             ar(this->bk[i]);
         } 
  
-        for(int i = 0; i < this->rlwe_gadget_par.param.N; ++i){  
-            for(int j = 0; j < this->lwe_gadget_par.ell; ++j){  
-                for(int k = 0; k < this->lwe_gadget_par.lwe_par.n+1; ++k){
+        for(int i = 0; i < this->rlwe_gadget_param.rlwe_param->N; ++i){  
+            for(int j = 0; j < this->lwe_gadget_param.ell; ++j){  
+                for(int k = 0; k < this->lwe_gadget_param.lwe_param->n+1; ++k){
                     ar(this->ksk[i][j][k]);
                 }
             }
         }  
   
         for(int i = 0; i < masking_size; ++i){   
-            for(int j = 0; j < extract_lwe_par.n+1; ++j)
+            for(int j = 0; j < extract_lwe_par->n+1; ++j)
             {
                 ar(this->masking_key[i][j]);
             } 
@@ -124,36 +127,36 @@ class rlwe_hom_acc_scheme{
     template <class Archive>
     void load( Archive & ar )
     {    
-        ar(rlwe_gadget_par, lwe_gadget_par, lwe_par, masking_size, stddev_masking, default_encoding);  
+        ar(rlwe_gadget_param, lwe_gadget_param, lwe_par, masking_size, stddev_masking, default_encoding);  
 
-        this->lwe_par_tiny = lwe_par.modulus_switch(rlwe_gadget_par.param.N); 
-        this->rand_masking = sampler(0.0, stddev_masking); 
-        extract_lwe_par = lwe_param(rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q, lwe_par.key_d, lwe_par.stddev); 
-        this->temp_ct = rlwe_ct(rlwe_gadget_par.param);
-        this->next_acc = rlwe_ct(rlwe_gadget_par.param);
-        this->out_ct = rlwe_ct(rlwe_gadget_par.param);  
+        this->lwe_par_tiny = lwe_par->modulus_switch(rlwe_gadget_param.rlwe_param->N); 
+        this->rand_masking = Sampler(0.0, stddev_masking); 
+        extract_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q, lwe_par->key_d, lwe_par->stddev)); 
+        this->temp_ct = RLWECT(rlwe_gadget_param.rlwe_param);
+        this->next_acc = RLWECT(rlwe_gadget_param.rlwe_param);
+        this->out_ct = RLWECT(rlwe_gadget_param.rlwe_param);  
         this->out_ct.set_computing_engine();
-        this->key_d = lwe_par.key_d;
+        this->key_d = lwe_par->key_d;
         if(this->key_d == binary){  
             init_binary_key(); 
         }else{ 
             init_ternary_key();
         } 
         set_key_switch_type();
-        this->acc_msb = rotation_poly::rot_msb(4, rlwe_gadget_par.param.N, rlwe_gadget_par.param.Q); 
-        this->acc_one  = rotation_poly::rot_one(rlwe_gadget_par.param.N);
+        this->acc_msb = RotationPoly::rot_msb(4, rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q); 
+        this->acc_one  = RotationPoly::rot_one(rlwe_gadget_param.rlwe_param->N);
          
-        this->bk = new rlwe_gadget_ct[this->sizeof_ext_s];
+        this->bk = new RLWEGadgetCT[this->sizeof_ext_s];
         for(int i = 0; i < this->sizeof_ext_s; ++i){
             ar(this->bk[i]);
         }
  
-        this->ksk = new long**[rlwe_gadget_par.param.N]; 
-        for(int i = 0; i < this->rlwe_gadget_par.param.N; ++i){
-            this->ksk[i] = new long*[this->lwe_gadget_par.ell];
-            for(int j = 0; j < this->lwe_gadget_par.ell; ++j){ 
-                this->ksk[i][j] = new long[this->lwe_gadget_par.lwe_par.n+1];
-                for(int k = 0; k < this->lwe_gadget_par.lwe_par.n+1; ++k){ 
+        this->ksk = new long**[rlwe_gadget_param.rlwe_param->N]; 
+        for(int i = 0; i < this->rlwe_gadget_param.rlwe_param->N; ++i){
+            this->ksk[i] = new long*[this->lwe_gadget_param.ell];
+            for(int j = 0; j < this->lwe_gadget_param.ell; ++j){ 
+                this->ksk[i][j] = new long[this->lwe_gadget_param.lwe_param->n+1];
+                for(int k = 0; k < this->lwe_gadget_param.lwe_param->n+1; ++k){ 
                     ar(this->ksk[i][j][k]);
                 }
             }
@@ -161,8 +164,8 @@ class rlwe_hom_acc_scheme{
  
         this->masking_key = new long*[masking_size]; 
         for(int i = 0; i < masking_size; ++i){ 
-            this->masking_key[i] = extract_lwe_par.init_ct();
-            for(int j = 0; j < extract_lwe_par.n+1; ++j)
+            this->masking_key[i] = extract_lwe_par->init_ct();
+            for(int j = 0; j < extract_lwe_par->n+1; ++j)
             {
                 ar(this->masking_key[i][j]);
             } 
@@ -174,14 +177,14 @@ class rlwe_hom_acc_scheme{
     private:
 
     // Temporary variables. Initialized in the constructors because initialization is expensive
-    rlwe_ct out_ct;
-    rlwe_ct temp_ct;
-    rlwe_ct next_acc;
+    RLWECT out_ct;
+    RLWECT temp_ct;
+    RLWECT next_acc;
 
     void init_binary_key();
     void init_ternary_key();
   
-    void copy_blind_rotation_key(rlwe_gadget_ct *bk);
+    void copy_blind_rotation_key(RLWEGadgetCT *bk);
   
     void copy_key_switching_key(long ***ksk);
 
@@ -189,5 +192,7 @@ class rlwe_hom_acc_scheme{
  
 };
 
+
+}
 
 #endif

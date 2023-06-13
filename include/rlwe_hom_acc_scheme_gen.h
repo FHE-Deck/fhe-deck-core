@@ -10,19 +10,22 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-class rlwe_hom_acc_scheme_gen{
+
+namespace fhe_deck{
+
+class TFHESecretKey{
  
     public:
  
-    gadget_rlwe_sk rlwe_gadget;
+    RLWEGadgetSK rlwe_gadget;
  
-    lwe_gadget_sk lwe_gadget;
+    LWEGadgetSK lwe_gadget;
 
     // LWE after modulus switching;
-    lwe_sk lwe;
+    LWESK lwe;
 
     // Need to have a LWE instance for the input to the bootstrapping (currently we don't have!!!)
-    lwe_sk extract_lwe;
+    LWESK extract_lwe;
    
     bool is_ext_init = false;
     int sizeof_ext_s;
@@ -34,23 +37,23 @@ class rlwe_hom_acc_scheme_gen{
     int masking_size;
     double stddev_masking;
 
-    plaintext_encoding default_encoding;
+    PlaintextEncoding default_encoding;
 
-    ~rlwe_hom_acc_scheme_gen();
+    ~TFHESecretKey();
 
-    rlwe_hom_acc_scheme_gen() = default;
+    TFHESecretKey() = default;
 
     // Generates the secret keys 
-    rlwe_hom_acc_scheme_gen(rlwe_gadget_param rlwe_gadget_par, lwe_gadget_param lwe_gadget_par, polynomial_arithmetic sk_arithmetic, int masking_size, double stddev_masking, plaintext_encoding default_encoding);
+    TFHESecretKey(RLWEGadgetParam rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, PolynomialArithmetic sk_arithmetic, int masking_size, double stddev_masking, PlaintextEncoding default_encoding);
 
-    rlwe_hom_acc_scheme_gen(const rlwe_hom_acc_scheme_gen& other);
+    TFHESecretKey(const TFHESecretKey& other);
 
-    rlwe_hom_acc_scheme_gen& operator=(const rlwe_hom_acc_scheme_gen other);
+    TFHESecretKey& operator=(const TFHESecretKey other);
 
 
-    std::shared_ptr<rlwe_hom_acc_scheme> get_public_param();
+    std::shared_ptr<TFHEPublicKey> get_public_param();
 
-    void set_public_params(rlwe_hom_acc_scheme *boot_pk);
+    void set_public_params(TFHEPublicKey *boot_pk);
  
     // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
     long* scale_and_encrypt_initial_lwe(long m, int t);
@@ -70,9 +73,9 @@ class rlwe_hom_acc_scheme_gen{
     {   
         ar(rlwe_gadget, lwe_gadget, extract_lwe, masking_size, stddev_masking, default_encoding);  
           
-        long q = rlwe_gadget.gadget_param.param.N * 2;  
+        long q = rlwe_gadget.gadget_param.rlwe_param->N * 2;  
         this->lwe = lwe_gadget.lwe.modulus_switch(q);    
-        if(lwe_gadget.lwe_g_par.lwe_par.key_d == binary){   
+        if(lwe_gadget.gadget_param.lwe_param->key_d == binary){   
             this->init_binary_key(); 
         }else{  
             this->init_ternary_key();
@@ -88,7 +91,7 @@ class rlwe_hom_acc_scheme_gen{
  
     long** masking_key_gen();
     
-    rlwe_gadget_ct* blind_rotation_key_gen();
+    RLWEGadgetCT* blind_rotation_key_gen();
 
     void init_binary_key();
 
@@ -97,34 +100,34 @@ class rlwe_hom_acc_scheme_gen{
 };
 
 
-enum rlwe_hom_acc_scheme_named_param{ 
+enum TFHENamedParams{ 
     rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_11_flood, rlwe_hom_acc_scheme_C_11_NTT, rlwe_hom_acc_scheme_C_11_NTT_flood, rlwe_hom_acc_scheme_C_11_NTT_amortized
 };
 
 
-class rlwe_hom_acc_scheme_named_param_generator{ 
+class TFHEKeyGenerator{ 
     
     public:  
-    std::unique_ptr<rlwe_hom_acc_scheme_gen> boot_sk; 
-    std::shared_ptr<rlwe_hom_acc_scheme> boot;
+    std::unique_ptr<TFHESecretKey> boot_sk; 
+    std::shared_ptr<TFHEPublicKey> boot_pk;
  
-    rlwe_gadget_param rlwe_gadget_par;
-    lwe_gadget_param lwe_gadget_par;
+    RLWEGadgetParam rlwe_gadget_par;
+    LWEGadgetParam lwe_gadget_par;
 
-    polynomial_arithmetic sk_arithmetic = ntl;
+    PolynomialArithmetic sk_arithmetic = ntl;
 
-    plaintext_encoding default_encoding;
+    PlaintextEncoding default_encoding;
 
     int masking_size;
     double stddev_masking;
 
-    rlwe_hom_acc_scheme_named_param_generator() = default;
+    TFHEKeyGenerator() = default;
 
-    rlwe_hom_acc_scheme_named_param_generator(rlwe_hom_acc_scheme_named_param name);
+    TFHEKeyGenerator(TFHENamedParams name);
  
     void generate_bootstapping_keys(); 
 
-    rlwe_hom_acc_scheme_gen generate_secret_key();
+    TFHESecretKey generate_secret_key();
 
     void init_rlwe_hom_acc_scheme_small_test();
  
@@ -140,5 +143,7 @@ class rlwe_hom_acc_scheme_named_param_generator{
  
 
 };
+
+}
 
 #endif

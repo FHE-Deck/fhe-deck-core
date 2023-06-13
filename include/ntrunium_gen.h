@@ -9,6 +9,9 @@
 #include "ntru_param.h"
 #include "ntrunium.h"
 
+
+namespace fhe_deck{
+
 class ntrunium_gen{
 
 public:
@@ -18,9 +21,9 @@ public:
     // NTRU parameters: this is the smaller modulus NTRU (its what goes in and out of the bootstrapping)
     ntru_param ntru_par;
     // LWE gadget parameters for keyswitching from NTRU to LWE
-    lwe_gadget_sk lwe_g;
+    LWEGadgetSK lwe_g;
     // LWE parameters for the LWE to blind rotate (modulus switched after the key switching, so the secret key is the same)
-    lwe_sk lwe;
+    LWESK lwe;
   
     // This is for the extension of the secret key for the blind rotation algorithm
     long *ext_s;
@@ -33,7 +36,7 @@ public:
 
     ntrunium_gen();
 
-    ntrunium_gen(gadget_ntru ntru_g_par, ntru_param ntru_par, lwe_gadget_sk lwe_g_par);
+    ntrunium_gen(gadget_ntru ntru_g_par, ntru_param ntru_par, LWEGadgetSK lwe_g_par);
     
     void init_binary_key();
 
@@ -48,7 +51,7 @@ public:
     long*** ntru_to_lwe_key_switch_key_gen();
 
     // No secret key involved but lets leave it here for now at least
-    void ntru_to_lwe_key_switch_delete(long*** ksk, lwe_gadget_param lwe_g_par, ntru_param ntru_par);
+    void ntru_to_lwe_key_switch_delete(long*** ksk, LWEGadgetParam lwe_g_par, ntru_param ntru_par);
  
     ntru_gadget_ct* blind_rotation_key_gen();
       
@@ -83,12 +86,12 @@ class ntrunium_named_param_generator{
     int n;  
     int lwe_stddev;
     int lwe_basis;
-    lwe_param param; 
-    lwe_sk lwe; 
-    lwe_gadget_param lwe_g_par; 
-    lwe_gadget_sk lwe_g; 
-    lwe_param lwe_par_small;
-    lwe_sk lwe_small;
+    std::shared_ptr<LWEParam> param; 
+    LWESK lwe; 
+    LWEGadgetParam lwe_g_par; 
+    LWEGadgetSK lwe_g; 
+    LWEParam lwe_par_small;
+    LWESK lwe_small;
     
     ntrunium_gen* boot_sk; 
     ntrunium* boot; 
@@ -122,6 +125,6 @@ class ntrunium_named_param_generator{
 };
 
  
-
+}
 
 #endif

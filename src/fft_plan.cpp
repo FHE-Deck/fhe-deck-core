@@ -5,9 +5,9 @@
 
 #include "../include/fft_plan.h"
 
-  
+using namespace fhe_deck;
 
-fft_plan::~fft_plan(){    
+FFTPlan::~FFTPlan(){    
     if(is_init == false){
         return;
     }
@@ -26,13 +26,13 @@ fft_plan::~fft_plan(){
 
  
  
-fft_plan::fft_plan(ring_type ring, int N){   
+FFTPlan::FFTPlan(RingType ring, int N){   
     this->ring = ring;
     this->N = N; 
     init_tables(); 
 }
  
-fft_plan::fft_plan(ring_type ring, int N, bool long_arithmetic){   
+FFTPlan::FFTPlan(RingType ring, int N, bool long_arithmetic){   
     this->ring = ring;
     this->N = N;
     this->long_arithmetic = long_arithmetic;
@@ -40,14 +40,14 @@ fft_plan::fft_plan(ring_type ring, int N, bool long_arithmetic){
 }
 
 
-fft_plan::fft_plan(const fft_plan& other){
+FFTPlan::FFTPlan(const FFTPlan& other){
     this->ring = other.ring;
     this->N = other.N;
     this->long_arithmetic = other.long_arithmetic;
     init_tables();
 }
 
-fft_plan& fft_plan::operator=(const fft_plan other){
+FFTPlan& FFTPlan::operator=(const FFTPlan other){
     if (this == &other)
     {
         return *this;
@@ -59,7 +59,7 @@ fft_plan& fft_plan::operator=(const fft_plan other){
     return *this;
 }
 
-void fft_plan::init_tables(){
+void FFTPlan::init_tables(){
     if(ring == cyclic){ 
      this->plan_size = N; 
     }else if(ring == negacyclic){
@@ -81,17 +81,17 @@ void fft_plan::init_tables(){
 
 
 
-fftw_complex* fft_plan::init_fft_poly(){
+fftw_complex* FFTPlan::init_fft_poly(){
     return new fftw_complex[plan_size]; 
 }
 
-fftwl_complex* fft_plan::init_fft_poly_l(){
+fftwl_complex* FFTPlan::init_fft_poly_l(){
     return new fftwl_complex[plan_size]; 
 }
   
 
 
-void fft_plan::to_eval_form(fftw_complex* eval_form, long *poly){ 
+void FFTPlan::to_eval_form(fftw_complex* eval_form, long *poly){ 
     for(int i = 0; i < N; ++i){ 
         in[i] = (double)poly[i];
         if(ring==negacyclic){
@@ -105,7 +105,7 @@ void fft_plan::to_eval_form(fftw_complex* eval_form, long *poly){
     } 
 }
 
-void fft_plan::to_eval_form(fftw_complex* eval_form, int *poly){ 
+void FFTPlan::to_eval_form(fftw_complex* eval_form, int *poly){ 
     for(int i = 0; i < N; ++i){ 
         in[i] = (double)poly[i];
         if(ring==negacyclic){
@@ -120,7 +120,7 @@ void fft_plan::to_eval_form(fftw_complex* eval_form, int *poly){
 }
     
  
-void fft_plan::to_eval_form_scale(fftw_complex* eval_form, long *poly){ 
+void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, long *poly){ 
     // DONE: Scale should be precomputed in the constructor
     // DONE: For cyclic scale is plan_size, for negacyclic its plan_size * 2 (I think)
     //double scale = (double)plan_size;
@@ -138,7 +138,7 @@ void fft_plan::to_eval_form_scale(fftw_complex* eval_form, long *poly){
 }
 
 
-void fft_plan::to_eval_form_scale(fftw_complex* eval_form, long *poly, double additional_scale){ 
+void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, long *poly, double additional_scale){ 
     // DONE: Scale should be precomputed in the constructor
     // DONE: For cyclic scale is plan_size, for negacyclic its plan_size * 2 (I think)
     double scale = (double)(plan_size * additional_scale);
@@ -156,7 +156,7 @@ void fft_plan::to_eval_form_scale(fftw_complex* eval_form, long *poly, double ad
 }
  
 
-void fft_plan::to_coef_form(long *coef_form, fftw_complex* eval_form){
+void FFTPlan::to_coef_form(long *coef_form, fftw_complex* eval_form){
     for(int i = 0; i < plan_size; ++i){
         out[i][0] = eval_form[i][0];
         out[i][1] = eval_form[i][1];
@@ -174,7 +174,7 @@ void fft_plan::to_coef_form(long *coef_form, fftw_complex* eval_form){
 }
 
 
-void fft_plan::to_coef_form(double *coef_form, fftw_complex* eval_form){
+void FFTPlan::to_coef_form(double *coef_form, fftw_complex* eval_form){
     for(int i = 0; i < plan_size; ++i){
         out[i][0] = eval_form[i][0];
         out[i][1] = eval_form[i][1];
@@ -191,7 +191,7 @@ void fft_plan::to_coef_form(double *coef_form, fftw_complex* eval_form){
     }
 } 
  
-void fft_plan::add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex* in_2){
+void FFTPlan::add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex* in_2){
     // Add the vectors (Note that its complex multiplication)
     if(ring == cyclic){
         for(int i = 0; i < plan_size; ++i){
@@ -208,7 +208,7 @@ void fft_plan::add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex
     } 
 }
 
-void fft_plan::mul_eval_form(fftw_complex *prod, fftw_complex* in_1, fftw_complex* in_2){
+void FFTPlan::mul_eval_form(fftw_complex *prod, fftw_complex* in_1, fftw_complex* in_2){
     // Multiply the vectors (Note that its complex multiplication)
     double temp;  
     if(ring == cyclic){
@@ -240,7 +240,7 @@ void fft_plan::mul_eval_form(fftw_complex *prod, fftw_complex* in_1, fftw_comple
 
 // TODO Do the same changes (copy paste) to include negacyclic stuff, but change double to long double
 
-void fft_plan::to_eval_form_l(fftwl_complex* eval_form_l, long *poly){ 
+void FFTPlan::to_eval_form_l(fftwl_complex* eval_form_l, long *poly){ 
     for(int i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i];
         if(ring==negacyclic){
@@ -254,7 +254,7 @@ void fft_plan::to_eval_form_l(fftwl_complex* eval_form_l, long *poly){
     } 
 }
 
-void fft_plan::to_eval_form_l(fftwl_complex* eval_form_l, int *poly){ 
+void FFTPlan::to_eval_form_l(fftwl_complex* eval_form_l, int *poly){ 
     for(int i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i];
         if(ring==negacyclic){
@@ -269,7 +269,7 @@ void fft_plan::to_eval_form_l(fftwl_complex* eval_form_l, int *poly){
 }
     
 
-void fft_plan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly){ 
+void FFTPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly){ 
     long double scale = (double)plan_size;
     for(int i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i] / (long double)scale; 
@@ -285,7 +285,7 @@ void fft_plan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly){
 }
 
 
-void fft_plan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly, double additional_scale){ 
+void FFTPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly, double additional_scale){ 
     long double scale = (double)(plan_size * additional_scale) ;
     for(int i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i] / scale; 
@@ -301,7 +301,7 @@ void fft_plan::to_eval_form_scale_l(fftwl_complex* eval_form_l, long *poly, doub
 }
   
 
-void fft_plan::to_coef_form_l(long *coef_form_l, fftwl_complex* eval_form_l){
+void FFTPlan::to_coef_form_l(long *coef_form_l, fftwl_complex* eval_form_l){
     for(int i = 0; i < plan_size; ++i){
         out_l[i][0] = eval_form_l[i][0];
         out_l[i][1] = eval_form_l[i][1];
@@ -319,7 +319,7 @@ void fft_plan::to_coef_form_l(long *coef_form_l, fftwl_complex* eval_form_l){
 }
 
  
-void fft_plan::add_eval_form_l(fftwl_complex *sum_l, fftwl_complex* in_1_l, fftwl_complex* in_2_l){
+void FFTPlan::add_eval_form_l(fftwl_complex *sum_l, fftwl_complex* in_1_l, fftwl_complex* in_2_l){
 
     // Add the vectors (Note that its complex multiplication)
     if(ring == cyclic){
@@ -337,7 +337,7 @@ void fft_plan::add_eval_form_l(fftwl_complex *sum_l, fftwl_complex* in_1_l, fftw
     }  
 }
 
-void fft_plan::mul_eval_form_l(fftwl_complex *prod_l, fftwl_complex* in_1_l, fftwl_complex* in_2_l){
+void FFTPlan::mul_eval_form_l(fftwl_complex *prod_l, fftwl_complex* in_1_l, fftwl_complex* in_2_l){
 
     // Multiply the vectors (Note that its complex multiplication)
     long double temp_l;  

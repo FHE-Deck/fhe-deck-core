@@ -2,14 +2,15 @@
 #include "../include/sample.h"
  
 
-sampler::sampler(){ 
+using namespace fhe_deck;
+Sampler::Sampler(){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);
     e1 = e; 
 }
 
-sampler::sampler(double expectation, double stddev){ 
+Sampler::Sampler(double expectation, double stddev){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);  
@@ -21,14 +22,14 @@ sampler::sampler(double expectation, double stddev){
 
  
 
-long sampler::binary(){
+long Sampler::binary(){
     std::uniform_int_distribution<long> binary_uniform(0, 1);
     return binary_uniform(e1);
 }
 
 
 
-long sampler::ternary(){
+long Sampler::ternary(){
     std::uniform_int_distribution<long> binary_uniform(0, 2);
     long result = binary_uniform(e1);
     if(result == 2){
@@ -37,14 +38,14 @@ long sampler::ternary(){
     return result;
 }
 
-long sampler::gaussian(double expectation, double stddev){
+long Sampler::gaussian(double expectation, double stddev){
     // Bloddy hell!!! new instantiation (new object every iteration!!! Bloddy Hell!)
     std::normal_distribution<double> normal_dist(expectation, stddev);
     return (long)normal_dist(e1);
 }
 
 
-long sampler::gaussian(long q, double expectation, double stddev){
+long Sampler::gaussian(long q, double expectation, double stddev){
     std::normal_distribution<double> normal_dist(expectation, stddev);
     // TODO: Round to nearest multiple of q
     // For now -> Actually, this should be a propper Gaussian sampler!
@@ -58,7 +59,7 @@ long sampler::gaussian(long q, double expectation, double stddev){
 }
 
 
-long sampler::gaussian(long q){  
+long Sampler::gaussian(long q){  
     long u = (long)round(normal_dist(e1));
     return q * u; 
     // Round to nearest multiple of q
@@ -74,30 +75,30 @@ long sampler::gaussian(long q){
   
 
 
-long sampler::uniform(long Q){
+long Sampler::uniform(long Q){
     std::uniform_int_distribution<long> binary_uniform(0, Q-1);
     return binary_uniform(e1);
 }
 
-void sampler::binary_array(long *a, int n){
+void Sampler::binary_array(long *a, int n){
     for(int i = 0; i < n; ++i){
         a[i] = binary();
     }
 }
 
-void sampler::ternary_array(long *a, int n){
+void Sampler::ternary_array(long *a, int n){
     for(int i = 0; i < n; ++i){
         a[i] = ternary();
     }
 }
 
-void sampler::gaussian_array(long *a, int n, double expectation, double stddev){
+void Sampler::gaussian_array(long *a, int n, double expectation, double stddev){
     for(int i = 0; i < n; ++i){
         a[i] = gaussian(expectation, stddev);
     }
 }
 
-void sampler::uniform_array(long *a, int n, long Q){
+void Sampler::uniform_array(long *a, int n, long Q){
     for(int i = 0; i < n; ++i){
         a[i] = uniform(Q);
     }

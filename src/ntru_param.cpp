@@ -2,6 +2,7 @@
 
 #include "../include/ntru_param.h"
 #include "../include/utils.h"
+using namespace fhe_deck;
 
 ntru_param::~ntru_param(){
       // TODO: Need to delete the fft_plan I guess.
@@ -9,22 +10,22 @@ ntru_param::~ntru_param(){
 
 ntru_param::ntru_param(){} 
 
-ntru_param::ntru_param(ring_type ring, int N, long Q, double stddev){ 
+ntru_param::ntru_param(RingType ring, int N, long Q, double stddev){ 
       this->Q = Q; 
       this->N = N; 
       this->stddev = stddev; 
       this->ring = ring; 
-      engine = new fft_plan(ring, N);    
+      engine = new FFTPlan(ring, N);    
 } 
 
 
 
-ntru_param::ntru_param(ring_type ring, int N, long Q, double stddev, bool extended_arithmetic){ 
+ntru_param::ntru_param(RingType ring, int N, long Q, double stddev, bool extended_arithmetic){ 
       this->Q = Q; 
       this->N = N; 
       this->stddev = stddev; 
       this->ring = ring; 
-      engine = new fft_plan(ring, N, extended_arithmetic);   
+      engine = new FFTPlan(ring, N, extended_arithmetic);   
 } 
   
 
@@ -105,7 +106,7 @@ ntru_ct ntru_ct::negacyclic_rotate(int rot){
     ntru_ct out(param);
     // TODO: For now I implement cyclic rotation because I first need to change the ring!!!
     // !!!! Where is this stuff used??? It seems it make a rotation, but not a negacyclic rotation.
-    utils::rotate_poly(out.c, c, param.N, rot); 
+    Utils::rotate_poly(out.c, c, param.N, rot); 
     return out;
 }
 
@@ -135,7 +136,7 @@ void ntru_ct::add(long *out, long *in_1, long *in_2){
       for(int i = 0; i < param.N; ++i){
             out[i] = (in_1[i] + in_2[i]) % param.Q;
       }
-      utils::array_signed_form(out, out, param.N, param.Q);
+      Utils::array_signed_form(out, out, param.N, param.Q);
 }
  
 
@@ -143,7 +144,7 @@ void ntru_ct::sub(long *out, long *in_1, long *in_2){
       for(int i = 0; i < param.N; ++i){
             out[i] = (in_1[i] - in_2[i]) % param.Q;
       }
-      utils::array_signed_form(out, out, param.N, param.Q);
+      Utils::array_signed_form(out, out, param.N, param.Q);
 }
   
 
@@ -151,7 +152,7 @@ void ntru_ct::neg(long *out, long *in){
       for(int i = 0; i < param.N; ++i){
             out[i] =  (-in[i]) % param.Q;
       } 
-      utils::array_signed_form(out, out, param.N, param.Q);
+      Utils::array_signed_form(out, out, param.N, param.Q);
 }
  
  
@@ -177,35 +178,16 @@ ntru_ct ntru_ct::mod_switch(ntru_param new_param){
       } 
       return out;
 }
-
-/*
-void ntru_ct::add(ciphertext *ct){
-      ntru_ct* ct_cast = dynamic_cast<ntru_ct*>(ct);
-      add(this->c, this->c, ct_cast->c);
-}
  
-
-void ntru_ct::sub(ciphertext *ct){
-      ntru_ct* ct_cast = dynamic_cast<ntru_ct*>(ct);
-      sub(this->c, this->c, ct_cast->c);
-} 
-
-void ntru_ct::mul(long b){
-      for(int i = 0; i < param.N; ++i){ 
-            c[i] = (c[i] * b) % param.Q;
-      }  
-} 
-*/
-
 std::string ntru_ct::to_string(){
-      return utils::to_string(c, param.N);
+      return Utils::to_string(c, param.N);
 }
  
  
 ntru_gadget_param::ntru_gadget_param(){}
 
 
-ntru_gadget_param::ntru_gadget_param(ntru_param &ntru_par, int basis, polynomial_arithmetic arithmetic){
+ntru_gadget_param::ntru_gadget_param(ntru_param &ntru_par, int basis, PolynomialArithmetic arithmetic){
       this->param = ntru_par;
       this->basis = basis; 
       // TODO: Note that for now, we accept only power of two basis (because our decomposition is written this way)
@@ -254,7 +236,7 @@ ntru_gadget_ct::ntru_gadget_ct(){}
 
 
 
-ntru_gadget_ct::ntru_gadget_ct(ntru_param &ntru_par, int basis, polynomial_arithmetic arithmetic){ 
+ntru_gadget_ct::ntru_gadget_ct(ntru_param &ntru_par, int basis, PolynomialArithmetic arithmetic){ 
       this->param = ntru_par;
       this->basis = basis; 
       // TODO: Note that for now, we accept only power of two basis (because our decomposition is written this way)
@@ -305,7 +287,7 @@ ntru_gadget_ct::ntru_gadget_ct(const ntru_gadget_ct &other){
             std::cout << "Not Supported Arithmetic" << std::endl;
       }   
       for(int i = 0; i < ell; ++i){
-            utils::cp(gadget_ct[i], other.gadget_ct[i], param.N); 
+            Utils::cp(gadget_ct[i], other.gadget_ct[i], param.N); 
       } 
       to_eval(); 
       init = true;
@@ -332,7 +314,7 @@ ntru_gadget_ct& ntru_gadget_ct::operator=(const ntru_gadget_ct other){
             std::cout << "Not Supported Arithmetic" << std::endl;
       } 
       for(int i = 0; i < ell; ++i){
-            utils::cp(gadget_ct[i], other.gadget_ct[i], param.N); 
+            Utils::cp(gadget_ct[i], other.gadget_ct[i], param.N); 
       }
       to_eval();
     return *this;
@@ -418,7 +400,7 @@ void ntru_gadget_ct::gadget_mul_fft(long *out, long *ct_1, fftw_complex **c_2){
     for(int i = 0; i < ell; ++i){  
         ct_1_decomposed[i] = param.init_zero_poly(); 
     }         
-    utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
+    Utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
  
     fftw_complex *multisum_eval = new fftw_complex[param.engine->plan_size]; 
     fftw_complex *prod = new fftw_complex[param.engine->plan_size];  
@@ -436,7 +418,7 @@ void ntru_gadget_ct::gadget_mul_fft(long *out, long *ct_1, fftw_complex **c_2){
   
     long* coef_form = new long[param.engine->plan_size]; 
     param.engine->to_coef_form(coef_form, multisum_eval);  
-    utils::mod_reduce(out, coef_form, param.Q, param.engine->N);  
+    Utils::mod_reduce(out, coef_form, param.Q, param.engine->N);  
 
       for(int i = 0; i < ell; ++i){
       delete[] ct_1_decomposed[i];
@@ -454,7 +436,7 @@ void ntru_gadget_ct::gadget_mul_fft(long *out, long *ct_1, fftwl_complex **c_2){
     for(int i = 0; i < ell; ++i){  
         ct_1_decomposed[i] = param.init_zero_poly(); 
     }     
-    utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
+    Utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
  
     fftwl_complex *multisum_eval = new fftwl_complex[param.engine->plan_size]; 
     fftwl_complex *prod = new fftwl_complex[param.engine->plan_size];  
@@ -470,7 +452,7 @@ void ntru_gadget_ct::gadget_mul_fft(long *out, long *ct_1, fftwl_complex **c_2){
   
     long* coef_form = new long[param.engine->plan_size];  
     param.engine->to_coef_form_l(coef_form, multisum_eval);    
-    utils::mod_reduce(out, coef_form, param.Q, param.engine->N); 
+    Utils::mod_reduce(out, coef_form, param.Q, param.engine->N); 
     
     for(int i = 0; i < ell; ++i){
       delete[] ct_1_decomposed[i];
@@ -488,9 +470,9 @@ void ntru_gadget_ct::gadget_mul_hexl_ntt(long *out, long *ct_1, long **c_2){
     for(int i = 0; i < ell; ++i){  
         ct_1_decomposed[i] = param.init_zero_poly(); 
     }     
-    utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
+    Utils::signed_decomp(ct_1_decomposed, ct_1, param.N, basis, k, ell, param.Q);
       for(int i = 0; i < ell; ++i){  
-       utils::array_mod_form(ct_1_decomposed[i], ct_1_decomposed[i], param.N, param.Q);
+       Utils::array_mod_form(ct_1_decomposed[i], ct_1_decomposed[i], param.N, param.Q);
     }  
  
       long* multisum_eval = param.init_zero_poly();
@@ -540,7 +522,7 @@ void ntru_gadget_ct::to_coef(){
             for(int i = 0; i < ell; ++i){
                   g_ct_coef[i] = new long[param.engine->plan_size];
                   param.engine->to_coef_form_l(g_ct_coef[i], gadget_ct_eval_l[i]); 
-                  utils::mod_reduce(gadget_ct[i], g_ct_coef[i], param.Q, param.engine->N); 
+                  Utils::mod_reduce(gadget_ct[i], g_ct_coef[i], param.Q, param.engine->N); 
             }
             for(int i = 0; i < ell; ++i)
                   delete[] g_ct_coef[i];
@@ -550,7 +532,7 @@ void ntru_gadget_ct::to_coef(){
             for(int i = 0; i < ell; ++i){
                   g_ct_coef[i] = new long[param.engine->plan_size];
                   param.engine->to_coef_form(g_ct_coef[i], gadget_ct_eval[i]); 
-                  utils::mod_reduce(gadget_ct[i], g_ct_coef[i], param.Q, param.engine->N); 
+                  Utils::mod_reduce(gadget_ct[i], g_ct_coef[i], param.Q, param.engine->N); 
             }
             for(int i = 0; i < ell; ++i)
                   delete[] g_ct_coef[i];

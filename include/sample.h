@@ -4,7 +4,10 @@
 
 #include <random>
 
-class sampler{
+
+namespace fhe_deck{
+
+class Sampler{
  
     //private: 
     public:
@@ -21,9 +24,9 @@ class sampler{
         std::binomial_distribution<long> binomial_dist;
 
      
-        sampler();
+        Sampler();
 
-        sampler(double expectation, double stddev);
+        Sampler(double expectation, double stddev);
   
         long binary(); 
 
@@ -48,5 +51,7 @@ class sampler{
         void uniform_array(long *a, int n, long Q);
 
 };
+
+}
 
 #endif

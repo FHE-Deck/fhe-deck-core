@@ -1,5 +1,6 @@
  
 #include "../include/ntru.h" 
+using namespace fhe_deck;
 
  
 ntru_sk::~ntru_sk(){  
@@ -36,8 +37,8 @@ ntru_sk& ntru_sk::operator=(const ntru_sk other){
     }
     f = param.init_poly();
     inv_f = param.init_poly();
-    utils::cp(f, other.f, param.N);
-    utils::cp(inv_f, other.inv_f, param.N);
+    Utils::cp(f, other.f, param.N);
+    Utils::cp(inv_f, other.inv_f, param.N);
     return *this;
 }
 
@@ -74,11 +75,11 @@ void ntru_sk::key_gen(long *f, long *inv_f, ntru_param &param){
     NTL::ZZ_pX temp_inv_f;
     do{ 
         ntru_sk::ternary_poly(temp_f, param); 
-        status = NTL::InvModStatus(temp_inv_f, temp_f, utils::get_ring_poly(param.ring, param.N, param.Q));  
+        status = NTL::InvModStatus(temp_inv_f, temp_f, Utils::get_ring_poly(param.ring, param.N, param.Q));  
     }while(status == 1); 
-    utils::set_array_from_polynomial(f,  param.N, temp_f); 
-    utils::set_array_from_polynomial(inv_f, param.N, temp_inv_f);    
-    utils::array_signed_form(f, f, param.N, param.Q);
+    Utils::set_array_from_polynomial(f,  param.N, temp_f); 
+    Utils::set_array_from_polynomial(inv_f, param.N, temp_inv_f);    
+    Utils::array_signed_form(f, f, param.N, param.Q);
 }  
 
 
@@ -101,7 +102,7 @@ void ntru_sk::kdm_scale_and_encrypt(ntru_ct *ct_out, long* msg, int t){
         scale = param.Q/t; 
     }
     long* msg_scaled = param.init_poly(); 
-    utils::mul_scalar(msg_scaled, msg, param.N, scale); 
+    Utils::mul_scalar(msg_scaled, msg, param.N, scale); 
     kdm_encrypt(ct_out, msg_scaled);
 
     delete[] msg_scaled; 
@@ -123,7 +124,7 @@ ntru_ct ntru_sk::kdm_encrypt(long* msg){
 void ntru_sk::kdm_encrypt(ntru_ct *ct_out, long* msg){    
     long* kdm_msg = param.init_poly();  
     if(modulus_switched){   
-        utils::mul_mod(kdm_msg, msg, param.N, inv_f, param.N, higher_mod_param.N, higher_mod_param.Q, higher_mod_param.ring);  
+        Utils::mul_mod(kdm_msg, msg, param.N, inv_f, param.N, higher_mod_param.N, higher_mod_param.Q, higher_mod_param.ring);  
         ntru_sk higher_mod_ntru(higher_mod_param, f, inv_f); 
         ntru_ct new_ct;
         new_ct = higher_mod_ntru.encrypt(kdm_msg);
@@ -131,10 +132,10 @@ void ntru_sk::kdm_encrypt(ntru_ct *ct_out, long* msg){
         if(param.engine->long_arithmetic == true){
             // TODO: Copy when long arithmetic (If that is even necessary..... Maybe its only needed for gadget mul? - Lets check)
         }else{
-            utils::cp(ct_out->c, new_ct.c, param.N);  
+            Utils::cp(ct_out->c, new_ct.c, param.N);  
         } 
     }else{ 
-        utils::mul_mod(kdm_msg, msg, param.N, inv_f, param.N, param.N, param.Q, param.ring);  
+        Utils::mul_mod(kdm_msg, msg, param.N, inv_f, param.N, param.N, param.Q, param.ring);  
         encrypt(ct_out, kdm_msg); 
     }  
     delete(kdm_msg);
@@ -187,7 +188,7 @@ void ntru_sk::encrypt(ntru_ct *ct_out, long* msg){
         // To coef form and mod reduce
         long* result = new long[param.engine->plan_size];
         param.engine->to_coef_form_l(result, c_fft);  
-        utils::mod_reduce(ct_out->c, result, param.Q, param.N);  
+        Utils::mod_reduce(ct_out->c, result, param.Q, param.N);  
         delete(g);
         delete(g_fft);
         delete(e);
@@ -230,7 +231,7 @@ void ntru_sk::encrypt(ntru_ct *ct_out, long* msg){
         // To coef form and mod reduce
         long* result = new long[param.engine->plan_size];
         param.engine->to_coef_form(result, c_fft);  
-        utils::mod_reduce(ct_out->c, result, param.Q, param.N);  
+        Utils::mod_reduce(ct_out->c, result, param.Q, param.N);  
 
          
         delete(c_fft); 
@@ -257,10 +258,10 @@ void ntru_sk::naive_encrypt(ntru_ct *ct_out, long* msg){
         param.rand.gaussian_array(e, param.N, 0, param.stddev); 
         long* s = param.init_poly();
         param.rand.ternary_array(s, param.N); 
-        utils::mul_mod(ct_out->c, inv_f, param.N, g, param.N, param.N, param.Q, param.ring);
-        utils::mul_mod(ct_out->c, ct_out->c, param.N, s, param.N, param.N, param.Q, param.ring);
-        utils::add_mod(ct_out->c, ct_out->c, param.N, e, param.N, param.N, param.Q);
-        utils::add_mod(ct_out->c, ct_out->c, param.N, msg, param.N, param.N, param.Q); 
+        Utils::mul_mod(ct_out->c, inv_f, param.N, g, param.N, param.N, param.Q, param.ring);
+        Utils::mul_mod(ct_out->c, ct_out->c, param.N, s, param.N, param.N, param.Q, param.ring);
+        Utils::add_mod(ct_out->c, ct_out->c, param.N, e, param.N, param.N, param.Q);
+        Utils::add_mod(ct_out->c, ct_out->c, param.N, msg, param.N, param.N, param.Q); 
         delete[] g;
         delete[] e;
         delete[] s;
@@ -269,12 +270,12 @@ void ntru_sk::naive_encrypt(ntru_ct *ct_out, long* msg){
 // Only computes ct * f
 void ntru_sk::phase(long *phase, ntru_ct *ct){
     NTL::ZZ_pX ct_poly;
-    utils::set_polynomial_from_array(ct_poly, ct->c, param.N, param.Q); 
+    Utils::set_polynomial_from_array(ct_poly, ct->c, param.N, param.Q); 
     NTL::ZZ_pX f_poly;
-    utils::set_polynomial_from_array(f_poly, f, param.N, param.Q); 
-    NTL::ZZ_pX phase_poly = NTL::MulMod(ct_poly, f_poly, utils::get_ring_poly(param.ring, param.N, param.Q));  
-    utils::set_array_from_polynomial(phase, param.N, phase_poly); 
-    utils::array_signed_form(phase, phase, param.N, param.Q);
+    Utils::set_polynomial_from_array(f_poly, f, param.N, param.Q); 
+    NTL::ZZ_pX phase_poly = NTL::MulMod(ct_poly, f_poly, Utils::get_ring_poly(param.ring, param.N, param.Q));  
+    Utils::set_array_from_polynomial(phase, param.N, phase_poly); 
+    Utils::array_signed_form(phase, phase, param.N, param.Q);
 }
 
 
@@ -283,7 +284,7 @@ void ntru_sk::error(long *err, ntru_ct *ct, long* msg){
     for(int i = 0; i < param.N; ++i){
             err[i] = (err[i] - msg[i]) % param.Q;
       }
-      utils::array_signed_form(err, err, param.N, param.Q);
+      Utils::array_signed_form(err, err, param.N, param.Q);
 }
  
 long* ntru_sk::decrypt(ntru_ct *ct, int t){  
@@ -296,7 +297,7 @@ long* ntru_sk::decrypt(ntru_ct *ct, int t){
 void ntru_sk::decrypt(long* out, ntru_ct *ct, int t){  
     long* phase = param.init_poly(); 
     ntru_sk::phase(phase, ct);  
-    utils::array_rounding(out, phase, param.N, param.Q, t);
+    Utils::array_rounding(out, phase, param.N, param.Q, t);
     delete(phase); 
 }
 
@@ -311,8 +312,8 @@ long ntru_sk::decrypt_coef(ntru_ct *ct, int t){
         ret -= ct->c[i] * f[param.N-i];
         ret = ret % param.Q;
     }  
-    ret =  utils::integer_rounding(ret, param.Q, t); 
-    return utils::integer_signed_form(ret, param.Q);
+    ret =  Utils::integer_rounding(ret, param.Q, t); 
+    return Utils::integer_signed_form(ret, param.Q);
 }
 
  
@@ -354,7 +355,7 @@ void gadget_ntru::gadget_encrypt(long** gadget_ct, long* msg){
     
    ntru_ct temp_ct = ntru.encrypt(msg_cpy);
     //Encrypt msg * 1 
-    utils::cp(gadget_ct[0], temp_ct.c, gadget_param.param.N); 
+    Utils::cp(gadget_ct[0], temp_ct.c, gadget_param.param.N); 
     for(int i = 1; i < gadget_param.ell; ++i){
         // Multiply msg by basis
         for(int j=0; j < gadget_param.param.N; ++j){
@@ -362,7 +363,7 @@ void gadget_ntru::gadget_encrypt(long** gadget_ct, long* msg){
         } 
         // Encrypt msg * basis**i 
         temp_ct = ntru.encrypt(msg_cpy);
-        utils::cp(gadget_ct[i], temp_ct.c, gadget_param.param.N); 
+        Utils::cp(gadget_ct[i], temp_ct.c, gadget_param.param.N); 
     }
     delete[] msg_cpy;
 }

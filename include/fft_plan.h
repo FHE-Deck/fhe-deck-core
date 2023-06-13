@@ -7,12 +7,14 @@
 #include "../include/enums.h"
 
 
-class fft_plan{
+namespace fhe_deck{
+
+class FFTPlan{
 
     public:
     
     // Ring type is either cyclic or negacyclic
-    ring_type ring;
+    RingType ring;
     // N is the number of coefficients
     int N; 
     // Plan size is the size of the plan e.g. 2N for (X^N+1) and N for (X^N-1) 
@@ -29,17 +31,17 @@ class fft_plan{
     fftwl_complex *out_l;
     bool long_arithmetic = false;
  
-    fft_plan() = default;
+    FFTPlan() = default;
 
-    fft_plan(ring_type ring, int N);
+    FFTPlan(RingType ring, int N);
 
-    fft_plan(ring_type ring, int N, bool long_arithmetic);
+    FFTPlan(RingType ring, int N, bool long_arithmetic);
 
-    fft_plan(const fft_plan& other);
+    FFTPlan(const FFTPlan& other);
 
-    fft_plan& operator=(const fft_plan other);
+    FFTPlan& operator=(const FFTPlan other);
 
-    ~fft_plan();
+    ~FFTPlan();
 
     fftw_complex* init_fft_poly();
 
@@ -94,5 +96,7 @@ class fft_plan{
 
 
 };
+
+}
 
 #endif

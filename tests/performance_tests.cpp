@@ -16,6 +16,7 @@
 #include <cmath>
 #include <chrono>
 
+using namespace fhe_deck;
  
 void ntrunium_performance_test(ntrunium_named_param param_name, int test_num){
     std::cout << "=== ntrunium_performance_test: Testing Timings and Errors === " << std::endl;
@@ -34,7 +35,7 @@ void ntrunium_performance_test(ntrunium_named_param param_name, int test_num){
     // The LWE ciphertexts to blind rotate
     long lwe_msg = 0;
     long *lwe_ct = param_gen.lwe_par_small.init_ct();
-    long *lwe_ct_post_ks = param_gen.lwe_g.lwe_g_par.lwe_par.init_ct();
+    long *lwe_ct_post_ks = param_gen.lwe_g.gadget_param.lwe_param->init_ct();
     long *lwe_ct_new = param_gen.lwe_par_small.init_ct();
   
     // Time
@@ -69,7 +70,7 @@ void ntrunium_performance_test(ntrunium_named_param param_name, int test_num){
 
         // TODO At this point its possible to phase, which should give us the error only and check the error 
         param_gen.ntru.phase(phase_error, &out_acc_prime_mod); 
-        ntru_error_measure[i] = utils::integer_signed_form(phase_error[0], param_gen.ntru.param.Q); 
+        ntru_error_measure[i] = Utils::integer_signed_form(phase_error[0], param_gen.ntru.param.Q); 
  
         // Key Switching from ntru_par, to lwe_par.
         start = std::chrono::high_resolution_clock::now();
@@ -79,11 +80,11 @@ void ntrunium_performance_test(ntrunium_named_param param_name, int test_num){
  
         // Modulus Switching from lwe_par, to lwe_par_small
         start = std::chrono::high_resolution_clock::now();
-        param_gen.lwe_g.lwe_g_par.lwe_par.switch_modulus(lwe_ct_new, lwe_ct_post_ks, param_gen.lwe_par_small);
+        param_gen.lwe_g.gadget_param.lwe_param->switch_modulus(lwe_ct_new, lwe_ct_post_ks, param_gen.lwe_par_small);
         end = std::chrono::high_resolution_clock::now();
         lwe_mod_switch_time += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
 
-        lwe_error_measure[i] = utils::integer_signed_form(param_gen.lwe_small.error(lwe_ct_new, 0), param_gen.lwe_par_small.Q); 
+        lwe_error_measure[i] = Utils::integer_signed_form(param_gen.lwe_small.error(lwe_ct_new, 0), param_gen.lwe_par_small.Q); 
     } 
 
     double avg_time_blind_rotation = sum_time_blind_rotation/ test_num ;
@@ -115,24 +116,24 @@ void ntrunium_performance_test(ntrunium_named_param param_name, int test_num){
 
 
 
-void rlwe_performance_test(rlwe_hom_acc_scheme_named_param param_name, int test_num, gadget_mul_mode mode){
+void rlwe_performance_test(TFHENamedParams param_name, int test_num, GadgetMulMode mode){
     std::cout << "=== rlwe_performance_test: Testing Timings and Errors === " << std::endl;
  
-    rlwe_hom_acc_scheme_named_param_generator params(param_name);
+    TFHEKeyGenerator params(param_name);
     std::cout << "params.generate_bootstapping_keys();" << std::endl;
     params.generate_bootstapping_keys();
 
     int t = 3;
     std::cout << "- Initialize accumulator... " << std::endl;
     // Create a accumulator that encrypts zero (with respect to ntru_par_pot) 
-    long* ct = params.boot->lwe_par.init_ct();
+    long* ct = params.boot_pk->lwe_par->init_ct();
     params.boot_sk->lwe.encrypt(ct, 0);
     long e = params.boot_sk->lwe.error(ct, 0);
-    ct[0] = (ct[0] - e) % params.boot_sk->lwe.lwe_par.Q; 
+    ct[0] = (ct[0] - e) % params.boot_sk->lwe.param->Q; 
  
     // Initiate these messages
-    long* acc = rotation_poly::rot_identity(t, params.boot->rlwe_gadget_par.param.N, params.boot->rlwe_gadget_par.param.Q);
-    rlwe_ct out_ct(params.boot->rlwe_gadget_par.param);
+    long* acc = RotationPoly::rot_identity(t, params.boot_pk->rlwe_gadget_param.rlwe_param->N, params.boot_pk->rlwe_gadget_param.rlwe_param->Q);
+    RLWECT out_ct(params.boot_pk->rlwe_gadget_param.rlwe_param);
 
     // Time
     std::chrono::high_resolution_clock::time_point start, end; 
@@ -141,8 +142,8 @@ void rlwe_performance_test(rlwe_hom_acc_scheme_named_param param_name, int test_
     float key_switching_time_partial_lazy = 0; 
     float key_switching_time = 0; 
  
-    long *ext_ct = params.boot_sk->extract_lwe.lwe_par.init_ct();
-    long *lwe_c = params.boot->lwe_gadget_par.lwe_par.init_ct();
+    long *ext_ct = params.boot_sk->extract_lwe.param->init_ct();
+    long *lwe_c = params.boot_pk->lwe_gadget_param.lwe_param->init_ct();
 
     // Testing Loop
     std::cout << "- Start Test... " << std::endl;
@@ -150,26 +151,26 @@ void rlwe_performance_test(rlwe_hom_acc_scheme_named_param param_name, int test_
    
         // Blind Rotate 
         start = std::chrono::high_resolution_clock::now(); 
-        params.boot->blind_rotate(&out_ct, ct, acc, mode);
+        params.boot_pk->blind_rotate(&out_ct, ct, acc, mode);
         end = std::chrono::high_resolution_clock::now(); 
         sum_time_blind_rotation += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();   
       
         // Lazy Key Switching from ntru_par, to lwe_par.
         start = std::chrono::high_resolution_clock::now();
-        params.boot->lwe_to_lwe_key_switch_lazy(lwe_c, ext_ct);
+        params.boot_pk->lwe_to_lwe_key_switch_lazy(lwe_c, ext_ct);
         end = std::chrono::high_resolution_clock::now();
         key_switching_time_lazy += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
 
 
         // Partial Lazy Key Switching from ntru_par, to lwe_par.
         start = std::chrono::high_resolution_clock::now();
-        params.boot->lwe_to_lwe_key_switch_partial_lazy(lwe_c, ext_ct);
+        params.boot_pk->lwe_to_lwe_key_switch_partial_lazy(lwe_c, ext_ct);
         end = std::chrono::high_resolution_clock::now();
         key_switching_time_partial_lazy += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count(); 
 
         // Key Switching from ntru_par, to lwe_par.
         start = std::chrono::high_resolution_clock::now();
-        params.boot->lwe_to_lwe_key_switch(lwe_c, ext_ct);
+        params.boot_pk->lwe_to_lwe_key_switch(lwe_c, ext_ct);
         end = std::chrono::high_resolution_clock::now();
         key_switching_time += std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
    

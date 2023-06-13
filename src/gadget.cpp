@@ -1,7 +1,8 @@
 #include "../include/gadget.h"
  
+using namespace fhe_deck;
 
-gadget::~gadget(){
+Gadget::~Gadget(){
     if(is_precomputed){
         delete[] q_decomp;
         delete[] sigmas;
@@ -28,7 +29,7 @@ gadget::~gadget(){
     }
 }
 
-gadget::gadget(int N, long Q, int basis, gadget_type type){
+Gadget::Gadget(int N, long Q, int basis, GadgetType type){
     this->type = type;
     this->N = N;
     this->Q = Q;
@@ -37,7 +38,7 @@ gadget::gadget(int N, long Q, int basis, gadget_type type){
 }
  
 
-gadget::gadget(int N, long Q, int basis, double stddev, gadget_type type){
+Gadget::Gadget(int N, long Q, int basis, double stddev, GadgetType type){
     this->type = type;
     this->stddev = stddev;
     this->N = N;
@@ -47,7 +48,7 @@ gadget::gadget(int N, long Q, int basis, double stddev, gadget_type type){
 }
 
 
-gadget::gadget(const gadget &other){ 
+Gadget::Gadget(const Gadget &other){ 
     this->type = other.type; 
     this->stddev = other.stddev; 
     this->N = other.N; 
@@ -55,7 +56,7 @@ gadget::gadget(const gadget &other){
     this->basis = other.basis; 
     setup_type_specific_parameters();  
 } 
-gadget& gadget::operator=(const gadget other){
+Gadget& Gadget::operator=(const Gadget other){
     if (this == &other)
     {
         return *this;
@@ -69,7 +70,7 @@ gadget& gadget::operator=(const gadget other){
     return *this;
 } 
 
-void gadget::setup_type_specific_parameters(){
+void Gadget::setup_type_specific_parameters(){
     if(this->type == signed_decomposition_gadget){
         this->k = 1;
         // Compute the k, parameter (remind k is such that 2**k = basis)  
@@ -91,13 +92,13 @@ void gadget::setup_type_specific_parameters(){
         sign = new long[N]; 
         is_deter_temp_init = true;
     }else if(this->type == discrete_gaussian_gadget){ 
-        this->rand = sampler(0.0, this->stddev); 
-        if(!utils::is_power_of(basis, 2)){
+        this->rand = Sampler(0.0, this->stddev); 
+        if(!Utils::is_power_of(basis, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
-        this->k = utils::power_times(basis, 2);
-        this->ell = utils::power_times(Q, basis);
-        if(utils::is_power_of(Q, basis)){
+        this->k = Utils::power_times(basis, 2);
+        this->ell = Utils::power_times(Q, basis);
+        if(Utils::is_power_of(Q, basis)){
             is_power_of_base_modulus = true;
             precompute_constants_for_power_of_base_gaussian_sampling();
         }else{ 
@@ -105,13 +106,13 @@ void gadget::setup_type_specific_parameters(){
             precompute_constants_for_general_modulus_gaussian_sampling();
         }  
     }else{
-        throw 0;
+        throw std::logic_error("Most likely wrong gadget type!");
     }
 }
 
 
 
-void gadget::sample(long** out, long *in){ 
+void Gadget::sample(long** out, long *in){ 
     if(type == signed_decomposition_gadget){
         signed_decomp(out, in);
     }else if(type == discrete_gaussian_gadget){ 
@@ -122,14 +123,14 @@ void gadget::sample(long** out, long *in){
 }
  
 
-long** gadget::sample(long *in){  
+long** Gadget::sample(long *in){  
     long** decomposed = init_out(); 
     sample(decomposed, in); 
     return decomposed;
 }
 
 
-long* gadget::get_gadget_vector(){
+long* Gadget::get_gadget_vector(){
     long* gadget_vector = new long[ell];
     int powers_of_basis = 1;
     for(int i = 0; i < ell; ++i){
@@ -140,7 +141,7 @@ long* gadget::get_gadget_vector(){
 }
 
  
-long** gadget::init_out(){
+long** Gadget::init_out(){
     long **decomposed = new long*[ell]; 
     for(int i = 0; i < ell; ++i){  
         decomposed[i] = new long[N];
@@ -151,7 +152,7 @@ long** gadget::init_out(){
     return decomposed;
 }
 
-void gadget::delete_out(long** out){
+void Gadget::delete_out(long** out){
     for(int i = 0; i < ell; ++i){  
         delete[] out[i]; 
     }  
@@ -159,7 +160,7 @@ void gadget::delete_out(long** out){
 }
 
 
-void gadget::decomp(long **d_ct, long* poly){
+void Gadget::decomp(long **d_ct, long* poly){
     long mask = basis-1;
     long shift;
     for(int i = 0; i < ell; ++i){
@@ -174,8 +175,8 @@ void gadget::decomp(long **d_ct, long* poly){
 
 
  
-void gadget::signed_decomp(long **d_ct, long* poly){ 
-    utils::array_signed_form(signed_poly, poly, N, Q); 
+void Gadget::signed_decomp(long **d_ct, long* poly){ 
+    Utils::array_signed_form(signed_poly, poly, N, Q); 
     long half = Q/2;
     for(int i = 0; i < N; ++i){  
         if(poly[i] <= half){
@@ -195,7 +196,7 @@ void gadget::signed_decomp(long **d_ct, long* poly){
 }
 
  
-void gadget::gaussian_sample(long **out, long* in){
+void Gadget::gaussian_sample(long **out, long* in){
     if(is_power_of_base_modulus){ 
         gaussian_sample_modulus_power_of_base(out, in);
     }else{
@@ -206,7 +207,7 @@ void gadget::gaussian_sample(long **out, long* in){
 
 
 
-void gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
+void Gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
     mask = basis-1;  
     for(long j = 0; j < N; ++j){
         gaussians[j] = 0;
@@ -242,9 +243,8 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 */
 
   
-void gadget::gaussian_sample_general_modulus(long **out, long* in){   
- 
-
+void Gadget::gaussian_sample_general_modulus(long **out, long* in){   
+  
     long beta;
  
     long integer;
@@ -317,7 +317,7 @@ void gadget::gaussian_sample_general_modulus(long **out, long* in){
 } 
 
 
-void gadget::sample_G(long* out, long in){ 
+void Gadget::sample_G(long* out, long in){ 
     long* p = new long[ell];
     double* c = new double[ell];
     long* u = new long[ell]; 
@@ -340,7 +340,7 @@ void gadget::sample_G(long* out, long in){
     delete[] z;
 }
 
-void gadget::perturb_B(long* p){  
+void Gadget::perturb_B(long* p){  
     double* c = new double[ell];
     long* z = new long[ell+1];
     //long* p = new long[ell];
@@ -363,7 +363,7 @@ void gadget::perturb_B(long* p){
     //return p;
 }
 
-void gadget::sample_D(long* out, double* c){
+void Gadget::sample_D(long* out, double* c){
     //long* out = new long[ell];
     double temp = -c[ell-1]/d[ell-1];
     double integer;
@@ -379,12 +379,12 @@ void gadget::sample_D(long* out, double* c){
 }
 
 
-long gadget::sample_Zt(double sigma, double center){
+long Gadget::sample_Zt(double sigma, double center){
     // Implicitely takes as input stddev and tail_bound 
     return rand.gaussian(center, sigma);  
 }
 
-void gadget::precompute_constants_for_power_of_base_gaussian_sampling(){
+void Gadget::precompute_constants_for_power_of_base_gaussian_sampling(){
     is_power_of_basis_gaussian_temp_init = true;
     mask = basis-1;  
     gaussians = new long[N];
@@ -393,13 +393,13 @@ void gadget::precompute_constants_for_power_of_base_gaussian_sampling(){
     }  
 }
 
-void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){ 
+void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){ 
     q_decomp = new long[ell];
-    gadget::base_decomposition(q_decomp, Q); 
+    Gadget::base_decomposition(q_decomp, Q); 
     sigma = stddev/(double)(basis + 1); 
-    rand_sigma = sampler(0.0, stddev);  
+    rand_sigma = Sampler(0.0, stddev);  
     sigmas = new double[ell];
-    rand_sigmas = new sampler[ell];
+    rand_sigmas = new Sampler[ell];
 
     r = basis + 1;
     l = new double[ell];
@@ -418,11 +418,11 @@ void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
          
         sigmas[i] = sigma/l[i];   
          
-        rand_sigmas[i] = sampler(0.0, sigmas[i]); 
+        rand_sigmas[i] = Sampler(0.0, sigmas[i]); 
     }
 
     d_stddev = sigma / d[ell-1];  
-    rand_d_stddev = sampler(0.0, d_stddev);   
+    rand_d_stddev = Sampler(0.0, d_stddev);   
      
     inv_basis = (double)1.0/basis; 
     two_times_basis_plus_one = 2 * basis + 1;
@@ -441,7 +441,7 @@ void gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
 }
 
 
-void gadget::base_decomposition(long* out, long in){
+void Gadget::base_decomposition(long* out, long in){
     long mask = basis-1;
     long shift; 
     for(long i = 0; i < ell; ++i){

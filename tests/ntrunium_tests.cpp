@@ -9,13 +9,16 @@
 #include <NTL/ZZ_p.h>
 #include <random>   
 
+
+using namespace fhe_deck;
+
 void test_key_switching(ntrunium_named_param param_name){
 
     std::cout << "=============== test_key_switching =================" << std::endl;
   
     ntrunium_named_param_generator param_gen(param_name); 
     param_gen.generate_bootstapping_keys();  
-    sampler rand; 
+    Sampler rand; 
     int t = 5;
        
 
@@ -24,17 +27,17 @@ void test_key_switching(ntrunium_named_param param_name){
     ntru_ct ct = param_gen.ntru.encrypt(msg); 
     long *out = param_gen.ntru.decrypt(&ct, t); 
     
-    long *lwe_ct = param_gen.lwe_g_par.lwe_par.init_ct();
+    long *lwe_ct = param_gen.lwe_g_par.lwe_param->init_ct();
     // Key Switch to LWE 
     param_gen.boot->ntru_to_lwe_key_switch(lwe_ct, &ct); 
     long dec = param_gen.lwe_g.lwe.decrypt(lwe_ct, t);
     // Decrypt the resulting LWE ciphertexts. 
-    if(dec == utils::integer_mod_form(out[0], t)){
+    if(dec == Utils::integer_mod_form(out[0], t)){
         std::cout << "Key Switching Test: OK" << std::endl;
     }else{
         std::cout << "Key Switching Test: Fail" << std::endl;
         std::cout << "out[0]: " << out[0] << std::endl;
-        std::cout << "utils::integer_mod_form(out[0], t): " << utils::integer_mod_form(out[0], t) << std::endl;
+        std::cout << "utils::integer_mod_form(out[0], t): " << Utils::integer_mod_form(out[0], t) << std::endl;
         std::cout << "dec: " << dec << std::endl;
     }
 
@@ -64,8 +67,8 @@ void rotating_ntru_test(){
     double ntru_stddev = 3.2; 
 
     // The dimensions and the error are ridiculus, but here we only make a basic test
-    lwe_param param(n, q, binary, lwe_stddev); 
-    lwe_sk lwe(param);
+    std::shared_ptr<LWEParam> param(new LWEParam(n, q, binary, lwe_stddev)); 
+    LWESK lwe(param);
     long t = 3; 
     long delta_q_t = (long)round((double)q/(double)t); 
 
@@ -79,7 +82,7 @@ void rotating_ntru_test(){
     ntru_sk::key_gen(key, inv_key, ntru_par);     
     ntru_sk ntru(ntru_par, key, inv_key); 
    
-    long* acc_msg = rotation_poly::cyclic_rot_identity(t, N, Q);    
+    long* acc_msg = RotationPoly::cyclic_rot_identity(t, N, Q);    
     ntru_ct acc = ntru.kdm_encrypt(acc_msg); 
     // Test Single Rotation
     ntru_ct acc_rot_test(ntru_par); 
@@ -87,11 +90,11 @@ void rotating_ntru_test(){
     long* rotation_of_acc_msg = ntru_par.init_zero_poly(); 
     bool single_rot_test = true; 
     for(int i = 0; i < N; ++i){ 
-        utils::rotate_poly(acc_rot_test.c, acc.c, ntru_par.engine->N, i); 
-        utils::rotate_poly(rotation_of_acc_msg, acc_msg, ntru_par.engine->N, i); 
+        Utils::rotate_poly(acc_rot_test.c, acc.c, ntru_par.engine->N, i); 
+        Utils::rotate_poly(rotation_of_acc_msg, acc_msg, ntru_par.engine->N, i); 
         ntru.decrypt(rotation_test_dec, &acc_rot_test, t); 
-        utils::array_mod_form(rotation_test_dec, rotation_test_dec, N, t);  
-        if(utils::is_eq_poly(rotation_of_acc_msg, rotation_test_dec, ntru_par.N)){ 
+        Utils::array_mod_form(rotation_test_dec, rotation_test_dec, N, t);  
+        if(Utils::is_eq_poly(rotation_of_acc_msg, rotation_test_dec, ntru_par.N)){ 
             std::cout << "Test Single Rotation: Fail" << std::endl;  
             single_rot_test = false;   
         }
@@ -119,32 +122,32 @@ void rotating_ntru_test(){
     for(int j = 0; j < N; ++j){ 
         lwe.encrypt(ct, j);  
         phase = lwe.phase(ct);    
-        utils::rotate_poly(expected_rotation_test, acc_msg, ntru_par.engine->N, phase);
-        utils::array_rounding(expected_rotation_test, expected_rotation_test, ntru_par.N, Q, t);
-        utils::array_mod_form(expected_rotation_test, expected_rotation_test, ntru_par.N, t);
+        Utils::rotate_poly(expected_rotation_test, acc_msg, ntru_par.engine->N, phase);
+        Utils::array_rounding(expected_rotation_test, expected_rotation_test, ntru_par.N, Q, t);
+        Utils::array_mod_form(expected_rotation_test, expected_rotation_test, ntru_par.N, t);
         // Decrypt by rotating
         for(int i = 0; i < ntru_par.N; ++i){ 
             acc_test_rot[i] = 0;
             acc_test_rot_next.c[i] = 0;
         } 
-        utils::rotate_poly(acc_test_rot, acc.c, ntru_par.engine->N, ct[0]);
+        Utils::rotate_poly(acc_test_rot, acc.c, ntru_par.engine->N, ct[0]);
         for(int i = 0; i < n; ++i){
             if(lwe.s[i] == 1){   
-                utils::rotate_poly(acc_test_rot_next.c, acc_test_rot, ntru_par.engine->N, ct[i+1]);
+                Utils::rotate_poly(acc_test_rot_next.c, acc_test_rot, ntru_par.engine->N, ct[i+1]);
             }else{ 
                 // TODO Why rotation by 0 makes sense here?
-                utils::rotate_poly(acc_test_rot_next.c, acc_test_rot, ntru_par.engine->N, 0);
+                Utils::rotate_poly(acc_test_rot_next.c, acc_test_rot, ntru_par.engine->N, 0);
             } 
-            utils::rotate_poly(acc_test_rot, acc_test_rot_next.c, ntru_par.engine->N, 0);
+            Utils::rotate_poly(acc_test_rot, acc_test_rot_next.c, ntru_par.engine->N, 0);
         } 
         ntru.decrypt(ct_rotation_test_dec, &acc_test_rot_next, t);
-        utils::array_mod_form(ct_rotation_test_dec, ct_rotation_test_dec, N, t); 
-        if(!utils::is_eq_poly(ct_rotation_test_dec, expected_rotation_test, ntru_par.N)){ 
+        Utils::array_mod_form(ct_rotation_test_dec, ct_rotation_test_dec, N, t); 
+        if(!Utils::is_eq_poly(ct_rotation_test_dec, expected_rotation_test, ntru_par.N)){ 
             std::cout << "Ciphertext Rotation Test: Fail" << std::endl;
             std::cout << "fail at: " << j << std::endl;  
             std::cout << "phase: " << phase << std::endl;
-            std::cout << "ct_rotation_test_dec: " << utils::to_string(ct_rotation_test_dec, N) << std::endl;  
-            std::cout << "expected_rotation_test: " << utils::to_string(expected_rotation_test, N) << std::endl; 
+            std::cout << "ct_rotation_test_dec: " << Utils::to_string(ct_rotation_test_dec, N) << std::endl;  
+            std::cout << "expected_rotation_test: " << Utils::to_string(expected_rotation_test, N) << std::endl; 
             rotation_decrypt_test = false;
             break;
         } 
@@ -171,7 +174,7 @@ void test_rotation_polynomials(int num_of_tests){
     long t = 13;
     // NOTE: Here N is the same as Q! Don't forget about that, or you get rubish.
     long N = Q;
-    sampler rand; 
+    Sampler rand; 
     long x;
     long result;
     long result_rounded; 
@@ -179,17 +182,17 @@ void test_rotation_polynomials(int num_of_tests){
     long expected;
 
     // Test identity polynomial
-    long *id_acc = rotation_poly::cyclic_rot_identity(t, N, Q);
+    long *id_acc = RotationPoly::cyclic_rot_identity(t, N, Q);
     long *rotated_poly = new long[N];
     bool id_test = true;
     for(int i = 0; i < num_of_tests; ++i){
         x = rand.uniform(t); 
         rot = (long)round((Q * x)/t);
         // Eventually I might add a small gaussian error here.
-        utils::rotate_poly(rotated_poly, id_acc, N, rot);
+        Utils::rotate_poly(rotated_poly, id_acc, N, rot);
         result = rotated_poly[0];
-        result_rounded = utils::integer_rounding(result, Q, t);
-        result_rounded = utils::integer_mod_form(result_rounded, t);
+        result_rounded = Utils::integer_rounding(result, Q, t);
+        result_rounded = Utils::integer_mod_form(result_rounded, t);
         if(result_rounded != x){
             std::cout << "ID Test: Fail" << std::endl;
             std::cout << "At: " << i << std::endl;
@@ -197,9 +200,9 @@ void test_rotation_polynomials(int num_of_tests){
             std::cout << "result:" << result << std::endl;
             std::cout << "result_rounded:" << result_rounded << std::endl;
             std::cout << "rot: " << rot << std::endl;
-            std::cout << "rot_rounded: " << utils::integer_mod_form(utils::integer_rounding(rot, Q, t), t) << std::endl;
-            std::cout << "id_acc: " << utils::to_string(id_acc, N) << std::endl;
-            std::cout << "rotated_poly: " << utils::to_string(rotated_poly, N) << std::endl; 
+            std::cout << "rot_rounded: " << Utils::integer_mod_form(Utils::integer_rounding(rot, Q, t), t) << std::endl;
+            std::cout << "id_acc: " << Utils::to_string(id_acc, N) << std::endl;
+            std::cout << "rotated_poly: " << Utils::to_string(rotated_poly, N) << std::endl; 
             id_test = false;
             break;
         }
@@ -210,7 +213,7 @@ void test_rotation_polynomials(int num_of_tests){
 
 
     // Test inv mod
-    long *inv_mod_acc = rotation_poly::cyclic_rot_inv_mod(t, N, Q);
+    long *inv_mod_acc = RotationPoly::cyclic_rot_inv_mod(t, N, Q);
     bool inv_mod_test = true; 
     for(int i = 0; i < num_of_tests; ++i){
         x = rand.uniform(t) % t; 
@@ -218,14 +221,14 @@ void test_rotation_polynomials(int num_of_tests){
         if(x == 0){
             expected = 0;
         }else{
-            expected = utils::mod_inv(x, t);
+            expected = Utils::mod_inv(x, t);
         }
         rot = (long)round((Q * x)/t);
         // Eventually I might add a small gaussian error here.
-        utils::rotate_poly(rotated_poly, inv_mod_acc, N, rot);
+        Utils::rotate_poly(rotated_poly, inv_mod_acc, N, rot);
         result = rotated_poly[0];
-        result_rounded = utils::integer_rounding(result, Q, t);
-        result_rounded = utils::integer_mod_form(result_rounded, t);
+        result_rounded = Utils::integer_rounding(result, Q, t);
+        result_rounded = Utils::integer_mod_form(result_rounded, t);
         if(result_rounded != expected){
             std::cout << "Inv Mod Test: Fail" << std::endl;
             std::cout << "At: " << i << std::endl;
@@ -234,9 +237,9 @@ void test_rotation_polynomials(int num_of_tests){
             std::cout << "result:" << result << std::endl;
             std::cout << "result_rounded:" << result_rounded << std::endl;
             std::cout << "rot: " << rot << std::endl;
-            std::cout << "rot_rounded: " << utils::integer_mod_form(utils::integer_rounding(rot, Q, t), t) << std::endl;
-            std::cout << "inv_mod_acc: " << utils::to_string(inv_mod_acc, N) << std::endl;
-            std::cout << "rotated_poly: " << utils::to_string(rotated_poly, N) << std::endl; 
+            std::cout << "rot_rounded: " << Utils::integer_mod_form(Utils::integer_rounding(rot, Q, t), t) << std::endl;
+            std::cout << "inv_mod_acc: " << Utils::to_string(inv_mod_acc, N) << std::endl;
+            std::cout << "rotated_poly: " << Utils::to_string(rotated_poly, N) << std::endl; 
             id_test = false;
             break;
         }
@@ -252,7 +255,7 @@ void test_rotation_polynomials(int num_of_tests){
     long sum_exp;
     long sub_exp;
     long sum, sub;
-    long* power_sum_acc = rotation_poly::cyclic_rot_square_and_div_by_4(t, N, Q);
+    long* power_sum_acc = RotationPoly::cyclic_rot_square_and_div_by_4(t, N, Q);
     long* power_sum = new long[N];
 
     bool mul_mod_test = true; 
@@ -262,31 +265,31 @@ void test_rotation_polynomials(int num_of_tests){
         // Compute what we expect 
         expected = (a * b) % t;  
         sum_exp = (a + b) % t; 
-        sub_exp = utils::integer_mod_form(a - b, t); 
+        sub_exp = Utils::integer_mod_form(a - b, t); 
         rot = (long)round((Q * sum_exp)/t); 
-        utils::rotate_poly(power_sum, power_sum_acc, N, rot);
+        Utils::rotate_poly(power_sum, power_sum_acc, N, rot);
         sum = power_sum[0]; 
 
         rot = (long)round((Q * sub_exp)/t); 
-        utils::rotate_poly(power_sum, power_sum_acc, N, rot);
+        Utils::rotate_poly(power_sum, power_sum_acc, N, rot);
         sub = power_sum[0];  
 
         result = (sum - sub) % Q;
-        result_rounded = utils::integer_rounding(result, Q, t);
-        result_rounded = utils::integer_mod_form(result_rounded, t);
+        result_rounded = Utils::integer_rounding(result, Q, t);
+        result_rounded = Utils::integer_mod_form(result_rounded, t);
         if(result_rounded != expected){
             std::cout << "Mul Mod test: Fail" << std::endl;
             std::cout << "At: " << i << std::endl;
             std::cout << "a:" << a << std::endl;
             std::cout << "b:" << b << std::endl;
-            std::cout << "utils::mod_inv(4, t): " << utils::mod_inv(4, t) << std::endl;
+            std::cout << "utils::mod_inv(4, t): " << Utils::mod_inv(4, t) << std::endl;
             std::cout << "expected:" << expected << std::endl;
             std::cout << "result:" << result << std::endl;
             std::cout << "result_rounded:" << result_rounded << std::endl;
             //std::cout << "rot: " << rot << std::endl;
-            std::cout << "rot_rounded: " << utils::integer_mod_form(utils::integer_rounding(rot, Q, t), t) << std::endl;
-            std::cout << "inv_mod_acc: " << utils::to_string(inv_mod_acc, N) << std::endl;
-            std::cout << "rotated_poly: " << utils::to_string(rotated_poly, N) << std::endl; 
+            std::cout << "rot_rounded: " << Utils::integer_mod_form(Utils::integer_rounding(rot, Q, t), t) << std::endl;
+            std::cout << "inv_mod_acc: " << Utils::to_string(inv_mod_acc, N) << std::endl;
+            std::cout << "rotated_poly: " << Utils::to_string(rotated_poly, N) << std::endl; 
             mul_mod_test = false;
             break;
         }
@@ -301,18 +304,18 @@ void test_rotation_polynomials(int num_of_tests){
     for(int i = 0; i < size_of_poly; ++i){
         test_poly[i] = rand.uniform(t); 
     } 
-    long *poly_eval_acc = rotation_poly::cyclic_rot_uni_poly(test_poly, size_of_poly, t, N, Q);
+    long *poly_eval_acc = RotationPoly::cyclic_rot_uni_poly(test_poly, size_of_poly, t, N, Q);
     bool poly_eval_test = true; 
     for(int i = 0; i < num_of_tests; ++i){
         x = rand.uniform(t); 
         // Compute what we expect 
-        expected = utils::eval_poly_mod(x, test_poly, size_of_poly, t);
+        expected = Utils::eval_poly_mod(x, test_poly, size_of_poly, t);
         rot = (long)round((Q * x)/t);
         // Eventually I might add a small gaussian error here.
-        utils::rotate_poly(rotated_poly, poly_eval_acc, N, rot);
+        Utils::rotate_poly(rotated_poly, poly_eval_acc, N, rot);
         result = rotated_poly[0];
-        result_rounded = utils::integer_rounding(result, Q, t);
-        result_rounded = utils::integer_mod_form(result_rounded, t);
+        result_rounded = Utils::integer_rounding(result, Q, t);
+        result_rounded = Utils::integer_mod_form(result_rounded, t);
         if(result_rounded != expected){
             std::cout << "Polynomial Eval Test: Fail" << std::endl;
             std::cout << "At: " << i << std::endl;
@@ -321,10 +324,10 @@ void test_rotation_polynomials(int num_of_tests){
             std::cout << "result:" << result << std::endl;
             std::cout << "result_rounded:" << result_rounded << std::endl;
             std::cout << "rot: " << rot << std::endl;
-            std::cout << "rot_rounded: " << utils::integer_mod_form(utils::integer_rounding(rot, Q, t), t) << std::endl;
-            std::cout << "test_poly: " << utils::to_string(test_poly, size_of_poly) << std::endl;
-            std::cout << "poly_eval_acc: " << utils::to_string(poly_eval_acc, N) << std::endl;
-            std::cout << "rotated_poly: " << utils::to_string(rotated_poly, N) << std::endl; 
+            std::cout << "rot_rounded: " << Utils::integer_mod_form(Utils::integer_rounding(rot, Q, t), t) << std::endl;
+            std::cout << "test_poly: " << Utils::to_string(test_poly, size_of_poly) << std::endl;
+            std::cout << "poly_eval_acc: " << Utils::to_string(poly_eval_acc, N) << std::endl;
+            std::cout << "rotated_poly: " << Utils::to_string(rotated_poly, N) << std::endl; 
             poly_eval_test = false;
             break;
         }
@@ -354,7 +357,7 @@ void test_blind_rotate_named_params(ntrunium_named_param param_name, int num_of_
  
     int t = 3;
     // Create the identity function for the acc (its with power of two parameters) 
-    long* acc_msg = rotation_poly::rot_identity(t, param_gen.N, param_gen.P);    
+    long* acc_msg = RotationPoly::rot_identity(t, param_gen.N, param_gen.P);    
     ntru_ct acc_pot = param_gen.ntru_P.kdm_encrypt(acc_msg);   
     long *ct = param_gen.lwe_par_small.init_ct();
     long* msg = param_gen.ntru.param.init_zero_poly();
@@ -365,8 +368,8 @@ void test_blind_rotate_named_params(ntrunium_named_param param_name, int num_of_
     long *exp_acc = param_gen.ntru_par.init_poly();  
     ntru_ct out_acc(param_gen.ntru_par);
 
-    long* init_acc = rotation_poly::rot_identity(t, param_gen.N, param_gen.Q);
-    utils::array_rounding(init_acc, init_acc, param_gen.N, param_gen.Q, t);  
+    long* init_acc = RotationPoly::rot_identity(t, param_gen.N, param_gen.Q);
+    Utils::array_rounding(init_acc, init_acc, param_gen.N, param_gen.Q, t);  
 
 
     // These parameters are after bootstrapping 
@@ -386,18 +389,18 @@ void test_blind_rotate_named_params(ntrunium_named_param param_name, int num_of_
         // Decrypt the output of blind rotation
         //param_gen.ntru_P.decrypt(out_msg, &out_acc_pot, t); 
         // Should be rotate by phase
-        utils::negacyclic_rotate_poly(exp_acc, init_acc, param_gen.ntru_par.engine->N,test_phase); 
+        Utils::negacyclic_rotate_poly(exp_acc, init_acc, param_gen.ntru_par.engine->N,test_phase); 
         // Now we need to switch out_acc from ntru_par_pot to ntru_par   
         out_acc = out_acc_pot.mod_switch(param_gen.ntru_par);
         param_gen.ntru.decrypt(out_msg, &out_acc, t);
-        if(!utils::is_eq_poly(out_msg, exp_acc, param_gen.ntru_par.N)){
+        if(!Utils::is_eq_poly(out_msg, exp_acc, param_gen.ntru_par.N)){
             std::cout << "Blind Rotation Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "exp_acc:      " << utils::to_string(exp_acc, param_gen.ntru_par.N) << std::endl; 
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "exp_acc:      " << Utils::to_string(exp_acc, param_gen.ntru_par.N) << std::endl; 
             acc_out_test = acc_pot.mod_switch(param_gen.ntru_par);
             param_gen.ntru.decrypt(acc_msg_test, &acc_out_test, t);
-            std::cout << "acc_msg_test: " << utils::to_string(acc_msg_test, param_gen.ntru_par.N) << std::endl;
+            std::cout << "acc_msg_test: " << Utils::to_string(acc_msg_test, param_gen.ntru_par.N) << std::endl;
  
             std::cout << "test_phase: " << test_phase << std::endl; 
             blind_rotation_test = false;
@@ -406,11 +409,11 @@ void test_blind_rotate_named_params(ntrunium_named_param param_name, int num_of_
             param_gen.ntru_P.kdm_encrypt(&acc_pot, acc_msg);  
             // Blind rotate
             out_acc_pot = param_gen.boot->blind_rotate(&acc_pot, ct);   
-            utils::rotate_poly(exp_acc, init_acc, param_gen.ntru_par.engine->N, i);
+            Utils::rotate_poly(exp_acc, init_acc, param_gen.ntru_par.engine->N, i);
             // Now we need to switch out_acc from ntru_par_pot to ntru_par 
             out_acc = out_acc_pot.mod_switch(param_gen.ntru_par);
             param_gen.ntru.decrypt(out_msg, &out_acc, t);
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
             break;
         }  
     }
@@ -439,10 +442,10 @@ void test_bootstrap_named_params(ntrunium_named_param param_name, int num_of_tes
     std::cout << "Generate Bootstrapping Keys: " ;
     param_gen.generate_bootstapping_keys(); 
     std::cout << "DONE." << std::endl;
-    sampler rand; 
+    Sampler rand; 
     int t = 6;
     // Create the msb function for the acc (its with power of two parameters) 
-    long* acc_msg = rotation_poly::rot_msb(t, param_gen.N, param_gen.P);   
+    long* acc_msg = RotationPoly::rot_msb(t, param_gen.N, param_gen.P);   
     ntru_ct acc_pot = param_gen.ntru_P.kdm_encrypt(acc_msg);    
     ntru_ct ct(param_gen.ntru.param);
     long* msg = param_gen.ntru.param.init_zero_poly();
@@ -466,13 +469,13 @@ void test_bootstrap_named_params(ntrunium_named_param param_name, int num_of_tes
         // Bootstrap 
         ct = param_gen.boot->bootstrap(&acc_pot, &ct, t); 
         param_gen.ntru.decrypt(out_msg, &ct, t);
-        out_msg[0] = utils::integer_mod_form(out_msg[0], t);
+        out_msg[0] = Utils::integer_mod_form(out_msg[0], t);
         // Here I should get the most signifficant but of msg
         if(out_msg[0] != expected_out){
             std::cout << "Bootstrapping Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "msg:      " << utils::to_string(msg, param_gen.ntru_par.N) << std::endl;  
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "msg:      " << Utils::to_string(msg, param_gen.ntru_par.N) << std::endl;  
             std::cout << "out_msg[0]: " << out_msg[0] << std::endl;
             std::cout << "msg[0]: " <<  msg[0] << std::endl; 
             std::cout << "expected_out:  " << expected_out << std::endl;
@@ -500,12 +503,12 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
 
     ntrunium_named_param_generator param_gen(param_name); 
     param_gen.generate_bootstapping_keys(); 
-    sampler rand; 
+    Sampler rand; 
     int t = 5;
     // Create the identity function for the acc (its with power of two parameters) 
-    long* acc_msg = rotation_poly::rot_identity(t, param_gen.N, param_gen.P);     
+    long* acc_msg = RotationPoly::rot_identity(t, param_gen.N, param_gen.P);     
     ntru_ct acc_pot = param_gen.ntru_P.kdm_encrypt(acc_msg);   
-    long* acc_msb_msg = rotation_poly::rot_msb(4, param_gen.N, param_gen.P);     
+    long* acc_msb_msg = RotationPoly::rot_msb(4, param_gen.N, param_gen.P);     
     ntru_ct acc_msb = param_gen.ntru_P.kdm_encrypt(acc_msb_msg);    
     ntru_ct ct(param_gen.ntru.param);
     long* msg = param_gen.ntru.param.init_zero_poly();
@@ -519,13 +522,13 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
         param_gen.ntru.kdm_scale_and_encrypt(&ct, msg, t);  
         ct = param_gen.boot->functional_bootstrap(&acc_pot, &acc_msb, &ct, t);
         param_gen.ntru.decrypt(out_msg, &ct, t);
-        out_msg[0] = utils::integer_mod_form(out_msg[0], t);
+        out_msg[0] = Utils::integer_mod_form(out_msg[0], t);
         if(out_msg[0] != msg[0]){
             std::cout << "Functional Bootstrapping Identity Function Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
             std::cout << "out_msg[0]: " << out_msg[0] << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "msg[0]:      " << utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "msg[0]:      " << Utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
   
             id_bootstrap_test = false; 
             break;
@@ -537,7 +540,7 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
    
 
 
-    long *inv_mod_acc = rotation_poly::rot_inv_mod(t, param_gen.N, param_gen.P);   
+    long *inv_mod_acc = RotationPoly::rot_inv_mod(t, param_gen.N, param_gen.P);   
     param_gen.ntru_P.kdm_encrypt(&acc_pot, inv_mod_acc);    
     long x; 
     long expected;
@@ -547,18 +550,18 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
         if(msg[0] == 0){
             expected = 0;
         }else{
-            expected = utils::mod_inv(msg[0], t);
+            expected = Utils::mod_inv(msg[0], t);
         }
         param_gen.ntru.kdm_scale_and_encrypt(&ct, msg, t);  
         ct = param_gen.boot->functional_bootstrap(&acc_pot, &acc_msb, &ct, t);
         param_gen.ntru.decrypt(out_msg, &ct, t);
-        out_msg[0] = utils::integer_mod_form(out_msg[0], t);
+        out_msg[0] = Utils::integer_mod_form(out_msg[0], t);
         if(out_msg[0] != expected){
             std::cout << "Functional Bootstrapping Mod Inverse Function Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
             std::cout << "out_msg[0]: " << out_msg[0] << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "msg:      " << utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "msg:      " << Utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
   
             mod_inv_test = false; 
             break;
@@ -570,7 +573,7 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
 
     
 
-    long *power_sum_acc = rotation_poly::rot_square_and_div_by_4(t, param_gen.N, param_gen.P);   
+    long *power_sum_acc = RotationPoly::rot_square_and_div_by_4(t, param_gen.N, param_gen.P);   
     param_gen.ntru_P.kdm_encrypt(&acc_pot, power_sum_acc);    
     ntru_ct ct_a(param_gen.ntru.param);
     ntru_ct ct_b(param_gen.ntru.param);
@@ -596,13 +599,13 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
         power_minus = param_gen.boot->functional_bootstrap(&acc_pot, &acc_msb, &power_minus, t);
         out_ct = power_plus.sub(&power_minus); 
         param_gen.ntru.decrypt(out_msg, &out_ct, t);
-        out_msg[0] = utils::integer_mod_form(out_msg[0], t);
+        out_msg[0] = Utils::integer_mod_form(out_msg[0], t);
         if(out_msg[0] != expected){
             std::cout << "Functional Bootstrapping Multiplication Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
             std::cout << "out_msg[0]: " << out_msg[0] << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "msg:      " << utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "msg:      " << Utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
   
             mul_mod_test = false; 
             break;
@@ -618,28 +621,28 @@ void test_bootstrap_with_functional_rotation_polynomials(ntrunium_named_param pa
     for(int i = 0; i < size_of_poly; ++i){
         test_poly[i] = rand.uniform(t); 
     } 
-    long *poly_eval_acc = rotation_poly::rot_uni_poly(test_poly, size_of_poly, t, param_gen.N, param_gen.P); 
+    long *poly_eval_acc = RotationPoly::rot_uni_poly(test_poly, size_of_poly, t, param_gen.N, param_gen.P); 
     param_gen.ntru_P.kdm_encrypt(&acc_pot, poly_eval_acc);      
     bool uni_poly_test = true;
     for(int i = 0; i < num_of_tests; ++i){  
         msg[0] = rand.uniform(t);    
-        expected = utils::eval_poly_mod(msg[0], test_poly, size_of_poly, t);
+        expected = Utils::eval_poly_mod(msg[0], test_poly, size_of_poly, t);
         param_gen.ntru.kdm_scale_and_encrypt(&ct, msg, t);  
         ct = param_gen.boot->functional_bootstrap(&acc_pot,  &acc_msb, &ct, t);
         param_gen.ntru.decrypt(out_msg, &ct, t);
-        out_msg[0] = utils::integer_mod_form(out_msg[0], t);
+        out_msg[0] = Utils::integer_mod_form(out_msg[0], t);
         if(out_msg[0] != expected){
             std::cout << "Functional Bootstrapping Univariate Polynomial Test: Fail" << std::endl;
             std::cout << "Fail at:      " << i << std::endl;
             std::cout << "out_msg[0]: " << out_msg[0] << std::endl;
-            std::cout << "out:          " << utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
-            std::cout << "msg:      " << utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
+            std::cout << "out:          " << Utils::to_string(out_msg, param_gen.ntru_par.N) << std::endl;
+            std::cout << "msg:      " << Utils::to_string(msg, param_gen.ntru_par.N) << std::endl; 
   
             uni_poly_test = false; 
             break;
         } 
         // Testing also when other coefficients of the msg are set to some non-zero value (I could set them to random, but that is faster)
-        utils::set(msg, out_msg, param_gen.N);
+        Utils::set(msg, out_msg, param_gen.N);
     }
     if(uni_poly_test){
         std::cout << "Functional Bootstrapping Univariate Polynomial Test: OK" << std::endl;
@@ -683,7 +686,7 @@ void plaintext_gauss(int* res, int** mat, int n, int modulus){
     int inv; 
 
     for(int i = 0; i < n-1; ++i){     
-        inv = utils::mod_inv(mat[i][i], modulus);  
+        inv = Utils::mod_inv(mat[i][i], modulus);  
         num_of_invs++;
         for(int j = i+1; j < n; ++j)
         { 
@@ -693,13 +696,13 @@ void plaintext_gauss(int* res, int** mat, int n, int modulus){
             { 
                 int diag_mat = diag * mat[i][k] % modulus; 
                 num_of_muls++;
-                mat[j][k] = utils::integer_mod_form(mat[j][k] - diag_mat, modulus);
+                mat[j][k] = Utils::integer_mod_form(mat[j][k] - diag_mat, modulus);
             }
         }
     } 
     for(int i = n-1; i >= 0; --i){                     
         res[i] = mat[i][n];       
-        inv = utils::mod_inv(mat[i][i], modulus);  
+        inv = Utils::mod_inv(mat[i][i], modulus);  
         num_of_invs++;
         for(int j = i+1; j < n; ++j) 
         {
@@ -707,10 +710,10 @@ void plaintext_gauss(int* res, int** mat, int n, int modulus){
             {
                 int prod = (mat[i][j] * res[j]) % modulus;
                 num_of_muls++;
-                res[i] = utils::integer_mod_form(res[i] - prod, modulus);
+                res[i] = Utils::integer_mod_form(res[i] - prod, modulus);
             }          
         }
-        res[i] =  utils::integer_mod_form(res[i] * inv, modulus);  
+        res[i] =  Utils::integer_mod_form(res[i] * inv, modulus);  
         num_of_muls++;
     }
     std::cout << "num_of_invs: " << num_of_invs << std::endl;
@@ -734,7 +737,7 @@ long decrypt(ntrunium_named_param_generator param_gen, ntru_ct *ct, int t){
     long *out_msg = param_gen.ntru_par.init_zero_poly();
     long ret;
     param_gen.ntru.decrypt(out_msg, ct, t);
-    ret =  utils::integer_mod_form(out_msg[0], t);
+    ret =  Utils::integer_mod_form(out_msg[0], t);
     delete[] out_msg;
     return ret;
 }
@@ -752,13 +755,13 @@ void homomorphic_plaintext_gauss(ntrunium_named_param_generator param_gen, int* 
         }
     } 
     //  Accumulator for the inversion function
-    long *inv_mod_rot_poly = rotation_poly::rot_inv_mod(t, param_gen.N, param_gen.P);   
+    long *inv_mod_rot_poly = RotationPoly::rot_inv_mod(t, param_gen.N, param_gen.P);   
     ntru_ct inv_mod_acc_ct = param_gen.ntru_P.kdm_encrypt(inv_mod_rot_poly); 
     // Accumulator for the multiplication 
-    long *power_sum_acc = rotation_poly::rot_square_and_div_by_4(t, param_gen.N, param_gen.P);   
+    long *power_sum_acc = RotationPoly::rot_square_and_div_by_4(t, param_gen.N, param_gen.P);   
     ntru_ct mul_acc_ct = param_gen.ntru_P.kdm_encrypt(power_sum_acc);    
   
-    long* acc_msb_msg = rotation_poly::rot_msb(4, param_gen.N, param_gen.P);     
+    long* acc_msb_msg = RotationPoly::rot_msb(4, param_gen.N, param_gen.P);     
     ntru_ct acc_msb = param_gen.ntru_P.kdm_encrypt(acc_msb_msg);   
 
     // Ciphertexts that we use in our homomorphic evaluation
@@ -835,7 +838,7 @@ void homomorphic_plaintext_gauss(ntrunium_named_param_generator param_gen, int* 
 // n is the dimension
 // t is the modulus
 int** random_system_of_equations(int n, int t){
-    sampler rand; 
+    Sampler rand; 
     int** mat = new int*[n];
     for(int i = 0; i < n; ++i){
         mat[i] = new int[n+1];
@@ -879,7 +882,7 @@ void plaintext_gaussian_elimination_test(){
     int* res = new int[n];
 
     plaintext_gauss(res, mat, n, t);
-    std::cout << "res: " << utils::to_string(res, n) << std::endl;
+    std::cout << "res: " << Utils::to_string(res, n) << std::endl;
     std::cout << "is_solution: " << is_solution(mat, res, n, t) << std::endl;
 
 
@@ -888,7 +891,7 @@ void plaintext_gaussian_elimination_test(){
     int** mat_test = random_system_of_equations(n, t); 
     std::cout << to_string_matrix(mat_test, n) << std::endl;
     plaintext_gauss(res_test, mat_test, n, t);
-    std::cout << "res_test: " << utils::to_string(res_test, n) << std::endl;
+    std::cout << "res_test: " << Utils::to_string(res_test, n) << std::endl;
     std::cout << "is_solution: " << is_solution(mat_test, res_test, n, t) << std::endl;
     std::cout << "mat_test:" << std::endl;
 
@@ -920,9 +923,9 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_2 = new int[2];
     start = std::chrono::high_resolution_clock::now(); 
     homomorphic_plaintext_gauss(param_gen, res_2, mat_2, 2, t);
-    std::cout << "res_2: " << utils::to_string(res_2, 2) << std::endl;
+    std::cout << "res_2: " << Utils::to_string(res_2, 2) << std::endl;
     std::cout << "is solution: " << is_solution(mat_2, res_2, 2, t) << std::endl;
-    std::cout << "res: " << utils::to_string(res_2, 2) << std::endl; 
+    std::cout << "res: " << Utils::to_string(res_2, 2) << std::endl; 
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
     std::cout << "Avg Time Blind Rotations: " <<  time/1000 << " [s]" << std::endl;
@@ -944,7 +947,7 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_3 = new int[3]; 
     start = std::chrono::high_resolution_clock::now();  
     homomorphic_plaintext_gauss(param_gen, res_3,  mat_3, 3, t);
-    std::cout << "res_3: " << utils::to_string(res_3, 3) << std::endl;
+    std::cout << "res_3: " << Utils::to_string(res_3, 3) << std::endl;
     std::cout << "is solution: " << is_solution(mat_3, res_3, 3, t) << std::endl;
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
@@ -967,7 +970,7 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_4 = new int[4]; 
     start = std::chrono::high_resolution_clock::now(); 
     homomorphic_plaintext_gauss(param_gen, res_4,  mat_4, 4, t);
-    std::cout << "res_4: " << utils::to_string(res_4, 4) << std::endl;
+    std::cout << "res_4: " << Utils::to_string(res_4, 4) << std::endl;
     std::cout << "is solution: " << is_solution(mat_4, res_4, 4, t) << std::endl;
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
@@ -991,7 +994,7 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_5 = new int[5]; 
     start = std::chrono::high_resolution_clock::now(); 
     homomorphic_plaintext_gauss(param_gen, res_5,  mat_5, 5, t);
-    std::cout << "res_5: " << utils::to_string(res_5, 5) << std::endl;
+    std::cout << "res_5: " << Utils::to_string(res_5, 5) << std::endl;
     std::cout << "is solution: " << is_solution(mat_5, res_5, 5, t) << std::endl;
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
@@ -1015,7 +1018,7 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_6 = new int[6]; 
     start = std::chrono::high_resolution_clock::now(); 
     homomorphic_plaintext_gauss(param_gen, res_6,  mat_6, 6, t);
-    std::cout << "res_6: " << utils::to_string(res_6, 6) << std::endl;
+    std::cout << "res_6: " << Utils::to_string(res_6, 6) << std::endl;
     std::cout << "is solution: " << is_solution(mat_6, res_6, 6, t) << std::endl;
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  
@@ -1041,7 +1044,7 @@ void homomorphic_gaussian_elimination_test(ntrunium_named_param param_name){
     int* res_7 = new int[7]; 
     start = std::chrono::high_resolution_clock::now(); 
     homomorphic_plaintext_gauss(param_gen, res_7,  (int**)mat_7, 7, t);
-    std::cout << "res_7: " << utils::to_string(res_7, 6) << std::endl;
+    std::cout << "res_7: " << Utils::to_string(res_7, 6) << std::endl;
     std::cout << "is solution: " << is_solution((int**)mat_7, res_7, 7, t) << std::endl;
     end = std::chrono::high_resolution_clock::now(); 
     time = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();  

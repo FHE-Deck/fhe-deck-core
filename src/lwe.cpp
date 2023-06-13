@@ -3,54 +3,55 @@
 #include "../include/lwe.h"
    
 
-lwe_sk::~lwe_sk(){
+using namespace fhe_deck;
+LWESK::~LWESK(){
     if(is_init){
         delete[] s;
     }
 }
 
 
-lwe_sk::lwe_sk(){}
+LWESK::LWESK(){}
 
 
-lwe_sk::lwe_sk(int n, long Q,  double stddev, key_dist key_d){
-    lwe_param lwe_par(n, Q, key_d, stddev);
-    this->lwe_par = lwe_par;  
-    this->s = new long[lwe_par.n];
+LWESK::LWESK(int n, long Q,  double stddev, KeyDistribution key_d){
+    //LWEParam lwe_par(n, Q, key_d, stddev);
+    this->param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, key_d, stddev));  
+    this->s = new long[param->n];
     if(key_d == binary){ 
-        this->rand.binary_array(this->s, lwe_par.n); 
+        this->rand.binary_array(this->s, param->n); 
     }else{
-        rand.ternary_array(this->s, lwe_par.n); 
+        rand.ternary_array(this->s, param->n); 
     }
     is_init = true;
 }
 
-lwe_sk::lwe_sk(lwe_param lwe_par){
-    this->lwe_par = lwe_par;  
-    this->s = new long[lwe_par.n];
-    if(lwe_par.key_d == binary){ 
-        this->rand.binary_array(this->s, lwe_par.n); 
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par){
+    this->param = lwe_par;  
+    this->s = new long[param->n];
+    if(param->key_d == binary){ 
+        this->rand.binary_array(this->s, param->n); 
     }else{
-        rand.ternary_array(this->s, lwe_par.n); 
+        rand.ternary_array(this->s, param->n); 
     }
     is_init = true;
 }
 
 
-lwe_sk::lwe_sk(lwe_param lwe_par, long* key){
-    this->lwe_par = lwe_par;  
-    this->s = new long[lwe_par.n];
-    for(int i = 0; i < lwe_par.n; ++i){
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key){
+    this->param = lwe_par;  
+    this->s = new long[lwe_par->n];
+    for(int i = 0; i < lwe_par->n; ++i){
         this->s[i] = key[i];
     } 
     is_init = true;
 }
 
 
-lwe_sk::lwe_sk(const lwe_sk &other){
-    this->lwe_par = other.lwe_par;
-     this->s = new long[lwe_par.n];
-    for(int i = 0; i < lwe_par.n; ++i){
+LWESK::LWESK(const LWESK &other){
+    this->param = other.param;
+     this->s = new long[param->n];
+    for(int i = 0; i < param->n; ++i){
         this->s[i] = other.s[i];
     } 
     this->is_init = true;
@@ -58,41 +59,41 @@ lwe_sk::lwe_sk(const lwe_sk &other){
 }
  
 
-lwe_sk& lwe_sk::operator=(const lwe_sk other){
+LWESK& LWESK::operator=(const LWESK other){
     if (this == &other)
     {
         return *this;
     }
     if(this->is_init == false){
-        this->lwe_par = other.lwe_par;
-        this->s = new long[lwe_par.n];
-        for(int i = 0; i < lwe_par.n; ++i){
+        this->param = other.param;
+        this->s = new long[param->n];
+        for(int i = 0; i < param->n; ++i){
             this->s[i] = other.s[i];
         } 
         this->is_init = true;
-    }else if(this->is_init && lwe_par.n == other.lwe_par.n){
-        for(int i = 0; i < lwe_par.n; ++i){
+    }else if(this->is_init && param->n == other.param->n){
+        for(int i = 0; i < param->n; ++i){
             this->s[i] = other.s[i];
         } 
     }else{
-        throw 0;
+        throw std::logic_error("Wrong case in lwe_sk::operator=");
     } 
     return *this;
 }
+ 
+LWEParam LWESK::get_lwe_param(){
+    return LWEParam(param->n, param->Q, param->key_d, param->stddev);
+} 
 
-lwe_param lwe_sk::get_lwe_param(){
-    return lwe_par;
-}
 
-
-long* lwe_sk::encrypt(long m){
-    long *ct = lwe_par.init_ct(); 
-    lwe_sk::encrypt(ct, m);
+long* LWESK::encrypt(long m){
+    long *ct = param->init_ct(); 
+    LWESK::encrypt(ct, m);
     return ct;
 }
 
-lwe_ct lwe_sk::encrypt_ct(long m){
-    lwe_ct ct(lwe_par);
+LWECT LWESK::encrypt_ct(long m){
+    LWECT ct(param);
     encrypt(ct.ct, m);
     return ct;
 }
@@ -101,88 +102,89 @@ lwe_ct lwe_sk::encrypt_ct(long m){
 
 
 
-void lwe_sk::encrypt(long *ct, long m){    
-    ct[0] = (long)round(rand.gaussian(0, lwe_par.stddev)) + (long)m;  
-    for(int i=1; i < lwe_par.n+1; ++i){   
-        ct[i] = utils::integer_mod_form(rand.uniform(lwe_par.Q), lwe_par.Q); 
+void LWESK::encrypt(long *ct, long m){    
+    ct[0] = (long)round(rand.gaussian(0, param->stddev)) + (long)m;  
+    for(int i=1; i < param->n+1; ++i){   
+        ct[i] = Utils::integer_mod_form(rand.uniform(param->Q), param->Q); 
         ct[0] -= s[i-1] * ct[i];
-        ct[0] = utils::integer_mod_form(ct[0] % lwe_par.Q, lwe_par.Q);
+        ct[0] = Utils::integer_mod_form(ct[0] % param->Q, param->Q);
     }   
 }
 
 
- long* lwe_sk::scale_and_encrypt(long m, int t){
-    double scale = (double)lwe_par.Q/t;
+ long* LWESK::scale_and_encrypt(long m, int t){
+    double scale = (double)param->Q/t;
     long m_scaled =  (long)round((double)m*scale); 
-    return lwe_sk::encrypt(m_scaled);
+    return LWESK::encrypt(m_scaled);
  }
  
- void lwe_sk::scale_and_encrypt(long* ct, long m, int t){ 
-    double scale = (double)lwe_par.Q/t;
+ void LWESK::scale_and_encrypt(long* ct, long m, int t){ 
+    double scale = (double)param->Q/t;
     long m_scaled =  (long)round((double)m*scale); 
     encrypt(ct, m_scaled); 
 } 
 
 
 
-long lwe_sk::phase(long *ct){
+long LWESK::phase(long *ct){
     long phase  = ct[0]; 
-    for(int i = 1; i < lwe_par.n+1; ++i){ 
+    for(int i = 1; i < param->n+1; ++i){ 
         phase += ct[i] * s[i-1];
-        phase = phase % lwe_par.Q; 
+        phase = phase % param->Q; 
     }   
-    return utils::integer_mod_form(phase, lwe_par.Q);
+    return Utils::integer_mod_form(phase, param->Q);
 }
 
 
-long lwe_sk::error(long *ct,  long m){   
-    return utils::integer_signed_form((lwe_sk::phase(ct) - m) % lwe_par.Q, lwe_par.Q); 
+long LWESK::error(long *ct,  long m){   
+    return Utils::integer_signed_form((LWESK::phase(ct) - m) % param->Q, param->Q); 
 }
 
-long lwe_sk::decrypt(long *ct, int t){ 
-    long d_phase = lwe_sk::phase(ct);  
-    long out = round(((double)t/lwe_par.Q) * d_phase); 
-    return utils::integer_mod_form(out, t);
+long LWESK::decrypt(long *ct, int t){ 
+    long d_phase = LWESK::phase(ct);  
+    long out = round(((double)t/param->Q) * d_phase); 
+    return Utils::integer_mod_form(out, t);
 }
    
-lwe_sk lwe_sk::modulus_switch(long new_modulus){
-    lwe_param lwe_par = this->lwe_par.modulus_switch(new_modulus);
-    lwe_sk lwe(lwe_par, this->s);
+LWESK LWESK::modulus_switch(long new_modulus){
+    LWEParam lwe_par = this->param->modulus_switch(new_modulus);
+    LWESK lwe(std::shared_ptr<LWEParam>(new LWEParam(lwe_par.n, lwe_par.Q, lwe_par.key_d, lwe_par.stddev)), this->s);
+    //LWESK lwe(lwe_par, this->s);
     return lwe;
 }
  
 
-lwe_gadget_sk::lwe_gadget_sk(){}
+LWEGadgetSK::LWEGadgetSK(){}
 
 
-lwe_gadget_sk::lwe_gadget_sk(lwe_gadget_param lwe_g_par, lwe_sk lwe){
+LWEGadgetSK::LWEGadgetSK(LWEGadgetParam lwe_g_par, LWESK lwe){
     this->lwe = lwe;
-    this->lwe_g_par = lwe_g_par;
+    this->gadget_param = lwe_g_par;
 }
 
-lwe_gadget_sk::lwe_gadget_sk(const lwe_gadget_sk &other){
-    this->lwe_g_par = other.lwe_g_par;
+LWEGadgetSK::LWEGadgetSK(const LWEGadgetSK &other){
+    this->gadget_param = other.gadget_param;
     this->lwe = other.lwe;
 }
 
 
-lwe_gadget_sk& lwe_gadget_sk::operator=(const lwe_gadget_sk other){
-    this->lwe_g_par = other.lwe_g_par;
+LWEGadgetSK& LWEGadgetSK::operator=(const LWEGadgetSK other){
+    this->gadget_param = other.gadget_param;
     this->lwe = other.lwe;
     return *this;
 }
 
-long** lwe_gadget_sk::gadget_encrypt(long m){ 
-    long **gadget_ct = lwe_g_par.init_gadget_ct(); 
+long** LWEGadgetSK::gadget_encrypt(long m){ 
+    long **gadget_ct = gadget_param.init_gadget_ct(); 
     gadget_encrypt(gadget_ct, m);
     return gadget_ct;
 }
 
-void lwe_gadget_sk::gadget_encrypt(long** gadget_ct, long m){
+void LWEGadgetSK::gadget_encrypt(long** gadget_ct, long m){
     long temp_basis = 1; 
     gadget_ct[0] = lwe.encrypt(m);
-    for(int i = 1; i < lwe_g_par.ell; ++i){
-        temp_basis *= lwe_g_par.basis; 
+    for(int i = 1; i < gadget_param.ell; ++i){
+        temp_basis *= gadget_param.basis; 
         gadget_ct[i] = lwe.encrypt(m * temp_basis);
     } 
 }

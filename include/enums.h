@@ -2,21 +2,22 @@
 #define ENUMS_H
 
 
-enum ring_type {cyclic, negacyclic};
-enum modulus_type {any, power_of_two}; 
-enum key_dist {binary, ternary, uniform};
+namespace fhe_deck{
 
-enum polynomial_arithmetic {ntl, double_fft, long_double_fft, hexl_ntt};
- 
-enum gadget_type {signed_decomposition_gadget, discrete_gaussian_gadget};
+enum RingType {cyclic, negacyclic};
 
-enum key_switch_type {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
+enum ModulusType {any, power_of_two}; 
+
+enum KeyDistribution {binary, ternary, uniform};
+
+enum PolynomialArithmetic {ntl, double_fft, long_double_fft, hexl_ntt};
  
+enum GadgetType {signed_decomposition_gadget, discrete_gaussian_gadget};
+
+enum KeySwitchType {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
   
+enum PlaintextEncodingType {signed_limied_short_int, full_domain, partial_domain};
 
-
-enum plaintext_encoding_type {signed_limied_short_int, full_domain, partial_domain};
-
-
+}
 
 #endif

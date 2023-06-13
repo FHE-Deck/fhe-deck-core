@@ -10,34 +10,37 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-class lwe_sk {
+
+namespace fhe_deck{
+
+class LWESK {
  
     public:  
-    lwe_param lwe_par;
+    std::shared_ptr<LWEParam> param;
  
-    sampler rand; 
+    Sampler rand; 
     long *s;
     bool is_init = false;
   
-    ~lwe_sk();
+    ~LWESK();
 
-    lwe_sk();
+    LWESK();
 
-    lwe_sk(int n, long Q, double stddev, key_dist key_d);
+    LWESK(int n, long Q, double stddev, KeyDistribution key_d);
 
-    lwe_sk(lwe_param lwe_par);
+    LWESK(std::shared_ptr<LWEParam> lwe_par);
 
-    lwe_sk(lwe_param lwe_par, long* key);
+    LWESK(std::shared_ptr<LWEParam> lwe_par, long* key);
  
-    lwe_sk(const lwe_sk &other);
+    LWESK(const LWESK &other);
 
-    lwe_sk& operator=(const lwe_sk other);
+    LWESK& operator=(const LWESK other);
 
-    lwe_param get_lwe_param();
+    LWEParam get_lwe_param();
    
     long* encrypt(long m);
     
-    lwe_ct encrypt_ct(long m);
+    LWECT encrypt_ct(long m);
 
     void encrypt(long* ct, long m);
     
@@ -52,15 +55,15 @@ class lwe_sk {
     
     long decrypt(long *ct,  int t); 
  
-    lwe_sk modulus_switch(long new_modulus);
+    LWESK modulus_switch(long new_modulus);
 
     
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_par);  
+      ar(param);  
       std::vector<long> s_arr; 
-      for(int i = 0; i < lwe_par.n; ++i){
+      for(int i = 0; i < param->n; ++i){
         s_arr.push_back(s[i]);
       }
       ar(s_arr) ;
@@ -69,11 +72,11 @@ class lwe_sk {
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_par);
+      ar(param);
       std::vector<long> s_arr;
       ar(s_arr);
-      this->s = new long[lwe_par.n];
-      for(int i = 0; i < lwe_par.n; ++i){
+      this->s = new long[param->n];
+      for(int i = 0; i < param->n; ++i){
         this->s[i] = s_arr[i];
       } 
     } 
@@ -81,19 +84,19 @@ class lwe_sk {
 };
 
 
-class lwe_gadget_sk{
+class LWEGadgetSK{
 
   public:
-    lwe_gadget_param lwe_g_par;
-    lwe_sk lwe;
+    LWEGadgetParam gadget_param;
+    LWESK lwe;
 
-    lwe_gadget_sk();
+    LWEGadgetSK();
 
-    lwe_gadget_sk(lwe_gadget_param lwe_g_par, lwe_sk lwe);
+    LWEGadgetSK(LWEGadgetParam lwe_g_par, LWESK lwe);
   
-    lwe_gadget_sk(const lwe_gadget_sk& other);
+    LWEGadgetSK(const LWEGadgetSK& other);
 
-    lwe_gadget_sk& operator=(const lwe_gadget_sk other);
+    LWEGadgetSK& operator=(const LWEGadgetSK other);
  
     // Secret Gadget
     long** gadget_encrypt(long m);
@@ -103,17 +106,17 @@ class lwe_gadget_sk{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_g_par, lwe);  
+      ar(gadget_param, lwe);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_g_par, lwe);  
+      ar(gadget_param, lwe);  
     }   
   
 };
 
-
+}
 
 #endif

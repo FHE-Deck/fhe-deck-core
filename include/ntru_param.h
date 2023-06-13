@@ -12,25 +12,28 @@
 #include "hexl/hexl.hpp"
 
 
+namespace fhe_deck{
+
+
 class ntru_param{
 
   public:
  
-    ring_type ring;
+    RingType ring;
     int N; 
     double stddev;
     long Q; 
 
-    fft_plan *engine;
-    sampler rand;
+    FFTPlan *engine;
+    Sampler rand;
 
     ~ntru_param();
     
     ntru_param(); 
 
-    ntru_param(ring_type ring, int N, long Q,  double stddev);
+    ntru_param(RingType ring, int N, long Q,  double stddev);
 
-    ntru_param(ring_type ring, int N, long Q,  double stddev, bool long_arithmetic);
+    ntru_param(RingType ring, int N, long Q,  double stddev, bool long_arithmetic);
     
     ntru_param mod_switch(long new_modulus);
 
@@ -77,15 +80,7 @@ class ntru_ct{
     ntru_ct sub(const ntru_ct *ct);
 
     ntru_ct neg(); 
-
-/*
-    void add(ciphertext *ct);
   
-    void sub(ciphertext *ct);
- 
-    void mul(long b);
-*/
-
     ntru_ct mod_switch(long new_modulus);
 
     ntru_ct mod_switch(ntru_param new_param);
@@ -111,11 +106,11 @@ class ntru_gadget_param{
     int k;
     int basis; 
 
-    polynomial_arithmetic arithmetic;
+    PolynomialArithmetic arithmetic;
 
     ntru_gadget_param();
     
-    ntru_gadget_param(ntru_param &ntru_par, int basis, polynomial_arithmetic arithmetic);
+    ntru_gadget_param(ntru_param &ntru_par, int basis, PolynomialArithmetic arithmetic);
 
 }; 
 
@@ -134,7 +129,7 @@ class ntru_gadget_ct{
 
   fftwl_complex **gadget_ct_eval_l;
 
-  polynomial_arithmetic arithmetic;
+  PolynomialArithmetic arithmetic;
 
   intel::hexl::NTT ntt; 
 
@@ -149,7 +144,7 @@ class ntru_gadget_ct{
 
   ntru_gadget_ct();
     
-  ntru_gadget_ct(ntru_param &ntru_par, int basis, polynomial_arithmetic arithmetic);
+  ntru_gadget_ct(ntru_param &ntru_par, int basis, PolynomialArithmetic arithmetic);
      
   ntru_gadget_ct(const ntru_gadget_ct &other);
 
@@ -193,6 +188,6 @@ class ntru_gadget_ct{
  
 };
 
- 
+}
 
 #endif

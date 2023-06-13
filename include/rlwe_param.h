@@ -11,27 +11,30 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-class rlwe_param{
+
+namespace fhe_deck{
+
+class RLWEParam{
 
   public:
  
-    ring_type ring;
+    RingType ring;
     int N;
     //sampler rand;
     double stddev;
     long Q;
-    modulus_type mod_type;
-    key_dist key_type;
+    ModulusType mod_type;
+    KeyDistribution key_type;
 
-    polynomial_arithmetic arithmetic = ntl;
+    PolynomialArithmetic arithmetic = ntl;
     
-    rlwe_param() = default; 
+    RLWEParam() = default; 
        
-    rlwe_param(ring_type ring, int N, long Q, key_dist key_type, modulus_type mod_type, double stddev, polynomial_arithmetic arithmetic);
+    RLWEParam(RingType ring, int N, long Q, KeyDistribution key_type, ModulusType mod_type, double stddev, PolynomialArithmetic arithmetic);
        
-    rlwe_param(const rlwe_param &c);
+    RLWEParam(const RLWEParam &c);
 
-    rlwe_param& operator=(const rlwe_param other);
+    RLWEParam& operator=(const RLWEParam other);
      
     long* init_poly();
 
@@ -53,11 +56,11 @@ class rlwe_param{
 };
 
 
-class rlwe_ct{
+class RLWECT{
 
     public:
   
-    rlwe_param param;
+    std::shared_ptr<RLWEParam> param;
 
     long *b;
     long *a;
@@ -65,35 +68,38 @@ class rlwe_ct{
     bool is_init = false;
 
     bool is_engine_set = false;
-    fft_plan engine; 
+    
+    FFTPlan engine; 
   
     intel::hexl::NTT ntt; 
+
+
+    ~RLWECT();
   
-    rlwe_ct();
+    RLWECT() = default;
 
-    rlwe_ct(rlwe_param param);
+    RLWECT(std::shared_ptr<RLWEParam> param);
 
-    rlwe_ct(rlwe_param param, long *b, long *a);
+    RLWECT(std::shared_ptr<RLWEParam> param, long *b, long *a);
+
+    RLWECT(const RLWECT &other);
   
-    ~rlwe_ct();
 
-    rlwe_ct(const rlwe_ct &other);
-
-    rlwe_ct& operator=(const rlwe_ct other);
+    RLWECT& operator=(const RLWECT other);
   
-    void negacyclic_rotate(rlwe_ct *out, int rot);
+    void negacyclic_rotate(RLWECT *out, int rot);
 
-    void add(rlwe_ct *out, const rlwe_ct *ct);
+    void add(RLWECT *out, const RLWECT *ct);
 
-    void add(rlwe_ct *out, long* x);
+    void add(RLWECT *out, long* x);
 
-    void sub(rlwe_ct *out, const rlwe_ct *ct);
+    void sub(RLWECT *out, const RLWECT *ct);
 
-    void sub(rlwe_ct *out, long* x); 
+    void sub(RLWECT *out, long* x); 
 
-    void mul(rlwe_ct *out, long *x);
+    void mul(RLWECT *out, long *x);
 
-    void neg(rlwe_ct *out);
+    void neg(RLWECT *out);
  
     std::string to_string();
     
@@ -103,7 +109,7 @@ class rlwe_ct{
     void save( Archive & ar ) const
     {  
         ar(param);  
-        for(int i = 0; i < param.N; ++i){
+        for(int i = 0; i < this->param->N; ++i){
           ar(a[i]);
           ar(b[i]);
         }  
@@ -113,9 +119,9 @@ class rlwe_ct{
     void load( Archive & ar )
     {   
         ar(param);    
-        a = this->param.init_poly();
-        b = this->param.init_poly(); 
-        for(int i = 0; i < param.N; ++i){
+        a = this->param->init_poly();
+        b = this->param->init_poly(); 
+        for(int i = 0; i < this->param->N; ++i){
           ar(a[i]);
           ar(b[i]);
         }
@@ -148,15 +154,15 @@ class rlwe_ct{
 };
 
 
-enum gadget_mul_mode {simul, deter};
+enum GadgetMulMode {simul, deter};
 
 
 
-class rlwe_gadget_param{
+class RLWEGadgetParam{
 
   public:
   
-  rlwe_param param;
+  std::shared_ptr<RLWEParam> rlwe_param;
   // Q = basis**ell
   int ell;
   // basis = 2**k
@@ -171,27 +177,29 @@ class rlwe_gadget_param{
   int w;
   int w_any;
   
-  gadget deter_gadget;
-  gadget rand_gadget;
 
-  rlwe_gadget_param() = default;
+  // These gadget objects should be in the Gadget Ciphertext instead of the parameters
+  Gadget deter_gadget;
+  Gadget rand_gadget;
+
+  RLWEGadgetParam() = default;
     
-  rlwe_gadget_param(rlwe_param &rlwe_par, int basis, gadget &deter_gadget, gadget &rand_gadget);
+  RLWEGadgetParam(std::shared_ptr<RLWEParam> rlwe_par, int basis, Gadget &deter_gadget, Gadget &rand_gadget);
  
-  rlwe_gadget_param(const rlwe_gadget_param &other);
+  RLWEGadgetParam(const RLWEGadgetParam &other);
  
-  rlwe_gadget_param& operator=(const rlwe_gadget_param other);
+  RLWEGadgetParam& operator=(const RLWEGadgetParam other);
   
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param, deter_gadget, rand_gadget);    
+      ar(rlwe_param, deter_gadget, rand_gadget);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param, deter_gadget, rand_gadget);  
+      ar(rlwe_param, deter_gadget, rand_gadget);  
       setup_the_other_parametrs(); 
     } 
  
@@ -202,17 +210,17 @@ class rlwe_gadget_param{
 };
 
 
-class rlwe_gadget_ct{
+class RLWEGadgetCT{
 
   public:
 
-  rlwe_gadget_param gadget_param;
+  RLWEGadgetParam gadget_param;
 
   bool is_init = false;
-  rlwe_ct *gadget_ct;
-  rlwe_ct *gadget_ct_sk;
+  RLWECT *gadget_ct;
+  RLWECT *gadget_ct_sk;
 
-  fft_plan engine;
+  FFTPlan engine;
   fftw_complex **eval_a;
   fftw_complex **eval_b;
 
@@ -238,17 +246,17 @@ class rlwe_gadget_ct{
   // Mask for power of two modulus reduction
   long mask;
  
-  rlwe_gadget_ct() = default;
+  RLWEGadgetCT() = default;
 
-  rlwe_gadget_ct(rlwe_gadget_param gadget_param);
+  RLWEGadgetCT(RLWEGadgetParam gadget_param);
 
-  ~rlwe_gadget_ct();
+  ~RLWEGadgetCT();
 
-  rlwe_gadget_ct(const rlwe_gadget_ct& other);
+  RLWEGadgetCT(const RLWEGadgetCT& other);
 
-  rlwe_gadget_ct& operator=(const rlwe_gadget_ct other);
+  RLWEGadgetCT& operator=(const RLWEGadgetCT other);
  
-  void mul(rlwe_ct *out, const rlwe_ct *ct, gadget_mul_mode mode);
+  void mul(RLWECT *out, const RLWECT *ct, GadgetMulMode mode);
  
   void multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w);
 
@@ -277,18 +285,18 @@ class rlwe_gadget_ct{
     void load( Archive & ar )
     {   
         ar(gadget_param);   
-        gadget_ct = new rlwe_ct[gadget_param.ell_max];
-        gadget_ct_sk = new rlwe_ct[gadget_param.ell_max]; 
+        gadget_ct = new RLWECT[gadget_param.ell_max];
+        gadget_ct_sk = new RLWECT[gadget_param.ell_max]; 
         for(int i = 0; i < gadget_param.ell_max; ++i){
             ar(gadget_ct[i]); 
             ar(gadget_ct_sk[i]); 
         }   
 
-        out_minus = rlwe_ct(gadget_param.param);
+        out_minus = RLWECT(gadget_param.rlwe_param);
         set_computing_engine();
-        if(gadget_param.param.arithmetic == double_fft){
+        if(gadget_param.rlwe_param->arithmetic == double_fft){
             init_fft_eval();
-        }else if(gadget_param.param.arithmetic == hexl_ntt){ 
+        }else if(gadget_param.rlwe_param->arithmetic == hexl_ntt){ 
             init_ntt_eval(); 
         }else{ 
             std::cout << "Arithmetic Currently Not Supported" << std::endl;
@@ -302,7 +310,7 @@ class rlwe_gadget_ct{
   private:
 
   // Temporary variable needed for multiplication. Its initialized in already in the constructors because initialization is expensive
-  rlwe_ct out_minus;
+  RLWECT out_minus;
 
   // Temporary arrays for ntt multiplication
   long *ntt_multisum_eval;
@@ -329,13 +337,14 @@ class rlwe_gadget_ct{
   void to_eval_ntt();
 
   void to_coef_ntt();
-  
-  
-    void mod_reduce(long *out_poly, long *in_poly);
 
-    void mod_reduce(long *out_poly, long double *in_poly_l);
+  void mod_reduce(long *out_poly, long *in_poly);
+
+  void mod_reduce(long *out_poly, long double *in_poly_l);
 
 };
   
+
+}
 
 #endif

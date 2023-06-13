@@ -1,169 +1,170 @@
 #include "../include/ciphertext.h"
 
+using namespace fhe_deck;
 
-ciphertext::~ciphertext(){ 
+Ciphertext::~Ciphertext(){ 
     if(is_lwe_ct){
         delete this->lwe_c; 
     }
 }
  
   
-ciphertext::ciphertext(lwe_ct &lwe_c, plaintext_encoding encoding, fhe_context* context){
-    this->lwe_c = new lwe_ct(lwe_c);
+Ciphertext::Ciphertext(LWECT &lwe_c, PlaintextEncoding encoding, FHEContext* context){
+    this->lwe_c = new LWECT(lwe_c);
     this->is_lwe_ct = true; 
     this->is_init = true;
     this->encoding = encoding; 
     this->context = context; 
 }
 
-ciphertext::ciphertext(const ciphertext &other){ 
+Ciphertext::Ciphertext(const Ciphertext &other){ 
     this->encoding = other.encoding;
     if(other.is_lwe_ct){
-        this->lwe_c = new lwe_ct(other.lwe_c);
+        this->lwe_c = new LWECT(other.lwe_c);
         this->is_lwe_ct = true; 
         this->is_init = true;
         this->context = other.context;
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
         
-ciphertext& ciphertext::operator=(const ciphertext other){  
+Ciphertext& Ciphertext::operator=(const Ciphertext other){  
     if (this == &other)
     {
         return *this;
     }    
     if(!this->is_init && other.is_lwe_ct){  
         this->encoding = other.encoding;
-        this->lwe_c  = new lwe_ct(other.lwe_c); 
+        this->lwe_c  = new LWECT(other.lwe_c); 
         this->is_lwe_ct = true; 
         this->is_init = true;  
         this->context = other.context; 
         return *this;
     } else if(other.is_lwe_ct && this->is_lwe_ct){    
         this->encoding = other.encoding;
-        this->lwe_c->lwe_par = other.lwe_c->lwe_par;
-        for(int i = 0; i < this->lwe_c->lwe_par.n+1; ++i){
+        this->lwe_c->param = other.lwe_c->param;
+        for(int i = 0; i < this->lwe_c->param->n+1; ++i){
             this->lwe_c->ct[i] = other.lwe_c->ct[i];
         } 
     }else{ 
-        throw 0;
+        throw std::logic_error("Most likely wrong Ciphertext type!");
     }  
     return *this;
 }
 
 
-ciphertext::ciphertext(ciphertext &other){
+Ciphertext::Ciphertext(Ciphertext &other){
     this->encoding = other.encoding;
     if(other.is_lwe_ct){
-        this->lwe_c = new lwe_ct(other.lwe_c);
+        this->lwe_c = new LWECT(other.lwe_c);
         this->is_lwe_ct = true;
         this->is_init = true; 
         this->context = other.context;
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
-void ciphertext::add(ciphertext* ct){
+void Ciphertext::add(Ciphertext* ct){
     if(is_lwe_ct){
         this->lwe_c->add(ct->lwe_c);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
  
 
-void ciphertext::sub(ciphertext* ct){
+void Ciphertext::sub(Ciphertext* ct){
     if(is_lwe_ct){
         this->lwe_c->sub(ct->lwe_c);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
  
 
-void ciphertext::mul(long b){
+void Ciphertext::mul(long b){
     if(is_lwe_ct){
         this->lwe_c->mul(b);
     }else{
-        throw 0;
+       throw std::logic_error("Ciphertext type not supported!");
     }
 } 
      
 
 
 
-ciphertext ciphertext::operator+(long b){
+Ciphertext Ciphertext::operator+(long b){
     if(is_lwe_ct){
-        lwe_ct c = this->lwe_c->operator+(this->encoding.encode_message(b));
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator+(this->encoding.encode_message(b));
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
 
-ciphertext ciphertext::operator+(ciphertext ct){ 
+Ciphertext Ciphertext::operator+(Ciphertext ct){ 
     if(is_lwe_ct){ 
-        lwe_ct c = this->lwe_c->operator+(ct.lwe_c);
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator+(ct.lwe_c);
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
 
-ciphertext ciphertext::operator-(long b){
+Ciphertext Ciphertext::operator-(long b){
     if(is_lwe_ct){
-        lwe_ct c = this->lwe_c->operator-(this->encoding.encode_message(b));
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator-(this->encoding.encode_message(b));
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
 
-ciphertext ciphertext::operator-(ciphertext ct){
+Ciphertext Ciphertext::operator-(Ciphertext ct){
     if(is_lwe_ct){
-        lwe_ct c = this->lwe_c->operator-(ct.lwe_c);
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator-(ct.lwe_c);
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
 
-ciphertext ciphertext::operator-(){
+Ciphertext Ciphertext::operator-(){
     if(is_lwe_ct){
-        lwe_ct c = this->lwe_c->operator-();
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator-();
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
     
 
-ciphertext ciphertext::operator*(long b){
+Ciphertext Ciphertext::operator*(long b){
     if(is_lwe_ct){
-        lwe_ct c = this->lwe_c->operator*(b);
-        return ciphertext(c, this->encoding, this->context);
+        LWECT c = this->lwe_c->operator*(b);
+        return Ciphertext(c, this->encoding, this->context);
     }else{
-        throw 0;
+        throw std::logic_error("Ciphertext type not supported!");
     }
 }
 
 
-ciphertext operator+(long b, ciphertext ct){
+Ciphertext operator+(long b, Ciphertext ct){
     return ct.operator+(b); 
 }
 
-ciphertext operator-(long b, ciphertext ct){
-    ciphertext out = -ct;
+Ciphertext operator-(long b, Ciphertext ct){
+    Ciphertext out = -ct;
     return out - b;
 }
 
-ciphertext operator*(long b, ciphertext ct){ 
+Ciphertext operator*(long b, Ciphertext ct){ 
     return ct.operator*(b); 
 }
  

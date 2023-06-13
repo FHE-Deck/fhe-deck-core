@@ -10,42 +10,56 @@ PTHREAD = -pthread
 EXTERN = $(NTL) $(FFTW) $(PTHREAD) -lhexl -fconcepts 
 
 COMMON_FILES = fft_plan.o utils.o sample.o lwe.o lwe_param.o rotation_poly.o gadget.o fhe_context.o plaintext_encoding.o ciphertext.o
-RLWE_FILES = rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_lib.a rlwe.o rlwe_param.o
-NTRU_FILES = ntrunium_lib.a ntrunium.o ntrunium_gen.o ntru_param.o ntru.o
-TEST_FILES = fhe_context_test rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test gadget_tests rotation_poly_test
+RLWE_FILES = rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe.o rlwe_param.o
+NTRU_FILES = ntrunium.o ntrunium_gen.o ntru_param.o ntru.o
+TEST_FILES = rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test gadget_tests rotation_poly_test
+EXAMPLE_FILES = fhe_context_examples amortized_bit_operations bit_operations
+ARCHIVE_FILES = fhe_deck.a rlwe_lib.a ntrunium_lib.a
 
+all: $(ARCHIVE_FILES) tests examples
 
-all: rlwe_lib.a ntrunium_lib.a tests 
-
+examples: $(EXAMPLE_FILES)
  
 tests: $(TEST_FILES) 
-
-
+ 
 clean:
-	$(RM) $(TEST_FILES) $(COMMON_FILES)  $(RLWE_FILES)  $(NTRU_FILES) 
-
+	$(RM) $(TEST_FILES) $(COMMON_FILES)  $(RLWE_FILES)  $(NTRU_FILES) $(ARCHIVE_FILES)
+ 
 
 
 # Libraries
-rlwe_lib.a: rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o gadget.o fhe_context.o plaintext_encoding.o ciphertext.o
-	$(AR) -q rlwe_lib.a rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe_param.o rlwe.o utils.o fft_plan.o sample.o rotation_poly.o gadget.o fhe_context.o plaintext_encoding.o ciphertext.o
+fhe_deck.a: $(COMMON_FILES) $(RLWE_FILES) $(NTRU_FILES)
+	$(AR) -q fhe_deck.a $(COMMON_FILES) $(RLWE_FILES) $(NTRU_FILES)
 
-ntrunium_lib.a: sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o gadget.o fhe_context.o plaintext_encoding.o ciphertext.o
-	$(AR) -q ntrunium_lib.a sample.o fft_plan.o ntrunium.o ntrunium_gen.o ntru_param.o utils.o rotation_poly.o ntru.o lwe_param.o lwe.o gadget.o fhe_context.o plaintext_encoding.o ciphertext.o
+rlwe_lib.a: $(COMMON_FILES) $(RLWE_FILES)
+	$(AR) -q rlwe_lib.a $(COMMON_FILES) $(RLWE_FILES)
+
+ntrunium_lib.a: $(COMMON_FILES) $(NTRU_FILES)
+	$(AR) -q ntrunium_lib.a $(COMMON_FILES) $(NTRU_FILES)
+  
  
 
-# Tests
-fhe_context_test: fhe_context.o plaintext_encoding.o ciphertext.o rlwe_lib.a ntrunium_lib.a
-	$(CC) -o fhe_context_test tests/fhe_context_test.cpp fhe_context.o plaintext_encoding.o ciphertext.o rlwe_lib.a ntrunium_lib.a  $(EXTERN) 
+#Examples
+fhe_context_examples: fhe_deck.a
+	$(CC) -o fhe_context_examples examples/fhe_context_examples.cpp fhe_deck.a  $(EXTERN) 
 
+
+
+amortized_bit_operations: fhe_deck.a 
+	$(CC) -o amortized_bit_operations examples/amortized_bit_operations.cpp fhe_deck.a  $(EXTERN) 
+
+bit_operations: fhe_deck.a 
+	$(CC) -o bit_operations examples/bit_operations.cpp fhe_deck.a  $(EXTERN) 
+
+# Tests
 gadget_tests: sample.o gadget.o utils.o
 	$(CC) -o gadget_tests tests/gadget_tests.cpp gadget.o sample.o utils.o $(EXTERN) 
 
 hexl_test: utils.o sample.o
 	$(CC) -o hexl_test tests/hexl_test.cpp utils.o sample.o $(EXTERN) 
   
-rlwe_hom_acc_scheme_tests: rlwe_lib.a lwe.o lwe_param.o 
-	$(CC) -o rlwe_hom_acc_scheme_tests tests/rlwe_hom_acc_scheme_tests.cpp rlwe_lib.a lwe.o lwe_param.o ciphertext.o $(EXTERN)  
+rlwe_hom_acc_scheme_tests: rlwe_lib.a
+	$(CC) -o rlwe_hom_acc_scheme_tests tests/rlwe_hom_acc_scheme_tests.cpp rlwe_lib.a $(EXTERN)  
 
 rlwe_tests: rlwe_lib.a 
 	$(CC) -o rlwe_tests tests/rlwe_tests.cpp rlwe_lib.a $(EXTERN)  
@@ -77,7 +91,7 @@ lwe_tests: sample.o utils.o lwe_param.o lwe.o
 
 
 rotation_poly_test: rotation_poly.o sample.o utils.o
-	$(CC)  -o rotation_poly_test tests/rotation_poly_test.cpp rotation_poly.o sample.o utils.o   $(NTL)
+	$(CC)  -o rotation_poly_test tests/rotation_poly_test.cpp rotation_poly.o plaintext_encoding.o sample.o utils.o   $(NTL)
 
 
 
