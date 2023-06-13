@@ -13,7 +13,7 @@ COMMON_FILES = fft_plan.o utils.o sample.o lwe.o lwe_param.o rotation_poly.o gad
 RLWE_FILES = rlwe_hom_acc_scheme.o rlwe_hom_acc_scheme_gen.o rlwe.o rlwe_param.o
 NTRU_FILES = ntrunium.o ntrunium_gen.o ntru_param.o ntru.o
 TEST_FILES = rlwe_hom_acc_scheme_tests error_tests performance_tests fft_mul_tests ntrunium_tests ntru_tests lwe_tests type_tests rlwe_tests hexl_test gadget_tests rotation_poly_test
-EXAMPLE_FILES = fhe_context_examples amortized_bit_operations bit_operations
+EXAMPLE_FILES = fhe_context_examples amortized_bit_operations bit_operations fhewsyn
 ARCHIVE_FILES = fhe_deck.a rlwe_lib.a ntrunium_lib.a
 
 all: $(ARCHIVE_FILES) tests examples
@@ -43,7 +43,8 @@ ntrunium_lib.a: $(COMMON_FILES) $(NTRU_FILES)
 fhe_context_examples: fhe_deck.a
 	$(CC) -o fhe_context_examples examples/fhe_context_examples.cpp fhe_deck.a  $(EXTERN) 
 
-
+fhewsyn: fhe_deck.a
+	$(CC) -o fhewsyn examples/fhewsyn.cpp fhe_deck.a  $(EXTERN) 
 
 amortized_bit_operations: fhe_deck.a 
 	$(CC) -o amortized_bit_operations examples/amortized_bit_operations.cpp fhe_deck.a  $(EXTERN) 
