@@ -1,9 +1,9 @@
  
 #include <chrono>
 #include <iostream> 
-#include "../include/ntrunium.h"  
-#include "../include/ntrunium_gen.h"
-#include "../include/rotation_poly.h"
+#include "ntrunium.h"  
+#include "ntrunium_gen.h"
+#include "rotation_poly.h"
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>

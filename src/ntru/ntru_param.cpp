@@ -1,7 +1,5 @@
- 
-
-#include "../include/ntru_param.h"
-#include "../include/utils.h"
+#include "ntru_param.h"
+#include "utils.h"
 using namespace fhe_deck;
 
 ntru_param::~ntru_param(){

@@ -1,5 +1,4 @@
-
-#include "../include/rlwe_hom_acc_scheme.h"
+#include "rlwe_hom_acc_scheme.h"
 
 using namespace fhe_deck;
  

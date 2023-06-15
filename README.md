@@ -22,10 +22,11 @@ With Ubuntu 20.4:
 
 Then install Intel Hexl from [link](https://github.com/intel/hexl).
 Finally run:
-> make
+> cmake -S . -B build
+> cmake --build build
 
 Check example:
-> ./fhe_context_test 
+> build/examples/fhe_context_examples
 
 
 Usage

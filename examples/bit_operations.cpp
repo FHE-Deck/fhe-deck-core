@@ -1,4 +1,4 @@
-#include "../include/fhe_context.h"
+#include "fhe_context.h"
  
 #include <cassert>
 #define assertm(exp, msg) assert(((void)msg, exp))

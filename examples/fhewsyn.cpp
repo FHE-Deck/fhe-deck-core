@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "../include/fhe_context.h"
+#include "fhe_context.h"
 
 using namespace fhe_deck;
 

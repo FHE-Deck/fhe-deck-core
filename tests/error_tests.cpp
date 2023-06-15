@@ -1,10 +1,7 @@
- 
 #include <iostream>
-#include "../include/lwe.h"
-#include "../include/ntru.h"
-#include "../include/utils.h"
-
-
+#include "lwe.h"
+#include "ntru.h"
+#include "utils.h"
 using namespace fhe_deck;
 
 

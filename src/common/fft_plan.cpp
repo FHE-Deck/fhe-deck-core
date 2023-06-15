@@ -1,9 +1,8 @@
- 
 #include <fftw3.h>
 #include <random>
 #include <iostream>
 
-#include "../include/fft_plan.h"
+#include "fft_plan.h"
 
 using namespace fhe_deck;
 

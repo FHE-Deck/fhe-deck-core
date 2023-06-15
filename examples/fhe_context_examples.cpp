@@ -1,6 +1,5 @@
 #include <iostream>
-#include "../include/fhe_context.h"
-#include "../include/ciphertext.h"
+#include "fhe_context.h"
  
 #include <cassert>
 #define assertm(exp, msg) assert(((void)msg, exp))

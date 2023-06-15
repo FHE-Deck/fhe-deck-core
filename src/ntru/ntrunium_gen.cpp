@@ -1,5 +1,4 @@
- 
-#include "../include/ntrunium_gen.h"
+#include "ntrunium_gen.h"
 using namespace fhe_deck;
 
 ntrunium_gen::~ntrunium_gen(){

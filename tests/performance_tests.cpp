@@ -1,14 +1,14 @@
  
 
 #include <iostream>
-#include "../include/ntrunium.h" 
-#include "../include/ntrunium_gen.h" 
-#include "../include/lwe.h"
-#include "../include/lwe_param.h"
-#include "../include/ntru.h"
-#include "../include/ntru_param.h"
-#include "../include/rlwe_hom_acc_scheme.h"
-#include "../include/rlwe_hom_acc_scheme_gen.h"
+#include "ntrunium.h" 
+#include "ntrunium_gen.h" 
+#include "lwe.h"
+#include "lwe_param.h"
+#include "ntru.h"
+#include "ntru_param.h"
+#include "rlwe_hom_acc_scheme.h"
+#include "rlwe_hom_acc_scheme_gen.h"
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>

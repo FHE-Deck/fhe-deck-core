@@ -1,10 +1,9 @@
- 
 #ifndef FFT_PLAN_H
 #define FFT_PLAN_H
 
 #include <fftw3.h>
 #include <random>
-#include "../include/enums.h"
+#include "enums.h"
 
 
 namespace fhe_deck{

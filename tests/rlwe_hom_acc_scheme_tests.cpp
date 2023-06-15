@@ -1,6 +1,6 @@
  
-#include "../include/rlwe_hom_acc_scheme.h"
-#include "../include/rlwe_hom_acc_scheme_gen.h"  
+#include "rlwe_hom_acc_scheme.h"
+#include "rlwe_hom_acc_scheme_gen.h"  
 #include <chrono>
 #include <thread>
 

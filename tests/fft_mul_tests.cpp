@@ -1,12 +1,11 @@
- 
 #include <iostream>
 #include <complex>
 #include <fftw3.h>
 #include <chrono>
-#include "../include/utils.h"
-#include "../include/sample.h"
-#include "../include/fft_plan.h"
-#include "../include/enums.h"
+#include "utils.h"
+#include "sample.h"
+#include "fft_plan.h"
+#include "enums.h"
 
 
 using namespace fhe_deck;

@@ -1,4 +1,4 @@
-#include "../include/rotation_poly.h"
+#include "rotation_poly.h"
 #include <iostream>
 
 using namespace fhe_deck;
