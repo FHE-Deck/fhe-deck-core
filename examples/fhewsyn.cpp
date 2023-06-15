@@ -478,7 +478,7 @@ test_add4_lut3fa(FHEContext& ctx, uint8_t a, uint8_t b)
     Ciphertext gin1 = 1 * ct_a0 + 2 * ct_a1 + 1 * ct_b0 + 2 * ct_b1;
     std::vector<Ciphertext> gout1 = ctx.eval_lut_amortized(&gin1, decomp);
 
-    Ciphertext gin2 = 1 * ct_a2 + 2 * ct_a3 + 1 * ct_b2 + 2 * ct_b3 + gout1[1];
+    Ciphertext gin2 = 1 * ct_a2 + 2 * ct_a3 + 1 * ct_b2 + 2 * ct_b3 + gout1[2];
     std::vector<Ciphertext> gout2 = ctx.eval_lut_amortized(&gin2, decomp);
 
     std::vector<long> dec;
@@ -504,19 +504,25 @@ main(void)
             std::cout << "[+] Testing inputs " << i << ", " << j << std::endl;
             std::cout << "Expected: " << std::bitset<5>(i + j) << std::endl;
 
+            int sum = 0;
             auto ret3 = test_add4_lut3(ctx, i, j);
             std::cout << "Actual (lut3): ";
             for (int k = 4; k > 0; --k) {
+                sum = (sum << 1) | ret3[k];
                 std::cout << ret3[k] << ", ";
             }
             std::cout << ret3[0] << std::endl;
+            assert(sum | ret3[0] == i + j);
 
+            sum = 0;
             auto ret3fa = test_add4_lut3fa(ctx, i, j);
             std::cout << "Actual (lut3fa): ";
             for (int k = 4; k > 0; --k) {
+                sum = (sum << 1) | ret3fa[k];
                 std::cout << ret3fa[k] << ", ";
             }
             std::cout << ret3fa[0] << std::endl;
+            assert(sum | ret3[0] == i + j);
         }
     }
 
