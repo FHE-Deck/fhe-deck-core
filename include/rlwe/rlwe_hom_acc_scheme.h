@@ -2,11 +2,11 @@
 #ifndef RLWE_HOM_ACC_SCHEME_H
 #define RLWE_HOM_ACC_SCHEME_H
  
+#include "ciphertext.h"
 #include "lwe.h"
 #include "rlwe.h"
 #include "rlwe_param.h"  
-#include "../include/rotation_poly.h"
-#include "ciphertext.h"
+#include "rotation_poly.h"
  
  
 namespace fhe_deck{

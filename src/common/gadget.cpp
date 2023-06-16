@@ -1,4 +1,4 @@
-#include "../include/gadget.h"
+#include "gadget.h"
  
 using namespace fhe_deck;
 

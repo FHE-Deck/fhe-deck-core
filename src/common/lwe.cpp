@@ -1,6 +1,4 @@
- 
-
-#include "../include/lwe.h"
+#include "lwe.h"
    
 
 using namespace fhe_deck;

@@ -1,5 +1,4 @@
- 
-#include "../include/ntru.h" 
+#include "ntru.h" 
 using namespace fhe_deck;
 
  

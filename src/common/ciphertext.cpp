@@ -1,4 +1,4 @@
-#include "../include/ciphertext.h"
+#include "ciphertext.h"
 
 using namespace fhe_deck;
 

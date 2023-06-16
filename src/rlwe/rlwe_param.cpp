@@ -1,5 +1,5 @@
-#include "../include/rlwe_param.h"
-#include "../include/utils.h"
+#include "rlwe_param.h"
+#include "utils.h"
 using namespace fhe_deck;
  
 

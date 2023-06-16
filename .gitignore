@@ -1,4 +1,1 @@
-*.a
-*.o
-*_test
-*_tests
+build/

@@ -1,5 +1,4 @@
- 
-#include "../include/sample.h"
+#include "sample.h"
  
 
 using namespace fhe_deck;

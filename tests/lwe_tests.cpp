@@ -1,8 +1,8 @@
  
 
 #include <iostream>
-#include "../include/lwe.h"
-#include "../include/lwe_param.h"
+#include "lwe.h"
+#include "lwe_param.h"
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>

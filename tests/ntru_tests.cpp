@@ -1,10 +1,10 @@
  
 
 #include <iostream>
-#include "../include/lwe.h"
-#include "../include/ntru.h"
-#include "../include/ntru_param.h"
-#include "../include/fft_plan.h"
+#include "lwe.h"
+#include "ntru.h"
+#include "ntru_param.h"
+#include "fft_plan.h"
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>

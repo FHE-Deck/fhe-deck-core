@@ -1,5 +1,4 @@
- 
-#include "../include/ntrunium.h"
+#include "ntrunium.h"
 
 using namespace fhe_deck;
 

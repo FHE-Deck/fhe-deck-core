@@ -1,5 +1,6 @@
-#include "../include/lwe_param.h"
 #include <iostream>
+
+#include "lwe_param.h"
  
 using namespace fhe_deck; 
 
