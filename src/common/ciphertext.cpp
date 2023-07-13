@@ -161,7 +161,7 @@ Ciphertext operator+(long b, Ciphertext ct){
 
 Ciphertext operator-(long b, Ciphertext ct){
     Ciphertext out = -ct;
-    return out - b;
+    return out + b;
 }
 
 Ciphertext operator*(long b, Ciphertext ct){ 
