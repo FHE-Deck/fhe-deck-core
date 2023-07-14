@@ -7,7 +7,8 @@
 #include <NTL/ZZ_p.h>
 #include <string>
 #include "sample.h"
-#include "ntru_param.h"
+#include "enums.h"
+//#include "ntru_param.h"
 
 
 
@@ -27,8 +28,10 @@ class Utils{
 
         static void mul_scalar(long *out, long *in, int sizeof_in, long scalar);
  
+
         static void mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus, RingType ring);
  
+
         static void add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus);
 
         static void sub_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus);

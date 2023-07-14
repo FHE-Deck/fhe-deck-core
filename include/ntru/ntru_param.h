@@ -6,8 +6,7 @@
 #include "enums.h"
 #include "sample.h"
 #include "utils.h"
-#include "fft_plan.h" 
-//#include "ciphertext.h"
+#include "fft_plan.h"  
 
 #include "hexl/hexl.hpp"
 

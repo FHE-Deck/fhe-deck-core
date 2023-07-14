@@ -6,7 +6,7 @@
 #include "sample.h"
 #include "fft_plan.h"
 #include "enums.h"
-
+#include "ntru_param.h"
 
 using namespace fhe_deck;
 
