@@ -1,0 +1,804 @@
+#include <benchmark/benchmark.h>
+#include "fhe_context.h"
+using namespace fhe_deck;
+
+
+std::vector<long>
+test_sqrt_boolean(FHEContext& ctx, uint16_t num = 0)
+{
+    Ciphertext ct_num0 = ctx.encrypt_public((num >> 0) & 1);
+    Ciphertext ct_num1 = ctx.encrypt_public((num >> 1) & 1);
+    Ciphertext ct_num2 = ctx.encrypt_public((num >> 2) & 1);
+    Ciphertext ct_num3 = ctx.encrypt_public((num >> 3) & 1);
+    Ciphertext ct_num4 = ctx.encrypt_public((num >> 4) & 1);
+    Ciphertext ct_num5 = ctx.encrypt_public((num >> 5) & 1);
+    Ciphertext ct_num6 = ctx.encrypt_public((num >> 6) & 1);
+    Ciphertext ct_num7 = ctx.encrypt_public((num >> 7) & 1);
+    Ciphertext ct_num8 = ctx.encrypt_public((num >> 8) & 1);
+    Ciphertext ct_num9 = ctx.encrypt_public((num >> 9) & 1);
+    Ciphertext ct_num10 = ctx.encrypt_public((num >> 10) & 1);
+    Ciphertext ct_num11 = ctx.encrypt_public((num >> 11) & 1);
+    Ciphertext ct_num12 = ctx.encrypt_public((num >> 12) & 1);
+    Ciphertext ct_num13 = ctx.encrypt_public((num >> 13) & 1);
+    Ciphertext ct_num14 = ctx.encrypt_public((num >> 14) & 1);
+    Ciphertext ct_num15 = ctx.encrypt_public((num >> 15) & 1);
+
+    auto fand2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 0;
+            case 1:  return 0;
+            case 2:  return 0;
+            case 3:  return 1;
+            default: assert(0);
+        }
+    };
+    RotationPoly and2 = ctx.genrate_lut(fand2);
+
+    auto fnand2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 1;
+            case 1:  return 1;
+            case 2:  return 1;
+            case 3:  return 0;
+            default: assert(0);
+        }
+    };
+    RotationPoly nand2 = ctx.genrate_lut(fnand2);
+
+    auto for2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 0;
+            case 1:  return 1;
+            case 2:  return 1;
+            case 3:  return 1;
+            default: assert(0);
+        }
+    };
+    RotationPoly or2 = ctx.genrate_lut(for2);
+
+    auto fnor2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 1;
+            case 1:  return 0;
+            case 2:  return 0;
+            case 3:  return 0;
+            default: assert(0);
+        }
+    };
+    RotationPoly nor2 = ctx.genrate_lut(fnor2);
+
+    auto fxor2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 0;
+            case 1:  return 1;
+            case 2:  return 1;
+            case 3:  return 0;
+            default: assert(0);
+        }
+    };
+    RotationPoly xor2 = ctx.genrate_lut(fxor2);
+
+    auto fxnor2 = [](long i, long t) -> long {
+        switch (i) {
+            case 0:  return 1;
+            case 1:  return 0;
+            case 2:  return 0;
+            case 3:  return 1;
+            default: assert(0);
+        }
+    };
+    RotationPoly xnor2 = ctx.genrate_lut(fxnor2);
+
+    std::cerr << "\rINV0   ";
+    Ciphertext gout0 = 1 - ct_num3;
+
+    std::cerr << "\rLUT1   ";
+    Ciphertext gin1 = 2 * (1 - ct_num15) + ct_num13;
+    Ciphertext gout1 = ctx.eval_lut(&gin1, and2);
+    std::cerr << "\rLUT2   ";
+    Ciphertext gin2 = 2 * ct_num14 + ct_num15;
+    Ciphertext gout2 = ctx.eval_lut(&gin2, nor2);
+    std::cerr << "\rLUT3   ";
+    Ciphertext gin3 = 2 * ct_num2 + ct_num3;
+    Ciphertext gout3 = ctx.eval_lut(&gin3, nor2);
+    std::cerr << "\rINV4   ";
+    Ciphertext gout4 = 1 - ct_num5;
+
+    std::cerr << "\rLUT5   ";
+    Ciphertext gin5 = 2 * ct_num2 + ct_num1;
+    Ciphertext gout5 = ctx.eval_lut(&gin5, nor2);
+    std::cerr << "\rLUT6   ";
+    Ciphertext gin6 = 2 * ct_num9 + ct_num8;
+    Ciphertext gout6 = ctx.eval_lut(&gin6, nand2);
+    std::cerr << "\rLUT7   ";
+    Ciphertext gin7 = 2 * (1 - ct_num14) + ct_num15;
+    Ciphertext gout7 = ctx.eval_lut(&gin7, or2);
+    std::cerr << "\rLUT8   ";
+    Ciphertext gin8 = 2 * ct_num7 + ct_num6;
+    Ciphertext gout8 = ctx.eval_lut(&gin8, or2);
+    std::cerr << "\rINV9   ";
+    Ciphertext gout9 = 1 - ct_num4;
+
+    std::cerr << "\rINV10   ";
+    Ciphertext gout10 = 1 - ct_num12;
+
+    std::cerr << "\rINV11   ";
+    Ciphertext gout11 = 1 - ct_num11;
+
+    std::cerr << "\rLUT12   ";
+    Ciphertext gin12 = 2 * gout10 + gout2;
+    Ciphertext gout12 = ctx.eval_lut(&gin12, nand2);
+    std::cerr << "\rLUT13   ";
+    Ciphertext gin13 = 2 * ct_num12 + gout2;
+    Ciphertext gout13 = ctx.eval_lut(&gin13, nand2);
+    std::cerr << "\rLUT14   ";
+    Ciphertext gin14 = 2 * ct_num11 + ct_num12;
+    Ciphertext gout14 = ctx.eval_lut(&gin14, nor2);
+    std::cerr << "\rLUT15   ";
+    Ciphertext gin15 = 2 * (1 - ct_num3) + ct_num2;
+    Ciphertext gout15 = ctx.eval_lut(&gin15, and2);
+    std::cerr << "\rINV16   ";
+    Ciphertext gout16 = 1 - ct_num10;
+
+    std::cerr << "\rINV17   ";
+    Ciphertext gout17 = 1 - ct_num9;
+
+    std::cerr << "\rLUT18   ";
+    Ciphertext gin18 = 2 * gout9 + gout3;
+    Ciphertext gout18 = ctx.eval_lut(&gin18, xnor2);
+    std::cerr << "\rLUT19   ";
+    Ciphertext gin19 = 2 * ct_num5 + ct_num4;
+    Ciphertext gout19 = ctx.eval_lut(&gin19, nor2);
+    std::cerr << "\rLUT20   ";
+    Ciphertext gin20 = 2 * gout16 + gout14;
+    Ciphertext gout20 = ctx.eval_lut(&gin20, nand2);
+    std::cerr << "\rLUT21   ";
+    Ciphertext gin21 = 2 * ct_num9 + ct_num8;
+    Ciphertext gout21 = ctx.eval_lut(&gin21, nor2);
+    std::cerr << "\rINV22   ";
+    Ciphertext gout22 = 1 - ct_num0;
+
+    std::cerr << "\rINV23   ";
+    Ciphertext gout23 = 1 - gout7;
+
+    std::cerr << "\rLUT24   ";
+    Ciphertext gin24 = 2 * ct_num6 + gout19;
+    Ciphertext gout24 = ctx.eval_lut(&gin24, xnor2);
+    std::cerr << "\rINV25   ";
+    Ciphertext gout25 = 1 - ct_num15;
+
+    std::cerr << "\rINV26   ";
+    Ciphertext gout26 = 1 - ct_num6;
+
+    std::cerr << "\rLUT27   ";
+    Ciphertext gin27 = 2 * gout2 + gout1;
+    Ciphertext gout27 = ctx.eval_lut(&gin27, or2);
+    std::cerr << "\rLUT28   ";
+    Ciphertext gin28 = 2 * ct_num13 + ct_num12;
+    Ciphertext gout28 = ctx.eval_lut(&gin28, or2);
+    std::cerr << "\rLUT29   ";
+    Ciphertext gin29 = 2 * gout22 + gout5;
+    Ciphertext gout29 = ctx.eval_lut(&gin29, nand2);
+    std::cerr << "\rLUT30   ";
+    Ciphertext gin30 = 2 * ct_num13 + gout12;
+    Ciphertext gout30 = ctx.eval_lut(&gin30, and2);
+    std::cerr << "\rLUT31   ";
+    Ciphertext gin31 = 2 * gout2 + gout28;
+    Ciphertext gout31 = ctx.eval_lut(&gin31, nand2);
+    std::cerr << "\rLUT32   ";
+    Ciphertext gin32 = 2 * gout13 + gout20;
+    Ciphertext gout32 = ctx.eval_lut(&gin32, nand2);
+    std::cerr << "\rINV33   ";
+    Ciphertext gout33 = 1 - gout21;
+
+    std::cerr << "\rLUT34   ";
+    Ciphertext gin34 = 2 * gout7 + gout30;
+    Ciphertext gout34 = ctx.eval_lut(&gin34, nand2);
+    std::cerr << "\rLUT35   ";
+    Ciphertext gin35 = 2 * gout34 + gout32;
+    Ciphertext gout35 = ctx.eval_lut(&gin35, nand2);
+    std::cerr << "\rLUT36   ";
+    Ciphertext gin36 = 2 * gout35 + gout31;
+    Ciphertext gout36 = ctx.eval_lut(&gin36, or2);
+    std::cerr << "\rINV37   ";
+    Ciphertext gout37 = 1 - gout31;
+
+    std::cerr << "\rLUT38   ";
+    Ciphertext gin38 = 2 * gout35 + gout27;
+    Ciphertext gout38 = ctx.eval_lut(&gin38, and2);
+    std::cerr << "\rINV39   ";
+    Ciphertext gout39 = 1 - gout38;
+
+    std::cerr << "\rIMUX40  ";
+    Ciphertext gin40A = 2 * gout38 + ct_num10;
+    Ciphertext gout40A = ctx.eval_lut(&gin40A, and2);
+    Ciphertext gin40B = 2 * gout21 + (1 - ct_num10);
+    Ciphertext gout40B = ctx.eval_lut(&gin40B, and2);
+    Ciphertext gout40 = gout40A + gout40B;
+    std::cerr << "\rLUT41   ";
+    Ciphertext gin41 = 2 * gout16 + gout38;
+    Ciphertext gout41 = ctx.eval_lut(&gin41, and2);
+    std::cerr << "\rLUT42   ";
+    Ciphertext gin42 = 2 * (1 - gout30) + gout38;
+    Ciphertext gout42 = ctx.eval_lut(&gin42, or2);
+    std::cerr << "\rLUT43   ";
+    Ciphertext gin43 = 2 * gout11 + gout41;
+    Ciphertext gout43 = ctx.eval_lut(&gin43, nand2);
+    std::cerr << "\rINV44   ";
+    Ciphertext gout44 = 1 - gout40;
+
+    std::cerr << "\rLUT45   ";
+    Ciphertext gin45 = 2 * ct_num11 + gout41;
+    Ciphertext gout45 = ctx.eval_lut(&gin45, xnor2);
+    std::cerr << "\rLUT46   ";
+    Ciphertext gin46 = 2 * gout37 + gout45;
+    Ciphertext gout46 = ctx.eval_lut(&gin46, or2);
+    std::cerr << "\rLUT47   ";
+    Ciphertext gin47 = 2 * gout43 + gout36;
+    Ciphertext gout47 = ctx.eval_lut(&gin47, and2);
+    std::cerr << "\rLUT48   ";
+    Ciphertext gin48 = 2 * gout31 + gout45;
+    Ciphertext gout48 = ctx.eval_lut(&gin48, xnor2);
+    std::cerr << "\rINV49   ";
+    Ciphertext gout49 = 1 - gout45;
+
+    std::cerr << "\rLUT50   ";
+    Ciphertext gin50 = 2 * gout48 + gout40;
+    Ciphertext gout50 = ctx.eval_lut(&gin50, xnor2);
+    std::cerr << "\rLUT51   ";
+    Ciphertext gin51 = 2 * ct_num12 + gout47;
+    Ciphertext gout51 = ctx.eval_lut(&gin51, xnor2);
+    std::cerr << "\rLUT52   ";
+    Ciphertext gin52 = 2 * gout48 + gout44;
+    Ciphertext gout52 = ctx.eval_lut(&gin52, nand2);
+    std::cerr << "\rLUT53   ";
+    Ciphertext gin53 = 2 * gout7 + gout51;
+    Ciphertext gout53 = ctx.eval_lut(&gin53, nand2);
+    std::cerr << "\rLUT54   ";
+    Ciphertext gin54 = 2 * gout53 + gout42;
+    Ciphertext gout54 = ctx.eval_lut(&gin54, and2);
+    std::cerr << "\rLUT55   ";
+    Ciphertext gin55 = 2 * gout23 + gout51;
+    Ciphertext gout55 = ctx.eval_lut(&gin55, xnor2);
+    std::cerr << "\rLUT56   ";
+    Ciphertext gin56 = 2 * gout46 + gout52;
+    Ciphertext gout56 = ctx.eval_lut(&gin56, nand2);
+    std::cerr << "\rLUT57   ";
+    Ciphertext gin57 = 2 * (1 - gout51) + gout42;
+    Ciphertext gout57 = ctx.eval_lut(&gin57, and2);
+    std::cerr << "\rLUT58   ";
+    Ciphertext gin58 = 2 * gout55 + gout56;
+    Ciphertext gout58 = ctx.eval_lut(&gin58, xnor2);
+    std::cerr << "\rLUT59   ";
+    Ciphertext gin59 = 2 * gout55 + gout56;
+    Ciphertext gout59 = ctx.eval_lut(&gin59, nand2);
+    std::cerr << "\rLUT60   ";
+    Ciphertext gin60 = 2 * gout59 + gout54;
+    Ciphertext gout60 = ctx.eval_lut(&gin60, nand2);
+    std::cerr << "\rLUT61   ";
+    Ciphertext gin61 = 2 * gout25 + gout60;
+    Ciphertext gout61 = ctx.eval_lut(&gin61, nand2);
+    std::cerr << "\rLUT62   ";
+    Ciphertext gin62 = 2 * gout17 + gout61;
+    Ciphertext gout62 = ctx.eval_lut(&gin62, nand2);
+    std::cerr << "\rIMUX63  ";
+    Ciphertext gin63A = 2 * gout38 + gout61;
+    Ciphertext gout63A = ctx.eval_lut(&gin63A, and2);
+    Ciphertext gin63B = 2 * gout21 + (1 - gout61);
+    Ciphertext gout63B = ctx.eval_lut(&gin63B, and2);
+    Ciphertext gout63 = gout63A + gout63B;
+    std::cerr << "\rINV64   ";
+    Ciphertext gout64 = 1 - gout61;
+
+    std::cerr << "\rIMUX65  ";
+    Ciphertext gin65A = 2 * gout49 + gout61;
+    Ciphertext gout65A = ctx.eval_lut(&gin65A, and2);
+    Ciphertext gin65B = 2 * gout50 + (1 - gout61);
+    Ciphertext gout65B = ctx.eval_lut(&gin65B, and2);
+    Ciphertext gout65 = gout65A + gout65B;
+    std::cerr << "\rIMUX66  ";
+    Ciphertext gin66A = 2 * gout58 + gout64;
+    Ciphertext gout66A = ctx.eval_lut(&gin66A, and2);
+    Ciphertext gin66B = 2 * gout57 + (1 - gout64);
+    Ciphertext gout66B = ctx.eval_lut(&gin66B, and2);
+    Ciphertext gout66 = gout66A + gout66B;
+    std::cerr << "\rIMUX67  ";
+    Ciphertext gin67A = 2 * gout61 + ct_num8;
+    Ciphertext gout67A = ctx.eval_lut(&gin67A, and2);
+    Ciphertext gin67B = 2 * gout8 + (1 - ct_num8);
+    Ciphertext gout67B = ctx.eval_lut(&gin67B, and2);
+    Ciphertext gout67 = gout67A + gout67B;
+    std::cerr << "\rLUT68   ";
+    Ciphertext gin68 = 2 * gout23 + gout65;
+    Ciphertext gout68 = ctx.eval_lut(&gin68, xnor2);
+    std::cerr << "\rLUT69   ";
+    Ciphertext gin69 = 2 * gout7 + gout65;
+    Ciphertext gout69 = ctx.eval_lut(&gin69, nand2);
+    std::cerr << "\rLUT70   ";
+    Ciphertext gin70 = 2 * gout69 + gout66;
+    Ciphertext gout70 = ctx.eval_lut(&gin70, and2);
+    std::cerr << "\rLUT71   ";
+    Ciphertext gin71 = 2 * gout33 + gout64;
+    Ciphertext gout71 = ctx.eval_lut(&gin71, and2);
+    std::cerr << "\rLUT72   ";
+    Ciphertext gin72 = 2 * gout16 + gout63;
+    Ciphertext gout72 = ctx.eval_lut(&gin72, xnor2);
+    std::cerr << "\rLUT73   ";
+    Ciphertext gin73 = 2 * gout71 + gout6;
+    Ciphertext gout73 = ctx.eval_lut(&gin73, nand2);
+    std::cerr << "\rLUT74   ";
+    Ciphertext gin74 = 2 * gout31 + gout72;
+    Ciphertext gout74 = ctx.eval_lut(&gin74, nand2);
+    std::cerr << "\rLUT75   ";
+    Ciphertext gin75 = 2 * gout37 + gout72;
+    Ciphertext gout75 = ctx.eval_lut(&gin75, xnor2);
+    std::cerr << "\rLUT76   ";
+    Ciphertext gin76 = 2 * gout73 + gout62;
+    Ciphertext gout76 = ctx.eval_lut(&gin76, nand2);
+    std::cerr << "\rLUT77   ";
+    Ciphertext gin77 = 2 * gout73 + gout62;
+    Ciphertext gout77 = ctx.eval_lut(&gin77, and2);
+    std::cerr << "\rINV78   ";
+    Ciphertext gout78 = 1 - gout75;
+
+    std::cerr << "\rLUT79   ";
+    Ciphertext gin79 = 2 * gout38 + gout77;
+    Ciphertext gout79 = ctx.eval_lut(&gin79, xnor2);
+    std::cerr << "\rLUT80   ";
+    Ciphertext gin80 = 2 * gout67 + gout79;
+    Ciphertext gout80 = ctx.eval_lut(&gin80, xnor2);
+    std::cerr << "\rLUT81   ";
+    Ciphertext gin81 = 2 * gout39 + gout77;
+    Ciphertext gout81 = ctx.eval_lut(&gin81, nand2);
+    std::cerr << "\rLUT82   ";
+    Ciphertext gin82 = 2 * gout38 + gout76;
+    Ciphertext gout82 = ctx.eval_lut(&gin82, nand2);
+    std::cerr << "\rLUT83   ";
+    Ciphertext gin83 = 2 * gout82 + gout67;
+    Ciphertext gout83 = ctx.eval_lut(&gin83, nand2);
+    std::cerr << "\rLUT84   ";
+    Ciphertext gin84 = 2 * gout81 + gout83;
+    Ciphertext gout84 = ctx.eval_lut(&gin84, and2);
+    std::cerr << "\rLUT85   ";
+    Ciphertext gin85 = 2 * gout75 + gout84;
+    Ciphertext gout85 = ctx.eval_lut(&gin85, xnor2);
+    std::cerr << "\rLUT86   ";
+    Ciphertext gin86 = 2 * gout78 + gout84;
+    Ciphertext gout86 = ctx.eval_lut(&gin86, or2);
+    std::cerr << "\rLUT87   ";
+    Ciphertext gin87 = 2 * gout74 + gout86;
+    Ciphertext gout87 = ctx.eval_lut(&gin87, nand2);
+    std::cerr << "\rLUT88   ";
+    Ciphertext gin88 = 2 * gout68 + gout87;
+    Ciphertext gout88 = ctx.eval_lut(&gin88, xor2);
+    std::cerr << "\rLUT89   ";
+    Ciphertext gin89 = 2 * gout68 + gout87;
+    Ciphertext gout89 = ctx.eval_lut(&gin89, nand2);
+    std::cerr << "\rLUT90   ";
+    Ciphertext gin90 = 2 * gout89 + gout70;
+    Ciphertext gout90 = ctx.eval_lut(&gin90, nand2);
+    std::cerr << "\rLUT91   ";
+    Ciphertext gin91 = 2 * gout25 + gout90;
+    Ciphertext gout91 = ctx.eval_lut(&gin91, nand2);
+    std::cerr << "\rLUT92   ";
+    Ciphertext gin92 = 2 * gout61 + gout90;
+    Ciphertext gout92 = ctx.eval_lut(&gin92, or2);
+    std::cerr << "\rIMUX93  ";
+    Ciphertext gin93A = 2 * gout65 + gout91;
+    Ciphertext gout93A = ctx.eval_lut(&gin93A, and2);
+    Ciphertext gin93B = 2 * gout88 + (1 - gout91);
+    Ciphertext gout93B = ctx.eval_lut(&gin93B, and2);
+    Ciphertext gout93 = gout93A + gout93B;
+    std::cerr << "\rLUT94   ";
+    Ciphertext gin94 = 2 * (1 - gout91) + gout26;
+    Ciphertext gout94 = ctx.eval_lut(&gin94, and2);
+    std::cerr << "\rLUT95   ";
+    Ciphertext gin95 = 2 * gout8 + gout91;
+    Ciphertext gout95 = ctx.eval_lut(&gin95, or2);
+    std::cerr << "\rINV96   ";
+    Ciphertext gout96 = 1 - gout91;
+
+    std::cerr << "\rIMUX97  ";
+    Ciphertext gin97A = 2 * gout76 + gout91;
+    Ciphertext gout97A = ctx.eval_lut(&gin97A, and2);
+    Ciphertext gin97B = 2 * gout80 + (1 - gout91);
+    Ciphertext gout97B = ctx.eval_lut(&gin97B, and2);
+    Ciphertext gout97 = gout97A + gout97B;
+    std::cerr << "\rLUT98   ";
+    Ciphertext gin98 = 2 * gout95 + gout92;
+    Ciphertext gout98 = ctx.eval_lut(&gin98, and2);
+    std::cerr << "\rLUT99   ";
+    Ciphertext gin99 = 2 * gout37 + gout97;
+    Ciphertext gout99 = ctx.eval_lut(&gin99, or2);
+    std::cerr << "\rLUT100   ";
+    Ciphertext gin100 = 2 * ct_num7 + gout94;
+    Ciphertext gout100 = ctx.eval_lut(&gin100, xnor2);
+    std::cerr << "\rIMUX101  ";
+    Ciphertext gin101A = 2 * gout72 + gout91;
+    Ciphertext gout101A = ctx.eval_lut(&gin101A, and2);
+    Ciphertext gin101B = 2 * gout85 + (1 - gout91);
+    Ciphertext gout101B = ctx.eval_lut(&gin101B, and2);
+    Ciphertext gout101 = gout101A + gout101B;
+    std::cerr << "\rLUT102   ";
+    Ciphertext gin102 = 2 * gout61 + gout100;
+    Ciphertext gout102 = ctx.eval_lut(&gin102, xnor2);
+    std::cerr << "\rLUT103   ";
+    Ciphertext gin103 = 2 * gout26 + gout91;
+    Ciphertext gout103 = ctx.eval_lut(&gin103, xnor2);
+    std::cerr << "\rIMUX104  ";
+    Ciphertext gin104A = 2 * gout96 + ct_num6;
+    Ciphertext gout104A = ctx.eval_lut(&gin104A, and2);
+    Ciphertext gin104B = 2 * gout19 + (1 - ct_num6);
+    Ciphertext gout104B = ctx.eval_lut(&gin104B, and2);
+    Ciphertext gout104 = gout104A + gout104B;
+    std::cerr << "\rLUT105   ";
+    Ciphertext gin105 = 2 * gout102 + gout104;
+    Ciphertext gout105 = ctx.eval_lut(&gin105, xnor2);
+    std::cerr << "\rLUT106   ";
+    Ciphertext gin106 = 2 * ct_num8 + gout98;
+    Ciphertext gout106 = ctx.eval_lut(&gin106, xnor2);
+    std::cerr << "\rINV107   ";
+    Ciphertext gout107 = 1 - gout101;
+
+    std::cerr << "\rLUT108   ";
+    Ciphertext gin108 = 2 * gout37 + gout97;
+    Ciphertext gout108 = ctx.eval_lut(&gin108, xnor2);
+    std::cerr << "\rINV109   ";
+    Ciphertext gout109 = 1 - gout100;
+
+    std::cerr << "\rLUT110   ";
+    Ciphertext gin110 = 2 * gout7 + gout101;
+    Ciphertext gout110 = ctx.eval_lut(&gin110, nand2);
+    std::cerr << "\rINV111   ";
+    Ciphertext gout111 = 1 - gout106;
+
+    std::cerr << "\rLUT112   ";
+    Ciphertext gin112 = 2 * gout64 + gout100;
+    Ciphertext gout112 = ctx.eval_lut(&gin112, or2);
+    std::cerr << "\rINV113   ";
+    Ciphertext gout113 = 1 - gout104;
+
+    std::cerr << "\rLUT114   ";
+    Ciphertext gin114 = 2 * (1 - gout93) + gout110;
+    Ciphertext gout114 = ctx.eval_lut(&gin114, and2);
+    std::cerr << "\rLUT115   ";
+    Ciphertext gin115 = 2 * gout23 + gout101;
+    Ciphertext gout115 = ctx.eval_lut(&gin115, xnor2);
+    std::cerr << "\rLUT116   ";
+    Ciphertext gin116 = 2 * gout38 + gout106;
+    Ciphertext gout116 = ctx.eval_lut(&gin116, xnor2);
+    std::cerr << "\rLUT117   ";
+    Ciphertext gin117 = 2 * gout102 + gout113;
+    Ciphertext gout117 = ctx.eval_lut(&gin117, nand2);
+    std::cerr << "\rLUT118   ";
+    Ciphertext gin118 = 2 * gout39 + gout106;
+    Ciphertext gout118 = ctx.eval_lut(&gin118, nand2);
+    std::cerr << "\rLUT119   ";
+    Ciphertext gin119 = 2 * gout112 + gout117;
+    Ciphertext gout119 = ctx.eval_lut(&gin119, nand2);
+    std::cerr << "\rLUT120   ";
+    Ciphertext gin120 = 2 * gout119 + gout116;
+    Ciphertext gout120 = ctx.eval_lut(&gin120, nand2);
+    std::cerr << "\rLUT121   ";
+    Ciphertext gin121 = 2 * gout119 + gout116;
+    Ciphertext gout121 = ctx.eval_lut(&gin121, xnor2);
+    std::cerr << "\rLUT122   ";
+    Ciphertext gin122 = 2 * gout118 + gout120;
+    Ciphertext gout122 = ctx.eval_lut(&gin122, and2);
+    std::cerr << "\rLUT123   ";
+    Ciphertext gin123 = 2 * gout108 + gout122;
+    Ciphertext gout123 = ctx.eval_lut(&gin123, xnor2);
+    std::cerr << "\rLUT124   ";
+    Ciphertext gin124 = 2 * gout108 + gout122;
+    Ciphertext gout124 = ctx.eval_lut(&gin124, or2);
+    std::cerr << "\rLUT125   ";
+    Ciphertext gin125 = 2 * gout99 + gout124;
+    Ciphertext gout125 = ctx.eval_lut(&gin125, nand2);
+    std::cerr << "\rLUT126   ";
+    Ciphertext gin126 = 2 * gout115 + gout125;
+    Ciphertext gout126 = ctx.eval_lut(&gin126, xnor2);
+    std::cerr << "\rLUT127   ";
+    Ciphertext gin127 = 2 * gout115 + gout125;
+    Ciphertext gout127 = ctx.eval_lut(&gin127, nand2);
+    std::cerr << "\rLUT128   ";
+    Ciphertext gin128 = 2 * gout127 + gout114;
+    Ciphertext gout128 = ctx.eval_lut(&gin128, nand2);
+    std::cerr << "\rLUT129   ";
+    Ciphertext gin129 = 2 * gout25 + gout128;
+    Ciphertext gout129 = ctx.eval_lut(&gin129, nand2);
+    std::cerr << "\rIMUX130  ";
+    Ciphertext gin130A = 2 * gout103 + gout129;
+    Ciphertext gout130A = ctx.eval_lut(&gin130A, and2);
+    Ciphertext gin130B = 2 * gout24 + (1 - gout129);
+    Ciphertext gout130B = ctx.eval_lut(&gin130B, and2);
+    Ciphertext gout130 = gout130A + gout130B;
+    std::cerr << "\rLUT131   ";
+    Ciphertext gin131 = 2 * gout64 + gout130;
+    Ciphertext gout131 = ctx.eval_lut(&gin131, or2);
+    std::cerr << "\rIMUX132  ";
+    Ciphertext gin132A = 2 * gout109 + gout129;
+    Ciphertext gout132A = ctx.eval_lut(&gin132A, and2);
+    Ciphertext gin132B = 2 * gout105 + (1 - gout129);
+    Ciphertext gout132B = ctx.eval_lut(&gin132B, and2);
+    Ciphertext gout132 = gout132A + gout132B;
+    std::cerr << "\rLUT133   ";
+    Ciphertext gin133 = 2 * gout129 + gout29;
+    Ciphertext gout133 = ctx.eval_lut(&gin133, nand2);
+    std::cerr << "\rLUT134   ";
+    Ciphertext gin134 = 2 * gout61 + gout130;
+    Ciphertext gout134 = ctx.eval_lut(&gin134, xnor2);
+    std::cerr << "\rINV135   ";
+    Ciphertext gout135 = 1 - gout129;
+
+    std::cerr << "\rIMUX136  ";
+    Ciphertext gin136A = 2 * gout97 + gout129;
+    Ciphertext gout136A = ctx.eval_lut(&gin136A, and2);
+    Ciphertext gin136B = 2 * gout123 + (1 - gout129);
+    Ciphertext gout136B = ctx.eval_lut(&gin136B, and2);
+    Ciphertext gout136 = gout136A + gout136B;
+    std::cerr << "\rLUT137   ";
+    Ciphertext gin137 = 2 * ct_num4 + gout129;
+    Ciphertext gout137 = ctx.eval_lut(&gin137, xnor2);
+    std::cerr << "\rLUT138   ";
+    Ciphertext gin138 = 2 * gout23 + gout136;
+    Ciphertext gout138 = ctx.eval_lut(&gin138, or2);
+    std::cerr << "\rLUT139   ";
+    Ciphertext gin139 = 2 * gout7 + gout136;
+    Ciphertext gout139 = ctx.eval_lut(&gin139, xnor2);
+    std::cerr << "\rLUT140   ";
+    Ciphertext gin140 = 2 * gout38 + gout132;
+    Ciphertext gout140 = ctx.eval_lut(&gin140, xnor2);
+    std::cerr << "\rIMUX141  ";
+    Ciphertext gin141A = 2 * gout107 + gout129;
+    Ciphertext gout141A = ctx.eval_lut(&gin141A, and2);
+    Ciphertext gin141B = 2 * gout126 + (1 - gout129);
+    Ciphertext gout141B = ctx.eval_lut(&gin141B, and2);
+    Ciphertext gout141 = gout141A + gout141B;
+    std::cerr << "\rLUT142   ";
+    Ciphertext gin142 = 2 * gout39 + gout132;
+    Ciphertext gout142 = ctx.eval_lut(&gin142, nand2);
+    std::cerr << "\rIMUX143  ";
+    Ciphertext gin143A = 2 * gout111 + gout129;
+    Ciphertext gout143A = ctx.eval_lut(&gin143A, and2);
+    Ciphertext gin143B = 2 * gout121 + (1 - gout129);
+    Ciphertext gout143B = ctx.eval_lut(&gin143B, and2);
+    Ciphertext gout143 = gout143A + gout143B;
+    std::cerr << "\rLUT144   ";
+    Ciphertext gin144 = 2 * (1 - gout129) + gout9;
+    Ciphertext gout144 = ctx.eval_lut(&gin144, and2);
+    std::cerr << "\rLUT145   ";
+    Ciphertext gin145 = 2 * gout129 + gout29;
+    Ciphertext gout145 = ctx.eval_lut(&gin145, or2);
+    std::cerr << "\rINV146   ";
+    Ciphertext gout146 = 1 - gout134;
+
+    std::cerr << "\rLUT147   ";
+    Ciphertext gin147 = 2 * gout136 + gout141;
+    Ciphertext gout147 = ctx.eval_lut(&gin147, nand2);
+    std::cerr << "\rIMUX148  ";
+    Ciphertext gin148A = 2 * gout135 + ct_num4;
+    Ciphertext gout148A = ctx.eval_lut(&gin148A, and2);
+    Ciphertext gin148B = 2 * gout3 + (1 - ct_num4);
+    Ciphertext gout148B = ctx.eval_lut(&gin148B, and2);
+    Ciphertext gout148 = gout148A + gout148B;
+    std::cerr << "\rINV149   ";
+    Ciphertext gout149 = 1 - gout140;
+
+    std::cerr << "\rLUT150   ";
+    Ciphertext gin150 = 2 * gout138 + gout141;
+    Ciphertext gout150 = ctx.eval_lut(&gin150, and2);
+    std::cerr << "\rLUT151   ";
+    Ciphertext gin151 = 2 * gout4 + gout144;
+    Ciphertext gout151 = ctx.eval_lut(&gin151, xnor2);
+    std::cerr << "\rLUT152   ";
+    Ciphertext gin152 = 2 * gout31 + gout143;
+    Ciphertext gout152 = ctx.eval_lut(&gin152, xnor2);
+    std::cerr << "\rLUT153   ";
+    Ciphertext gin153 = 2 * gout37 + gout143;
+    Ciphertext gout153 = ctx.eval_lut(&gin153, or2);
+    std::cerr << "\rINV154   ";
+    Ciphertext gout154 = 1 - gout148;
+
+    std::cerr << "\rLUT155   ";
+    Ciphertext gin155 = 2 * gout96 + gout151;
+    Ciphertext gout155 = ctx.eval_lut(&gin155, xnor2);
+    std::cerr << "\rLUT156   ";
+    Ciphertext gin156 = 2 * gout155 + gout148;
+    Ciphertext gout156 = ctx.eval_lut(&gin156, xnor2);
+    std::cerr << "\rLUT157   ";
+    Ciphertext gin157 = 2 * gout91 + gout151;
+    Ciphertext gout157 = ctx.eval_lut(&gin157, nand2);
+    std::cerr << "\rLUT158   ";
+    Ciphertext gin158 = 2 * gout155 + gout154;
+    Ciphertext gout158 = ctx.eval_lut(&gin158, nand2);
+    std::cerr << "\rLUT159   ";
+    Ciphertext gin159 = 2 * gout157 + gout158;
+    Ciphertext gout159 = ctx.eval_lut(&gin159, and2);
+    std::cerr << "\rLUT160   ";
+    Ciphertext gin160 = 2 * gout146 + gout159;
+    Ciphertext gout160 = ctx.eval_lut(&gin160, xnor2);
+    std::cerr << "\rLUT161   ";
+    Ciphertext gin161 = 2 * gout146 + gout159;
+    Ciphertext gout161 = ctx.eval_lut(&gin161, or2);
+    std::cerr << "\rLUT162   ";
+    Ciphertext gin162 = 2 * gout131 + gout161;
+    Ciphertext gout162 = ctx.eval_lut(&gin162, and2);
+    std::cerr << "\rLUT163   ";
+    Ciphertext gin163 = 2 * gout140 + gout162;
+    Ciphertext gout163 = ctx.eval_lut(&gin163, xnor2);
+    std::cerr << "\rLUT164   ";
+    Ciphertext gin164 = 2 * gout149 + gout162;
+    Ciphertext gout164 = ctx.eval_lut(&gin164, or2);
+    std::cerr << "\rLUT165   ";
+    Ciphertext gin165 = 2 * gout142 + gout164;
+    Ciphertext gout165 = ctx.eval_lut(&gin165, nand2);
+    std::cerr << "\rLUT166   ";
+    Ciphertext gin166 = 2 * gout165 + gout152;
+    Ciphertext gout166 = ctx.eval_lut(&gin166, nand2);
+    std::cerr << "\rLUT167   ";
+    Ciphertext gin167 = 2 * gout165 + gout152;
+    Ciphertext gout167 = ctx.eval_lut(&gin167, xnor2);
+    std::cerr << "\rLUT168   ";
+    Ciphertext gin168 = 2 * gout153 + gout166;
+    Ciphertext gout168 = ctx.eval_lut(&gin168, nand2);
+    std::cerr << "\rLUT169   ";
+    Ciphertext gin169 = 2 * gout139 + gout168;
+    Ciphertext gout169 = ctx.eval_lut(&gin169, nand2);
+    std::cerr << "\rLUT170   ";
+    Ciphertext gin170 = 2 * gout169 + gout150;
+    Ciphertext gout170 = ctx.eval_lut(&gin170, nand2);
+    std::cerr << "\rLUT171   ";
+    Ciphertext gin171 = 2 * gout139 + gout168;
+    Ciphertext gout171 = ctx.eval_lut(&gin171, xor2);
+    std::cerr << "\rLUT172   ";
+    Ciphertext gin172 = 2 * gout25 + gout170;
+    Ciphertext gout172 = ctx.eval_lut(&gin172, nand2);
+    std::cerr << "\rIMUX173  ";
+    Ciphertext gin173A = 2 * gout143 + gout172;
+    Ciphertext gout173A = ctx.eval_lut(&gin173A, and2);
+    Ciphertext gin173B = 2 * gout167 + (1 - gout172);
+    Ciphertext gout173B = ctx.eval_lut(&gin173B, and2);
+    Ciphertext gout173 = gout173A + gout173B;
+    std::cerr << "\rIMUX174  ";
+    Ciphertext gin174A = 2 * gout147 + gout172;
+    Ciphertext gout174A = ctx.eval_lut(&gin174A, and2);
+    Ciphertext gin174B = 2 * gout171 + (1 - gout172);
+    Ciphertext gout174B = ctx.eval_lut(&gin174B, and2);
+    Ciphertext gout174 = gout174A + gout174B;
+    std::cerr << "\rIMUX175  ";
+    Ciphertext gin175A = 2 * gout130 + gout172;
+    Ciphertext gout175A = ctx.eval_lut(&gin175A, and2);
+    Ciphertext gin175B = 2 * gout160 + (1 - gout172);
+    Ciphertext gout175B = ctx.eval_lut(&gin175B, and2);
+    Ciphertext gout175 = gout175A + gout175B;
+    std::cerr << "\rLUT176   ";
+    Ciphertext gin176 = 2 * gout23 + gout173;
+    Ciphertext gout176 = ctx.eval_lut(&gin176, or2);
+    std::cerr << "\rLUT177   ";
+    Ciphertext gin177 = 2 * gout176 + (1 - gout174);
+    Ciphertext gout177 = ctx.eval_lut(&gin177, and2);
+    std::cerr << "\rINV178   ";
+    Ciphertext gout178 = 1 - gout172;
+
+    std::cerr << "\rLUT179   ";
+    Ciphertext gin179 = 2 * gout38 + gout175;
+    Ciphertext gout179 = ctx.eval_lut(&gin179, or2);
+    std::cerr << "\rIMUX180  ";
+    Ciphertext gin180A = 2 * gout151 + gout172;
+    Ciphertext gout180A = ctx.eval_lut(&gin180A, and2);
+    Ciphertext gin180B = 2 * gout156 + (1 - gout172);
+    Ciphertext gout180B = ctx.eval_lut(&gin180B, and2);
+    Ciphertext gout180 = gout180A + gout180B;
+    std::cerr << "\rLUT181   ";
+    Ciphertext gin181 = 2 * (1 - gout172) + gout15;
+    Ciphertext gout181 = ctx.eval_lut(&gin181, and2);
+    std::cerr << "\rLUT182   ";
+    Ciphertext gin182 = 2 * gout23 + gout173;
+    Ciphertext gout182 = ctx.eval_lut(&gin182, nand2);
+    std::cerr << "\rLUT183   ";
+    Ciphertext gin183 = 2 * gout0 + gout172;
+    Ciphertext gout183 = ctx.eval_lut(&gin183, xnor2);
+    std::cerr << "\rIMUX184  ";
+    Ciphertext gin184A = 2 * gout132 + gout172;
+    Ciphertext gout184A = ctx.eval_lut(&gin184A, and2);
+    Ciphertext gin184B = 2 * gout163 + (1 - gout172);
+    Ciphertext gout184B = ctx.eval_lut(&gin184B, and2);
+    Ciphertext gout184 = gout184A + gout184B;
+    std::cerr << "\rIMUX185  ";
+    Ciphertext gin185A = 2 * gout137 + gout172;
+    Ciphertext gout185A = ctx.eval_lut(&gin185A, and2);
+    Ciphertext gin185B = 2 * gout18 + (1 - gout172);
+    Ciphertext gout185B = ctx.eval_lut(&gin185B, and2);
+    Ciphertext gout185 = gout185A + gout185B;
+    std::cerr << "\rLUT186   ";
+    Ciphertext gin186 = 2 * gout91 + gout185;
+    Ciphertext gout186 = ctx.eval_lut(&gin186, nand2);
+    std::cerr << "\rLUT187   ";
+    Ciphertext gin187 = 2 * gout38 + gout175;
+    Ciphertext gout187 = ctx.eval_lut(&gin187, nand2);
+    std::cerr << "\rLUT188   ";
+    Ciphertext gin188 = 2 * gout133 + gout183;
+    Ciphertext gout188 = ctx.eval_lut(&gin188, nand2);
+    std::cerr << "\rLUT189   ";
+    Ciphertext gin189 = 2 * gout31 + gout184;
+    Ciphertext gout189 = ctx.eval_lut(&gin189, or2);
+    std::cerr << "\rLUT190   ";
+    Ciphertext gin190 = 2 * gout61 + gout180;
+    Ciphertext gout190 = ctx.eval_lut(&gin190, or2);
+    std::cerr << "\rLUT191   ";
+    Ciphertext gin191 = 2 * (1 - gout181) + gout145;
+    Ciphertext gout191 = ctx.eval_lut(&gin191, and2);
+    std::cerr << "\rLUT192   ";
+    Ciphertext gin192 = 2 * gout61 + gout180;
+    Ciphertext gout192 = ctx.eval_lut(&gin192, nand2);
+    std::cerr << "\rLUT193   ";
+    Ciphertext gin193 = 2 * gout31 + gout184;
+    Ciphertext gout193 = ctx.eval_lut(&gin193, nand2);
+    std::cerr << "\rLUT194   ";
+    Ciphertext gin194 = 2 * gout91 + gout185;
+    Ciphertext gout194 = ctx.eval_lut(&gin194, or2);
+    std::cerr << "\rLUT195   ";
+    Ciphertext gin195 = 2 * gout182 + gout189;
+    Ciphertext gout195 = ctx.eval_lut(&gin195, and2);
+    std::cerr << "\rLUT196   ";
+    Ciphertext gin196 = 2 * gout187 + gout190;
+    Ciphertext gout196 = ctx.eval_lut(&gin196, and2);
+    std::cerr << "\rLUT197   ";
+    Ciphertext gin197 = 2 * gout192 + gout186;
+    Ciphertext gout197 = ctx.eval_lut(&gin197, and2);
+    std::cerr << "\rLUT198   ";
+    Ciphertext gin198 = 2 * gout194 + gout191;
+    Ciphertext gout198 = ctx.eval_lut(&gin198, and2);
+    std::cerr << "\rLUT199   ";
+    Ciphertext gin199 = 2 * gout193 + gout179;
+    Ciphertext gout199 = ctx.eval_lut(&gin199, and2);
+    std::cerr << "\rLUT200   ";
+    Ciphertext gin200 = 2 * gout188 + gout198;
+    Ciphertext gout200 = ctx.eval_lut(&gin200, nand2);
+    std::cerr << "\rLUT201   ";
+    Ciphertext gin201 = 2 * gout200 + gout197;
+    Ciphertext gout201 = ctx.eval_lut(&gin201, nand2);
+    std::cerr << "\rLUT202   ";
+    Ciphertext gin202 = 2 * gout201 + gout196;
+    Ciphertext gout202 = ctx.eval_lut(&gin202, nand2);
+    std::cerr << "\rLUT203   ";
+    Ciphertext gin203 = 2 * gout202 + gout199;
+    Ciphertext gout203 = ctx.eval_lut(&gin203, nand2);
+    std::cerr << "\rLUT204   ";
+    Ciphertext gin204 = 2 * gout203 + gout195;
+    Ciphertext gout204 = ctx.eval_lut(&gin204, nand2);
+    std::cerr << "\rLUT205   ";
+    Ciphertext gin205 = 2 * gout204 + gout177;
+    Ciphertext gout205 = ctx.eval_lut(&gin205, nand2);
+    std::cerr << "\rLUT206   ";
+    Ciphertext gin206 = 2 * gout25 + gout205;
+    Ciphertext gout206 = ctx.eval_lut(&gin206, and2);
+
+    std::cerr << "\r          \r";
+    std::vector<long> test_out;
+    test_out.push_back(ctx.decrypt(&gout206)); /* out0 */
+    test_out.push_back(ctx.decrypt(&gout178)); /* out1 */
+    test_out.push_back(ctx.decrypt(&gout135)); /* out2 */
+    test_out.push_back(ctx.decrypt(&gout96)); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout64)); /* out4 */
+    test_out.push_back(ctx.decrypt(&gout38)); /* out5 */
+    test_out.push_back(ctx.decrypt(&gout37)); /* out6 */
+    test_out.push_back(ctx.decrypt(&gout23)); /* out7 */
+    return test_out;
+}
+
+static void
+BM_sqrt_boolean(benchmark::State& state)
+{
+    FHEContext ctx;
+    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.set_default_message_encoding_type(partial_domain);
+    ctx.set_default_plaintext_space(4);
+
+    for (auto _ : state) {
+        test_sqrt_boolean(ctx);
+    }
+}
+
+BENCHMARK(BM_sqrt_boolean)->Unit(benchmark::kSecond);
+BENCHMARK_MAIN();
