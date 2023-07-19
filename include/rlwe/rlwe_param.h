@@ -7,6 +7,7 @@
 #include "sample.h"
 #include "fft_plan.h"
 #include "gadget.h"
+#include "hexl/hexl.hpp"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
