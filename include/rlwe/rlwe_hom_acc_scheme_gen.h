@@ -101,7 +101,7 @@ class TFHESecretKey{
 
 
 enum TFHENamedParams{ 
-    rlwe_hom_acc_scheme_small_test, rlwe_hom_acc_scheme_C_11_B, rlwe_hom_acc_scheme_C_11_flood, rlwe_hom_acc_scheme_C_11_NTT, rlwe_hom_acc_scheme_C_11_NTT_flood, rlwe_hom_acc_scheme_C_11_NTT_amortized
+    tfhe_small_test, tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized
 };
 
 
@@ -129,17 +129,19 @@ class TFHEKeyGenerator{
 
     TFHESecretKey generate_secret_key();
 
-    void init_rlwe_hom_acc_scheme_small_test();
+    void init_tfhe_small_test();
  
-    void init_rlwe_hom_acc_scheme_C_11_NTT(); 
+    void init_tfhe_11_NTT(); 
 
-    void init_rlwe_hom_acc_scheme_C_11_NTT_flood();
+    void init_tfhe_11_NTT_flood();
 
-    void init_rlwe_hom_acc_scheme_C_11_B(); 
+    void init_tfhe_11_B(); 
 
-    void init_rlwe_hom_acc_scheme_C_11_flood();
+    void init_tfhe_11_flood();
 
-    void init_rlwe_hom_acc_scheme_C_11_NTT_amortized(); 
+    void init_tfhe_11_NTT_amortized(); 
+
+    void init_tfhe_12_NTT_amortized();
  
 
 };

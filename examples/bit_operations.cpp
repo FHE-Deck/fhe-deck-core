@@ -9,7 +9,7 @@ int main(){
     
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    context.generate_context(tfhe_11_NTT);
     context.set_default_message_encoding_type(partial_domain);
     context.set_default_plaintext_space(4);
 

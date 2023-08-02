@@ -116,14 +116,11 @@ void Utils::cp(long *out, long *in, int size){
 }
 
 
-int Utils::power_times(long x, long base){
-    long temp = base; 
-    int k = 1;
-    while(temp < x){
-        temp *= base;
-        k++;
-    }
-    return k;
+int Utils::power_times(long x, long base){ 
+    long base_bits = ceil(log2(base)); 
+    long x_bits = ceil(log2(x));  
+    int k = ceil((double)x_bits/(double)base_bits);
+    return k; 
 }
 
 
