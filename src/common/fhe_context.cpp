@@ -11,10 +11,10 @@ void FHEContext::generate_context(ntrunium_named_param name){
 }
  
 
-void FHEContext::generate_context(TFHENamedParams name){  
-    TFHEKeyGenerator rlwe_hom_acc_par = TFHEKeyGenerator(name); 
-    tfhe_boot_sk = rlwe_hom_acc_par.generate_secret_key();  
-    tfhe_boot_pk = tfhe_boot_sk.get_public_param();   
+void FHEContext::generate_context(TFHENamedParams name){   
+    TFHEKeyGenerator rlwe_hom_acc_par = TFHEKeyGenerator(name);  
+    tfhe_boot_sk = rlwe_hom_acc_par.generate_secret_key();   
+    tfhe_boot_pk = tfhe_boot_sk.get_public_param();    
     default_encoding = rlwe_hom_acc_par.default_encoding;
     is_tfhe = true;
     is_sk_init = true;

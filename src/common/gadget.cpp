@@ -56,6 +56,8 @@ Gadget::Gadget(const Gadget &other){
     this->basis = other.basis; 
     setup_type_specific_parameters();  
 } 
+
+
 Gadget& Gadget::operator=(const Gadget other){
     if (this == &other)
     {
@@ -76,6 +78,10 @@ void Gadget::setup_type_specific_parameters(){
         // Compute the k, parameter (remind k is such that 2**k = basis)  
         // meaning that for now we support only power of two basis
         // TODO: Compute these values with functions from utils
+ 
+        this->k = Utils::power_times(basis, 2);  
+        this->ell = Utils::power_times(Q, basis);   
+/*
         long temp = 2;
         while(temp < basis){
             temp *= 2;
@@ -83,21 +89,25 @@ void Gadget::setup_type_specific_parameters(){
         }
         this->ell = 1;
         temp = basis; 
+        std::cout << "Compute ell" << std::endl;
+        std::cout << "basis: " << basis << std::endl;
+        std::cout << "Q: " << Q << std::endl;
         while(temp < Q){
-            temp *= basis;
+            temp *= basis; 
             this->ell++;
         }  
+*/ 
         // Initialize temporary arrays:
         signed_poly = new long[N]; 
         sign = new long[N]; 
         is_deter_temp_init = true;
-    }else if(this->type == discrete_gaussian_gadget){ 
+    }else if(this->type == discrete_gaussian_gadget){  
         this->rand = Sampler(0.0, this->stddev); 
         if(!Utils::is_power_of(basis, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
         this->k = Utils::power_times(basis, 2);
-        this->ell = Utils::power_times(Q, basis);
+        this->ell = Utils::power_times(Q, basis);  
         if(Utils::is_power_of(Q, basis)){
             is_power_of_base_modulus = true;
             precompute_constants_for_power_of_base_gaussian_sampling();

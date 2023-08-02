@@ -12,7 +12,7 @@ void test_for_default_full_domain_encoding(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_B);
+    context.generate_context(tfhe_11_B);
     
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c1  = context.encrypt(1);  
@@ -174,7 +174,7 @@ void test_for_partial_domain_encoding(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_B);
+    context.generate_context(tfhe_11_B);
     context.set_default_message_encoding_type(partial_domain);
 
  
@@ -295,7 +295,7 @@ void test_for_signed_limied_short_int(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_B);
+    context.generate_context(tfhe_11_B);
     context.set_default_message_encoding_type(signed_limied_short_int);
 
     std::cout << "plaintext_space: " << context.get_default_plaintext_space() << std::endl;
@@ -425,7 +425,7 @@ void basic_Ciphertext_tests(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_B);
+    context.generate_context(tfhe_11_B);
     
     std::cout << "Encrypt..." << std::endl;
     std::cout << "Testing: lwe_ct c1  = context.encrypt_temp(1);  " << std::endl;
@@ -454,7 +454,7 @@ void amortized_full_domain_bootstrap_test(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_NTT_amortized);
+    context.generate_context(tfhe_11_NTT_amortized);
     
     auto id = [](long m, long t) -> long {
         return m % t;
@@ -573,12 +573,12 @@ void amortized_full_domain_bootstrap_test(){
 
 
 void amortized_partial_domain_bootstrap_test(){
-    std::cout << "=========== amortized_partial_domain_bootstrap_test =============" << std::endl;
+    std::cout << "=========== amortized_11_partial_domain_bootstrap_test =============" << std::endl;
  
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(rlwe_hom_acc_scheme_C_11_NTT_amortized);
-    context.set_default_message_encoding_type(partial_domain);
+    context.generate_context(tfhe_11_NTT_amortized);
+    context.set_default_message_encoding_type(partial_domain); 
   
     auto first_bit = [](long m) -> long {
         return m % 2;
@@ -684,6 +684,213 @@ void amortized_partial_domain_bootstrap_test(){
 
  
 
+void amortized_12_partial_domain_bootstrap_test(){
+    std::cout << "=========== amortized_12_partial_domain_bootstrap_test =============" << std::endl;
+ 
+    FHEContext context; 
+    std::cout << "Generate Keys..." << std::endl;
+    context.generate_context(tfhe_12_NTT_amortized); 
+  
+    auto first_bit = [](long m) -> long {
+        return m % 2;
+    };  
+  
+    auto second_bit = [](long m) -> long {
+        return (m % 4)/2;
+    };  
+
+    auto third_bit = [](long m) -> long {
+        return (m % 8)/4; 
+    };  
+
+    auto fourth_bit = [](long m) -> long {
+        return (m % 16)/8; 
+    };  
+
+    std::vector<RotationPoly> bit_decomp_luts;
+    bit_decomp_luts.push_back(context.genrate_lut(first_bit));
+    bit_decomp_luts.push_back(context.genrate_lut(second_bit));
+    bit_decomp_luts.push_back(context.genrate_lut(third_bit));
+    bit_decomp_luts.push_back(context.genrate_lut(fourth_bit));
+
+    Ciphertext ct0 = context.encrypt_public(0); 
+    Ciphertext ct1 = context.encrypt_public(1); 
+    Ciphertext ct2 = context.encrypt_public(2);
+    Ciphertext ct3 = context.encrypt_public(3);
+    Ciphertext ct4 = context.encrypt_public(4);
+    Ciphertext ct5 = context.encrypt_public(5);
+    Ciphertext ct6 = context.encrypt_public(6);
+    Ciphertext ct7 = context.encrypt_public(7);
+    Ciphertext ct8 = context.encrypt_public(8);
+    Ciphertext ct9 = context.encrypt_public(9);
+    Ciphertext ct10 = context.encrypt_public(10);
+    Ciphertext ct11 = context.encrypt_public(11);
+    Ciphertext ct12 = context.encrypt_public(12);
+    Ciphertext ct13 = context.encrypt_public(13);
+    Ciphertext ct14 = context.encrypt_public(14);
+    Ciphertext ct15 = context.encrypt_public(15);
+
+
+    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
+
+
+    Ciphertext ct_out =  context.eval_lut(&ct0, first_bit); 
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&ct_out) << std::endl;
+    ct_out =  context.eval_lut(&ct0, second_bit); 
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&ct_out) << std::endl;
+    ct_out =  context.eval_lut(&ct0, third_bit); 
+    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&ct_out) << std::endl;
+    ct_out =  context.eval_lut(&ct0, fourth_bit); 
+    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&ct_out) << std::endl;
+
+
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
+
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 0: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
+
+    
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
+    
+
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 1: OK" << std::endl;
+
+ 
+    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
+
+    
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
+
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 2: OK" << std::endl;
+
+    out_cts = context.eval_lut_amortized(&ct3, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 3: OK" << std::endl;
+
+    out_cts = context.eval_lut_amortized(&ct4, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 4: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct5, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 5: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct6, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 6: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct7, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 0); 
+    std::cout << "Test Bin Decomp 7: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct8, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 8: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct9, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 9: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct10, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 10: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct11, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 11: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct12, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 12: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct13, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 0); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 13: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct14, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 0); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 14: OK" << std::endl;
+
+
+    out_cts = context.eval_lut_amortized(&ct15, bit_decomp_luts);
+    assert(context.decrypt(&out_cts[0]) == 1); 
+    assert(context.decrypt(&out_cts[1]) == 1); 
+    assert(context.decrypt(&out_cts[2]) == 1); 
+    assert(context.decrypt(&out_cts[3]) == 1); 
+    std::cout << "Test Bin Decomp 15: OK" << std::endl;
+
+}
+
+
 
 
 void serialization_test(){
@@ -691,7 +898,7 @@ void serialization_test(){
 
     FHEContext first_context; 
     std::cout << "Generate Keys..." << std::endl;
-    first_context.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    first_context.generate_context(tfhe_11_NTT);
    
      
     first_context.save_secret_key("z_sk.cereal"); 
@@ -726,18 +933,20 @@ void serialization_test(){
 
 int main(){  
     
-    basic_Ciphertext_tests();
+    //basic_Ciphertext_tests();
  
-    test_for_default_full_domain_encoding();
+    //test_for_default_full_domain_encoding();
 
-    test_for_partial_domain_encoding();
+    //test_for_partial_domain_encoding();
 
-    test_for_signed_limied_short_int();
+    //test_for_signed_limied_short_int();
 
-    amortized_full_domain_bootstrap_test();
+    //amortized_full_domain_bootstrap_test();
 
-    amortized_partial_domain_bootstrap_test();
+    //amortized_partial_domain_bootstrap_test();
 
-    serialization_test();
+    amortized_12_partial_domain_bootstrap_test();
+
+    //serialization_test();
 
 }
