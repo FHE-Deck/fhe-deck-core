@@ -7,7 +7,7 @@ static void
 BM_lut_pt4_identity(benchmark::State &state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(4);
 
@@ -34,7 +34,7 @@ static void
 BM_lut_pt4_decomp(benchmark::State &state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(4);
 
@@ -71,7 +71,7 @@ static void
 BM_lut_amortized_pt4_identity(benchmark::State& state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(4);
 
@@ -99,7 +99,7 @@ static void
 BM_lut_amortized_pt4_decomp(benchmark::State& state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(4);
 
@@ -136,7 +136,7 @@ static void
 BM_lut_amortized_pt8_identity(benchmark::State& state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(8);
 
@@ -168,7 +168,7 @@ static void
 BM_lut_amortized_pt8_decomp(benchmark::State& state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(8);
 
@@ -199,7 +199,6 @@ BM_lut_amortized_pt8_decomp(benchmark::State& state)
             default: assert(0);
         };
     }));
-    #if 0
     decomp.push_back(ctx.genrate_lut([](long I) -> long {
         switch (I) {
             case  0: return 0;
@@ -213,7 +212,6 @@ BM_lut_amortized_pt8_decomp(benchmark::State& state)
             default: assert(0);
         };
     }));
-    #endif
 
     for (auto _ : state) {
         state.PauseTiming();
