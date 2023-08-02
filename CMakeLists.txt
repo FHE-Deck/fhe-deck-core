@@ -23,5 +23,6 @@ add_library(fhe_deck STATIC
 	${INC_NTRU} ${SRC_NTRU})
 target_link_libraries(fhe_deck PRIVATE ntl fftw3 fftw3l hexl)
 
-add_subdirectory(examples) 
+add_subdirectory(examples) cd ..
+
 #add_subdirectory(tests) 
