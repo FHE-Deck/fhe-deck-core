@@ -15771,7 +15771,7 @@ main(void)
     long out;
 
     std::cout << "[+] ";
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT_amortized);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
 
     /* LUT tests */

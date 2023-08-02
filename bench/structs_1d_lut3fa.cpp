@@ -228,7 +228,7 @@ static void
 BM_structs_1d_lut3fa(benchmark::State& state)
 {
     FHEContext ctx;
-    ctx.generate_context(rlwe_hom_acc_scheme_C_11_NTT);
+    ctx.generate_context(tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
     ctx.set_default_plaintext_space(8);
 
