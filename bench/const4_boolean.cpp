@@ -90,17 +90,17 @@ test_const4_boolean(FHEContext& ctx, uint8_t a = 0)
     Ciphertext gout3 = ctx.eval_lut(&gin3, xor2);
     std::cerr << "\rLUT4   ";
     Ciphertext gin4 = 2 * gout0 + gout1;
-    Ciphertext gout4 = ctx.eval_lut(&gin4, xnor2);
+    Ciphertext gout4 = ctx.eval_lut(&gin4, nand2);
     std::cerr << "\rLUT5   ";
     Ciphertext gin5 = 2 * gout0 + gout1;
-    Ciphertext gout5 = ctx.eval_lut(&gin5, nand2);
+    Ciphertext gout5 = ctx.eval_lut(&gin5, xnor2);
 
     std::cerr << "\r          \r";
     std::vector<long> test_out;
     test_out.push_back(ctx.decrypt(&gout2)); /* out1 */
     test_out.push_back(ctx.decrypt(&gout3)); /* out2 */
-    test_out.push_back(ctx.decrypt(&gout4)); /* out3 */
-    test_out.push_back(ctx.decrypt(&gout5)); /* out4 */
+    test_out.push_back(ctx.decrypt(&gout5)); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout4)); /* out4 */
     return test_out;
 }
 

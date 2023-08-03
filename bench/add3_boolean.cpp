@@ -81,44 +81,44 @@ test_add3_boolean(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
 
     std::cerr << "\rLUT0   ";
     Ciphertext gin0 = 2 * ct_a2 + ct_b2;
-    Ciphertext gout0 = ctx.eval_lut(&gin0, xor2);
+    Ciphertext gout0 = ctx.eval_lut(&gin0, nand2);
     std::cerr << "\rLUT1   ";
     Ciphertext gin1 = 2 * ct_a0 + ct_b0;
     Ciphertext gout1 = ctx.eval_lut(&gin1, and2);
     std::cerr << "\rLUT2   ";
-    Ciphertext gin2 = 2 * ct_a1 + ct_b1;
+    Ciphertext gin2 = 2 * ct_a0 + ct_b0;
     Ciphertext gout2 = ctx.eval_lut(&gin2, xor2);
     std::cerr << "\rLUT3   ";
-    Ciphertext gin3 = 2 * ct_a1 + ct_b1;
-    Ciphertext gout3 = ctx.eval_lut(&gin3, nand2);
+    Ciphertext gin3 = 2 * ct_a2 + ct_b2;
+    Ciphertext gout3 = ctx.eval_lut(&gin3, xor2);
     std::cerr << "\rLUT4   ";
-    Ciphertext gin4 = 2 * ct_a2 + ct_b2;
+    Ciphertext gin4 = 2 * ct_a1 + ct_b1;
     Ciphertext gout4 = ctx.eval_lut(&gin4, nand2);
     std::cerr << "\rLUT5   ";
-    Ciphertext gin5 = 2 * ct_a0 + ct_b0;
+    Ciphertext gin5 = 2 * ct_a1 + ct_b1;
     Ciphertext gout5 = ctx.eval_lut(&gin5, xor2);
     std::cerr << "\rLUT6   ";
-    Ciphertext gin6 = 2 * gout1 + gout2;
+    Ciphertext gin6 = 2 * gout1 + gout5;
     Ciphertext gout6 = ctx.eval_lut(&gin6, nand2);
     std::cerr << "\rLUT7   ";
-    Ciphertext gin7 = 2 * gout1 + gout2;
+    Ciphertext gin7 = 2 * gout1 + gout5;
     Ciphertext gout7 = ctx.eval_lut(&gin7, xor2);
     std::cerr << "\rLUT8   ";
-    Ciphertext gin8 = 2 * gout3 + gout6;
+    Ciphertext gin8 = 2 * gout4 + gout6;
     Ciphertext gout8 = ctx.eval_lut(&gin8, nand2);
     std::cerr << "\rLUT9   ";
-    Ciphertext gin9 = 2 * gout8 + gout0;
+    Ciphertext gin9 = 2 * gout8 + gout3;
     Ciphertext gout9 = ctx.eval_lut(&gin9, xor2);
     std::cerr << "\rLUT10   ";
-    Ciphertext gin10 = 2 * gout8 + gout0;
+    Ciphertext gin10 = 2 * gout8 + gout3;
     Ciphertext gout10 = ctx.eval_lut(&gin10, nand2);
     std::cerr << "\rLUT11   ";
-    Ciphertext gin11 = 2 * gout4 + gout10;
+    Ciphertext gin11 = 2 * gout0 + gout10;
     Ciphertext gout11 = ctx.eval_lut(&gin11, nand2);
 
     std::cerr << "\r          \r";
     std::vector<long> test_out;
-    test_out.push_back(ctx.decrypt(&gout5)); /* out0 */
+    test_out.push_back(ctx.decrypt(&gout2)); /* out0 */
     test_out.push_back(ctx.decrypt(&gout7)); /* out1 */
     test_out.push_back(ctx.decrypt(&gout9)); /* out2 */
     test_out.push_back(ctx.decrypt(&gout11)); /* out3 */

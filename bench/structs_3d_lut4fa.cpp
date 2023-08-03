@@ -357,343 +357,343 @@ test_structs_3d_lut4fa(FHEContext& ctx, std::vector<uint64_t> data = { 0 })
     };
 
     std::cerr << "\rFA0    ";
-    Ciphertext gin0 = 0 + 1 * ct_data0 + 2 * ct_data1 + 4 * ct_data2 + 1 * ct_data32 + 2 * ct_data33 + 4 * ct_data34;
+    Ciphertext gin0 = 0 + 1 * ct_data64 + 2 * ct_data65 + 4 * ct_data66 + 1 * ct_data96 + 2 * ct_data97 + 4 * ct_data98;
     std::vector<Ciphertext> gout0 = ctx.eval_lut_amortized(&gin0, decomp);
 
     std::cerr << "\rFA1    ";
-    Ciphertext gin1 = 0 + 1 * ct_data192 + 2 * ct_data193 + 4 * ct_data194 + 1 * ct_data224 + 2 * ct_data225 + 4 * ct_data226;
+    Ciphertext gin1 = 0 + 1 * ct_data128 + 2 * ct_data129 + 4 * ct_data130 + 1 * ct_data160 + 2 * ct_data161 + 4 * ct_data162;
     std::vector<Ciphertext> gout1 = ctx.eval_lut_amortized(&gin1, decomp);
 
     std::cerr << "\rFA2    ";
-    Ciphertext gin2 = 0 + 1 * ct_data128 + 2 * ct_data129 + 4 * ct_data130 + 1 * ct_data160 + 2 * ct_data161 + 4 * ct_data162;
+    Ciphertext gin2 = 0 + 1 * ct_data192 + 2 * ct_data193 + 4 * ct_data194 + 1 * ct_data224 + 2 * ct_data225 + 4 * ct_data226;
     std::vector<Ciphertext> gout2 = ctx.eval_lut_amortized(&gin2, decomp);
 
     std::cerr << "\rFA3    ";
-    Ciphertext gin3 = gout0[3] + 1 * ct_data3 + 2 * ct_data4 + 4 * ct_data5 + 1 * ct_data35 + 2 * ct_data36 + 4 * ct_data37;
+    Ciphertext gin3 = 0 + 1 * ct_data0 + 2 * ct_data1 + 4 * ct_data2 + 1 * ct_data32 + 2 * ct_data33 + 4 * ct_data34;
     std::vector<Ciphertext> gout3 = ctx.eval_lut_amortized(&gin3, decomp);
 
     std::cerr << "\rFA4    ";
-    Ciphertext gin4 = gout1[3] + 1 * ct_data195 + 2 * ct_data196 + 4 * ct_data197 + 1 * ct_data227 + 2 * ct_data228 + 4 * ct_data229;
+    Ciphertext gin4 = gout0[3] + 1 * ct_data67 + 2 * ct_data68 + 4 * ct_data69 + 1 * ct_data99 + 2 * ct_data100 + 4 * ct_data101;
     std::vector<Ciphertext> gout4 = ctx.eval_lut_amortized(&gin4, decomp);
 
     std::cerr << "\rFA5    ";
-    Ciphertext gin5 = 0 + 1 * ct_data64 + 2 * ct_data65 + 4 * ct_data66 + 1 * ct_data96 + 2 * ct_data97 + 4 * ct_data98;
+    Ciphertext gin5 = gout3[3] + 1 * ct_data3 + 2 * ct_data4 + 4 * ct_data5 + 1 * ct_data35 + 2 * ct_data36 + 4 * ct_data37;
     std::vector<Ciphertext> gout5 = ctx.eval_lut_amortized(&gin5, decomp);
 
     std::cerr << "\rFA6    ";
-    Ciphertext gin6 = gout4[3] + 1 * ct_data198 + 2 * ct_data199 + 4 * ct_data200 + 1 * ct_data230 + 2 * ct_data231 + 4 * ct_data232;
+    Ciphertext gin6 = 0 + 1 * gout1[0] + 2 * gout1[1] + 4 * gout1[2] + 1 * gout2[0] + 2 * gout2[1] + 4 * gout2[2];
     std::vector<Ciphertext> gout6 = ctx.eval_lut_amortized(&gin6, decomp);
 
     std::cerr << "\rFA7    ";
-    Ciphertext gin7 = gout5[3] + 1 * ct_data67 + 2 * ct_data68 + 4 * ct_data69 + 1 * ct_data99 + 2 * ct_data100 + 4 * ct_data101;
+    Ciphertext gin7 = gout1[3] + 1 * ct_data131 + 2 * ct_data132 + 4 * ct_data133 + 1 * ct_data163 + 2 * ct_data164 + 4 * ct_data165;
     std::vector<Ciphertext> gout7 = ctx.eval_lut_amortized(&gin7, decomp);
 
     std::cerr << "\rFA8    ";
-    Ciphertext gin8 = 0 + 1 * gout0[0] + 2 * gout0[1] + 4 * gout0[2] + 1 * gout5[0] + 2 * gout5[1] + 4 * gout5[2];
+    Ciphertext gin8 = gout2[3] + 1 * ct_data195 + 2 * ct_data196 + 4 * ct_data197 + 1 * ct_data227 + 2 * ct_data228 + 4 * ct_data229;
     std::vector<Ciphertext> gout8 = ctx.eval_lut_amortized(&gin8, decomp);
 
     std::cerr << "\rFA9    ";
-    Ciphertext gin9 = gout6[3] + 1 * ct_data201 + 2 * ct_data202 + 4 * ct_data203 + 1 * ct_data233 + 2 * ct_data234 + 4 * ct_data235;
+    Ciphertext gin9 = gout6[3] + 1 * gout7[0] + 2 * gout7[1] + 4 * gout7[2] + 1 * gout8[0] + 2 * gout8[1] + 4 * gout8[2];
     std::vector<Ciphertext> gout9 = ctx.eval_lut_amortized(&gin9, decomp);
 
     std::cerr << "\rFA10    ";
-    Ciphertext gin10 = gout3[3] + 1 * ct_data6 + 2 * ct_data7 + 4 * ct_data8 + 1 * ct_data38 + 2 * ct_data39 + 4 * ct_data40;
+    Ciphertext gin10 = 0 + 1 * gout3[0] + 2 * gout3[1] + 4 * gout3[2] + 1 * gout0[0] + 2 * gout0[1] + 4 * gout0[2];
     std::vector<Ciphertext> gout10 = ctx.eval_lut_amortized(&gin10, decomp);
 
     std::cerr << "\rFA11    ";
-    Ciphertext gin11 = gout7[3] + 1 * ct_data70 + 2 * ct_data71 + 4 * ct_data72 + 1 * ct_data102 + 2 * ct_data103 + 4 * ct_data104;
+    Ciphertext gin11 = gout4[3] + 1 * ct_data70 + 2 * ct_data71 + 4 * ct_data72 + 1 * ct_data102 + 2 * ct_data103 + 4 * ct_data104;
     std::vector<Ciphertext> gout11 = ctx.eval_lut_amortized(&gin11, decomp);
 
     std::cerr << "\rFA12    ";
-    Ciphertext gin12 = gout8[3] + 1 * gout3[0] + 2 * gout3[1] + 4 * gout3[2] + 1 * gout7[0] + 2 * gout7[1] + 4 * gout7[2];
+    Ciphertext gin12 = gout7[3] + 1 * ct_data134 + 2 * ct_data135 + 4 * ct_data136 + 1 * ct_data166 + 2 * ct_data167 + 4 * ct_data168;
     std::vector<Ciphertext> gout12 = ctx.eval_lut_amortized(&gin12, decomp);
 
     std::cerr << "\rFA13    ";
-    Ciphertext gin13 = gout2[3] + 1 * ct_data131 + 2 * ct_data132 + 4 * ct_data133 + 1 * ct_data163 + 2 * ct_data164 + 4 * ct_data165;
+    Ciphertext gin13 = gout5[3] + 1 * ct_data6 + 2 * ct_data7 + 4 * ct_data8 + 1 * ct_data38 + 2 * ct_data39 + 4 * ct_data40;
     std::vector<Ciphertext> gout13 = ctx.eval_lut_amortized(&gin13, decomp);
 
     std::cerr << "\rFA14    ";
-    Ciphertext gin14 = 0 + 1 * gout2[0] + 2 * gout2[1] + 4 * gout2[2] + 1 * gout1[0] + 2 * gout1[1] + 4 * gout1[2];
+    Ciphertext gin14 = gout8[3] + 1 * ct_data198 + 2 * ct_data199 + 4 * ct_data200 + 1 * ct_data230 + 2 * ct_data231 + 4 * ct_data232;
     std::vector<Ciphertext> gout14 = ctx.eval_lut_amortized(&gin14, decomp);
 
     std::cerr << "\rFA15    ";
-    Ciphertext gin15 = gout14[3] + 1 * gout13[0] + 2 * gout13[1] + 4 * gout13[2] + 1 * gout4[0] + 2 * gout4[1] + 4 * gout4[2];
+    Ciphertext gin15 = gout10[3] + 1 * gout5[0] + 2 * gout5[1] + 4 * gout5[2] + 1 * gout4[0] + 2 * gout4[1] + 4 * gout4[2];
     std::vector<Ciphertext> gout15 = ctx.eval_lut_amortized(&gin15, decomp);
 
     std::cerr << "\rFA16    ";
-    Ciphertext gin16 = 0 + 1 * gout8[0] + 2 * gout8[1] + 4 * gout8[2] + 1 * gout14[0] + 2 * gout14[1] + 4 * gout14[2];
+    Ciphertext gin16 = gout12[3] + 1 * ct_data137 + 2 * ct_data138 + 4 * ct_data139 + 1 * ct_data169 + 2 * ct_data170 + 4 * ct_data171;
     std::vector<Ciphertext> gout16 = ctx.eval_lut_amortized(&gin16, decomp);
 
     std::cerr << "\rFA17    ";
-    Ciphertext gin17 = gout11[3] + 1 * ct_data73 + 2 * ct_data74 + 4 * ct_data75 + 1 * ct_data105 + 2 * ct_data106 + 4 * ct_data107;
+    Ciphertext gin17 = 0 + 1 * gout10[0] + 2 * gout10[1] + 4 * gout10[2] + 1 * gout6[0] + 2 * gout6[1] + 4 * gout6[2];
     std::vector<Ciphertext> gout17 = ctx.eval_lut_amortized(&gin17, decomp);
 
     std::cerr << "\rFA18    ";
-    Ciphertext gin18 = gout9[3] + 1 * ct_data204 + 2 * ct_data205 + 4 * ct_data206 + 1 * ct_data236 + 2 * ct_data237 + 4 * ct_data238;
+    Ciphertext gin18 = gout11[3] + 1 * ct_data73 + 2 * ct_data74 + 4 * ct_data75 + 1 * ct_data105 + 2 * ct_data106 + 4 * ct_data107;
     std::vector<Ciphertext> gout18 = ctx.eval_lut_amortized(&gin18, decomp);
 
     std::cerr << "\rFA19    ";
-    Ciphertext gin19 = gout12[3] + 1 * gout10[0] + 2 * gout10[1] + 4 * gout10[2] + 1 * gout11[0] + 2 * gout11[1] + 4 * gout11[2];
+    Ciphertext gin19 = gout14[3] + 1 * ct_data201 + 2 * ct_data202 + 4 * ct_data203 + 1 * ct_data233 + 2 * ct_data234 + 4 * ct_data235;
     std::vector<Ciphertext> gout19 = ctx.eval_lut_amortized(&gin19, decomp);
 
     std::cerr << "\rFA20    ";
-    Ciphertext gin20 = gout10[3] + 1 * ct_data9 + 2 * ct_data10 + 4 * ct_data11 + 1 * ct_data41 + 2 * ct_data42 + 4 * ct_data43;
+    Ciphertext gin20 = gout18[3] + 1 * ct_data76 + 2 * ct_data77 + 4 * ct_data78 + 1 * ct_data108 + 2 * ct_data109 + 4 * ct_data110;
     std::vector<Ciphertext> gout20 = ctx.eval_lut_amortized(&gin20, decomp);
 
     std::cerr << "\rFA21    ";
-    Ciphertext gin21 = gout18[3] + 1 * ct_data207 + 2 * ct_data208 + 4 * ct_data209 + 1 * ct_data239 + 2 * ct_data240 + 4 * ct_data241;
+    Ciphertext gin21 = gout19[3] + 1 * ct_data204 + 2 * ct_data205 + 4 * ct_data206 + 1 * ct_data236 + 2 * ct_data237 + 4 * ct_data238;
     std::vector<Ciphertext> gout21 = ctx.eval_lut_amortized(&gin21, decomp);
 
     std::cerr << "\rFA22    ";
-    Ciphertext gin22 = gout20[3] + 1 * ct_data12 + 2 * ct_data13 + 4 * ct_data14 + 1 * ct_data44 + 2 * ct_data45 + 4 * ct_data46;
+    Ciphertext gin22 = gout9[3] + 1 * gout12[0] + 2 * gout12[1] + 4 * gout12[2] + 1 * gout14[0] + 2 * gout14[1] + 4 * gout14[2];
     std::vector<Ciphertext> gout22 = ctx.eval_lut_amortized(&gin22, decomp);
 
     std::cerr << "\rFA23    ";
-    Ciphertext gin23 = gout17[3] + 1 * ct_data76 + 2 * ct_data77 + 4 * ct_data78 + 1 * ct_data108 + 2 * ct_data109 + 4 * ct_data110;
+    Ciphertext gin23 = gout20[3] + 1 * ct_data79 + 2 * ct_data80 + 4 * ct_data81 + 1 * ct_data111 + 2 * ct_data112 + 4 * ct_data113;
     std::vector<Ciphertext> gout23 = ctx.eval_lut_amortized(&gin23, decomp);
 
     std::cerr << "\rFA24    ";
-    Ciphertext gin24 = gout13[3] + 1 * ct_data134 + 2 * ct_data135 + 4 * ct_data136 + 1 * ct_data166 + 2 * ct_data167 + 4 * ct_data168;
+    Ciphertext gin24 = gout13[3] + 1 * ct_data9 + 2 * ct_data10 + 4 * ct_data11 + 1 * ct_data41 + 2 * ct_data42 + 4 * ct_data43;
     std::vector<Ciphertext> gout24 = ctx.eval_lut_amortized(&gin24, decomp);
 
     std::cerr << "\rFA25    ";
-    Ciphertext gin25 = gout19[3] + 1 * gout20[0] + 2 * gout20[1] + 4 * gout20[2] + 1 * gout17[0] + 2 * gout17[1] + 4 * gout17[2];
+    Ciphertext gin25 = gout17[3] + 1 * gout15[0] + 2 * gout15[1] + 4 * gout15[2] + 1 * gout9[0] + 2 * gout9[1] + 4 * gout9[2];
     std::vector<Ciphertext> gout25 = ctx.eval_lut_amortized(&gin25, decomp);
 
     std::cerr << "\rFA26    ";
-    Ciphertext gin26 = gout21[3] + 1 * ct_data210 + 2 * ct_data211 + 4 * ct_data212 + 1 * ct_data242 + 2 * ct_data243 + 4 * ct_data244;
+    Ciphertext gin26 = gout16[3] + 1 * ct_data140 + 2 * ct_data141 + 4 * ct_data142 + 1 * ct_data172 + 2 * ct_data173 + 4 * ct_data174;
     std::vector<Ciphertext> gout26 = ctx.eval_lut_amortized(&gin26, decomp);
 
     std::cerr << "\rFA27    ";
-    Ciphertext gin27 = gout24[3] + 1 * ct_data137 + 2 * ct_data138 + 4 * ct_data139 + 1 * ct_data169 + 2 * ct_data170 + 4 * ct_data171;
+    Ciphertext gin27 = gout22[3] + 1 * gout16[0] + 2 * gout16[1] + 4 * gout16[2] + 1 * gout19[0] + 2 * gout19[1] + 4 * gout19[2];
     std::vector<Ciphertext> gout27 = ctx.eval_lut_amortized(&gin27, decomp);
 
     std::cerr << "\rFA28    ";
-    Ciphertext gin28 = gout25[3] + 1 * gout22[0] + 2 * gout22[1] + 4 * gout22[2] + 1 * gout23[0] + 2 * gout23[1] + 4 * gout23[2];
+    Ciphertext gin28 = gout15[3] + 1 * gout13[0] + 2 * gout13[1] + 4 * gout13[2] + 1 * gout11[0] + 2 * gout11[1] + 4 * gout11[2];
     std::vector<Ciphertext> gout28 = ctx.eval_lut_amortized(&gin28, decomp);
 
     std::cerr << "\rFA29    ";
-    Ciphertext gin29 = gout15[3] + 1 * gout24[0] + 2 * gout24[1] + 4 * gout24[2] + 1 * gout6[0] + 2 * gout6[1] + 4 * gout6[2];
+    Ciphertext gin29 = gout28[3] + 1 * gout24[0] + 2 * gout24[1] + 4 * gout24[2] + 1 * gout18[0] + 2 * gout18[1] + 4 * gout18[2];
     std::vector<Ciphertext> gout29 = ctx.eval_lut_amortized(&gin29, decomp);
 
     std::cerr << "\rFA30    ";
-    Ciphertext gin30 = gout23[3] + 1 * ct_data79 + 2 * ct_data80 + 4 * ct_data81 + 1 * ct_data111 + 2 * ct_data112 + 4 * ct_data113;
+    Ciphertext gin30 = gout23[3] + 1 * ct_data82 + 2 * ct_data83 + 4 * ct_data84 + 1 * ct_data114 + 2 * ct_data115 + 4 * ct_data116;
     std::vector<Ciphertext> gout30 = ctx.eval_lut_amortized(&gin30, decomp);
 
     std::cerr << "\rFA31    ";
-    Ciphertext gin31 = gout22[3] + 1 * ct_data15 + 2 * ct_data16 + 4 * ct_data17 + 1 * ct_data47 + 2 * ct_data48 + 4 * ct_data49;
+    Ciphertext gin31 = gout21[3] + 1 * ct_data207 + 2 * ct_data208 + 4 * ct_data209 + 1 * ct_data239 + 2 * ct_data240 + 4 * ct_data241;
     std::vector<Ciphertext> gout31 = ctx.eval_lut_amortized(&gin31, decomp);
 
     std::cerr << "\rFA32    ";
-    Ciphertext gin32 = gout27[3] + 1 * ct_data140 + 2 * ct_data141 + 4 * ct_data142 + 1 * ct_data172 + 2 * ct_data173 + 4 * ct_data174;
+    Ciphertext gin32 = gout24[3] + 1 * ct_data12 + 2 * ct_data13 + 4 * ct_data14 + 1 * ct_data44 + 2 * ct_data45 + 4 * ct_data46;
     std::vector<Ciphertext> gout32 = ctx.eval_lut_amortized(&gin32, decomp);
 
     std::cerr << "\rFA33    ";
-    Ciphertext gin33 = gout29[3] + 1 * gout27[0] + 2 * gout27[1] + 4 * gout27[2] + 1 * gout9[0] + 2 * gout9[1] + 4 * gout9[2];
+    Ciphertext gin33 = gout27[3] + 1 * gout26[0] + 2 * gout26[1] + 4 * gout26[2] + 1 * gout21[0] + 2 * gout21[1] + 4 * gout21[2];
     std::vector<Ciphertext> gout33 = ctx.eval_lut_amortized(&gin33, decomp);
 
     std::cerr << "\rFA34    ";
-    Ciphertext gin34 = gout32[3] + 1 * ct_data143 + 2 * ct_data144 + 4 * ct_data145 + 1 * ct_data175 + 2 * ct_data176 + 4 * ct_data177;
+    Ciphertext gin34 = gout26[3] + 1 * ct_data143 + 2 * ct_data144 + 4 * ct_data145 + 1 * ct_data175 + 2 * ct_data176 + 4 * ct_data177;
     std::vector<Ciphertext> gout34 = ctx.eval_lut_amortized(&gin34, decomp);
 
     std::cerr << "\rFA35    ";
-    Ciphertext gin35 = gout16[3] + 1 * gout12[0] + 2 * gout12[1] + 4 * gout12[2] + 1 * gout15[0] + 2 * gout15[1] + 4 * gout15[2];
+    Ciphertext gin35 = gout31[3] + 1 * ct_data210 + 2 * ct_data211 + 4 * ct_data212 + 1 * ct_data242 + 2 * ct_data243 + 4 * ct_data244;
     std::vector<Ciphertext> gout35 = ctx.eval_lut_amortized(&gin35, decomp);
 
     std::cerr << "\rFA36    ";
-    Ciphertext gin36 = gout26[3] + 1 * ct_data213 + 2 * ct_data214 + 4 * ct_data215 + 1 * ct_data245 + 2 * ct_data246 + 4 * ct_data247;
+    Ciphertext gin36 = gout25[3] + 1 * gout28[0] + 2 * gout28[1] + 4 * gout28[2] + 1 * gout22[0] + 2 * gout22[1] + 4 * gout22[2];
     std::vector<Ciphertext> gout36 = ctx.eval_lut_amortized(&gin36, decomp);
 
     std::cerr << "\rFA37    ";
-    Ciphertext gin37 = gout36[3] + 1 * ct_data216 + 2 * ct_data217 + 4 * ct_data218 + 1 * ct_data248 + 2 * ct_data249 + 4 * ct_data250;
+    Ciphertext gin37 = gout32[3] + 1 * ct_data15 + 2 * ct_data16 + 4 * ct_data17 + 1 * ct_data47 + 2 * ct_data48 + 4 * ct_data49;
     std::vector<Ciphertext> gout37 = ctx.eval_lut_amortized(&gin37, decomp);
 
     std::cerr << "\rFA38    ";
-    Ciphertext gin38 = gout33[3] + 1 * gout32[0] + 2 * gout32[1] + 4 * gout32[2] + 1 * gout18[0] + 2 * gout18[1] + 4 * gout18[2];
+    Ciphertext gin38 = gout30[3] + 1 * ct_data85 + 2 * ct_data86 + 4 * ct_data87 + 1 * ct_data117 + 2 * ct_data118 + 4 * ct_data119;
     std::vector<Ciphertext> gout38 = ctx.eval_lut_amortized(&gin38, decomp);
 
     std::cerr << "\rFA39    ";
-    Ciphertext gin39 = gout37[3] + 1 * ct_data219 + 2 * ct_data220 + 4 * ct_data221 + 1 * ct_data251 + 2 * ct_data252 + 4 * ct_data253;
+    Ciphertext gin39 = gout35[3] + 1 * ct_data213 + 2 * ct_data214 + 4 * ct_data215 + 1 * ct_data245 + 2 * ct_data246 + 4 * ct_data247;
     std::vector<Ciphertext> gout39 = ctx.eval_lut_amortized(&gin39, decomp);
 
     std::cerr << "\rFA40    ";
-    Ciphertext gin40 = gout28[3] + 1 * gout31[0] + 2 * gout31[1] + 4 * gout31[2] + 1 * gout30[0] + 2 * gout30[1] + 4 * gout30[2];
+    Ciphertext gin40 = gout36[3] + 1 * gout29[0] + 2 * gout29[1] + 4 * gout29[2] + 1 * gout27[0] + 2 * gout27[1] + 4 * gout27[2];
     std::vector<Ciphertext> gout40 = ctx.eval_lut_amortized(&gin40, decomp);
 
     std::cerr << "\rFA41    ";
-    Ciphertext gin41 = gout38[3] + 1 * gout34[0] + 2 * gout34[1] + 4 * gout34[2] + 1 * gout21[0] + 2 * gout21[1] + 4 * gout21[2];
+    Ciphertext gin41 = gout29[3] + 1 * gout32[0] + 2 * gout32[1] + 4 * gout32[2] + 1 * gout20[0] + 2 * gout20[1] + 4 * gout20[2];
     std::vector<Ciphertext> gout41 = ctx.eval_lut_amortized(&gin41, decomp);
 
     std::cerr << "\rFA42    ";
-    Ciphertext gin42 = gout30[3] + 1 * ct_data82 + 2 * ct_data83 + 4 * ct_data84 + 1 * ct_data114 + 2 * ct_data115 + 4 * ct_data116;
+    Ciphertext gin42 = gout34[3] + 1 * ct_data146 + 2 * ct_data147 + 4 * ct_data148 + 1 * ct_data178 + 2 * ct_data179 + 4 * ct_data180;
     std::vector<Ciphertext> gout42 = ctx.eval_lut_amortized(&gin42, decomp);
 
     std::cerr << "\rFA43    ";
-    Ciphertext gin43 = gout31[3] + 1 * ct_data18 + 2 * ct_data19 + 4 * ct_data20 + 1 * ct_data50 + 2 * ct_data51 + 4 * ct_data52;
+    Ciphertext gin43 = gout33[3] + 1 * gout34[0] + 2 * gout34[1] + 4 * gout34[2] + 1 * gout31[0] + 2 * gout31[1] + 4 * gout31[2];
     std::vector<Ciphertext> gout43 = ctx.eval_lut_amortized(&gin43, decomp);
 
     std::cerr << "\rFA44    ";
-    Ciphertext gin44 = gout34[3] + 1 * ct_data146 + 2 * ct_data147 + 4 * ct_data148 + 1 * ct_data178 + 2 * ct_data179 + 4 * ct_data180;
+    Ciphertext gin44 = gout37[3] + 1 * ct_data18 + 2 * ct_data19 + 4 * ct_data20 + 1 * ct_data50 + 2 * ct_data51 + 4 * ct_data52;
     std::vector<Ciphertext> gout44 = ctx.eval_lut_amortized(&gin44, decomp);
 
     std::cerr << "\rFA45    ";
-    Ciphertext gin45 = gout40[3] + 1 * gout43[0] + 2 * gout43[1] + 4 * gout43[2] + 1 * gout42[0] + 2 * gout42[1] + 4 * gout42[2];
+    Ciphertext gin45 = gout42[3] + 1 * ct_data149 + 2 * ct_data150 + 4 * ct_data151 + 1 * ct_data181 + 2 * ct_data182 + 4 * ct_data183;
     std::vector<Ciphertext> gout45 = ctx.eval_lut_amortized(&gin45, decomp);
 
     std::cerr << "\rFA46    ";
-    Ciphertext gin46 = gout35[3] + 1 * gout19[0] + 2 * gout19[1] + 4 * gout19[2] + 1 * gout29[0] + 2 * gout29[1] + 4 * gout29[2];
+    Ciphertext gin46 = gout40[3] + 1 * gout41[0] + 2 * gout41[1] + 4 * gout41[2] + 1 * gout33[0] + 2 * gout33[1] + 4 * gout33[2];
     std::vector<Ciphertext> gout46 = ctx.eval_lut_amortized(&gin46, decomp);
 
     std::cerr << "\rFA47    ";
-    Ciphertext gin47 = gout41[3] + 1 * gout44[0] + 2 * gout44[1] + 4 * gout44[2] + 1 * gout26[0] + 2 * gout26[1] + 4 * gout26[2];
+    Ciphertext gin47 = gout38[3] + 1 * ct_data88 + 2 * ct_data89 + 4 * ct_data90 + 1 * ct_data120 + 2 * ct_data121 + 4 * ct_data122;
     std::vector<Ciphertext> gout47 = ctx.eval_lut_amortized(&gin47, decomp);
 
     std::cerr << "\rFA48    ";
-    Ciphertext gin48 = gout42[3] + 1 * ct_data85 + 2 * ct_data86 + 4 * ct_data87 + 1 * ct_data117 + 2 * ct_data118 + 4 * ct_data119;
+    Ciphertext gin48 = gout41[3] + 1 * gout37[0] + 2 * gout37[1] + 4 * gout37[2] + 1 * gout23[0] + 2 * gout23[1] + 4 * gout23[2];
     std::vector<Ciphertext> gout48 = ctx.eval_lut_amortized(&gin48, decomp);
 
     std::cerr << "\rFA49    ";
-    Ciphertext gin49 = gout46[3] + 1 * gout25[0] + 2 * gout25[1] + 4 * gout25[2] + 1 * gout33[0] + 2 * gout33[1] + 4 * gout33[2];
+    Ciphertext gin49 = gout39[3] + 1 * ct_data216 + 2 * ct_data217 + 4 * ct_data218 + 1 * ct_data248 + 2 * ct_data249 + 4 * ct_data250;
     std::vector<Ciphertext> gout49 = ctx.eval_lut_amortized(&gin49, decomp);
 
     std::cerr << "\rFA50    ";
-    Ciphertext gin50 = gout48[3] + 1 * ct_data88 + 2 * ct_data89 + 4 * ct_data90 + 1 * ct_data120 + 2 * ct_data121 + 4 * ct_data122;
+    Ciphertext gin50 = gout43[3] + 1 * gout42[0] + 2 * gout42[1] + 4 * gout42[2] + 1 * gout35[0] + 2 * gout35[1] + 4 * gout35[2];
     std::vector<Ciphertext> gout50 = ctx.eval_lut_amortized(&gin50, decomp);
 
     std::cerr << "\rFA51    ";
-    Ciphertext gin51 = gout39[3] + 1 * ct_data222 + 1 * ct_data254;
+    Ciphertext gin51 = gout45[3] + 1 * ct_data152 + 2 * ct_data153 + 4 * ct_data154 + 1 * ct_data184 + 2 * ct_data185 + 4 * ct_data186;
     std::vector<Ciphertext> gout51 = ctx.eval_lut_amortized(&gin51, decomp);
 
     std::cerr << "\rFA52    ";
-    Ciphertext gin52 = gout44[3] + 1 * ct_data149 + 2 * ct_data150 + 4 * ct_data151 + 1 * ct_data181 + 2 * ct_data182 + 4 * ct_data183;
+    Ciphertext gin52 = gout44[3] + 1 * ct_data21 + 2 * ct_data22 + 4 * ct_data23 + 1 * ct_data53 + 2 * ct_data54 + 4 * ct_data55;
     std::vector<Ciphertext> gout52 = ctx.eval_lut_amortized(&gin52, decomp);
 
     std::cerr << "\rFA53    ";
-    Ciphertext gin53 = gout43[3] + 1 * ct_data21 + 2 * ct_data22 + 4 * ct_data23 + 1 * ct_data53 + 2 * ct_data54 + 4 * ct_data55;
+    Ciphertext gin53 = gout48[3] + 1 * gout44[0] + 2 * gout44[1] + 4 * gout44[2] + 1 * gout30[0] + 2 * gout30[1] + 4 * gout30[2];
     std::vector<Ciphertext> gout53 = ctx.eval_lut_amortized(&gin53, decomp);
 
     std::cerr << "\rFA54    ";
-    Ciphertext gin54 = gout50[3] + 1 * ct_data91 + 2 * ct_data92 + 4 * ct_data93 + 1 * ct_data123 + 2 * ct_data124 + 4 * ct_data125;
+    Ciphertext gin54 = gout49[3] + 1 * ct_data219 + 2 * ct_data220 + 4 * ct_data221 + 1 * ct_data251 + 2 * ct_data252 + 4 * ct_data253;
     std::vector<Ciphertext> gout54 = ctx.eval_lut_amortized(&gin54, decomp);
 
     std::cerr << "\rFA55    ";
-    Ciphertext gin55 = gout45[3] + 1 * gout53[0] + 2 * gout53[1] + 4 * gout53[2] + 1 * gout48[0] + 2 * gout48[1] + 4 * gout48[2];
+    Ciphertext gin55 = gout47[3] + 1 * ct_data91 + 2 * ct_data92 + 4 * ct_data93 + 1 * ct_data123 + 2 * ct_data124 + 4 * ct_data125;
     std::vector<Ciphertext> gout55 = ctx.eval_lut_amortized(&gin55, decomp);
 
     std::cerr << "\rFA56    ";
-    Ciphertext gin56 = gout47[3] + 1 * gout52[0] + 2 * gout52[1] + 4 * gout52[2] + 1 * gout36[0] + 2 * gout36[1] + 4 * gout36[2];
+    Ciphertext gin56 = gout46[3] + 1 * gout48[0] + 2 * gout48[1] + 4 * gout48[2] + 1 * gout43[0] + 2 * gout43[1] + 4 * gout43[2];
     std::vector<Ciphertext> gout56 = ctx.eval_lut_amortized(&gin56, decomp);
 
     std::cerr << "\rFA57    ";
-    Ciphertext gin57 = gout53[3] + 1 * ct_data24 + 2 * ct_data25 + 4 * ct_data26 + 1 * ct_data56 + 2 * ct_data57 + 4 * ct_data58;
+    Ciphertext gin57 = gout54[3] + 1 * ct_data222 + 1 * ct_data254;
     std::vector<Ciphertext> gout57 = ctx.eval_lut_amortized(&gin57, decomp);
 
     std::cerr << "\rFA58    ";
-    Ciphertext gin58 = gout49[3] + 1 * gout28[0] + 2 * gout28[1] + 4 * gout28[2] + 1 * gout38[0] + 2 * gout38[1] + 4 * gout38[2];
+    Ciphertext gin58 = gout52[3] + 1 * ct_data24 + 2 * ct_data25 + 4 * ct_data26 + 1 * ct_data56 + 2 * ct_data57 + 4 * ct_data58;
     std::vector<Ciphertext> gout58 = ctx.eval_lut_amortized(&gin58, decomp);
 
     std::cerr << "\rFA59    ";
-    Ciphertext gin59 = gout54[3] + 1 * ct_data94 + 1 * ct_data126;
+    Ciphertext gin59 = gout50[3] + 1 * gout45[0] + 2 * gout45[1] + 4 * gout45[2] + 1 * gout39[0] + 2 * gout39[1] + 4 * gout39[2];
     std::vector<Ciphertext> gout59 = ctx.eval_lut_amortized(&gin59, decomp);
 
     std::cerr << "\rFA60    ";
-    Ciphertext gin60 = gout52[3] + 1 * ct_data152 + 2 * ct_data153 + 4 * ct_data154 + 1 * ct_data184 + 2 * ct_data185 + 4 * ct_data186;
+    Ciphertext gin60 = gout55[3] + 1 * ct_data94 + 1 * ct_data126;
     std::vector<Ciphertext> gout60 = ctx.eval_lut_amortized(&gin60, decomp);
 
     std::cerr << "\rFA61    ";
-    Ciphertext gin61 = gout55[3] + 1 * gout57[0] + 2 * gout57[1] + 4 * gout57[2] + 1 * gout50[0] + 2 * gout50[1] + 4 * gout50[2];
+    Ciphertext gin61 = gout59[3] + 1 * gout51[0] + 2 * gout51[1] + 4 * gout51[2] + 1 * gout49[0] + 2 * gout49[1] + 4 * gout49[2];
     std::vector<Ciphertext> gout61 = ctx.eval_lut_amortized(&gin61, decomp);
 
     std::cerr << "\rFA62    ";
-    Ciphertext gin62 = gout60[3] + 1 * ct_data155 + 2 * ct_data156 + 4 * ct_data157 + 1 * ct_data187 + 2 * ct_data188 + 4 * ct_data189;
+    Ciphertext gin62 = gout51[3] + 1 * ct_data155 + 2 * ct_data156 + 4 * ct_data157 + 1 * ct_data187 + 2 * ct_data188 + 4 * ct_data189;
     std::vector<Ciphertext> gout62 = ctx.eval_lut_amortized(&gin62, decomp);
 
     std::cerr << "\rFA63    ";
-    Ciphertext gin63 = gout58[3] + 1 * gout40[0] + 2 * gout40[1] + 4 * gout40[2] + 1 * gout41[0] + 2 * gout41[1] + 4 * gout41[2];
+    Ciphertext gin63 = gout53[3] + 1 * gout52[0] + 2 * gout52[1] + 4 * gout52[2] + 1 * gout38[0] + 2 * gout38[1] + 4 * gout38[2];
     std::vector<Ciphertext> gout63 = ctx.eval_lut_amortized(&gin63, decomp);
 
     std::cerr << "\rFA64    ";
-    Ciphertext gin64 = gout63[3] + 1 * gout45[0] + 2 * gout45[1] + 4 * gout45[2] + 1 * gout47[0] + 2 * gout47[1] + 4 * gout47[2];
+    Ciphertext gin64 = gout56[3] + 1 * gout53[0] + 2 * gout53[1] + 4 * gout53[2] + 1 * gout50[0] + 2 * gout50[1] + 4 * gout50[2];
     std::vector<Ciphertext> gout64 = ctx.eval_lut_amortized(&gin64, decomp);
 
     std::cerr << "\rFA65    ";
-    Ciphertext gin65 = gout62[3] + 1 * ct_data158 + 1 * ct_data190;
+    Ciphertext gin65 = gout58[3] + 1 * ct_data27 + 2 * ct_data28 + 4 * ct_data29 + 1 * ct_data59 + 2 * ct_data60 + 4 * ct_data61;
     std::vector<Ciphertext> gout65 = ctx.eval_lut_amortized(&gin65, decomp);
 
     std::cerr << "\rFA66    ";
-    Ciphertext gin66 = gout56[3] + 1 * gout60[0] + 2 * gout60[1] + 4 * gout60[2] + 1 * gout37[0] + 2 * gout37[1] + 4 * gout37[2];
+    Ciphertext gin66 = gout63[3] + 1 * gout58[0] + 2 * gout58[1] + 4 * gout58[2] + 1 * gout47[0] + 2 * gout47[1] + 4 * gout47[2];
     std::vector<Ciphertext> gout66 = ctx.eval_lut_amortized(&gin66, decomp);
 
     std::cerr << "\rFA67    ";
-    Ciphertext gin67 = gout66[3] + 1 * gout62[0] + 2 * gout62[1] + 4 * gout62[2] + 1 * gout39[0] + 2 * gout39[1] + 4 * gout39[2];
+    Ciphertext gin67 = gout66[3] + 1 * gout65[0] + 2 * gout65[1] + 4 * gout65[2] + 1 * gout55[0] + 2 * gout55[1] + 4 * gout55[2];
     std::vector<Ciphertext> gout67 = ctx.eval_lut_amortized(&gin67, decomp);
 
     std::cerr << "\rFA68    ";
-    Ciphertext gin68 = gout67[3] + 1 * gout65[0] + 1 * gout51[0];
+    Ciphertext gin68 = gout61[3] + 1 * gout62[0] + 2 * gout62[1] + 4 * gout62[2] + 1 * gout54[0] + 2 * gout54[1] + 4 * gout54[2];
     std::vector<Ciphertext> gout68 = ctx.eval_lut_amortized(&gin68, decomp);
 
     std::cerr << "\rFA69    ";
-    Ciphertext gin69 = gout57[3] + 1 * ct_data27 + 2 * ct_data28 + 4 * ct_data29 + 1 * ct_data59 + 2 * ct_data60 + 4 * ct_data61;
+    Ciphertext gin69 = gout64[3] + 1 * gout63[0] + 2 * gout63[1] + 4 * gout63[2] + 1 * gout59[0] + 2 * gout59[1] + 4 * gout59[2];
     std::vector<Ciphertext> gout69 = ctx.eval_lut_amortized(&gin69, decomp);
 
     std::cerr << "\rFA70    ";
-    Ciphertext gin70 = gout64[3] + 1 * gout55[0] + 2 * gout55[1] + 4 * gout55[2] + 1 * gout56[0] + 2 * gout56[1] + 4 * gout56[2];
+    Ciphertext gin70 = gout62[3] + 1 * ct_data158 + 1 * ct_data190;
     std::vector<Ciphertext> gout70 = ctx.eval_lut_amortized(&gin70, decomp);
 
     std::cerr << "\rFA71    ";
-    Ciphertext gin71 = gout69[3] + 1 * ct_data30 + 1 * ct_data62;
+    Ciphertext gin71 = gout65[3] + 1 * ct_data30 + 1 * ct_data62;
     std::vector<Ciphertext> gout71 = ctx.eval_lut_amortized(&gin71, decomp);
 
     std::cerr << "\rFA72    ";
-    Ciphertext gin72 = gout61[3] + 1 * gout69[0] + 2 * gout69[1] + 4 * gout69[2] + 1 * gout54[0] + 2 * gout54[1] + 4 * gout54[2];
+    Ciphertext gin72 = gout69[3] + 1 * gout66[0] + 2 * gout66[1] + 4 * gout66[2] + 1 * gout61[0] + 2 * gout61[1] + 4 * gout61[2];
     std::vector<Ciphertext> gout72 = ctx.eval_lut_amortized(&gin72, decomp);
 
     std::cerr << "\rFA73    ";
-    Ciphertext gin73 = gout70[3] + 1 * gout61[0] + 2 * gout61[1] + 4 * gout61[2] + 1 * gout66[0] + 2 * gout66[1] + 4 * gout66[2];
+    Ciphertext gin73 = gout67[3] + 1 * gout71[0] + 1 * gout60[0];
     std::vector<Ciphertext> gout73 = ctx.eval_lut_amortized(&gin73, decomp);
 
     std::cerr << "\rFA74    ";
-    Ciphertext gin74 = gout72[3] + 1 * gout71[0] + 1 * gout59[0];
+    Ciphertext gin74 = gout68[3] + 1 * gout70[0] + 1 * gout57[0];
     std::vector<Ciphertext> gout74 = ctx.eval_lut_amortized(&gin74, decomp);
 
     std::cerr << "\rFA75    ";
-    Ciphertext gin75 = gout73[3] + 1 * gout72[0] + 2 * gout72[1] + 4 * gout72[2] + 1 * gout67[0] + 2 * gout67[1] + 4 * gout67[2];
+    Ciphertext gin75 = gout72[3] + 1 * gout67[0] + 2 * gout67[1] + 4 * gout67[2] + 1 * gout68[0] + 2 * gout68[1] + 4 * gout68[2];
     std::vector<Ciphertext> gout75 = ctx.eval_lut_amortized(&gin75, decomp);
 
     std::cerr << "\rFA76    ";
-    Ciphertext gin76 = gout75[3] + 1 * gout74[0] + 1 * gout68[0];
+    Ciphertext gin76 = gout75[3] + 1 * gout73[0] + 1 * gout74[0];
     std::vector<Ciphertext> gout76 = ctx.eval_lut_amortized(&gin76, decomp);
 
     std::cerr << "\r          \r";
     std::vector<long> test_out;
     test_out.push_back(0); /* out0 */
-    test_out.push_back(ctx.decrypt(&gout16[0])); /* out1 */
-    test_out.push_back(ctx.decrypt(&gout16[1])); /* out2 */
-    test_out.push_back(ctx.decrypt(&gout16[2])); /* out3 */
-    test_out.push_back(ctx.decrypt(&gout35[0])); /* out4 */
-    test_out.push_back(ctx.decrypt(&gout35[1])); /* out5 */
-    test_out.push_back(ctx.decrypt(&gout35[2])); /* out6 */
-    test_out.push_back(ctx.decrypt(&gout46[0])); /* out7 */
-    test_out.push_back(ctx.decrypt(&gout46[1])); /* out8 */
-    test_out.push_back(ctx.decrypt(&gout46[2])); /* out9 */
-    test_out.push_back(ctx.decrypt(&gout49[0])); /* out10 */
-    test_out.push_back(ctx.decrypt(&gout49[1])); /* out11 */
-    test_out.push_back(ctx.decrypt(&gout49[2])); /* out12 */
-    test_out.push_back(ctx.decrypt(&gout58[0])); /* out13 */
-    test_out.push_back(ctx.decrypt(&gout58[1])); /* out14 */
-    test_out.push_back(ctx.decrypt(&gout58[2])); /* out15 */
-    test_out.push_back(ctx.decrypt(&gout63[0])); /* out16 */
-    test_out.push_back(ctx.decrypt(&gout63[1])); /* out17 */
-    test_out.push_back(ctx.decrypt(&gout63[2])); /* out18 */
+    test_out.push_back(ctx.decrypt(&gout17[0])); /* out1 */
+    test_out.push_back(ctx.decrypt(&gout17[1])); /* out2 */
+    test_out.push_back(ctx.decrypt(&gout17[2])); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout25[0])); /* out4 */
+    test_out.push_back(ctx.decrypt(&gout25[1])); /* out5 */
+    test_out.push_back(ctx.decrypt(&gout25[2])); /* out6 */
+    test_out.push_back(ctx.decrypt(&gout36[0])); /* out7 */
+    test_out.push_back(ctx.decrypt(&gout36[1])); /* out8 */
+    test_out.push_back(ctx.decrypt(&gout36[2])); /* out9 */
+    test_out.push_back(ctx.decrypt(&gout40[0])); /* out10 */
+    test_out.push_back(ctx.decrypt(&gout40[1])); /* out11 */
+    test_out.push_back(ctx.decrypt(&gout40[2])); /* out12 */
+    test_out.push_back(ctx.decrypt(&gout46[0])); /* out13 */
+    test_out.push_back(ctx.decrypt(&gout46[1])); /* out14 */
+    test_out.push_back(ctx.decrypt(&gout46[2])); /* out15 */
+    test_out.push_back(ctx.decrypt(&gout56[0])); /* out16 */
+    test_out.push_back(ctx.decrypt(&gout56[1])); /* out17 */
+    test_out.push_back(ctx.decrypt(&gout56[2])); /* out18 */
     test_out.push_back(ctx.decrypt(&gout64[0])); /* out19 */
     test_out.push_back(ctx.decrypt(&gout64[1])); /* out20 */
     test_out.push_back(ctx.decrypt(&gout64[2])); /* out21 */
-    test_out.push_back(ctx.decrypt(&gout70[0])); /* out22 */
-    test_out.push_back(ctx.decrypt(&gout70[1])); /* out23 */
-    test_out.push_back(ctx.decrypt(&gout70[2])); /* out24 */
-    test_out.push_back(ctx.decrypt(&gout73[0])); /* out25 */
-    test_out.push_back(ctx.decrypt(&gout73[1])); /* out26 */
-    test_out.push_back(ctx.decrypt(&gout73[2])); /* out27 */
+    test_out.push_back(ctx.decrypt(&gout69[0])); /* out22 */
+    test_out.push_back(ctx.decrypt(&gout69[1])); /* out23 */
+    test_out.push_back(ctx.decrypt(&gout69[2])); /* out24 */
+    test_out.push_back(ctx.decrypt(&gout72[0])); /* out25 */
+    test_out.push_back(ctx.decrypt(&gout72[1])); /* out26 */
+    test_out.push_back(ctx.decrypt(&gout72[2])); /* out27 */
     test_out.push_back(ctx.decrypt(&gout75[0])); /* out28 */
     test_out.push_back(ctx.decrypt(&gout75[1])); /* out29 */
     test_out.push_back(ctx.decrypt(&gout75[2])); /* out30 */
