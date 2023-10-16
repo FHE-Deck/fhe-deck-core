@@ -17,7 +17,7 @@ class Sampler{
         double expectation;
         double stddev;
 
-        // TODO: Need to do some order here (neverhteless as sampling is done now its quite terible because I instantiate a new object in each function)
+        // TODO: Need to do some order here (neverhteless as sampling is done now its quite terrible because I instantiate a new object in each function)
         long n_binomial;
         double p_binomial;
         std::normal_distribution<double> normal_dist;

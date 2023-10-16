@@ -98,8 +98,6 @@ LWECT LWESK::encrypt_ct(long m){
 
 
 
-
-
 void LWESK::encrypt(long *ct, long m){    
     ct[0] = (long)round(rand.gaussian(0, param->stddev)) + (long)m;  
     for(int i=1; i < param->n+1; ++i){   
@@ -111,12 +109,14 @@ void LWESK::encrypt(long *ct, long m){
 
 
  long* LWESK::scale_and_encrypt(long m, int t){
+    // TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->Q/t;
     long m_scaled =  (long)round((double)m*scale); 
     return LWESK::encrypt(m_scaled);
  }
  
  void LWESK::scale_and_encrypt(long* ct, long m, int t){ 
+    // TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->Q/t;
     long m_scaled =  (long)round((double)m*scale); 
     encrypt(ct, m_scaled); 
@@ -140,6 +140,7 @@ long LWESK::error(long *ct,  long m){
 
 long LWESK::decrypt(long *ct, int t){ 
     long d_phase = LWESK::phase(ct);  
+    // TODO Potential problems when Q is too big. In this case should be long double
     long out = round(((double)t/param->Q) * d_phase); 
     return Utils::integer_mod_form(out, t);
 }

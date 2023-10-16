@@ -147,6 +147,17 @@ long Utils::abs(long x){
 }
 
 
+int Utils::number_of_bits(long x){ 
+    long power_of_two = 2;
+    for(int m = 1; m < 63; ++m){
+        if(x < power_of_two){
+            return m;
+        }
+        power_of_two = power_of_two << 1;
+    } 
+    return 64;
+}
+
 long Utils::mod_inv(long in, long modulus){
     return NTL::InvMod(in, modulus);
 }

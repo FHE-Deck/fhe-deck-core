@@ -51,6 +51,9 @@ class Utils{
 
         static long abs(long x);
 
+        // Returns the smallest m s.t. 2**m < x. I cannot rely on the log function from the math library due to precision
+        static int number_of_bits(long x);
+
         // Computes (z**2)/4 mod modulus
         // Its usefull from computing x * y = (x+y)**2/4 - (x-y)**2/4 mod modulus
         // TODO Should be in a class for building rotation polynomials

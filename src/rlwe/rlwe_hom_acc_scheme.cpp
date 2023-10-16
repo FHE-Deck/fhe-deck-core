@@ -35,7 +35,8 @@ TFHEPublicKey::TFHEPublicKey(const TFHEPublicKey &other){
  
 
     // Sets other variables
-    this->lwe_par_tiny = lwe_par->modulus_switch(rlwe_gadget_param.rlwe_param->N);
+    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+    this->lwe_par_tiny = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
     this->rand_masking = Sampler(0.0, stddev_masking);
     this->extract_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q, lwe_par->key_d, lwe_par->stddev));  
     this->temp_ct = RLWECT(rlwe_gadget_param.rlwe_param);
@@ -55,6 +56,10 @@ TFHEPublicKey::TFHEPublicKey(const TFHEPublicKey &other){
     copy_blind_rotation_key(other.bk);
     copy_key_switching_key(other.ksk);
     copy_masking_key(other.masking_key);
+
+    // Set the LWE modulus switcher 
+    this->ms_from_gadget_to_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par);
+    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par_tiny);
     is_init = true;
 }
 
@@ -71,7 +76,8 @@ TFHEPublicKey& TFHEPublicKey::operator=(const TFHEPublicKey other){
  
 
     // Sets other variables
-    this->lwe_par_tiny = lwe_par->modulus_switch(rlwe_gadget_param.rlwe_param->N);
+    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+    this->lwe_par_tiny = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
     this->rand_masking = Sampler(0.0, stddev_masking);
     this->extract_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q, lwe_par->key_d, lwe_par->stddev));  
     this->temp_ct = RLWECT(rlwe_gadget_param.rlwe_param);
@@ -91,6 +97,10 @@ TFHEPublicKey& TFHEPublicKey::operator=(const TFHEPublicKey other){
     copy_blind_rotation_key(other.bk);
     copy_key_switching_key(other.ksk);
     copy_masking_key(other.masking_key);
+ 
+    // Set the LWE modulus switcher 
+    this->ms_from_gadget_to_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par);
+    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par_tiny);
     is_init = true;
     return *this;
 }
@@ -115,7 +125,8 @@ TFHEPublicKey::TFHEPublicKey(RLWEGadgetParam rlwe_gadget_par,
     this->default_encoding = default_encoding;
      
     // Sets other variables 
-    this->lwe_par_tiny = lwe_par->modulus_switch(rlwe_gadget_par.rlwe_param->N);
+    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+    this->lwe_par_tiny = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
     this->rand_masking = Sampler(0.0, stddev_masking);
     this->extract_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(rlwe_gadget_par.rlwe_param->N, rlwe_gadget_par.rlwe_param->Q, lwe_par->key_d, lwe_par->stddev));  
     this->temp_ct = RLWECT(rlwe_gadget_par.rlwe_param);
@@ -138,6 +149,11 @@ TFHEPublicKey::TFHEPublicKey(RLWEGadgetParam rlwe_gadget_par,
     //copy_blind_rotation_key(bk);
     this->ksk = ksk;  
     this->masking_key = masking_key;
+
+    // Set the LWE modulus swicher  
+    this->ms_from_gadget_to_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par);
+    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->lwe_gadget_param.lwe_param, this->lwe_par_tiny);
+     
     is_init = true;
 }
 
@@ -162,6 +178,9 @@ void TFHEPublicKey::set_key_switch_type(){
         ks_type = standard_key_switch;
     }
 }
+
+
+
 
 void TFHEPublicKey::init_binary_key(){
         sizeof_u = 1;
@@ -220,6 +239,7 @@ void TFHEPublicKey::blind_rotate(RLWECT *out, long* lwe_ct_in, long *acc_msg, Ga
         out->a[i] = 0;
     }   
     Utils::negacyclic_rotate_poly(out->b, acc_msg, rlwe_gadget_param.rlwe_param->N, lwe_ct_in[0]);   
+    Utils::array_mod_form(out->b, out->b, rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q);
       
     if(key_d==binary){    
         for(int i = 0; i < lwe_par->n; ++i){    
@@ -336,11 +356,13 @@ void TFHEPublicKey::bootstrap(long *lwe_ct_out, long *acc_in, long *lwe_ct_in, G
         lwe_to_lwe_key_switch_lazy(lwe_c, lwe_ct_in);  
     }else if(ks_type == partial_lazy_key_switch){
         lwe_to_lwe_key_switch_partial_lazy(lwe_c, lwe_ct_in);  
-    }else{
+    }else{ 
         lwe_to_lwe_key_switch(lwe_c, lwe_ct_in);  
     }
     // 2) Mod switch to \ZZ_2N^{n+1} 
-    lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    //lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    ms_from_gadget_to_par.switch_modulus(lwe_c, lwe_c);
+ 
     // 3) Blind rotate  
     blind_rotate(&out_ct, lwe_c, acc_in, mode);  
     // 4) Sample Extract  
@@ -379,22 +401,23 @@ void TFHEPublicKey::functional_bootstrap(long *lwe_ct_out, long *acc_in, long *l
     }else{
         lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in);  
     }   
-    
+    //std::cout << "functional_bootstrap: " << " lwe_par_tiny->Q: " << lwe_par_tiny->Q << std::endl;
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_param.lwe_param->switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
+    //ms_from_gadget_to_tiny_par.switch_modulus(lwe_c_N, lwe_c_N);
 
     // Shifting to have the ``payload'' withing (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
-    lwe_c[0] = lwe_c_N[0] + round((double)lwe_par_tiny.Q/(2 *t)); 
+    lwe_c[0] = lwe_c_N[0] + round((double)lwe_par_tiny->Q/(2 *t)); 
  
     // In case modulus reduction happens here, we need to flip the extracted MSB
     bool modulus_reduction_event = false;
-    if(lwe_c[0] >= lwe_par_tiny.Q){  
-        lwe_c[0] = lwe_c[0] % lwe_par_tiny.Q; 
+    if(lwe_c[0] >= lwe_par_tiny->Q){  
+        lwe_c[0] = lwe_c[0] % lwe_par_tiny->Q; 
         modulus_reduction_event = true;
     }
     // Copy  
-    for(int i = 1; i < lwe_par_tiny.n+1; ++i){
+    for(int i = 1; i < lwe_par_tiny->n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
   
@@ -415,6 +438,7 @@ void TFHEPublicKey::functional_bootstrap(long *lwe_ct_out, long *acc_in, long *l
     
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
     lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    //ms_from_gadget_to_par.switch_modulus(lwe_c, lwe_c);
 
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
     for(int i = 0; i < lwe_par->n+1; ++i){
@@ -457,7 +481,8 @@ std::vector<LWECT> TFHEPublicKey::bootstrap(std::vector<RotationPoly> acc_in_vec
         lwe_to_lwe_key_switch(lwe_c, lwe_ct_in);  
     }
     // 2) Mod switch to \ZZ_2N^{n+1} 
-    lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    //lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    ms_from_gadget_to_par.switch_modulus(lwe_c, lwe_c);
     // 3) Blind rotate  
     
     //acc_one[1] = (long)round((double)rlwe_gadget_par.param.Q/(double)t); 
@@ -523,20 +548,21 @@ std::vector<LWECT> TFHEPublicKey::functional_bootstrap(std::vector<RotationPoly>
     }   
   
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
-    lwe_gadget_param.lwe_param->switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
+    //lwe_gadget_param.lwe_param->switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny); 
+    ms_from_gadget_to_tiny_par.switch_modulus(lwe_c_N, lwe_c_N);
 
     // Shifting to have the ``payload'' withing (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
-    lwe_c[0] = lwe_c_N[0] + round((double)lwe_par_tiny.Q/(2 * encoding.ticks)); 
+    lwe_c[0] = lwe_c_N[0] + round((double)lwe_par_tiny->Q/(2 * encoding.ticks)); 
  
     // In case modulus reduction happens here, we need to flip the extracted MSB
     bool modulus_reduction_event = false;
-    if(lwe_c[0] >= lwe_par_tiny.Q){  
-        lwe_c[0] = lwe_c[0] % lwe_par_tiny.Q; 
+    if(lwe_c[0] >= lwe_par_tiny->Q){  
+        lwe_c[0] = lwe_c[0] % lwe_par_tiny->Q; 
         modulus_reduction_event = true;
     }
     // Copy  
-    for(int i = 1; i < lwe_par_tiny.n+1; ++i){
+    for(int i = 1; i < lwe_par_tiny->n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)  
@@ -555,7 +581,8 @@ std::vector<LWECT> TFHEPublicKey::functional_bootstrap(std::vector<RotationPoly>
     }   
     
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!
-    lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    //lwe_gadget_param.lwe_param->switch_modulus(lwe_c, lwe_c, lwe_par);  
+    ms_from_gadget_to_par.switch_modulus(lwe_c, lwe_c);
 
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
     for(int i = 0; i < lwe_par->n+1; ++i){

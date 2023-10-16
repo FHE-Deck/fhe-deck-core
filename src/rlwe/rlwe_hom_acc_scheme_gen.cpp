@@ -20,9 +20,7 @@ TFHESecretKey::TFHESecretKey(RLWEGadgetParam rlwe_gadget_par, LWEGadgetParam lwe
     LWESK g_lwe = LWESK(lwe_gadget_par.lwe_param);
     this->lwe_gadget = LWEGadgetSK(lwe_gadget_par, g_lwe); 
     long q = rlwe.param->N * 2; 
-    this->lwe = lwe_gadget.lwe.modulus_switch(q);    
-    // Another LWE for the extracted  
-    //LWEParam extract_lwe_par = LWEParam(rlwe.param->N, rlwe.param->Q, rlwe_gadget_par.rlwe_param->key_type, rlwe_gadget_par.rlwe_param->stddev);
+    this->lwe = lwe_gadget.lwe.modulus_switch(q);     
     long* extract_key = extract_rlwe_key();
     extract_lwe = LWESK(std::shared_ptr<LWEParam>(new LWEParam(rlwe.param->N, rlwe.param->Q, rlwe_gadget_par.rlwe_param->key_type, rlwe_gadget_par.rlwe_param->stddev)), extract_key); 
  
@@ -76,7 +74,7 @@ TFHESecretKey& TFHESecretKey::operator=(const TFHESecretKey other){
 }
 
 
-std::shared_ptr<TFHEPublicKey> TFHESecretKey::get_public_param(){    
+std::shared_ptr<TFHEPublicKey> TFHESecretKey::get_public_param(){     
     // The key switching key
     long ***ksk = key_switching_key_gen();   
     // Masking Key Gen
@@ -158,12 +156,14 @@ long** TFHESecretKey::masking_key_gen(){
     
 
 RLWEGadgetCT* TFHESecretKey::blind_rotation_key_gen(){  
+    
     long *ext_key_mono = rlwe_gadget.gadget_param.rlwe_param->init_zero_poly(); 
     RLWEGadgetCT* bk = new RLWEGadgetCT[sizeof_ext_s];    
     for(int i = 0; i < sizeof_ext_s; ++i){   
         ext_key_mono[0] = ext_s[i];    
         bk[i] = rlwe_gadget.gadget_encrypt(ext_key_mono); 
     }   
+     
     delete[] ext_key_mono; 
     return bk;
 }
@@ -191,8 +191,6 @@ TFHEKeyGenerator::TFHEKeyGenerator(TFHENamedParams name){
         init_tfhe_11_B();
     } else if(name == tfhe_11_flood){
         init_tfhe_11_flood();
-    } else if(name == tfhe_small_test){
-        init_tfhe_small_test();
     } else if(name == tfhe_11_NTT){
         init_tfhe_11_NTT();
     }else if(name == tfhe_11_NTT_flood){
@@ -217,30 +215,7 @@ TFHESecretKey TFHEKeyGenerator::generate_secret_key(){
     return TFHESecretKey(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding);
 }
  
-
-void TFHEKeyGenerator::init_tfhe_small_test(){
-    // TODO: For now I just put some parameters for testing
-    int N = 32;
-    // 2**13
-    long Q = 4096;
-    double rlwe_stddev = 0;
-    int rlwe_basis = 2;
-    double stddev_simul = rlwe_basis;
-    std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft));
-    Gadget deter_gadget = Gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
-    Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
-    
-    int n = 10;
-    int lwe_basis = 2;
-    double lwe_stddev = 0;
-    //LWEParam lwe_par(n, Q, binary, lwe_stddev);
-    lwe_gadget_par = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev)), lwe_basis); 
-
-    default_encoding = PlaintextEncoding(full_domain, 4, Q);
-} 
-
-
+ 
 
 
 
@@ -382,7 +357,8 @@ void TFHEKeyGenerator::init_tfhe_11_NTT_amortized(){
     // 2**11
     int N = 2048; 
     // (2**51 - 45055) % 2*(2**11) = 1 and prime (NTT Friendly),   
-    long Q = 2251799813640193;
+    long Q = 2251799813640193;  
+
     double rlwe_stddev = 3.2; 
     // 2**9
     int rlwe_basis = 512;  
@@ -418,9 +394,19 @@ void TFHEKeyGenerator::init_tfhe_12_NTT_amortized(){
     // 2**12
     int N = 4096; 
     // (2**51 - 131071) % 2*(2**12) = 1 and prime (NTT Friendly),   
-    //long Q = 2251799813554177;
+    long Q = 2251799813554177;
+    // 52-bit modulus
+    //long Q = 4503599627149313;
+    // 53-bit modulus
+    //long Q = 9007199254429697;
+    // 54-bit modulus
+    //long Q =  18014398509309953;
+
+    // The 50 bits works. Ofr some reason 51 bits breaks down. 
     // 2**50 - 16383
-    long Q = 1125899906826241;
+    //long Q = 1125899906826241;
+
+
     double rlwe_stddev = 3.2; 
     // 2**8
     int rlwe_basis = 256;  
@@ -432,22 +418,17 @@ void TFHEKeyGenerator::init_tfhe_12_NTT_amortized(){
     // stddev_simul approx  2**(14)
     stddev_masking = 16384;
 
-    std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt));
-    std::cout << "Generate gadgets" << std::endl;
-    Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    std::cout << "Rand Gadget" << std::endl;
-    Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    std::cout << "RLWEGadgetParam" << std::endl;
+    std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt)); 
+    Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget); 
+    Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
     rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
-    sk_arithmetic = hexl_ntt;
-    std::cout << "rlwe_gadget_par: " << rlwe_gadget_par.ell_max << std::endl;
+    sk_arithmetic = hexl_ntt; 
 
     
-
-    std::cout << "Generate The LWE stuff" << std::endl;
+ 
     int n = 950;
     // 2**9
-    int lwe_basis = 512;
+    int lwe_basis = 512; 
     // 2**(23) 
     double lwe_stddev = 262144;
     //LWEParam lwe_par(n, Q, binary, lwe_stddev);

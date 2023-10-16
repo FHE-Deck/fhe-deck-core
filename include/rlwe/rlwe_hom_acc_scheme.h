@@ -23,11 +23,14 @@ class TFHEPublicKey{
     // The blind rotation key
     RLWEGadgetCT *bk; 
     
+
+
     // The key switching key
     long ***ksk;
     LWEGadgetParam lwe_gadget_param;
-
     KeySwitchType ks_type;
+
+
 
     // Masking size
     int masking_size;
@@ -36,11 +39,13 @@ class TFHEPublicKey{
     double stddev_masking;
     Sampler rand_masking;
 
+
+
     // LWE after modulus switching to 2*N;
     std::shared_ptr<LWEParam> lwe_par;
 
     // LWE after modulus switching to N
-    LWEParam lwe_par_tiny;
+    std::shared_ptr<LWEParam> lwe_par_tiny;
 
     // Special Accumulator for computing the MSB in Full Domain Functional Bootstrapping
     long* acc_msb;
@@ -50,11 +55,15 @@ class TFHEPublicKey{
     // LWE after extracting from RLWE. So the modulus is the same as the RLWE modulus.
     std::shared_ptr<LWEParam> extract_lwe_par;
 
+
     // Parameteres of the encoding of the LWE key in the blind rotation. These are paramters about the secret key of lwe_par (and lwe_g_par as lwe_par is a modulus switch of lwe_g_par)
     KeyDistribution key_d;
     int sizeof_ext_s;
     long *u;
     int sizeof_u;
+
+    LWEModSwitcher ms_from_gadget_to_par;
+    LWEModSwitcher ms_from_gadget_to_tiny_par;
 
     PlaintextEncoding default_encoding;
 
@@ -72,14 +81,17 @@ class TFHEPublicKey{
 
     void extract_lwe_from_rlwe(long *lwe_ct_out, const RLWECT *rlwe_ct_in);
 
+
+    // KS
     void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
-
+    // KS
     void lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in);
-
+    // KS
     void lwe_to_lwe_key_switch(long *lwe_ct_out, long *lwe_ct_in);
-
+    // KS
     void set_key_switch_type();
 
+ 
     void mask_ciphertext(long *lwe_ct_out);
 
     LWECT encrypt(long message);
@@ -102,12 +114,15 @@ class TFHEPublicKey{
     template <class Archive>
     void save( Archive & ar ) const
     {    
+        // Serialization of the parameters
         ar(rlwe_gadget_param, lwe_gadget_param, lwe_par, masking_size, stddev_masking, default_encoding);  
         
+        // Serialization of the Blind Rotation Key
         for(int i = 0; i < this->sizeof_ext_s; ++i){ 
             ar(this->bk[i]);
         } 
  
+        // Serialization Of the Key Switching Key
         for(int i = 0; i < this->rlwe_gadget_param.rlwe_param->N; ++i){  
             for(int j = 0; j < this->lwe_gadget_param.ell; ++j){  
                 for(int k = 0; k < this->lwe_gadget_param.lwe_param->n+1; ++k){
@@ -115,12 +130,13 @@ class TFHEPublicKey{
                 }
             }
         }  
-  
+
+        // Serialization of the masking or public key
         for(int i = 0; i < masking_size; ++i){   
             for(int j = 0; j < extract_lwe_par->n+1; ++j)
             {
                 ar(this->masking_key[i][j]);
-            } 
+            }   
         }  
     }
         
@@ -129,7 +145,8 @@ class TFHEPublicKey{
     {    
         ar(rlwe_gadget_param, lwe_gadget_param, lwe_par, masking_size, stddev_masking, default_encoding);  
 
-        this->lwe_par_tiny = lwe_par->modulus_switch(rlwe_gadget_param.rlwe_param->N); 
+        LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+        this->lwe_par_tiny = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
         this->rand_masking = Sampler(0.0, stddev_masking); 
         extract_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q, lwe_par->key_d, lwe_par->stddev)); 
         this->temp_ct = RLWECT(rlwe_gadget_param.rlwe_param);

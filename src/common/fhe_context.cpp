@@ -186,16 +186,7 @@ RotationPoly FHEContext::genrate_lut(long (*f)(long message, long plaintext_spac
     if(is_ntrunium){
         throw std::logic_error("NTRUnium not supported yet!");
     }else if(is_tfhe){    
-        if(encoding.type == full_domain){ 
-            return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-        }else if(encoding.type ==  partial_domain){ 
-            return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-        }else if(encoding.type == signed_limied_short_int){
-            return FHEContext::generate_rotation_poly_for_signed_limied_short_int_encoding(f);
-
-        }else{
-            throw std::logic_error("Non existend encoding type!");
-        } 
+        return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
     }else{ 
         throw std::logic_error("Non existend scheme type!");
     }  
@@ -218,15 +209,7 @@ RotationPoly FHEContext::genrate_lut(long (*f)(long message), PlaintextEncoding 
     if(is_ntrunium){
         throw std::logic_error("NTRUnium not supported yet!");
     }else if(is_tfhe){   
-        if(encoding.type == full_domain){ 
-            return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-        }else if(encoding.type ==  partial_domain){ 
-            return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-        }else if(encoding.type == signed_limied_short_int){
-            return FHEContext::generate_rotation_poly_for_signed_limied_short_int_encoding(f); 
-        }else{
-            throw std::logic_error("Non existend encoding type!");
-        } 
+        return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
     }else{
         throw std::logic_error("Non existend scheme type!");
     }  
@@ -255,9 +238,9 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, RotationPoly lut, GadgetMulMo
         }else if(ct_in->encoding.type == partial_domain){ 
             tfhe_boot_pk->bootstrap(ct_out.ct,  lut.lookup_polynomial, ct_in->lwe_c->ct, deter);
         }else if(ct_in->encoding.type == signed_limied_short_int){   
-            LWECT c_in(ct_in->lwe_c); 
-            c_in = c_in + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space);
-            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.lookup_polynomial, c_in.ct, deter); 
+            LWECT c_in_copy(ct_in->lwe_c);  
+            c_in_copy = c_in_copy + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space); 
+            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.lookup_polynomial, c_in_copy.ct, deter);   
         } 
         else{
             throw std::logic_error("Non existend encoding type!");
@@ -353,54 +336,7 @@ Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext> ct_vec, std:
 }
 
 
-  
-
-RotationPoly FHEContext::generate_rotation_poly_for_signed_limied_short_int_encoding(long (*f)(long message)){
-    long full_t = default_encoding.plaintext_space * 4;
-    long delta_Q_t = (long)round((double)tfhe_boot_pk->rlwe_gadget_param.rlwe_param->Q/(double)full_t); 
-    long N = tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N;
-    long* lookup_polynomial = new long[N];
-    double scale = (double)full_t/(2*N);
-    long arg; 
-    for(int i = 0; i < N; ++i){  
-        // Compute  your function here 
-        arg = round(scale * i);
-        if(arg >= default_encoding.plaintext_space){ 
-            arg = f((arg % default_encoding.plaintext_space)); 
-        }else{ 
-            arg = default_encoding.plaintext_space - arg;
-            arg = f(-arg); 
-        }
-        lookup_polynomial[N-i-1] = Utils::integer_mod_form(-delta_Q_t *  arg, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->Q); 
-    } 
-    RotationPoly out(lookup_polynomial, N, default_encoding);
-    delete[] lookup_polynomial;
-    return out;
-}
-
- 
-RotationPoly FHEContext::generate_rotation_poly_for_signed_limied_short_int_encoding(long (*f)(long message, long plaintext_space)){
-    long full_t = default_encoding.plaintext_space * 4;
-    long delta_Q_t = (long)round((double)tfhe_boot_pk->rlwe_gadget_param.rlwe_param->Q/(double)full_t); 
-    long N = tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N;
-    long* lookup_polynomial = new long[N];
-    double scale = (double)full_t/(2*N);
-    long arg; 
-    for(int i = 0; i < N; ++i){  
-        // Compute  your function here 
-        if(arg >= default_encoding.plaintext_space){ 
-            arg = f((arg % default_encoding.plaintext_space), default_encoding.plaintext_space); 
-        }else{ 
-            arg = default_encoding.plaintext_space - arg;
-            arg = f(-arg, default_encoding.plaintext_space); 
-        }
-        lookup_polynomial[N-i-1] = Utils::integer_mod_form(-delta_Q_t *  arg, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->Q); 
-    } 
-    RotationPoly out(lookup_polynomial, N, default_encoding);
-    delete[] lookup_polynomial;
-    return out;
-}
- 
+   
 
 
 void FHEContext::send_secret_key(std::ofstream &os){

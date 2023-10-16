@@ -96,7 +96,7 @@ void Ciphertext::mul(long b){
 
 
 Ciphertext Ciphertext::operator+(long b){
-    if(is_lwe_ct){
+    if(is_lwe_ct){ 
         LWECT c = this->lwe_c->operator+(this->encoding.encode_message(b));
         return Ciphertext(c, this->encoding, this->context);
     }else{

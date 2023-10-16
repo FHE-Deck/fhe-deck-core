@@ -22,10 +22,15 @@ RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long N
     this->is_amortized_form = is_amortized_form;
     lookup_polynomial = new long[N]; 
     PlaintextEncoding input_encoding; 
-    if(output_encoding.type == full_domain){
+    if(output_encoding.type == full_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, N);
-    }else{
+    }else if(output_encoding.type == partial_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*N);
+    }else if(output_encoding.type == signed_limied_short_int){
+        // Actually I need to have some sort of special encoding here. 
+        input_encoding = PlaintextEncoding(signed_limied_short_int_bl, output_encoding.plaintext_space, 2*N);
+    }else{
+         throw std::logic_error("Non existend encoding type!");
     }
 
     long arg;
@@ -37,7 +42,7 @@ RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long N
     }
     while(i >= 0){ 
         arg = f(input_encoding.decode_message(i), input_encoding.plaintext_space); 
-        lookup_polynomial[N-i-1] = output_encoding.encode_message(-arg); 
+        lookup_polynomial[N-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
 }
@@ -50,26 +55,32 @@ RotationPoly::RotationPoly(long (*f)(long message), long N, PlaintextEncoding ou
     lookup_polynomial = new long[N];
      
     PlaintextEncoding input_encoding; 
-    if(output_encoding.type == full_domain){
+    if(output_encoding.type == full_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, N);
-    }else{
+    }else if(output_encoding.type == partial_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*N);
+    }else if(output_encoding.type == signed_limied_short_int){ 
+        input_encoding = PlaintextEncoding(signed_limied_short_int_bl, output_encoding.plaintext_space, 2*N);
     }
-
+ 
     long arg;
-    int i = N-1; 
-    while(input_encoding.decode_message(i) == 0){ 
-            arg = f(input_encoding.decode_message(i)) % input_encoding.plaintext_space;  
-            lookup_polynomial[N-i-1] = output_encoding.encode_message(arg); 
+    int i = N-1;  
+    long last_decoded = 0;
+    while(input_encoding.decode_message(i) == 0){  
+            arg = f(input_encoding.decode_message(i));  
+ 
+            lookup_polynomial[N-i-1] = output_encoding.encode_message(arg) ; 
             i--;
     }
-    while(i >= 0){ 
-        arg = f(input_encoding.decode_message(i)) % input_encoding.plaintext_space; 
-        lookup_polynomial[N-i-1] = output_encoding.encode_message(-arg); 
+    while(i >= 0){  
+        arg = f(input_encoding.decode_message(i));
+     
+        lookup_polynomial[N-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
 }
  
+
 RotationPoly::RotationPoly(long* lookup_polynomial, long N, PlaintextEncoding output_encoding, bool is_amortized_form){
     this->N = N; 
     this->output_encoding = output_encoding;
@@ -79,8 +90,7 @@ RotationPoly::RotationPoly(long* lookup_polynomial, long N, PlaintextEncoding ou
          this->lookup_polynomial[i] = lookup_polynomial[i];
     } 
 }
-
-
+ 
 void RotationPoly::encode(){
     if(is_encoded){
         return;

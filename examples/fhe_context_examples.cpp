@@ -131,6 +131,7 @@ void test_for_default_full_domain_encoding(){
     RotationPoly lut_identity = context.genrate_lut(id); 
  
     ct4 = context.eval_lut(&ct1, lut_identity);
+    std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl;
     assertm(context.decrypt(&ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
 
@@ -295,15 +296,16 @@ void test_for_signed_limied_short_int(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_B);
+    // NOTE: tfhe_11_NTT can still handle a plaintext space equal to 4, but if you test with tfhe_11_B teh test will fail
+    context.generate_context(tfhe_11_NTT);
     context.set_default_message_encoding_type(signed_limied_short_int);
-
-    std::cout << "plaintext_space: " << context.get_default_plaintext_space() << std::endl;
+     
 
     Ciphertext ct0 = context.encrypt(0);   
     Ciphertext ct1 = context.encrypt(1); 
     Ciphertext ct2 = context.encrypt(2);    
     Ciphertext ct3 = context.encrypt(3); 
+    
 
     Ciphertext mct1 = context.encrypt(-1); 
     Ciphertext mct2 = context.encrypt(-2);    
@@ -346,32 +348,67 @@ void test_for_signed_limied_short_int(){
     ct_add = ct3 + mct3;
     assertm(context.decrypt(&ct_add) == 0, "context.decrypt(&ct_add) == 0");
     std::cout << "Decrypt(ct_add = ct3 + mct3): OK"  << std::endl; 
+    ct_add = ct1 + mct2;
+    assertm(context.decrypt(&ct_add) == -1, "context.decrypt(&ct_add) == -1");
+    std::cout << "Decrypt(ct_add = ct1 + mct2): OK"  << std::endl; 
+    ct_add = ct2 + mct3;
+    assertm(context.decrypt(&ct_add) == -1, "context.decrypt(&ct_add) == -1");
+    std::cout << "Decrypt(ct_add = ct2 + mct3): OK"  << std::endl; 
+    ct_add = ct1 + mct3;
+    assertm(context.decrypt(&ct_add) == -2, "context.decrypt(&ct_add) == -1");
+    std::cout << "Decrypt(ct_add = ct1 + mct3): OK"  << std::endl; 
+    ct_add = ct3 + mct1;
+    assertm(context.decrypt(&ct_add) == 2, "context.decrypt(&ct_add) == 2");
+    std::cout << "Decrypt(ct_add = ct3 + mct1): OK"  << std::endl; 
 
+  
  
-    
     auto fun_identity = [](long m) -> long {
-        return m;
-    }; 
+        return m; 
+    };    
+   
+    RotationPoly lut_fun_identity = context.genrate_lut(fun_identity);  
  
- 
-    RotationPoly lut_fun_identity = context.genrate_lut(fun_identity); 
+   
     Ciphertext ct_id = context.eval_lut(&mct1, lut_fun_identity); 
-    std::cout << "context.decrypt(&mct1): " << context.decrypt(&mct1) << std::endl; 
-    std::cout << "context.decrypt(&ct_id): " << context.decrypt(&ct_id) << std::endl; 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
     assertm(context.decrypt(&ct_id) == -1, "context.eval_lut(&mct1, lut_fun_identity) == -1");
     std::cout << "context.eval_lut(&mct1, lut_fun_identity) == -1: OK"  << std::endl; 
 
     ct_id = context.eval_lut(&mct2, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
     assertm(context.decrypt(&ct_id) == -2, "context.eval_lut(&mct2, lut_fun_identity) == -2");
     std::cout << "context.eval_lut(&mct2, lut_fun_identity) == -2: OK"  << std::endl;  
 
     ct_id = context.eval_lut(&mct3, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
     assertm(context.decrypt(&ct_id) == -3, "context.eval_lut(&mct3, lut_fun_identity) == -3");
     std::cout << "context.eval_lut(&mct3, lut_fun_identity) == -3: OK"  << std::endl;  
 
- 
- 
- 
+    ct_id = context.eval_lut(&ct0, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
+    assertm(context.decrypt(&ct_id) == 0, "context.eval_lut(&ct0, lut_fun_identity) == 0");
+    std::cout << "context.eval_lut(&ct0, lut_fun_identity) == 0: OK"  << std::endl;  
+
+    ct_id = context.eval_lut(&ct1, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
+    assertm(context.decrypt(&ct_id) == 1, "context.eval_lut(&ct1, lut_fun_identity) == 1");
+    std::cout << "context.eval_lut(&ct1, lut_fun_identity) == 1: OK"  << std::endl;  
+
+    ct_id = context.eval_lut(&ct2, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
+    assertm(context.decrypt(&ct_id) == 2, "context.eval_lut(&ct2, lut_fun_identity) == 2");
+    std::cout << "context.eval_lut(&ct2, lut_fun_identity) == 2: OK"  << std::endl;  
+
+
+    ct_id = context.eval_lut(&ct3, lut_fun_identity); 
+    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
+    assertm(context.decrypt(&ct_id) == 3, "context.eval_lut(&ct3, lut_fun_identity) == 3");
+    std::cout << "context.eval_lut(&ct3, lut_fun_identity) == 3: OK"  << std::endl;  
+
+
+
+  
 
     auto fun_relu = [](long m) -> long {
         if(m >= 0){
@@ -415,7 +452,7 @@ void test_for_signed_limied_short_int(){
     ct_relu = context.eval_lut(&mct3, fun_relu); 
     assertm(context.decrypt(&ct_relu) == 0, "context.eval_lut(&mct3, fun_relu) == 0");
     std::cout << "context.eval_lut(&mct3, fun_relu) == 0: OK" << std::endl; 
-  
+   
 }
  
 
@@ -608,10 +645,7 @@ void amortized_partial_domain_bootstrap_test(){
 
 
     std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
-
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+ 
 
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 0); 
@@ -621,10 +655,7 @@ void amortized_partial_domain_bootstrap_test(){
 
     out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
 
-    
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+     
 
     
 
@@ -637,10 +668,7 @@ void amortized_partial_domain_bootstrap_test(){
     
     out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
 
-    
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
+     
 
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 1); 
@@ -733,7 +761,7 @@ void amortized_12_partial_domain_bootstrap_test(){
 
     std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
 
-
+/*
     Ciphertext ct_out =  context.eval_lut(&ct0, first_bit); 
     std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&ct_out) << std::endl;
     ct_out =  context.eval_lut(&ct0, second_bit); 
@@ -742,12 +770,8 @@ void amortized_12_partial_domain_bootstrap_test(){
     std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&ct_out) << std::endl;
     ct_out =  context.eval_lut(&ct0, fourth_bit); 
     std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&ct_out) << std::endl;
-
-
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
+*/
+ 
 
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 0); 
@@ -758,11 +782,7 @@ void amortized_12_partial_domain_bootstrap_test(){
 
     out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
 
-    
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
+     
     
 
     assert(context.decrypt(&out_cts[0]) == 1); 
@@ -774,12 +794,7 @@ void amortized_12_partial_domain_bootstrap_test(){
  
     out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
 
-    
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&out_cts[2]) << std::endl;
-    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&out_cts[3]) << std::endl;
-
+      
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 1); 
     assert(context.decrypt(&out_cts[2]) == 0); 
@@ -933,20 +948,20 @@ void serialization_test(){
 
 int main(){  
     
-    //basic_Ciphertext_tests();
+    basic_Ciphertext_tests();
  
-    //test_for_default_full_domain_encoding();
+    test_for_default_full_domain_encoding();
 
-    //test_for_partial_domain_encoding();
+    test_for_partial_domain_encoding();
+ 
+    test_for_signed_limied_short_int();
 
-    //test_for_signed_limied_short_int();
-
-    //amortized_full_domain_bootstrap_test();
-
-    //amortized_partial_domain_bootstrap_test();
-
+    amortized_full_domain_bootstrap_test();
+ 
+    amortized_partial_domain_bootstrap_test();
+ 
     amortized_12_partial_domain_bootstrap_test();
 
-    //serialization_test();
+    serialization_test();
 
 }
