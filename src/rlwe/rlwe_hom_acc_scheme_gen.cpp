@@ -52,6 +52,7 @@ TFHESecretKey::TFHESecretKey(const TFHESecretKey& other){
  
 }
 
+
 TFHESecretKey& TFHESecretKey::operator=(const TFHESecretKey other){ 
     if (this == &other)
     {
@@ -186,6 +187,13 @@ RLWEGadgetCT* TFHESecretKey::blind_rotation_key_gen(){
  
 
 
+
+/*
+=========================================================== TFHEKeyGenerator (Named Parameters) =================================================
+
+*/
+
+
 TFHEKeyGenerator::TFHEKeyGenerator(TFHENamedParams name){
     if(name == tfhe_11_B){
         init_tfhe_11_B();
@@ -205,6 +213,7 @@ TFHEKeyGenerator::TFHEKeyGenerator(TFHENamedParams name){
     }
 }
  
+ 
 
 void TFHEKeyGenerator::generate_bootstapping_keys(){
     this->boot_sk = std::unique_ptr<TFHESecretKey>(new TFHESecretKey(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding)); 
@@ -216,7 +225,6 @@ TFHESecretKey TFHEKeyGenerator::generate_secret_key(){
 }
  
  
-
 
 
 void TFHEKeyGenerator::init_tfhe_11_NTT(){ 

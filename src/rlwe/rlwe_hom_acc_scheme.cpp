@@ -2,6 +2,8 @@
 
 using namespace fhe_deck;
  
+
+
 TFHEPublicKey::~TFHEPublicKey(){  
     if(is_init == false){
         return;
@@ -134,12 +136,15 @@ TFHEPublicKey::TFHEPublicKey(RLWEGadgetParam rlwe_gadget_par,
     this->out_ct = RLWECT(rlwe_gadget_par.rlwe_param);
     this->out_ct.set_computing_engine();
 
+
+    // Here we set the blind rotation type (binary or ternary)
     this->key_d = lwe_par->key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
     }else{ 
         init_ternary_key();
     } 
+    // Set key switch type (lazy mod reduction)
     set_key_switch_type();
     this->acc_msb = RotationPoly::rot_msb(4, rlwe_gadget_par.rlwe_param->N, rlwe_gadget_par.rlwe_param->Q); 
     this->acc_one  = RotationPoly::rot_one(rlwe_gadget_par.rlwe_param->N);

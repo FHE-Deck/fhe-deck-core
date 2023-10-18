@@ -3,8 +3,7 @@
 #define NTRUNIUM_GEN_H
 
 #include <math.h>
-#include "lwe.h"
-#include "lwe_param.h"
+#include "lwe.h" 
 #include "ntru.h"
 #include "ntru_param.h"
 #include "ntrunium.h"

@@ -7,10 +7,8 @@
 #include <NTL/ZZ_p.h>
 #include <string>
 #include "sample.h"
-#include "enums.h"
-//#include "ntru_param.h"
-
-
+#include "enums.h" 
+ 
 
 namespace fhe_deck{
 

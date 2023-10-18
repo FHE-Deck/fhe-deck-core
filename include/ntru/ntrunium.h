@@ -3,8 +3,7 @@
 #define NTRUNIUM_H
 
 #include "lwe.h"
-#include "ntru.h"
-#include "lwe_param.h"
+#include "ntru.h" 
 #include "ntru_param.h"
 #include "rotation_poly.h"
 

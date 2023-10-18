@@ -3,8 +3,7 @@
 #define RLWE_HOM_ACC_SCHEME_GEN_H
  
 #include "lwe.h"
-#include "rlwe.h"
-#include "rlwe_param.h"
+#include "rlwe.h" 
 #include "rlwe_hom_acc_scheme.h"
 
 #include <cereal/archives/binary.hpp>

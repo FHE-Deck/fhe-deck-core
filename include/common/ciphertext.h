@@ -2,7 +2,7 @@
 #define CIPHERTEXT_H
 
 #include <iostream>
-#include "lwe_param.h"
+#include "lwe.h"
 #include "enums.h"  
 #include "plaintext_encoding.h" 
 

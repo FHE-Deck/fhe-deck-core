@@ -4,8 +4,7 @@
  
 #include "ciphertext.h"
 #include "lwe.h"
-#include "rlwe.h"
-#include "rlwe_param.h"  
+#include "rlwe.h" 
 #include "rotation_poly.h"
  
  

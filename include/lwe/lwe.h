@@ -1,17 +1,17 @@
  
-#ifndef LWE_PARAM_H
-#define LWE_PARAM_H
+#ifndef LWE_H
+#define LWE_H
 
-#include "sample.h" 
-#include "utils.h" 
-#include "enums.h"
-//#include "ciphertext.h" 
- 
+#include <random>
+#include <iostream> 
+#include "utils.h"
+
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
 
 namespace fhe_deck{
+ 
 
 class LWEParam{
 
@@ -162,6 +162,9 @@ LWECT operator*(long b, LWECT ct);
 
 
 
+
+
+
 class LWEModSwitcher{
 
   public:
@@ -191,34 +194,79 @@ class LWEModSwitcher{
 
 
 
-/*
-class LWEToLWEKeySwitchKey{
-
-  public:
-
-    long ***ksk;
-    std::shared_ptr<LWEParam> origin;
-    // To
-    LWEGadgetParam destination;
-    KeySwitchType ks_type;
 
 
-    LWEToLWEKeySwitchKey();
-
+class LWESK {
  
-    // KS
-    void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
-    // KS
-    void lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in);
-    // KS
-    void lwe_to_lwe_key_switch(long *lwe_ct_out, long *lwe_ct_in);
-    // KS
-    void set_key_switch_type();
+    public:  
+    std::shared_ptr<LWEParam> param;
+ 
+    Sampler rand; 
+    long *s;
+    bool is_init = false;
+  
+    ~LWESK();
 
-    //key_switching_key_gen(LWEGadgetSK *sk);
+    LWESK();
+
+    LWESK(int n, long Q, double stddev, KeyDistribution key_d);
+
+    LWESK(std::shared_ptr<LWEParam> lwe_par);
+
+    LWESK(std::shared_ptr<LWEParam> lwe_par, long* key);
+ 
+    LWESK(const LWESK &other);
+
+    LWESK& operator=(const LWESK other);
+
+    LWEParam get_lwe_param();
+   
+    long* encrypt(long m);
+    
+    LWECT encrypt_ct(long m);
+
+    void encrypt(long* ct, long m);
+    
+    long* scale_and_encrypt(long m, int t);
+    
+    void scale_and_encrypt(long* ct, long m, int t);
+
+
+    long phase(long *ct);
+    
+    long error(long *ct, long m);
+    
+    long decrypt(long *ct,  int t); 
+ 
+    LWESK modulus_switch(long new_modulus);
+
+    
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(param);  
+      std::vector<long> s_arr; 
+      for(int i = 0; i < param->n; ++i){
+        s_arr.push_back(s[i]);
+      }
+      ar(s_arr) ;
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(param);
+      std::vector<long> s_arr;
+      ar(s_arr);
+      this->s = new long[param->n];
+      for(int i = 0; i < param->n; ++i){
+        this->s[i] = s_arr[i];
+      } 
+    } 
 
 };
-*/
+
+ 
 
 
 
@@ -257,6 +305,42 @@ class LWEGadgetParam{
  
 };
 
-}
+
  
+
+
+class LWEGadgetSK{
+
+  public:
+    LWEGadgetParam gadget_param;
+    LWESK lwe;
+
+    LWEGadgetSK();
+
+    LWEGadgetSK(LWEGadgetParam lwe_g_par, LWESK lwe);
+  
+    LWEGadgetSK(const LWEGadgetSK& other);
+
+    LWEGadgetSK& operator=(const LWEGadgetSK other);
+ 
+    // Secret Gadget
+    long** gadget_encrypt(long m);
+    // Secret Gadget
+    void gadget_encrypt(long** gadget_ct, long m);
+ 
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(gadget_param, lwe);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(gadget_param, lwe);  
+    }    
+};
+
+}
+
 #endif
