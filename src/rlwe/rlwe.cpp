@@ -224,6 +224,20 @@ void RLWECT::mul_ntt(long *out, long *in_1, long *in_2){
     delete[] eval_out; 
 }
   
+
+void RLWECT::extract_lwe(long *lwe_ct_out){
+    lwe_ct_out[0] = this->b[0];
+    lwe_ct_out[1] = this->a[0];
+    for(int i = 1; i < this->param->N; ++i){
+        lwe_ct_out[i+1] = -this->a[this->param->N - i];
+    } 
+}
+
+LWECT RLWECT::extract_lwe(std::shared_ptr<LWEParam> lwe_par){ 
+    LWECT out(lwe_par);
+    this->extract_lwe(out.ct);
+    return out; 
+}
      
   
 RLWEParam::RLWEParam(RingType ring, int N, long Q, KeyDistribution key_type, ModulusType mod_type, double stddev, PolynomialArithmetic arithmetic){
@@ -968,6 +982,14 @@ void RLWESK::decrypt(long *out, const RLWECT *ct, int t){
 }
 
  
+
+void RLWESK::extract_lwe_key(long* lwe_key){ 
+    //long* key = new long[rlwe_gadget_sk.gadget_param.rlwe_param->N];
+    for(int i = 0; i <  param->N; ++i){
+        lwe_key[i] = -s[i];
+    } 
+}
+
 
 
 RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other){ 

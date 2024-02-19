@@ -25,7 +25,7 @@ long PlaintextEncoding::encode_message(long message){
 }
  
         
-long PlaintextEncoding::decode_message(long phase){
+long PlaintextEncoding::decode_message(long phase){ 
     long message = 0;
     if(type == full_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus;
@@ -33,8 +33,8 @@ long PlaintextEncoding::decode_message(long phase){
         message %= plaintext_space;
     }else if(type ==  partial_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus; 
-        message = round(phase * scale) ;  
-        message %= plaintext_space; 
+        message = round(phase * scale) ;   
+        message %= plaintext_space;  
     }else if(type == signed_limied_short_int){   
         double scale = this->ticks/(double)ciphertext_modulus; 
         message = round(phase * scale);  

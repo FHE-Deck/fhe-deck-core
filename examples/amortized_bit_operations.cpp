@@ -25,7 +25,7 @@ int main(){
         return (m % 8)/4; 
     };  
 
-    std::vector<RotationPoly> bit_decomp_luts;
+    std::vector<HomomorphicAccumulator> bit_decomp_luts;
     bit_decomp_luts.push_back(ctx.genrate_lut(first_bit));
     bit_decomp_luts.push_back(ctx.genrate_lut(second_bit));
     bit_decomp_luts.push_back(ctx.genrate_lut(third_bit));

@@ -5,6 +5,7 @@
 #include "enums.h"
 #include "sample.h"
 #include "fft_plan.h"
+#include "lwe.h"
 #include "gadget.h"
 #include "hexl/hexl.hpp"
 #include "utils.h"
@@ -75,8 +76,7 @@ class RLWECT{
     FFTPlan engine; 
   
     intel::hexl::NTT ntt; 
-
-
+ 
     ~RLWECT();
   
     RLWECT() = default;
@@ -103,6 +103,10 @@ class RLWECT{
     void mul(RLWECT *out, long *x);
 
     void neg(RLWECT *out);
+
+    void extract_lwe(long *lwe_ct_out);
+
+    LWECT extract_lwe(std::shared_ptr<LWEParam> lwe_par);
  
     std::string to_string();
     
@@ -384,8 +388,7 @@ class RLWESK{
     RLWESK(const RLWESK &other);
 
     RLWESK& operator=(const RLWESK other);
-
-
+ 
     RLWECT encrypt(long* m);
 
     RLWECT scale_and_encrypt(long* m, int t);
@@ -398,7 +401,8 @@ class RLWESK{
     void decrypt(long *out, const RLWECT *ct, int t);
 
     void set_arithmetic_specific_variables();
- 
+  
+    void extract_lwe_key(long* lwe_key);
     
     template <class Archive>
     void save( Archive & ar ) const

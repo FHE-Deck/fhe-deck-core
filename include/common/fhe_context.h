@@ -3,7 +3,7 @@
 
 #include "ciphertext.h"
 #include "ntrunium_gen.h"
-#include "rlwe_hom_acc_scheme_gen.h"
+#include "fhe_configuration.h"
 #include "enums.h" 
 #include "plaintext_encoding.h"
   
@@ -21,8 +21,8 @@ class FHEContext{
     ntrunium_named_param_generator ntrunium_par;
     bool is_ntrunium = false;
  
-    TFHESecretKey tfhe_boot_sk; 
-    std::shared_ptr<TFHEPublicKey> tfhe_boot_pk; 
+    FunctionalBootstrapSecretKey tfhe_boot_sk; 
+    std::shared_ptr<FunctionalBootstrapPublicKey> tfhe_boot_pk; 
     bool is_tfhe = false;
 
     // Flags to check whether the sk or pk are initialized.
@@ -35,7 +35,7 @@ class FHEContext{
  
     void generate_context(ntrunium_named_param name);
 
-    void generate_context(TFHENamedParams name);
+    void generate_context(FHENamedParams name);
 
     // This is going to generate both secret key and public key
     // In the future we may have, some read secret/public key from file
@@ -86,18 +86,18 @@ class FHEContext{
     // Set the message encoding
     void set_default_message_encoding_type(PlaintextEncodingType type);
 
-    // Take a pointer to a function  (requires public key)
-    RotationPoly genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding);
+    // Take a pointer to a function  (requires public key) 
+    HomomorphicAccumulator genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding);
 
-    RotationPoly genrate_lut(long (*f)(long message, long plaintext_space));
+    HomomorphicAccumulator genrate_lut(long (*f)(long message, long plaintext_space));
   
-    RotationPoly genrate_lut(long (*f)(long message), PlaintextEncoding encoding);
+    HomomorphicAccumulator genrate_lut(long (*f)(long message), PlaintextEncoding encoding);
 
-    RotationPoly genrate_lut(long (*f)(long message));
+    HomomorphicAccumulator genrate_lut(long (*f)(long message));
 
 
     // Run functional bootstrapping (requires public key)
-    Ciphertext eval_lut(Ciphertext *ct_in, RotationPoly lut, GadgetMulMode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, GadgetMulMode = deter);
    
     // Generate rotation_poly and run LUT
     Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding, GadgetMulMode mode = deter);
@@ -108,12 +108,11 @@ class FHEContext{
   
     Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message), GadgetMulMode mode = deter);
   
-    std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<RotationPoly> luts, GadgetMulMode mode = deter);
+    std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> luts, GadgetMulMode mode = deter);
   
     // Evaluates scalar + Sum_i(scalars[i] * ct_vec[i]) 
     Ciphertext eval_affine_function(std::vector<Ciphertext> ct_vec, std::vector<long> scalars, long scalar);
-   
- 
+    
     void send_secret_key(std::ofstream &os);
 
     void read_secret_key(std::ifstream &is);
@@ -139,8 +138,7 @@ class FHEContext{
     void save_Ciphertext(std::string file_name, Ciphertext &ct);
 
     Ciphertext load_Ciphertext(std::string file_name);
- 
-
+  
 };
   
 }

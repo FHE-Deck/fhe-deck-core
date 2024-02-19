@@ -160,9 +160,7 @@ LWECT operator-(long b, LWECT ct);
 
 LWECT operator*(long b, LWECT ct);
 
-
-
-
+ 
 
 
 class LWEModSwitcher{
@@ -192,8 +190,7 @@ class LWEModSwitcher{
     
 };
 
-
-
+ 
 
 
 class LWESK {
@@ -230,8 +227,7 @@ class LWESK {
     long* scale_and_encrypt(long m, int t);
     
     void scale_and_encrypt(long* ct, long m, int t);
-
-
+ 
     long phase(long *ct);
     
     long error(long *ct, long m);
@@ -285,12 +281,10 @@ class LWEGadgetParam{
 
     long** init_gadget_ct(); 
 
-  // Public Gadget
     void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
-    // Public Gadget
+    
     void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
-   
-  
+    
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -322,10 +316,9 @@ class LWEGadgetSK{
     LWEGadgetSK(const LWEGadgetSK& other);
 
     LWEGadgetSK& operator=(const LWEGadgetSK other);
- 
-    // Secret Gadget
-    long** gadget_encrypt(long m);
-    // Secret Gadget
+  
+    long** gadget_encrypt(long m); 
+
     void gadget_encrypt(long** gadget_ct, long m);
  
     template <class Archive>
@@ -340,6 +333,52 @@ class LWEGadgetSK{
       ar(gadget_param, lwe);  
     }    
 };
+
+
+
+
+
+class LWEPublicKey{
+
+  public:
+ 
+    /*
+      TODO Change this stddev stuff to uniform.
+      Gaussian here doens't make much sense.
+    */
+    double stddev; 
+    Sampler rand_masking;
+  
+    long **public_key;
+    int size; 
+
+    std::shared_ptr<LWEParam> param;
+
+    ~LWEPublicKey();
+
+    LWEPublicKey(LWESK *lwe_sk, int key_size, double stddev);
+
+    LWEPublicKey(const LWEPublicKey &other);
+   
+    LWEPublicKey& operator=(const LWEPublicKey other);
+ 
+    void mask_ciphertext(long *ct);
+
+    LWECT encrypt(long message);
+
+    LWECT ciphertext_of_zero();
+ 
+};
+
+
+
+
+
+
+
+
+
+
 
 }
 

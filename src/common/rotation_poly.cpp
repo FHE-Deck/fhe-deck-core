@@ -14,7 +14,17 @@ RotationPoly::RotationPoly(const RotationPoly &poly){
         this->lookup_polynomial[i] = poly.lookup_polynomial[i]; 
     } 
 }
- 
+
+
+RotationPoly& RotationPoly::operator=(const RotationPoly other){
+    this->lookup_polynomial = new long[other.N];
+    this->output_encoding = other.output_encoding;
+    this->N = other.N; 
+    for(int i = 0; i < this->N; ++i){   
+        this->lookup_polynomial[i] = other.lookup_polynomial[i]; 
+    } 
+    return *this;
+}
 
 RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long N, PlaintextEncoding output_encoding, bool is_amortized_form){ 
     this->N = N; 
@@ -167,21 +177,27 @@ long* RotationPoly::rot_identity(int t, long N, long Q){
 
 /* Note: this doesn't realy compute the sign function. For zero for example it computes 1
 */
-long* RotationPoly::rot_msb(int t, long N, long Q){
+RotationPoly RotationPoly::rot_msb(int t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t); 
     long* acc = new long[N]; 
     for(int i = 0; i < N; ++i){
         acc[i] =  Utils::integer_mod_form(delta_Q_t * -1, Q); 
     } 
-    return acc;
+    RotationPoly out;
+    out.N = N;
+    out.lookup_polynomial = acc;
+    return out;
 }
 
-long* RotationPoly::rot_one(long N){
+RotationPoly RotationPoly::rot_one(long N){
     long* acc = new long[N]; 
     for(int i = 0; i < N; ++i){
         acc[i] =  0;
     }  
-    return acc;
+    RotationPoly out;
+    out.N = N;
+    out.lookup_polynomial = acc;
+    return out;
 }
 
 

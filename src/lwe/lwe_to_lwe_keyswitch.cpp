@@ -4,7 +4,7 @@ using namespace fhe_deck;
   
 
 
-LWEToLWEKeySwitchKey::~LWEToLWEKeySwitchKey(){
+LWEToLWEKeySwitchKey::~LWEToLWEKeySwitchKey(){ 
     for(int i = 0; i < origin->n; ++i){ 
         for(int j = 0; j < destination.ell; ++j){ 
             delete[] ksk[i][j];
@@ -13,6 +13,8 @@ LWEToLWEKeySwitchKey::~LWEToLWEKeySwitchKey(){
     } 
     delete[] ksk;  
 }
+
+
 
 LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(LWESK *sk_origin, LWEGadgetSK *sk_dest){
     origin = sk_origin->param;
@@ -53,20 +55,21 @@ LWEToLWEKeySwitchKey& LWEToLWEKeySwitchKey::operator=(const LWEToLWEKeySwitchKey
             }
         }
     }  
+    return *this;
 }
 
  
 void LWEToLWEKeySwitchKey::key_switching_key_gen(LWESK *sk_origin, LWEGadgetSK *sk_dest){ 
-    // Initialize the key switching key
+ 
     ksk = new long**[origin->n]; 
     for(int i = 0; i < origin->n; ++i){
         ksk[i] = new long*[destination.ell];
         for(int j = 0; j < destination.ell; ++j){ 
             ksk[i][j] = destination.lwe_param->init_ct();
         }
-    } 
-    for(int i = 0; i <  origin->n; ++i){  
-        ksk[i] = sk_dest->gadget_encrypt(-sk_origin->s[i]);  
+    }  
+    for(int i = 0; i < origin->n; ++i){   
+        ksk[i] = sk_dest->gadget_encrypt(sk_origin->s[i]);  
     }  
 }  
 
@@ -75,18 +78,14 @@ void LWEToLWEKeySwitchKey::key_switching_key_gen(LWESK *sk_origin, LWEGadgetSK *
 void LWEToLWEKeySwitchKey::set_key_switch_type(){ 
     long bits_Q = Utils::power_times(destination.lwe_param->Q, 2);
     long bits_base = Utils::power_times(destination.basis, 2);
-    long bits_N = Utils::power_times(origin->n, 2); 
-    destination.ell;
+    long bits_N = Utils::power_times(origin->n, 2);  
     long sum_lazy_bits = bits_Q + bits_base + destination.ell + bits_N;
     long sum_partial_lazy_bits = bits_Q + bits_base + destination.ell + 1;
-    if(sum_lazy_bits < 64){
-        std::cout << "rlwe_hom_acc_scheme: Using Lazy Key Switch" << std::endl;
+    if(sum_lazy_bits < 64){ 
         ks_type = lazy_key_switch;
-    }else if(sum_partial_lazy_bits < 64){
-        std::cout << "rlwe_hom_acc_scheme: Using Partial Lazy Key Switch" << std::endl;
+    }else if(sum_partial_lazy_bits < 64){ 
         ks_type = partial_lazy_key_switch;
-    }else{
-        std::cout << "Using Standard Key Switch" << std::endl;
+    }else{ 
         ks_type = standard_key_switch;
     }
 }

@@ -7,6 +7,8 @@
 
 namespace fhe_deck{
 
+
+
 class RotationPoly{
  
 public:
@@ -20,8 +22,7 @@ public:
     ~RotationPoly();
 
     RotationPoly() = default;
-
-    
+ 
     RotationPoly(long (*f)(long message, long plaintext_space), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
     RotationPoly(long (*f)(long message), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
@@ -29,6 +30,8 @@ public:
     RotationPoly(long* lookup_polynomial, long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
   
     RotationPoly(const RotationPoly &poly);
+
+    RotationPoly& operator=(const RotationPoly other);
 
     void encode();
 
@@ -41,9 +44,11 @@ public:
     static void set_polynomial(long* lookup_polynomial, long (*f)(long message), long t, long N, long Q);
 
  
-    static long* rot_msb(int t, long N, long Q); 
+    static RotationPoly rot_msb(int t, long N, long Q); 
 
-    static long* rot_one(long N); 
+    static RotationPoly rot_one(long N); 
+ 
+
 
     // Deprecated
     static long* rot_identity(int t, long N, long Q); 
@@ -57,7 +62,7 @@ public:
     // Deprecated
     static long* rot_square_and_div_by_4(int t, long N, long Q); 
 
-
+    // TODO: Delete this stuff. 
     // NOTE: REmind that this is a special rotation polynomial, and is not going to work correctly with all bootstrappings
     // Deprecated
     static long* rot_is_zero(int t, long N, long Q);
@@ -73,6 +78,9 @@ public:
     static long* cyclic_rot_uni_poly(int* poly, int poly_size, int t, long N, long Q);  
 
 };
+
+
+
 
 }
 

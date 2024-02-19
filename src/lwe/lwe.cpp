@@ -75,7 +75,7 @@ void LWEParam::switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEPara
     double temp; 
     for(int i = 0; i < n+1; ++i){
         temp =  new_param->Q * in_ct[i];
-        out_ct[i] = (long)round(temp/(double)Q); 
+        out_ct[i] = (long)round(temp/(double)this->Q); 
     }
 }
 
@@ -323,11 +323,20 @@ void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){
             long_temp =  long_Q_to * (long double)in_ct[i];
             out_ct[i] = (long)roundl(long_temp/long_Q_from); 
         } 
-    }else{
+    }else{ 
+        for(int i = 0; i < ct_size; ++i){
+            // Compute multiplicaiton on integers, and then convert to double
+            temp =  to->Q * in_ct[i];
+            // Divide and round to closest integer
+            out_ct[i] = (long)round(temp/Q_from); 
+        }
+
+        /*
         for(int i = 0; i < ct_size; ++i){
             temp = Q_to *  (double)in_ct[i];
             out_ct[i] = (long)(temp/Q_from); 
         }
+        */
     }   
 }
 
@@ -564,6 +573,7 @@ long LWESK::error(long *ct,  long m){
     return Utils::integer_signed_form((LWESK::phase(ct) - m) % param->Q, param->Q); 
 }
 
+
 long LWESK::decrypt(long *ct, int t){ 
     long d_phase = LWESK::phase(ct);  
     // TODO Potential problems when Q is too big. In this case should be long double
@@ -613,6 +623,84 @@ void LWEGadgetSK::gadget_encrypt(long** gadget_ct, long m){
         gadget_ct[i] = lwe.encrypt(m * temp_basis);
     } 
 }
+ 
+
+LWEPublicKey::~LWEPublicKey(){ 
+    delete[] public_key; 
+}
+
+ 
+LWEPublicKey::LWEPublicKey(LWESK *lwe_sk, int size, double stddev){
+    this->size = size;
+    this->stddev = stddev;
+    this->param = lwe_sk->param;
+    this->rand_masking = Sampler(0.0, stddev);
+    // Initialize the key switching key
+    public_key = new long*[size]; 
+    for(int i = 0; i < size; ++i){ 
+        public_key[i] = lwe_sk->encrypt(0);   
+    }  
+}
 
 
 
+LWEPublicKey::LWEPublicKey(const LWEPublicKey &other){
+    this->size = other.size;
+    this->stddev = other.stddev;
+    this->param = other.param;
+    this->rand_masking = Sampler(0.0, stddev);
+    // Initialize the key switching key
+    public_key = new long*[size]; 
+    for(int i = 0; i < size; ++i){ 
+        this->public_key[i] = param->init_ct();
+        Utils::cp(this->public_key[i], public_key[i], param->n+1); 
+    } 
+}
+   
+LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
+    this->size = other.size;
+    this->stddev = other.stddev;
+    this->param = other.param;
+    this->rand_masking = Sampler(0.0, stddev);
+    // Initialize the key switching key
+    public_key = new long*[size]; 
+    for(int i = 0; i < size; ++i){ 
+        this->public_key[i] = param->init_ct();
+        Utils::cp(this->public_key[i], public_key[i], param->n+1); 
+    } 
+    return *this;
+}
+
+
+void LWEPublicKey::mask_ciphertext(long *ct){
+    long* random_lwe = param->init_ct();
+    long* temp = param->init_ct();
+    long noise;
+    for(int i  = 0; i < size; ++i){
+        noise = rand_masking.normal_dist(rand_masking.e1); 
+        param->scalar_mul(temp, public_key[i], noise);
+        param->add(ct, ct, temp);
+    }
+    delete[] random_lwe;
+    delete[] temp;
+}
+
+
+LWECT LWEPublicKey::encrypt(long message){
+    LWECT out(param, public_key[0]);
+    long* temp = param->init_ct();
+    long noise;
+    for(int i = 1; i < size; ++i){
+        noise = rand_masking.normal_dist(rand_masking.e1); 
+        param->scalar_mul(temp, public_key[i], noise);
+        param->add(out.ct, out.ct, temp);
+    }
+    out = out + message; 
+    delete[] temp;
+    return out;
+}
+
+
+LWECT LWEPublicKey::ciphertext_of_zero(){
+    return LWEPublicKey::encrypt(0);
+}

@@ -22,11 +22,16 @@ file(GLOB INC_NTRU include/ntru/*.cpp)
 file(GLOB SRC_NTRU src/ntru/*.cpp)
 include_directories(include/ntru)
 
+file(GLOB INC_FHE include/fhe/*.cpp)
+file(GLOB SRC_FHE src/fhe/*.cpp)
+include_directories(include/fhe)
+
 add_library(fhe_deck STATIC
 	${INC_LWE} ${SRC_LWE}
 	${INC_COMMON} ${SRC_COMMON}
 	${INC_RLWE} ${SRC_RLWE}
-	${INC_NTRU} ${SRC_NTRU})
+	${INC_NTRU} ${SRC_NTRU}
+	${INC_FHE} ${SRC_FHE})
 target_link_libraries(fhe_deck PRIVATE ntl fftw3 fftw3l hexl)
 
 add_subdirectory(examples) 

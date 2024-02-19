@@ -54,7 +54,7 @@ int main(){
         }
     }; 
 
-    RotationPoly lut_fun_ham = context.genrate_lut(fun_ham);  
+    HomomorphicAccumulator lut_fun_ham = context.genrate_lut(fun_ham);  
     std::cout << "Computing Hammming Weights..." << std::endl;
     Ciphertext ct4;
     ct4 = context.eval_lut(&c0, lut_fun_ham); 
@@ -90,7 +90,7 @@ int main(){
                 return 2;
         }
     }; 
-    RotationPoly lut_fun_nand = context.genrate_lut(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.genrate_lut(fun_nand); 
   
     Ciphertext ct0 = context.encrypt(1);  
     Ciphertext ct1 = context.encrypt(0);   

@@ -87,7 +87,6 @@ class FFTPlan{
     void add_eval_form_l(fftwl_complex *sum, fftwl_complex* in_1, fftwl_complex* in_2);
 
     void mul_eval_form_l(fftwl_complex *prod, fftwl_complex* in_1, fftwl_complex* in_2);
- 
 
     private:
 

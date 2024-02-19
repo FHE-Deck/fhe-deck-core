@@ -21,7 +21,7 @@ test_lut3(FHEContext& ctx)
         return (m >> 2) & 1;
     };
 
-    std::vector<RotationPoly> lut;
+    std::vector<HomomorphicAccumulator> lut;
     lut.push_back(ctx.genrate_lut(bit0));
     lut.push_back(ctx.genrate_lut(bit1));
     lut.push_back(ctx.genrate_lut(bit2));
@@ -102,7 +102,7 @@ test_lut4(FHEContext& ctx)
         return (m >> 3) & 1;
     };
 
-    std::vector<RotationPoly> lut;
+    std::vector<HomomorphicAccumulator> lut;
     lut.push_back(ctx.genrate_lut(bit0));
     lut.push_back(ctx.genrate_lut(bit1));
     lut.push_back(ctx.genrate_lut(bit2));
@@ -250,7 +250,7 @@ test_add4_lut3(FHEContext& ctx, uint8_t a, uint8_t b)
     Ciphertext ct_b2 = ctx.encrypt_public((b >> 2) & 1);
     Ciphertext ct_b3 = ctx.encrypt_public((b >> 3) & 1);
 
-    std::vector<RotationPoly> decomp;
+    std::vector<HomomorphicAccumulator> decomp;
     decomp.push_back(ctx.genrate_lut([](long I) -> long {
         switch (I) {
             case  0: return 0;
@@ -290,7 +290,7 @@ test_add4_lut3(FHEContext& ctx, uint8_t a, uint8_t b)
             default: return 0;
         };
     }));
-    std::vector<RotationPoly> lut1;
+    std::vector<HomomorphicAccumulator> lut1;
     lut1.push_back(ctx.genrate_lut([](long I) -> long {
         /* GATE 4 (LUT2 _22_ INIT 0x8 PERM 01) */
         switch (I) {
@@ -312,7 +312,7 @@ test_add4_lut3(FHEContext& ctx, uint8_t a, uint8_t b)
         };
     }));
 
-    std::vector<RotationPoly> lut2;
+    std::vector<HomomorphicAccumulator> lut2;
     lut2.push_back(ctx.genrate_lut([](long I) -> long {
         /* GATE 3 (LUT3 _21_ INIT 0x17 PERM 012) */
         switch (I) {
@@ -342,7 +342,7 @@ test_add4_lut3(FHEContext& ctx, uint8_t a, uint8_t b)
         };
     }));
 
-    std::vector<RotationPoly> lut3;
+    std::vector<HomomorphicAccumulator> lut3;
     lut3.push_back(ctx.genrate_lut([](long I) -> long {
         /* GATE 6 (LUT3 _24_ INIT 0x69 PERM 012) */
         switch (I) {
@@ -372,7 +372,7 @@ test_add4_lut3(FHEContext& ctx, uint8_t a, uint8_t b)
         };
     }));
 
-    std::vector<RotationPoly> lut4;
+    std::vector<HomomorphicAccumulator> lut4;
     lut4.push_back(ctx.genrate_lut([](long I) -> long {
         /* GATE 7 (LUT3 _25_ INIT 0x69 PERM 012) */
         switch (I) {
@@ -435,7 +435,7 @@ test_add4_lut3fa(FHEContext& ctx, uint8_t a, uint8_t b)
     Ciphertext ct_b2 = ctx.encrypt_public((b >> 2) & 1);
     Ciphertext ct_b3 = ctx.encrypt_public((b >> 3) & 1);
 
-    std::vector<RotationPoly> decomp;
+    std::vector<HomomorphicAccumulator> decomp;
     decomp.push_back(ctx.genrate_lut([](long I) -> long {
         switch (I) {
             case  0: return 0;

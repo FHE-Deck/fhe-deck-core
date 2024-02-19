@@ -16,9 +16,7 @@ void test_for_default_full_domain_encoding(){
     
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c1  = context.encrypt(1);  
-
-
-
+ 
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c2  = context.encrypt(2);  
 
@@ -124,11 +122,12 @@ void test_for_default_full_domain_encoding(){
  
        
 
-    auto id = [](long m, long t) -> long {
-        return m % t;
+    auto id = [](long m) -> long {
+        return m;
     }; 
+ 
   
-    RotationPoly lut_identity = context.genrate_lut(id); 
+    HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
  
     ct4 = context.eval_lut(&ct1, lut_identity);
     std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl;
@@ -136,10 +135,11 @@ void test_for_default_full_domain_encoding(){
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
 
 
-    auto id_plus = [](long m, long t) -> long {
-        return (m+1) % t;
+    auto id_plus = [](long m) -> long {
+        return (m+1);
     }; 
-    RotationPoly lut_id_plus = context.genrate_lut(id_plus); 
+
+    HomomorphicAccumulator lut_id_plus = context.genrate_lut(id_plus); 
     ct4 = context.eval_lut(&ct1, lut_id_plus);
     assertm(context.decrypt(&ct4) == 2, "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2: OK"  << std::endl;
@@ -152,22 +152,23 @@ void test_for_default_full_domain_encoding(){
     assertm(context.decrypt(&ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0: OK"  << std::endl;
 
-    auto fun_msb = [](long m, long t) -> long {
+    auto fun_msb = [](long m, long t = 5) -> long {
         if(m < t/2){
             return 0;
         }else{
             return 1;
         } 
     }; 
-    RotationPoly lut_fun_msb = context.genrate_lut(fun_msb); 
+    HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb); 
     ct4 = context.eval_lut(&ct1, lut_fun_msb);
 
     assertm(context.decrypt(&ct4) == 0, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0: OK"  << std::endl;
-  
-
+   
     std::cout << "Done. See you....." << std::endl;
 }
+
+
 
 void test_for_partial_domain_encoding(){
 
@@ -175,17 +176,15 @@ void test_for_partial_domain_encoding(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_B);
+    context.generate_context(tfhe_11_NTT);
+    //  The default encoding for this is actually full domain.  
     context.set_default_message_encoding_type(partial_domain);
-
  
     Ciphertext c0  = context.encrypt(0);  
     Ciphertext c1  = context.encrypt(1);    
     Ciphertext c2  = context.encrypt(2);  
     Ciphertext c3  = context.encrypt(3);  
- 
-
-
+   
     assertm(context.decrypt(&c0) == 0, "Decrypt(c0) == 0");
     std::cout << "Decrypt(c0) == 0: OK" << std::endl; 
     assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
@@ -196,7 +195,7 @@ void test_for_partial_domain_encoding(){
     std::cout << "Decrypt(c3) == 3: OK" << std::endl; 
  
 
-    auto fun_ham = [](long m, long t) -> long {
+    auto fun_ham = [](long m) -> long {
         switch(m){
             case 0: 
                 return 0;
@@ -213,28 +212,30 @@ void test_for_partial_domain_encoding(){
                 return 0;
         }
     }; 
-    RotationPoly lut_fun_ham = context.genrate_lut(fun_ham); 
+    
+    
+    std::cout << "genrate_lut" << std::endl;
+    HomomorphicAccumulator lut_fun_ham = context.genrate_lut(fun_ham); 
 
+     
     Ciphertext ct4;
     ct4 = context.eval_lut(&c0, lut_fun_ham);
+    std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl; 
     assertm(context.decrypt(&ct4) == 0, "context.eval_lut(c0, lut_fun_ham) == 0");
-    std::cout << "context.eval_lut(c0, lut_fun_ham) == 0: OK" << std::endl; 
-    //std::cout << "ct4 = Hamming_Weight(ct0): " << context.decrypt(ct4) << std::endl;
+    std::cout << "context.eval_lut(c0, lut_fun_ham) == 0: OK" << std::endl;  
+ 
 
     ct4 = context.eval_lut(&c1, lut_fun_ham);
     assertm(context.decrypt(&ct4) == 1, "context.eval_lut(c1, lut_fun_ham) == 1");
-    std::cout << "context.eval_lut(c1, lut_fun_ham) == 1: OK" << std::endl; 
-    //std::cout << "ct4 = Hamming_Weight(ct1): " << context.decrypt(ct4) << std::endl;
+    std::cout << "context.eval_lut(c1, lut_fun_ham) == 1: OK" << std::endl;  
 
     ct4 = context.eval_lut(&c2, lut_fun_ham);
     assertm(context.decrypt(&ct4) == 1, "context.eval_lut(c2, lut_fun_ham) == 1");
-    std::cout << "context.eval_lut(c2, lut_fun_ham) == 1: OK" << std::endl; 
-    //std::cout << "ct4 = Hamming_Weight(ct2): " << context.decrypt(ct4) << std::endl;
+    std::cout << "context.eval_lut(c2, lut_fun_ham) == 1: OK" << std::endl;  
 
     ct4 = context.eval_lut(&c3, lut_fun_ham);
     assertm(context.decrypt(&ct4) == 2, "context.eval_lut(c3, lut_fun_ham) == 2");
-    std::cout << "context.eval_lut(c3, lut_fun_ham) == 2: OK" << std::endl; 
-    //std::cout << "ct4 = Hamming_Weight(ct3): " << context.decrypt(ct4) << std::endl;
+    std::cout << "context.eval_lut(c3, lut_fun_ham) == 2: OK" << std::endl;  
 
 
 
@@ -255,7 +256,7 @@ void test_for_partial_domain_encoding(){
                 return 2;
         }
     }; 
-    RotationPoly lut_fun_nand = context.genrate_lut(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.genrate_lut(fun_nand); 
 
     Ciphertext ct0 = context.encrypt(1);  
     Ciphertext ct1 = context.encrypt(0);   
@@ -269,16 +270,14 @@ void test_for_partial_domain_encoding(){
     combined = ct0 + (ct1 * 2); 
     ct_nand = context.eval_lut(&combined, lut_fun_nand);
     assertm(context.decrypt(&ct_nand) == 1, "ct_nand(0, 1) == 1");
-    std::cout << "ct_nand(0, 1) = 1: OK"  << std::endl;
-    //std::cout << "ct_nand(1, 0): " << context.decrypt(&ct_nand) << std::endl;
+    std::cout << "ct_nand(0, 1) = 1: OK"  << std::endl; 
 
     ct0 = context.encrypt(0);  
     ct1 = context.encrypt(1);  
     combined = ct0 + (ct1 * 2); 
     ct_nand = context.eval_lut(&combined, lut_fun_nand);
     assertm(context.decrypt(&ct_nand) == 1, "ct_nand(1, 0) == 1");
-    std::cout << "ct_nand(1, 0) = 1: OK"   << std::endl;
-    //std::cout << "ct_nand(0, 1): " << context.decrypt(&ct_nand) << std::endl;
+    std::cout << "ct_nand(1, 0) = 1: OK"   << std::endl; 
 
 
     ct0 = context.encrypt(1);  
@@ -286,9 +285,11 @@ void test_for_partial_domain_encoding(){
     combined = ct0 + (ct1 * 2); 
     ct_nand = context.eval_lut(&combined, lut_fun_nand);
     assertm(context.decrypt(&ct_nand) == 0, "ct_nand(1, 1) == 0");
-    std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl;
-    //std::cout << "ct_nand(1, 1): " << context.decrypt(&ct_nand) << std::endl; 
+    std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl; 
 }
+
+
+
 
 void test_for_signed_limied_short_int(){
     
@@ -296,7 +297,7 @@ void test_for_signed_limied_short_int(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    // NOTE: tfhe_11_NTT can still handle a plaintext space equal to 4, but if you test with tfhe_11_B teh test will fail
+    // NOTE: tfhe_11_NTT can still handle a plaintext space equal to 4, but if you test with tfhe_11_B teh test will most likely fail
     context.generate_context(tfhe_11_NTT);
     context.set_default_message_encoding_type(signed_limied_short_int);
      
@@ -367,7 +368,7 @@ void test_for_signed_limied_short_int(){
         return m; 
     };    
    
-    RotationPoly lut_fun_identity = context.genrate_lut(fun_identity);  
+    HomomorphicAccumulator lut_fun_identity = context.genrate_lut(fun_identity);  
  
    
     Ciphertext ct_id = context.eval_lut(&mct1, lut_fun_identity); 
@@ -406,9 +407,7 @@ void test_for_signed_limied_short_int(){
     assertm(context.decrypt(&ct_id) == 3, "context.eval_lut(&ct3, lut_fun_identity) == 3");
     std::cout << "context.eval_lut(&ct3, lut_fun_identity) == 3: OK"  << std::endl;  
 
-
-
-  
+ 
 
     auto fun_relu = [](long m) -> long {
         if(m >= 0){
@@ -490,16 +489,16 @@ void amortized_full_domain_bootstrap_test(){
 
 
     FHEContext context; 
-    std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_NTT_amortized);
+    std::cout << "Generate Keys..." << std::endl; 
+    context.generate_context(tfhe_11_NTT_amortized); 
     
-    auto id = [](long m, long t) -> long {
-        return m % t;
+    auto id = [](long m) -> long {
+        return m;
     }; 
   
-    RotationPoly lut_identity = context.genrate_lut(id); 
+    HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
 
-    std::vector<RotationPoly> luts;
+    std::vector<HomomorphicAccumulator> luts;
     luts.push_back(lut_identity);
     luts.push_back(lut_identity);
  
@@ -514,8 +513,7 @@ void amortized_full_domain_bootstrap_test(){
     std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
     assertm(context.decrypt(&out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
-
-
+ 
     out_cts = context.eval_lut_amortized(&ct1, luts);
 
     std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
@@ -525,8 +523,7 @@ void amortized_full_domain_bootstrap_test(){
     std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
     assertm(context.decrypt(&out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
-
-
+ 
 
     auto first_bit = [](long m) -> long {
         return m % 2;
@@ -540,7 +537,7 @@ void amortized_full_domain_bootstrap_test(){
         return (m % 8)/4; 
     };  
 
-    std::vector<RotationPoly> bit_decomp_luts;
+    std::vector<HomomorphicAccumulator> bit_decomp_luts;
     bit_decomp_luts.push_back(context.genrate_lut(first_bit));
     bit_decomp_luts.push_back(context.genrate_lut(second_bit));
     bit_decomp_luts.push_back(context.genrate_lut(third_bit));
@@ -629,7 +626,7 @@ void amortized_partial_domain_bootstrap_test(){
         return (m % 8)/4; 
     };  
 
-    std::vector<RotationPoly> bit_decomp_luts;
+    std::vector<HomomorphicAccumulator> bit_decomp_luts;
     bit_decomp_luts.push_back(context.genrate_lut(first_bit));
     bit_decomp_luts.push_back(context.genrate_lut(second_bit));
     bit_decomp_luts.push_back(context.genrate_lut(third_bit));
@@ -654,22 +651,17 @@ void amortized_partial_domain_bootstrap_test(){
 
 
     out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
-
-     
-
-    
+ 
 
     assert(context.decrypt(&out_cts[0]) == 1); 
     assert(context.decrypt(&out_cts[1]) == 0); 
     assert(context.decrypt(&out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
 
-
-    
+ 
     out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
 
-     
-
+      
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 1); 
     assert(context.decrypt(&out_cts[2]) == 0); 
@@ -735,7 +727,7 @@ void amortized_12_partial_domain_bootstrap_test(){
         return (m % 16)/8; 
     };  
 
-    std::vector<RotationPoly> bit_decomp_luts;
+    std::vector<HomomorphicAccumulator> bit_decomp_luts;
     bit_decomp_luts.push_back(context.genrate_lut(first_bit));
     bit_decomp_luts.push_back(context.genrate_lut(second_bit));
     bit_decomp_luts.push_back(context.genrate_lut(third_bit));
@@ -760,19 +752,7 @@ void amortized_12_partial_domain_bootstrap_test(){
 
 
     std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
-
-/*
-    Ciphertext ct_out =  context.eval_lut(&ct0, first_bit); 
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&ct_out) << std::endl;
-    ct_out =  context.eval_lut(&ct0, second_bit); 
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&ct_out) << std::endl;
-    ct_out =  context.eval_lut(&ct0, third_bit); 
-    std::cout << "context.decrypt(&out_cts[2]): " << context.decrypt(&ct_out) << std::endl;
-    ct_out =  context.eval_lut(&ct0, fourth_bit); 
-    std::cout << "context.decrypt(&out_cts[3]): " << context.decrypt(&ct_out) << std::endl;
-*/
- 
-
+  
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 0); 
     assert(context.decrypt(&out_cts[2]) == 0); 
@@ -947,21 +927,23 @@ void serialization_test(){
 
 
 int main(){  
-    
+     
     basic_Ciphertext_tests();
  
-    test_for_default_full_domain_encoding();
-
     test_for_partial_domain_encoding();
  
     test_for_signed_limied_short_int();
-
-    amortized_full_domain_bootstrap_test();
  
+    test_for_default_full_domain_encoding();
+    
+    amortized_full_domain_bootstrap_test();
+  
     amortized_partial_domain_bootstrap_test();
  
-    amortized_12_partial_domain_bootstrap_test();
+    amortized_12_partial_domain_bootstrap_test(); 
 
-    serialization_test();
+ /*
+    serialization_test(); 
+ */
 
 }

@@ -11,8 +11,8 @@ void FHEContext::generate_context(ntrunium_named_param name){
 }
  
 
-void FHEContext::generate_context(TFHENamedParams name){   
-    TFHEKeyGenerator rlwe_hom_acc_par = TFHEKeyGenerator(name);  
+void FHEContext::generate_context(FHENamedParams name){   
+    FHEConfiguration rlwe_hom_acc_par = FHEConfiguration(name);  
     tfhe_boot_sk = rlwe_hom_acc_par.generate_secret_key();   
     tfhe_boot_pk = tfhe_boot_sk.get_public_param();    
     default_encoding = rlwe_hom_acc_par.default_encoding;
@@ -58,7 +58,7 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){
     if(is_ntrunium){ 
         throw std::logic_error("NTRUnium not Supported Yet!");
     }else if(is_tfhe){       
-       LWECT c(tfhe_boot_sk.extract_lwe.encrypt_ct(encoding.encode_message(message))); 
+       LWECT c(tfhe_boot_sk.extract_lwe_sk.encrypt_ct(encoding.encode_message(message))); 
        return Ciphertext(c, encoding, this);
     }else{
         std::cout << "Scheme not set" << std::endl;
@@ -135,7 +135,7 @@ long FHEContext::decrypt(Ciphertext *c_in){
     if(is_ntrunium){ 
         throw std::logic_error("NTRUnium not supported Yet!");
     }else if(is_tfhe){  
-        long phase = tfhe_boot_sk.extract_lwe.phase(c_in->lwe_c->ct);    
+        long phase = tfhe_boot_sk.extract_lwe_sk.phase(c_in->lwe_c->ct);    
         return c_in->encoding.decode_message(phase); 
     }else{
         std::cout << "Scheme not set" << std::endl;
@@ -179,68 +179,57 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
 - But in the context of NTRUNIUM it may be a rotation poly, or a encryption of a roation poly, or something....
 - So... what do we do?
 */   
-RotationPoly FHEContext::genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
+HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
+   
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    if(is_ntrunium){
-        throw std::logic_error("NTRUnium not supported yet!");
-    }else if(is_tfhe){    
-        return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-    }else{ 
-        throw std::logic_error("Non existend scheme type!");
-    }  
+    HomomorphicAccumulator out(tfhe_boot_pk->blind_rotation_key->prepare_accumulator(f, encoding));
+    return out; 
 }
 
 
 
-RotationPoly FHEContext::genrate_lut(long (*f)(long message, long plaintext_space)){
+HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plaintext_space)){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    return genrate_lut(f, this->default_encoding);
+    return tfhe_boot_pk->blind_rotation_key->prepare_accumulator(f, default_encoding); 
 }
 
 
-RotationPoly FHEContext::genrate_lut(long (*f)(long message), PlaintextEncoding encoding){
+HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message), PlaintextEncoding encoding){ 
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    if(is_ntrunium){
-        throw std::logic_error("NTRUnium not supported yet!");
-    }else if(is_tfhe){   
-        return RotationPoly(f, tfhe_boot_pk->rlwe_gadget_param.rlwe_param->N, encoding);
-    }else{
-        throw std::logic_error("Non existend scheme type!");
-    }  
+    return tfhe_boot_pk->blind_rotation_key->prepare_accumulator(f, encoding); 
 }
  
 
-RotationPoly FHEContext::genrate_lut(long (*f)(long message)){
-    return genrate_lut(f, this->default_encoding);
+HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message)){ 
+    return tfhe_boot_pk->blind_rotation_key->prepare_accumulator(f, default_encoding); 
 }
  
  
 // Run functional bootstrapping
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, RotationPoly lut, GadgetMulMode mode){ 
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, GadgetMulMode mode){  
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
-    }
-    if(lut.is_amortized_form){
-        lut.to_non_amortized_form();
     } 
+   // TODO: A TFHE bootstrapping PK should have some kindof flag whether it supports amortization or not.
+   // If not, then run the bootstrp in a look here.
     if(is_ntrunium){
         throw std::logic_error("NTRUnium not supported yet!");
-    }else if(is_tfhe && ct_in->is_lwe_ct){      
-        LWECT ct_out(tfhe_boot_pk->extract_lwe_par); 
+    }else if(is_tfhe && ct_in->is_lwe_ct){       
+        LWECT ct_out(ct_in->lwe_c->param);  
         if(ct_in->encoding.type == full_domain){  
-            tfhe_boot_pk->functional_bootstrap(ct_out.ct,  lut.lookup_polynomial, ct_in->lwe_c->ct, deter, ct_in->encoding.plaintext_space);
-        }else if(ct_in->encoding.type == partial_domain){ 
-            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.lookup_polynomial, ct_in->lwe_c->ct, deter);
+            tfhe_boot_pk->full_domain_bootstrap(ct_out.ct, lut.accumulator, ct_in->lwe_c->ct, deter, ct_in->encoding.plaintext_space);
+        }else if(ct_in->encoding.type == partial_domain){  
+            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.accumulator, ct_in->lwe_c->ct, deter); 
         }else if(ct_in->encoding.type == signed_limied_short_int){   
             LWECT c_in_copy(ct_in->lwe_c);  
             c_in_copy = c_in_copy + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space); 
-            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.lookup_polynomial, c_in_copy.ct, deter);   
+            tfhe_boot_pk->bootstrap(ct_out.ct, lut.accumulator, c_in_copy.ct, deter);   
         } 
         else{
             throw std::logic_error("Non existend encoding type!");
@@ -252,28 +241,29 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, RotationPoly lut, GadgetMulMo
 }
  
 
-std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::vector<RotationPoly> lut_vec, GadgetMulMode mode){ 
+std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> lut_vec, GadgetMulMode mode){ 
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
-    } 
-    for(int i = 0; i < lut_vec.size(); ++i){
-        if(lut_vec[i].is_amortized_form == false){
-            lut_vec[i].to_amortization_form();
-        }
-    } 
+    }  
+    std::vector<std::shared_ptr<AbstractAccumulator>> accumulator_vec;
+    for(HomomorphicAccumulator i: lut_vec){
+        accumulator_vec.push_back(i.accumulator); 
+    }
+
     std::vector<Ciphertext> out_vec;
+    // TODO Remind that we will not have a choice of scheme here anymore 
     if(is_ntrunium){
         throw std::logic_error("NTRUnium not supported yet!");
     }else if(is_tfhe){  
         std::vector<LWECT> out_vec_lwe;  
         if(ct_in->encoding.type == full_domain){ 
-            out_vec_lwe = tfhe_boot_pk->functional_bootstrap(lut_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
+            out_vec_lwe = tfhe_boot_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
         }else if(ct_in->encoding.type == partial_domain){ 
-            out_vec_lwe = tfhe_boot_pk->bootstrap(lut_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
+            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
         }else if(ct_in->encoding.type == signed_limied_short_int){ 
             LWECT ct_cast = ct_in->lwe_c;
             ct_cast = ct_cast + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space);
-            out_vec_lwe = tfhe_boot_pk->bootstrap(lut_vec, ct_cast.ct, mode, ct_in->encoding); 
+            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, ct_cast.ct, mode, ct_in->encoding); 
         } 
         else{
              throw std::logic_error("Non existend encoding type!");
@@ -293,7 +283,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long 
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    RotationPoly lut = this->genrate_lut(f, encoding);
+    HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut, mode);
 }
  
@@ -301,7 +291,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long 
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    RotationPoly lut = this->genrate_lut(f);
+    HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut, mode);
 }
 
@@ -309,7 +299,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), Plai
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    RotationPoly lut = this->genrate_lut(f, encoding);
+    HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut, mode);
 }
 
@@ -317,7 +307,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), Gadg
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
-    RotationPoly lut = this->genrate_lut(f);
+    HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut, mode);
 }
  
@@ -348,7 +338,7 @@ void FHEContext::send_secret_key(std::ofstream &os){
 }
 
 void FHEContext::read_secret_key(std::ifstream &is){ 
-    TFHESecretKey sk;  
+    FunctionalBootstrapSecretKey sk;  
     cereal::BinaryInputArchive iarchive(is); 
     iarchive(sk); 
     tfhe_boot_sk = sk;
@@ -379,11 +369,12 @@ void FHEContext::send_public_key(std::ofstream &os){
 
 void FHEContext::read_public_key(std::ifstream &is){
     cereal::BinaryInputArchive iarchive(is); 
-    std::shared_ptr<TFHEPublicKey> pk;  
+    std::shared_ptr<FunctionalBootstrapPublicKey> pk;  
     iarchive(pk);  
     tfhe_boot_pk = pk;
     is_pk_init = true;
-    default_encoding = tfhe_boot_pk->default_encoding;
+    // TODO: Note that we will not have a default encoding (What to do about that?)
+    //default_encoding = tfhe_boot_pk->default_encoding;
     // TODO: For now support only for TFHE
     is_tfhe = true;
 }

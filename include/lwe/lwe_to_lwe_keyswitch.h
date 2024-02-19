@@ -21,8 +21,7 @@ class LWEToLWEKeySwitchKey{
     // To
     LWEGadgetParam destination;
     KeySwitchType ks_type;
-
-
+ 
     ~LWEToLWEKeySwitchKey();
 
     LWEToLWEKeySwitchKey(LWESK *sk_origin, LWEGadgetSK *sk_dest);

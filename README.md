@@ -17,6 +17,7 @@ sudo apt-get install  build-essential
 sudo apt-get install libntl-dev
 sudo apt-get install libfftw3-dev
 sudo apt-get install fftw-dev
+sudo apt-get install libcereal-dev
 ```
 
 Then install Intel Hexl from [link](https://github.com/intel/hexl).

@@ -17,6 +17,15 @@ enum GadgetType {signed_decomposition_gadget, discrete_gaussian_gadget};
 enum KeySwitchType {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
   
 enum PlaintextEncodingType {signed_limied_short_int, signed_limied_short_int_bl, full_domain, partial_domain};
+ 
+enum FullDomainBootstrappingAlgorithm{
+    liu_micciancio_polyakov 
+};
+
+enum BlindRotationOutputType{
+    bro_rlwe, blo_ntru
+};
+
 
 }
 

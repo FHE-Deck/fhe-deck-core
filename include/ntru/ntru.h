@@ -40,7 +40,7 @@ class ntru_sk {
  
     ntru_sk& operator=(const ntru_sk other);
 
-    // These should go to sample
+    // TODO These should go to sample
     static void ternary_poly(NTL::ZZ_pX &temp_f, ntru_param &param);
 
     static void gaussian_poly(NTL::ZZ_pX &temp_f, ntru_param &param);
