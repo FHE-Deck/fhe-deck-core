@@ -226,9 +226,7 @@ void Gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
          
     }
 }
- 
-
-
+  
 
 void Gadget::gaussian_sample_general_modulus(long **out, long* in){   
   
@@ -238,8 +236,7 @@ void Gadget::gaussian_sample_general_modulus(long **out, long* in){
     double floating=0.0; 
     // Additional stuff for perturb_D
     double temp;
- 
-     
+  
     for(int k = 0; k < N; ++k){ 
  
         // Additional stuff for base decompositon

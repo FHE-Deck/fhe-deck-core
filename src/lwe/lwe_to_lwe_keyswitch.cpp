@@ -16,7 +16,7 @@ LWEToLWEKeySwitchKey::~LWEToLWEKeySwitchKey(){
 
 
 
-LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(LWESK *sk_origin, LWEGadgetSK *sk_dest){
+LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){
     origin = sk_origin->param;
     destination = sk_dest->gadget_param;
     set_key_switch_type();
@@ -59,7 +59,7 @@ LWEToLWEKeySwitchKey& LWEToLWEKeySwitchKey::operator=(const LWEToLWEKeySwitchKey
 }
 
  
-void LWEToLWEKeySwitchKey::key_switching_key_gen(LWESK *sk_origin, LWEGadgetSK *sk_dest){ 
+void LWEToLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){ 
  
     ksk = new long**[origin->n]; 
     for(int i = 0; i < origin->n; ++i){

@@ -31,7 +31,7 @@ BlindRotateOutput::~BlindRotateOutput(){
 
 BlindRotateOutput::BlindRotateOutput(RLWECT* rlwe_ct){
     this->type = bro_rlwe;
-    this-> rlwe_ct = rlwe_ct;
+    this->rlwe_ct = rlwe_ct;
 }
 
 
@@ -46,7 +46,7 @@ void BlindRotateOutput::extract_lwe(long* lwe_ct){
 void BlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<AbstractAccumulator> acc){
     if(type == bro_rlwe){ 
         std::shared_ptr<RotationPolyAccumulator> acc_msg = std::static_pointer_cast<RotationPolyAccumulator>(acc);
-        this->rlwe_ct->mul(bl_out->rlwe_ct, acc_msg->rot_poly_amortized.lookup_polynomial);
+        this->rlwe_ct->mul(bl_out->rlwe_ct, &acc_msg->rot_poly_amortized);
     }else{
         throw std::logic_error("BlindRotateOutput::~BlindRotateOutput: BlindRotationOutputType not recognized!");
     }

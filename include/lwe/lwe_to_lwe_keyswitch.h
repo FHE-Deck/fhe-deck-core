@@ -24,7 +24,7 @@ class LWEToLWEKeySwitchKey{
  
     ~LWEToLWEKeySwitchKey();
 
-    LWEToLWEKeySwitchKey(LWESK *sk_origin, LWEGadgetSK *sk_dest);
+    LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
  
     LWEToLWEKeySwitchKey(const LWEToLWEKeySwitchKey &other);
    
@@ -38,7 +38,7 @@ class LWEToLWEKeySwitchKey{
 
     void set_key_switch_type();
 
-    void key_switching_key_gen(LWESK *sk_origin, LWEGadgetSK *sk_dest);
+    void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
 
 }; 
  

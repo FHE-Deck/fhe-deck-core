@@ -58,7 +58,7 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){
     if(is_ntrunium){ 
         throw std::logic_error("NTRUnium not Supported Yet!");
     }else if(is_tfhe){       
-       LWECT c(tfhe_boot_sk.extract_lwe_sk.encrypt_ct(encoding.encode_message(message))); 
+       LWECT c(tfhe_boot_sk.extract_lwe_sk->encrypt_ct(encoding.encode_message(message))); 
        return Ciphertext(c, encoding, this);
     }else{
         std::cout << "Scheme not set" << std::endl;
@@ -135,7 +135,7 @@ long FHEContext::decrypt(Ciphertext *c_in){
     if(is_ntrunium){ 
         throw std::logic_error("NTRUnium not supported Yet!");
     }else if(is_tfhe){  
-        long phase = tfhe_boot_sk.extract_lwe_sk.phase(c_in->lwe_c->ct);    
+        long phase = tfhe_boot_sk.extract_lwe_sk->phase(c_in->lwe_c->ct);    
         return c_in->encoding.decode_message(phase); 
     }else{
         std::cout << "Scheme not set" << std::endl;
@@ -222,7 +222,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, G
         throw std::logic_error("NTRUnium not supported yet!");
     }else if(is_tfhe && ct_in->is_lwe_ct){       
         LWECT ct_out(ct_in->lwe_c->param);  
-        if(ct_in->encoding.type == full_domain){  
+        if(ct_in->encoding.type == full_domain){    
             tfhe_boot_pk->full_domain_bootstrap(ct_out.ct, lut.accumulator, ct_in->lwe_c->ct, deter, ct_in->encoding.plaintext_space);
         }else if(ct_in->encoding.type == partial_domain){  
             tfhe_boot_pk->bootstrap(ct_out.ct,  lut.accumulator, ct_in->lwe_c->ct, deter); 

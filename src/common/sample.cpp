@@ -2,6 +2,7 @@
  
 
 using namespace fhe_deck;
+
 Sampler::Sampler(){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
@@ -103,3 +104,34 @@ void Sampler::uniform_array(long *a, int n, long Q){
     }
      
 }
+
+
+void Distribution::fill_array(long *in, int length){
+    for(int i = 0; i < length; ++i){
+        in[i] = this->next();
+    }
+}
+
+StandardUniformIntegerDistribution::StandardUniformIntegerDistribution(long from, long to){ 
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r()};
+    e = std::mt19937_64(seed);  
+    dist = std::uniform_int_distribution<long>(from, to);
+}
+
+long StandardUniformIntegerDistribution::next(){
+    return dist(e);
+}
+
+StandardRoundedGaussianDistribution::StandardRoundedGaussianDistribution(double expectation, double stddev){ 
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r()};
+    e = std::mt19937_64(seed);  
+    dist = std::normal_distribution<double>(expectation, stddev);
+}
+
+
+long StandardRoundedGaussianDistribution::next(){
+    return (long)round(dist(e));
+}
+

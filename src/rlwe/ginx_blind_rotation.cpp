@@ -13,16 +13,16 @@ GINXBlindRotationKey::~GINXBlindRotationKey(){
 }
 
 
-GINXBlindRotationKey::GINXBlindRotationKey(RLWEGadgetSK *rlwe_gadget_sk, LWESK *lwe_sk){
+GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk, std::shared_ptr<LWESK> lwe_sk){
     this->rlwe_gadget_param = rlwe_gadget_sk->gadget_param;
     this->lwe_par = lwe_sk->param; 
     
-    this->rotation_size = this->rlwe_gadget_param.rlwe_param->N * 2;
-    this->actual_rotation_size = this->rlwe_gadget_param.rlwe_param->N;
+    this->rotation_size = this->rlwe_gadget_param->rlwe_param->N * 2;
+    this->actual_rotation_size = this->rlwe_gadget_param->rlwe_param->N;
     LWEParam lwe_par_tiny = lwe_par->modulus_switch(actual_rotation_size);
     this->actual_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
 
-    this->next_acc = RLWECT(this->rlwe_gadget_param.rlwe_param);
+    this->next_acc = RLWECT(this->rlwe_gadget_param->rlwe_param);
     long *ext_s; 
     this->key_d = lwe_par->key_d;
     if(key_d == binary){   
@@ -41,10 +41,10 @@ GINXBlindRotationKey::GINXBlindRotationKey(const GINXBlindRotationKey &other){
     this->rlwe_gadget_param = other.rlwe_gadget_param;
     this->lwe_par = other.lwe_par; 
 
-    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param->rlwe_param->N);
     this->actual_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
 
-    this->next_acc = RLWECT(this->rlwe_gadget_param.rlwe_param);
+    this->next_acc = RLWECT(this->rlwe_gadget_param->rlwe_param);
     this->key_d = lwe_par->key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
@@ -60,10 +60,10 @@ GINXBlindRotationKey& GINXBlindRotationKey::operator=(const GINXBlindRotationKey
     this->rlwe_gadget_param = other.rlwe_gadget_param;
     this->lwe_par = other.lwe_par; 
 
-    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param.rlwe_param->N);
+    LWEParam lwe_par_tiny = lwe_par->modulus_switch(this->rlwe_gadget_param->rlwe_param->N);
     this->actual_lwe_par = std::shared_ptr<LWEParam>(new LWEParam(lwe_par_tiny.n, lwe_par_tiny.Q, lwe_par_tiny.key_d, lwe_par_tiny.stddev));
 
-    this->next_acc = RLWECT(this->rlwe_gadget_param.rlwe_param);
+    this->next_acc = RLWECT(this->rlwe_gadget_param->rlwe_param);
     this->key_d = lwe_par->key_d;
     if(this->key_d == binary){  
         init_binary_key(); 
@@ -81,11 +81,11 @@ void GINXBlindRotationKey::blind_rotate(std::shared_ptr<BlindRotateOutput> out, 
     std::shared_ptr<RotationPolyAccumulator> acc_msg = std::dynamic_pointer_cast<RotationPolyAccumulator>(acc);  
     
     // Set curr_acc.a to zero
-    for(int i = 0; i < rlwe_gadget_param.rlwe_param->N; ++i){
-        out->rlwe_ct->a[i] = 0;
+    for(int i = 0; i < rlwe_gadget_param->rlwe_param->N; ++i){
+        out->rlwe_ct->a.coefs[i] = 0;
     }   
-    Utils::negacyclic_rotate_poly(out->rlwe_ct->b, acc_msg->rot_poly.lookup_polynomial, rlwe_gadget_param.rlwe_param->N, lwe_ct_in[0]);   
-    Utils::array_mod_form(out->rlwe_ct->b, out->rlwe_ct->b, rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q);
+ 
+    acc_msg->rot_poly.negacyclic_rotate(&out->rlwe_ct->b, lwe_ct_in[0]); 
       
     if(key_d==binary){     
         for(int i = 0; i < lwe_par->n; ++i){    
@@ -114,13 +114,11 @@ void GINXBlindRotationKey::blind_rotate(std::shared_ptr<BlindRotateOutput> out, 
         }
     }else{ 
         throw std::logic_error("GINXBlindRotationKey::blind_rotate: key_d not supported!");
-    }
-    Utils::array_mod_form(out->rlwe_ct->a, out->rlwe_ct->a, rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q); 
-    Utils::array_mod_form(out->rlwe_ct->b, out->rlwe_ct->b, rlwe_gadget_param.rlwe_param->N, rlwe_gadget_param.rlwe_param->Q);
+    } 
 }
 
 std::shared_ptr<BlindRotateOutput> GINXBlindRotationKey::init_blind_rotate_output(){ 
-    RLWECT* out = new RLWECT(rlwe_gadget_param.rlwe_param);
+    RLWECT* out = new RLWECT(rlwe_gadget_param->rlwe_param);
     out->set_computing_engine();
     return std::shared_ptr<BlindRotateOutput>(new BlindRotateOutput(out)); 
 }
@@ -141,8 +139,14 @@ std::shared_ptr<AbstractAccumulator> GINXBlindRotationKey::prepare_accumulator(l
 }
 
 
-void GINXBlindRotationKey::blind_rotation_key_gen(RLWEGadgetSK *rlwe_gadget_sk, long* ext_s){   
-    long *ext_key_mono = rlwe_gadget_sk->gadget_param.rlwe_param->init_zero_poly();  
+void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk, long* ext_s){   
+    // TODO: Rewrite this part using the Poolynomial class.
+    long *ext_key_mono = new long[rlwe_gadget_sk->gadget_param->rlwe_param->N];
+    // TODO: This zeroizing is ugly
+    for(int i = 0; i < rlwe_gadget_sk->gadget_param->rlwe_param->N; ++i){
+        ext_key_mono[i] = 0;
+    }
+
     this->bk = new RLWEGadgetCT[sizeof_ext_s];    
     for(int i = 0; i < sizeof_ext_s; ++i){   
         ext_key_mono[0] = ext_s[i];      
@@ -170,7 +174,7 @@ void GINXBlindRotationKey::init_ternary_key(){
 
 
 
-long* GINXBlindRotationKey::init_binary_extended_lwe_key(LWESK *lwe_sk){
+long* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;
@@ -182,7 +186,7 @@ long* GINXBlindRotationKey::init_binary_extended_lwe_key(LWESK *lwe_sk){
         return ext_s;
 }
 
-long* GINXBlindRotationKey::init_ternary_extended_lwe_key(LWESK *lwe_sk){
+long* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;

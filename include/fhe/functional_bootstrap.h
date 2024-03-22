@@ -191,15 +191,16 @@ class FunctionalBootstrapSecretKey{
  
     public:
  
-    RLWEGadgetSK rlwe_gadget_sk;
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk;
  
-    LWEGadgetSK lwe_gadget_sk;
+    
+    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk;
 
     // LWE after modulus switching;
-    LWESK lwe_sk;
+    std::shared_ptr<LWESK> lwe_sk;
 
     // Need to have an LWE instance for the input to the bootstrapping (currently we don't have!!!)
-    LWESK extract_lwe_sk;
+    std::shared_ptr<LWESK> extract_lwe_sk;
    
     bool is_ext_init = false;
     int sizeof_ext_s;
@@ -220,7 +221,7 @@ class FunctionalBootstrapSecretKey{
     FunctionalBootstrapSecretKey() = default;
 
     // Generates the secret keys 
-    FunctionalBootstrapSecretKey(RLWEGadgetParam rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, PolynomialArithmetic sk_arithmetic, int masking_size, double stddev_masking, PlaintextEncoding default_encoding, FullDomainBootstrappingAlgorithm fdfb_alg);
+    FunctionalBootstrapSecretKey(std::shared_ptr<RLWEGadgetParam> rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, int masking_size, double stddev_masking, PlaintextEncoding default_encoding, FullDomainBootstrappingAlgorithm fdfb_alg);
 
     FunctionalBootstrapSecretKey(const FunctionalBootstrapSecretKey& other);
 
@@ -246,9 +247,9 @@ class FunctionalBootstrapSecretKey{
     {   
         ar(rlwe_gadget_sk, lwe_gadget_sk, extract_lwe_sk, masking_size, stddev_masking, default_encoding);  
           
-        long q = rlwe_gadget_sk.gadget_param.rlwe_param->N * 2;  
-        this->lwe_sk = lwe_gadget_sk.lwe.modulus_switch(q);    
-        if(lwe_gadget_sk.gadget_param.lwe_param->key_d == binary){   
+        long q = rlwe_gadget_sk->gadget_param->rlwe_param->N * 2;  
+        this->lwe_sk = lwe_gadget_sk->lwe->modulus_switch(q);    
+        if(lwe_gadget_sk->gadget_param.lwe_param->key_d == binary){   
             this->init_binary_key(); 
         }else{  
             this->init_ternary_key();
@@ -263,8 +264,7 @@ class FunctionalBootstrapSecretKey{
     void init_ternary_key();
 
 };
-
-
+ 
 
 
 }

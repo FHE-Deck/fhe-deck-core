@@ -139,7 +139,7 @@ void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, long *poly){
 
 void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, long *poly, double additional_scale){ 
     // DONE: Scale should be precomputed in the constructor
-    // DONE: For cyclic scale is plan_size, for negacyclic its plan_size * 2 (I think)
+    // DONE: For cyclic scale is plan_size, for negacyclic its plan_size * 2  
     double scale = (double)(plan_size * additional_scale);
     for(int i = 0; i < N; ++i){   
         in[i] = (double)poly[i] / scale; 

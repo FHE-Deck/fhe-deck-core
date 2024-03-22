@@ -30,18 +30,20 @@ class LWEParam{
    
     long* init_ct();
  
+    // TODO: This is handled by a LWECT
     void scalar_mul(long *out, long *ct, long scalar);
-
+    // TODO: This is handled by a LWECT
     void scalar_mul_lazy(long *out, long *ct, long scalar);
-
+    // TODO: This is handled by a LWECT
     void add(long *out, long *ct_1, long *ct_2);
-
+    // TODO: This is handled by a LWECT
     void add_lazy(long *out, long *ct_1, long *ct_2); 
 
     LWEParam modulus_switch(long new_modulus);
 
+    // TODO: This is handled by a LWEModSwitcher
     void switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param);
-
+    // TODO: This is handled by a LWEModSwitcher
     void switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param);
  
     template <class Archive>
@@ -100,8 +102,7 @@ class LWECT{
     void sub(LWECT *ct);
     
     void add_lazy(LWECT *ct); 
-    
-    //void switch_modulus(LWEParam &new_param);
+     
   
     void add(long b);
   
@@ -197,8 +198,11 @@ class LWESK {
  
     public:  
     std::shared_ptr<LWEParam> param;
- 
-    Sampler rand; 
+  
+    std::shared_ptr<Distribution> unif_dist;
+    std::shared_ptr<Distribution> error_dist;
+    std::shared_ptr<Distribution> sk_dist;
+
     long *s;
     bool is_init = false;
   
@@ -209,14 +213,14 @@ class LWESK {
     LWESK(int n, long Q, double stddev, KeyDistribution key_d);
 
     LWESK(std::shared_ptr<LWEParam> lwe_par);
-
+  
     LWESK(std::shared_ptr<LWEParam> lwe_par, long* key);
  
     LWESK(const LWESK &other);
 
     LWESK& operator=(const LWESK other);
 
-    LWEParam get_lwe_param();
+    std::shared_ptr<LWEParam> get_lwe_param();
    
     long* encrypt(long m);
     
@@ -231,12 +235,12 @@ class LWESK {
     long phase(long *ct);
     
     long error(long *ct, long m);
-    
+
+    // NOTE: Decryption only makes sense with respect to a Plaintext encoding.   
     long decrypt(long *ct,  int t); 
  
-    LWESK modulus_switch(long new_modulus);
-
-    
+    std::shared_ptr<LWESK> modulus_switch(long new_modulus);
+ 
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -307,11 +311,11 @@ class LWEGadgetSK{
 
   public:
     LWEGadgetParam gadget_param;
-    LWESK lwe;
+    std::shared_ptr<LWESK> lwe;
 
     LWEGadgetSK();
 
-    LWEGadgetSK(LWEGadgetParam lwe_g_par, LWESK lwe);
+    LWEGadgetSK(LWEGadgetParam lwe_g_par, std::shared_ptr<LWESK> lwe);
   
     LWEGadgetSK(const LWEGadgetSK& other);
 
@@ -356,7 +360,7 @@ class LWEPublicKey{
 
     ~LWEPublicKey();
 
-    LWEPublicKey(LWESK *lwe_sk, int key_size, double stddev);
+    LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int key_size, double stddev);
 
     LWEPublicKey(const LWEPublicKey &other);
    
@@ -371,12 +375,7 @@ class LWEPublicKey{
 };
 
 
-
-
-
-
-
-
+ 
 
 
 

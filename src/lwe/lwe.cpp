@@ -79,15 +79,7 @@ void LWEParam::switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEPara
     }
 }
 
-
-/*
-template <class Archive>
-void lwe_param::serialize(Archive & ar ){ 
-    ar(n, Q, key_d, stddev); 
-}
-
-*/
-
+  
 
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
@@ -108,8 +100,7 @@ LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
 
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
-    this->ct = param->init_ct();
-    //this->pe = c.pe;
+    this->ct = param->init_ct(); 
     for(int i = 0; i < param->n+1; ++i){
         this->ct[i] = c.ct[i];
     }
@@ -330,20 +321,11 @@ void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){
             // Divide and round to closest integer
             out_ct[i] = (long)round(temp/Q_from); 
         }
-
-        /*
-        for(int i = 0; i < ct_size; ++i){
-            temp = Q_to *  (double)in_ct[i];
-            out_ct[i] = (long)(temp/Q_from); 
-        }
-        */
+ 
     }   
 }
 
-
-
-
-   
+ 
 
  
 LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, int basis){
@@ -412,29 +394,12 @@ void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar
             lwe_param->add_lazy(out_ct, out_ct, temp_ct);
         } 
         delete[] temp_ct;
-    } 
-    // Modulus reduction only at the  end
-    //Utils::array_mod_form(out_ct, out_ct, lwe_param->n+1, lwe_param->Q); 
+    }  
     delete[] scalar_decomposed;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 LWESK::~LWESK(){
@@ -447,26 +412,35 @@ LWESK::~LWESK(){
 LWESK::LWESK(){}
 
 
-LWESK::LWESK(int n, long Q,  double stddev, KeyDistribution key_d){
-    //LWEParam lwe_par(n, Q, key_d, stddev);
+LWESK::LWESK(int n, long Q,  double stddev, KeyDistribution key_d){ 
     this->param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, key_d, stddev));  
     this->s = new long[param->n];
-    if(key_d == binary){ 
-        this->rand.binary_array(this->s, param->n); 
-    }else{
-        rand.ternary_array(this->s, param->n); 
+
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, Q));
+    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
+
+    if(key_d == binary){  
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
+    }else{ 
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
     }
+    sk_dist->fill_array(this->s, param->n);
     is_init = true;
 }
 
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par){
     this->param = lwe_par;  
     this->s = new long[param->n];
-    if(param->key_d == binary){ 
-        this->rand.binary_array(this->s, param->n); 
-    }else{
-        rand.ternary_array(this->s, param->n); 
+
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->Q));
+    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, param->stddev));
+
+    if(param->key_d == binary){  
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
+    }else{ 
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
     }
+    sk_dist->fill_array(this->s, param->n);
     is_init = true;
 }
 
@@ -474,6 +448,10 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par){
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key){
     this->param = lwe_par;  
     this->s = new long[lwe_par->n];
+
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->Q));
+    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, param->stddev));
+
     for(int i = 0; i < lwe_par->n; ++i){
         this->s[i] = key[i];
     } 
@@ -482,40 +460,17 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key){
 
 
 LWESK::LWESK(const LWESK &other){
-    this->param = other.param;
-     this->s = new long[param->n];
-    for(int i = 0; i < param->n; ++i){
-        this->s[i] = other.s[i];
-    } 
-    this->is_init = true;
-    is_init = true;
+    std::runtime_error("LWESK::LWESK(const LWESK &other): Don't copy the secret key!"); 
 }
  
 
 LWESK& LWESK::operator=(const LWESK other){
-    if (this == &other)
-    {
-        return *this;
-    }
-    if(this->is_init == false){
-        this->param = other.param;
-        this->s = new long[param->n];
-        for(int i = 0; i < param->n; ++i){
-            this->s[i] = other.s[i];
-        } 
-        this->is_init = true;
-    }else if(this->is_init && param->n == other.param->n){
-        for(int i = 0; i < param->n; ++i){
-            this->s[i] = other.s[i];
-        } 
-    }else{
-        throw std::logic_error("Wrong case in lwe_sk::operator=");
-    } 
+    std::runtime_error("LWESK::operator=(const LWESK other): Don't copy the secret key!"); 
     return *this;
 }
  
-LWEParam LWESK::get_lwe_param(){
-    return LWEParam(param->n, param->Q, param->key_d, param->stddev);
+std::shared_ptr<LWEParam> LWESK::get_lwe_param(){
+    return param;
 } 
 
 
@@ -533,10 +488,10 @@ LWECT LWESK::encrypt_ct(long m){
 
 
 
-void LWESK::encrypt(long *ct, long m){    
-    ct[0] = (long)round(rand.gaussian(0, param->stddev)) + (long)m;  
-    for(int i=1; i < param->n+1; ++i){   
-        ct[i] = Utils::integer_mod_form(rand.uniform(param->Q), param->Q); 
+void LWESK::encrypt(long *ct, long m){     
+    ct[0] = error_dist->next() + (long)m; 
+    for(int i=1; i < param->n+1; ++i){    
+        ct[i] = Utils::integer_mod_form(unif_dist->next(), param->Q); 
         ct[0] -= s[i-1] * ct[i];
         ct[0] = Utils::integer_mod_form(ct[0] % param->Q, param->Q);
     }   
@@ -581,18 +536,17 @@ long LWESK::decrypt(long *ct, int t){
     return Utils::integer_mod_form(out, t);
 }
    
-LWESK LWESK::modulus_switch(long new_modulus){
+std::shared_ptr<LWESK> LWESK::modulus_switch(long new_modulus){
     LWEParam lwe_par = this->param->modulus_switch(new_modulus);
-    LWESK lwe(std::shared_ptr<LWEParam>(new LWEParam(lwe_par.n, lwe_par.Q, lwe_par.key_d, lwe_par.stddev)), this->s);
-    //LWESK lwe(lwe_par, this->s);
-    return lwe;
+    LWESK *lwe = new LWESK(std::shared_ptr<LWEParam>(new LWEParam(lwe_par.n, lwe_par.Q, lwe_par.key_d, lwe_par.stddev)), this->s); 
+    return std::shared_ptr<LWESK>(lwe);
 }
  
 
 LWEGadgetSK::LWEGadgetSK(){}
 
 
-LWEGadgetSK::LWEGadgetSK(LWEGadgetParam lwe_g_par, LWESK lwe){
+LWEGadgetSK::LWEGadgetSK(LWEGadgetParam lwe_g_par, std::shared_ptr<LWESK> lwe){
     this->lwe = lwe;
     this->gadget_param = lwe_g_par;
 }
@@ -617,10 +571,10 @@ long** LWEGadgetSK::gadget_encrypt(long m){
 
 void LWEGadgetSK::gadget_encrypt(long** gadget_ct, long m){
     long temp_basis = 1; 
-    gadget_ct[0] = lwe.encrypt(m);
+    gadget_ct[0] = lwe->encrypt(m);
     for(int i = 1; i < gadget_param.ell; ++i){
         temp_basis *= gadget_param.basis; 
-        gadget_ct[i] = lwe.encrypt(m * temp_basis);
+        gadget_ct[i] = lwe->encrypt(m * temp_basis);
     } 
 }
  
@@ -630,7 +584,7 @@ LWEPublicKey::~LWEPublicKey(){
 }
 
  
-LWEPublicKey::LWEPublicKey(LWESK *lwe_sk, int size, double stddev){
+LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stddev){
     this->size = size;
     this->stddev = stddev;
     this->param = lwe_sk->param;

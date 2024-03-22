@@ -7,6 +7,8 @@
 
 namespace fhe_deck{
 
+
+// DEPRECATED 
 class Sampler{
  
     //private: 
@@ -48,9 +50,46 @@ class Sampler{
 
         void gaussian_array(long *a, int n, double expectation, double stddev);
 
-        void uniform_array(long *a, int n, long Q);
+        void uniform_array(long *a, int n, long Q); 
+};
+
+
+class Distribution{
+
+    public: 
+    virtual long next() = 0;
+    
+    void fill_array(long *in, int length); 
 
 };
+
+
+class StandardUniformIntegerDistribution : public Distribution{
+
+    public: 
+    std::uniform_int_distribution<long> dist;
+    std::mt19937_64 e;
+
+    StandardUniformIntegerDistribution(long from, long to);
+  
+    long next();
+
+};
+
+
+class StandardRoundedGaussianDistribution : public Distribution{
+
+    public: 
+    std::normal_distribution<double> dist;
+    std::mt19937_64 e;
+
+    StandardRoundedGaussianDistribution(double expectation, double stddev);
+  
+    long next();
+
+
+};
+
 
 }
 

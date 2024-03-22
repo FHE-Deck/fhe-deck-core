@@ -22,7 +22,7 @@ ntrunium_gen::ntrunium_gen(gadget_ntru ntru_g, ntru_param ntru_par, LWEGadgetSK 
         // Negacyclic ring
         q = 2 * ntru_g.gadget_param.param.N;  
     }   
-    this->lwe = lwe_g.lwe.modulus_switch(q);   
+    this->lwe = lwe_g.lwe->modulus_switch(q);   
     if(lwe_g.gadget_param.lwe_param->key_d == binary){   
         this->init_binary_key(); 
     }else{  
@@ -37,10 +37,10 @@ void ntrunium_gen::init_binary_key(){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;
-        sizeof_ext_s = lwe.param->n;
+        sizeof_ext_s = lwe->param->n;
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe.param->n; ++i){
-            this->ext_s[i] = lwe.s[i];
+        for(int i = 0; i < lwe->param->n; ++i){
+            this->ext_s[i] = lwe->s[i];
         }
 }
 
@@ -50,23 +50,23 @@ void ntrunium_gen::init_ternary_key(){
         this->u = new long[sizeof_u];
         u[0] = -1;
         u[1] = 1;
-        sizeof_ext_s = 2*lwe.param->n; 
+        sizeof_ext_s = 2*lwe->param->n; 
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe.param->n; ++i){
-            switch(lwe.s[i]){
+        for(int i = 0; i < lwe->param->n; ++i){
+            switch(lwe->s[i]){
                     case -1:
                             ext_s[i] = 1;
-                            ext_s[i+lwe.param->n] = 0;
+                            ext_s[i+lwe->param->n] = 0;
                             break;
                     case 0:  
                             ext_s[i] = 0;
-                            ext_s[i+lwe.param->n] = 0;
+                            ext_s[i+lwe->param->n] = 0;
                             break;
                     case 1:  
                             ext_s[i] = 0;
-                            ext_s[i+lwe.param->n] = 1;
+                            ext_s[i+lwe->param->n] = 1;
                             break;
-                    default: std::cout << "Fatal Error: lwe.s[" << i << "]: " << lwe.s[i] << std::endl;
+                    default: std::cout << "Fatal Error: lwe.s[" << i << "]: " << lwe->s[i] << std::endl;
             } 
         }
 }
@@ -74,7 +74,7 @@ void ntrunium_gen::init_ternary_key(){
 ntrunium* ntrunium_gen::get_ntrunium(){   
     long ***ksk = ntru_to_lwe_key_switch_key_gen();  
     ntru_gadget_ct* bk_gadget = blind_rotation_key_gen();     
-    return new ntrunium(ntru_g.gadget_param, ntru_par, lwe_g.gadget_param, lwe.param, ksk, bk_gadget);
+    return new ntrunium(ntru_g.gadget_param, ntru_par, lwe_g.gadget_param, lwe->param, ksk, bk_gadget);
 }
 
 
@@ -206,13 +206,13 @@ void ntrunium_named_param_generator::init_ntrunium_small_test_params_B(){
     lwe_stddev = 2;  
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev));  
-    lwe = LWESK(param);
+    lwe = std::shared_ptr<LWESK>(new LWESK(param));
     lwe_g_par = LWEGadgetParam(param, lwe_basis);
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
     lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
-    lwe_small = lwe_g.lwe.modulus_switch(q);
+    lwe_small = lwe_g.lwe->modulus_switch(q);
   
     // Let generate the secret keys for NTRU
     //  Key generation 
@@ -246,13 +246,13 @@ void ntrunium_named_param_generator::init_ntrunium_C_11_B(){
     lwe_stddev = 1024;  
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev));  
-    lwe = LWESK(param);
+    lwe = std::shared_ptr<LWESK>(new LWESK(param));
     lwe_g_par = LWEGadgetParam(param, lwe_basis);
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
     lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
-    lwe_small = lwe_g.lwe.modulus_switch(q);
+    lwe_small = lwe_g.lwe->modulus_switch(q);
   
     // Let generate the secret keys for NTRU
     //  Key generation 
@@ -288,13 +288,13 @@ void ntrunium_named_param_generator::init_ntrunium_C_12_B(){
     lwe_stddev = 16384;  
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev));  
-    lwe = LWESK(param);
+    lwe = std::shared_ptr<LWESK>(new LWESK(param));
     lwe_g_par = LWEGadgetParam(param, lwe_basis);
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
     lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
-    lwe_small = lwe_g.lwe.modulus_switch(q);
+    lwe_small = lwe_g.lwe->modulus_switch(q);
   
     // Let generate the secret keys for NTRU
     //  Key generation 
@@ -329,13 +329,13 @@ void ntrunium_named_param_generator::init_ntrunium_C_13_B(){
     lwe_stddev = 16384;  
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev));  
-    lwe = LWESK(param);
+    lwe = std::shared_ptr<LWESK>(new LWESK(param));
     lwe_g_par = LWEGadgetParam(param, lwe_basis);
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
     lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
-    lwe_small = lwe_g.lwe.modulus_switch(q);
+    lwe_small = lwe_g.lwe->modulus_switch(q);
   
     // Let generate the secret keys for NTRU
     //  Key generation 
@@ -369,13 +369,13 @@ void ntrunium_named_param_generator::init_ntrunium_C_14_B(){
     lwe_stddev = 16384;  
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev));  
-    lwe = LWESK(param);
+    lwe = std::shared_ptr<LWESK>(new LWESK(param));
     lwe_g_par = LWEGadgetParam(param, lwe_basis);
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
     lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
-    lwe_small = lwe_g.lwe.modulus_switch(q);
+    lwe_small = lwe_g.lwe->modulus_switch(q);
   
     // Let generate the secret keys for NTRU
     //  Key generation 

@@ -129,6 +129,7 @@ void test_for_default_full_domain_encoding(){
   
     HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
  
+
     ct4 = context.eval_lut(&ct1, lut_identity);
     std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl;
     assertm(context.decrypt(&ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
@@ -167,7 +168,6 @@ void test_for_default_full_domain_encoding(){
    
     std::cout << "Done. See you....." << std::endl;
 }
-
 
 
 void test_for_partial_domain_encoding(){
@@ -290,6 +290,29 @@ void test_for_partial_domain_encoding(){
 
 
 
+void demo(){
+    FHEContext context; 
+    std::cout << "Generate Keys..." << std::endl;
+    context.generate_context(tfhe_11_NTT);
+    context.set_default_message_encoding_type(signed_limied_short_int);
+
+    Ciphertext c0  = context.encrypt(0);  
+    Ciphertext c1  = context.encrypt(1);    
+    Ciphertext ct = c0 - c1;
+
+    auto fun_relu = [](long m) -> long {
+        if(m >= 0){
+            return m; 
+        }else{
+            return 0;
+        }
+    };  
+    Ciphertext ct_out = context.eval_lut(&ct, fun_relu); 
+    std::cout << "decrypt(&ct_out): "  << context.decrypt(&ct_out) << std::endl;
+
+    std::ofstream os("ct_out.cereal", std::ios::binary);
+    os << ct_out; 
+}
 
 void test_for_signed_limied_short_int(){
     
@@ -927,7 +950,7 @@ void serialization_test(){
 
 
 int main(){  
-     
+      
     basic_Ciphertext_tests();
  
     test_for_partial_domain_encoding();
@@ -941,9 +964,11 @@ int main(){
     amortized_partial_domain_bootstrap_test();
  
     amortized_12_partial_domain_bootstrap_test(); 
+ 
 
  /*
     serialization_test(); 
  */
-
+ 
+ 
 }

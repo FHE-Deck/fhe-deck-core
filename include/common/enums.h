@@ -11,6 +11,8 @@ enum ModulusType {any, power_of_two};
 enum KeyDistribution {binary, ternary, uniform};
 
 enum PolynomialArithmetic {ntl, double_fft, long_double_fft, hexl_ntt};
+
+enum PolynomialInversionEngineType {ntl_inv};
  
 enum GadgetType {signed_decomposition_gadget, discrete_gaussian_gadget};
 

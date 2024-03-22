@@ -30,12 +30,12 @@ FHEConfiguration::FHEConfiguration(FHENamedParams name){
   
 
 void FHEConfiguration::generate_bootstapping_keys(){
-    this->boot_sk = std::unique_ptr<FunctionalBootstrapSecretKey>(new FunctionalBootstrapSecretKey(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding, fdfb_alg)); 
+    this->boot_sk = std::unique_ptr<FunctionalBootstrapSecretKey>(new FunctionalBootstrapSecretKey(rlwe_gadget_par, lwe_gadget_par, masking_size, stddev_masking, default_encoding, fdfb_alg)); 
     this->boot_pk = boot_sk->get_public_param(); 
 } 
 
 FunctionalBootstrapSecretKey FHEConfiguration::generate_secret_key(){
-    return FunctionalBootstrapSecretKey(rlwe_gadget_par, lwe_gadget_par, sk_arithmetic, masking_size, stddev_masking, default_encoding, fdfb_alg);
+    return FunctionalBootstrapSecretKey(rlwe_gadget_par, lwe_gadget_par, masking_size, stddev_masking, default_encoding, fdfb_alg);
 }
  
    
@@ -56,8 +56,8 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt));
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
-    sk_arithmetic = hexl_ntt;
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget)); 
+    //sk_arithmetic = hexl_ntt;
 
     // 2**9 + 400
     int n = 912;
@@ -92,14 +92,14 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt));
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget)); 
     
-    sk_arithmetic = ntl;
+    //sk_arithmetic = ntl;
 
     // 2**9 + 400
     int n = 912;
     int lwe_basis = 128;
-    // 2**(14)
+    // 2**(26)
     double lwe_stddev = 67108864; 
     
     lwe_gadget_par = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(n, Q, binary, lwe_stddev)), lwe_basis); 
@@ -122,12 +122,12 @@ void FHEConfiguration::init_tfhe_11_B(){
     double stddev_simul = 505;
     masking_size = 3370;
     stddev_masking = 4010391;
-
+ 
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft));
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
-    sk_arithmetic = double_fft;
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget));  
+   //sk_arithmetic = double_fft;
 
     // 2**9 + 430
     int n = 912;
@@ -157,8 +157,8 @@ void FHEConfiguration::init_tfhe_11_flood(){
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, double_fft));
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget);
-    sk_arithmetic = double_fft;
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget)); 
+    //sk_arithmetic = double_fft;
 
     // 2**9 + 430
     int n = 912;
@@ -194,8 +194,8 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt));
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
-    sk_arithmetic = hexl_ntt;
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget)); 
+    //sk_arithmetic = hexl_ntt;
  
     int n = 950;
     // 2**9
@@ -240,11 +240,9 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     std::shared_ptr<RLWEParam> rlwe_par(new RLWEParam(negacyclic, N, Q, ternary, any, rlwe_stddev, hexl_ntt)); 
     Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget); 
     Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
-    rlwe_gadget_par = RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget); 
-    sk_arithmetic = hexl_ntt; 
+    rlwe_gadget_par = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_par, rlwe_basis, deter_gadget, rand_gadget)); 
+    //sk_arithmetic = hexl_ntt; 
 
-    
- 
     int n = 950;
     // 2**9
     int lwe_basis = 512; 

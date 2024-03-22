@@ -22,7 +22,7 @@ public:
     // LWE gadget parameters for keyswitching from NTRU to LWE
     LWEGadgetSK lwe_g;
     // LWE parameters for the LWE to blind rotate (modulus switched after the key switching, so the secret key is the same)
-    LWESK lwe;
+    std::shared_ptr<LWESK> lwe;
   
     // This is for the extension of the secret key for the blind rotation algorithm
     long *ext_s;
@@ -86,11 +86,12 @@ class ntrunium_named_param_generator{
     int lwe_stddev;
     int lwe_basis;
     std::shared_ptr<LWEParam> param; 
-    LWESK lwe; 
+    std::shared_ptr<LWESK> lwe; 
     LWEGadgetParam lwe_g_par; 
     LWEGadgetSK lwe_g; 
     LWEParam lwe_par_small;
-    LWESK lwe_small;
+
+    std::shared_ptr<LWESK> lwe_small;
     
     ntrunium_gen* boot_sk; 
     ntrunium* boot; 

@@ -3,18 +3,18 @@
 
 #include "utils.h"
 #include "plaintext_encoding.h"
-
+#include "polynomial.h"
 
 namespace fhe_deck{
 
 
 
-class RotationPoly{
+class RotationPoly : public Polynomial{
  
 public:
 
-    long* lookup_polynomial;
-    long N; 
+    //long* coefs;
+    //long N; 
     PlaintextEncoding output_encoding;
     bool is_encoded = true; 
     bool is_amortized_form = false;
@@ -23,11 +23,11 @@ public:
 
     RotationPoly() = default;
  
-    RotationPoly(long (*f)(long message, long plaintext_space), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(long (*f)(long message, long plaintext_space), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
-    RotationPoly(long (*f)(long message), long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
  
-    RotationPoly(long* lookup_polynomial, long N, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(long* coefs, long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
   
     RotationPoly(const RotationPoly &poly);
 
@@ -42,14 +42,12 @@ public:
     void to_non_amortized_form();
 
     static void set_polynomial(long* lookup_polynomial, long (*f)(long message), long t, long N, long Q);
-
  
     static RotationPoly rot_msb(int t, long N, long Q); 
 
-    static RotationPoly rot_one(long N); 
+    static RotationPoly rot_one(long N, long Q); 
  
-
-
+ 
     // Deprecated
     static long* rot_identity(int t, long N, long Q); 
 

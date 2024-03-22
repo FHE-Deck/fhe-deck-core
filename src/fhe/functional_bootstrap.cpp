@@ -76,11 +76,8 @@ FunctionalBootstrapPublicKey::FunctionalBootstrapPublicKey(BlindRotationPublicKe
     // Initialize BlindRotateOutput 
     this->br_out = this->blind_rotation_key->init_blind_rotate_output();
     this->br_temp = this->blind_rotation_key->init_blind_rotate_output(); 
-  
-
-    // TODO: This needs to change to accumulators, and not rotation polynomials (pointers to long even worse) 
-    //this->rotation_poly_size = this->blind_rotation_key->actual_rotation_size; 
-    this->acc_msb = this->blind_rotation_key->get_acc_msb();  
+   
+    this->acc_msb = this->blind_rotation_key->get_acc_msb();   
  
     // Set the LWE modulus swicher   
     // Mod Switch from Extracted Q to 2 * N
@@ -121,7 +118,7 @@ void FunctionalBootstrapPublicKey::bootstrap(long *lwe_ct_out, std::shared_ptr<A
 
 
 
-void FunctionalBootstrapPublicKey::full_domain_bootstrap(long *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, long *lwe_ct_in, GadgetMulMode mode, int t){    
+void FunctionalBootstrapPublicKey::full_domain_bootstrap(long *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, long *lwe_ct_in, GadgetMulMode mode, int t){  
     if(fdfb_alg == liu_micciancio_polyakov){
         liu_micciancio_polyakov_bootstrap(lwe_ct_out, acc_in, lwe_ct_in, mode, t);
     }else{
@@ -156,10 +153,10 @@ void FunctionalBootstrapPublicKey::liu_micciancio_polyakov_bootstrap(long *lwe_c
     for(int i = 1; i < lwe_par_tiny->n+1; ++i){
         lwe_c[i] = lwe_c_N[i];
     }    
-  
+   
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
     blind_rotation_key->blind_rotate(br_out, lwe_c, acc_msb, deter);  
- 
+  
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(lwe_ct_out);
   
@@ -325,24 +322,25 @@ FunctionalBootstrapSecretKey::~FunctionalBootstrapSecretKey(){
 }
 
  
-FunctionalBootstrapSecretKey::FunctionalBootstrapSecretKey(RLWEGadgetParam rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, PolynomialArithmetic sk_arithmetic, int masking_size, double stddev_masking, PlaintextEncoding default_encoding, FullDomainBootstrappingAlgorithm fdfb_alg){   
-    RLWESK rlwe(rlwe_gadget_par.rlwe_param, sk_arithmetic); 
-    this->rlwe_gadget_sk =  RLWEGadgetSK(rlwe_gadget_par, rlwe);
+FunctionalBootstrapSecretKey::FunctionalBootstrapSecretKey(std::shared_ptr<RLWEGadgetParam> rlwe_gadget_par, LWEGadgetParam lwe_gadget_par, int masking_size, double stddev_masking, PlaintextEncoding default_encoding, FullDomainBootstrappingAlgorithm fdfb_alg){   
+     
+    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_gadget_par->rlwe_param)); 
+    this->rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_par, rlwe));
     this->masking_size = masking_size;
     this->stddev_masking = stddev_masking;
     this->default_encoding = default_encoding;
 
     this->fdfb_alg = fdfb_alg;
  
-    LWESK g_lwe = LWESK(lwe_gadget_par.lwe_param);
-    this->lwe_gadget_sk = LWEGadgetSK(lwe_gadget_par, g_lwe); 
-    long q = rlwe.param->N * 2; 
-    this->lwe_sk = lwe_gadget_sk.lwe.modulus_switch(q);    
-    long* extract_key = new long[rlwe.param->N];
-    this->rlwe_gadget_sk.sk.extract_lwe_key(extract_key);
-    extract_lwe_sk = LWESK(std::shared_ptr<LWEParam>(new LWEParam(rlwe.param->N, rlwe.param->Q, rlwe_gadget_par.rlwe_param->key_type, rlwe_gadget_par.rlwe_param->stddev)), extract_key); 
+    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_gadget_par.lwe_param));
+    this->lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_par, g_lwe)); 
+    long q = rlwe->param->N * 2; 
+    this->lwe_sk = lwe_gadget_sk->lwe->modulus_switch(q);    
+    long* extract_key = new long[rlwe->param->N];
+    this->rlwe_gadget_sk->sk->extract_lwe_key(extract_key);
+    extract_lwe_sk = std::shared_ptr<LWESK>(new LWESK(std::shared_ptr<LWEParam>(new LWEParam(rlwe->param->N, rlwe->param->Q, rlwe_gadget_par->rlwe_param->key_type, rlwe_gadget_par->rlwe_param->stddev)), extract_key)); 
  
-    if(lwe_gadget_sk.gadget_param.lwe_param->key_d == binary){   
+    if(lwe_gadget_sk->gadget_param.lwe_param->key_d == binary){   
         this->init_binary_key(); 
     }else{  
         this->init_ternary_key();
@@ -362,7 +360,7 @@ FunctionalBootstrapSecretKey::FunctionalBootstrapSecretKey(const FunctionalBoots
  
     this->extract_lwe_sk = other.extract_lwe_sk;
  
-    if(lwe_gadget_sk.gadget_param.lwe_param->key_d == binary){   
+    if(lwe_gadget_sk->gadget_param.lwe_param->key_d == binary){   
         this->init_binary_key(); 
     }else{  
         this->init_ternary_key();
@@ -383,7 +381,7 @@ FunctionalBootstrapSecretKey& FunctionalBootstrapSecretKey::operator=(const Func
     this->extract_lwe_sk = other.extract_lwe_sk;  
 
     this->rlwe_gadget_sk = other.rlwe_gadget_sk;  
-    if(lwe_gadget_sk.gadget_param.lwe_param->key_d == binary){   
+    if(lwe_gadget_sk->gadget_param.lwe_param->key_d == binary){   
         this->init_binary_key(); 
     }else{  
         this->init_ternary_key();
@@ -394,11 +392,11 @@ FunctionalBootstrapSecretKey& FunctionalBootstrapSecretKey::operator=(const Func
 
 std::shared_ptr<FunctionalBootstrapPublicKey> FunctionalBootstrapSecretKey::get_public_param(){   
     // Key Switching Key Gen
-    LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(&extract_lwe_sk, &lwe_gadget_sk); 
+    LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(extract_lwe_sk, lwe_gadget_sk); 
     // Masking Key Gen
-    LWEPublicKey *masking_public_key = new LWEPublicKey(&extract_lwe_sk, masking_size, stddev_masking);
+    LWEPublicKey *masking_public_key = new LWEPublicKey(extract_lwe_sk, masking_size, stddev_masking);
     // The blind rotation key  
-    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(&rlwe_gadget_sk, &lwe_sk); 
+    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
  
     std::shared_ptr<FunctionalBootstrapPublicKey> out(new FunctionalBootstrapPublicKey(blind_rotation_key, ks_public_key, masking_public_key, fdfb_alg));
     return out;   
@@ -411,10 +409,10 @@ void FunctionalBootstrapSecretKey::init_binary_key(){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;
-        sizeof_ext_s = lwe_sk.param->n;
+        sizeof_ext_s = lwe_sk->param->n;
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe_sk.param->n; ++i){
-            this->ext_s[i] = lwe_sk.s[i];
+        for(int i = 0; i < lwe_sk->param->n; ++i){
+            this->ext_s[i] = lwe_sk->s[i];
         }
         is_ext_init = true;
 }
@@ -423,10 +421,10 @@ void FunctionalBootstrapSecretKey::init_ternary_key(){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;
-        sizeof_ext_s = lwe_sk.param->n;
+        sizeof_ext_s = lwe_sk->param->n;
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe_sk.param->n; ++i){
-            this->ext_s[i] = lwe_sk.s[i];
+        for(int i = 0; i < lwe_sk->param->n; ++i){
+            this->ext_s[i] = lwe_sk->s[i];
         }
         is_ext_init = true;
 }
@@ -434,15 +432,15 @@ void FunctionalBootstrapSecretKey::init_ternary_key(){
 
 // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
  long* FunctionalBootstrapSecretKey::scale_and_encrypt_initial_lwe(long m, int t){
-     long* out = lwe_sk.param->init_ct();
+     long* out = lwe_sk->param->init_ct();
      scale_and_encrypt_initial_lwe(out, m, t);
      return out;
  }
     
     // This is a special way of encoding the lwe, so that we can immediately do a functional blind rotation
  void FunctionalBootstrapSecretKey::scale_and_encrypt_initial_lwe(long* ct, long m, int t){ 
-    double scale = (double)lwe_sk.param->Q/ (2 * t);
+    double scale = (double)lwe_sk->param->Q/ (2 * t);
     long m_scaled =  (long)round((double)m * scale); 
-    lwe_sk.encrypt(ct, m_scaled);
+    lwe_sk->encrypt(ct, m_scaled);
 }
   

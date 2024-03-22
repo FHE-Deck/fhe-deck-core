@@ -23,11 +23,11 @@ class FHEConfiguration{
     public:  
     std::unique_ptr<FunctionalBootstrapSecretKey> boot_sk; 
     std::shared_ptr<FunctionalBootstrapPublicKey> boot_pk;
- 
-    RLWEGadgetParam rlwe_gadget_par;
+  
+    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_par;
     LWEGadgetParam lwe_gadget_par;
 
-    PolynomialArithmetic sk_arithmetic = ntl;
+    //PolynomialArithmetic sk_arithmetic = ntl;
 
     PlaintextEncoding default_encoding;
 
