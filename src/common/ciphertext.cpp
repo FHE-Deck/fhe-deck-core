@@ -44,7 +44,7 @@ Ciphertext& Ciphertext::operator=(const Ciphertext other){
     } else if(other.is_lwe_ct && this->is_lwe_ct){    
         this->encoding = other.encoding;
         this->lwe_c->param = other.lwe_c->param;
-        for(int i = 0; i < this->lwe_c->param->n+1; ++i){
+        for(int i = 0; i < this->lwe_c->param->dim+1; ++i){
             this->lwe_c->ct[i] = other.lwe_c->ct[i];
         } 
     }else{ 

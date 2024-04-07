@@ -13,20 +13,56 @@
 
 namespace fhe_deck{
 
+
 class Gadget{
- 
+
     public: 
 
     GadgetType type;
-
-    int basis;
-    int ell;
+    // Decomposition Base
+    long base;
+    // Number of digits after decomposition
+    int digits;
+    // numbr of bits of the base (i.e. smallest k s.t. 2^k >= base) 
     int k;  
+    // Degree of the polynomial        
+    int degree;
+    // Coefficient Modulus
+    long Q;
+
+    virtual void sample(long** out, long *in) = 0;
+
+    long* get_gadget_vector();
+
+    long** init_out();
+
+    void delete_out(long** out);
+
+};
+
+class SignedDecompositionGadget : public Gadget{
+
+    public:
+
+    GadgetType type = signed_decomposition_gadget;
+
+    SignedDecompositionGadget(int degree, long Q, long base);
+
+    void sample(long** out, long *in);
+ 
+    void decomp(long **d_ct, long* poly);
+
+};
+
+
+ 
+
+class DiscreteGaussianSamplingGadget : public Gadget{
+
+    public: 
+
     bool is_power_of_base_modulus;
 
-    int N;
-    long Q;
-  
     Sampler rand;
     double stddev;
 
@@ -73,8 +109,7 @@ class Gadget{
     long shift; 
     long prev_gauss;
 
- 
- 
+  
     /// xorshift state
     long xorshift_s;
     // The xoshiro256+ state
@@ -86,9 +121,8 @@ class Gadget{
 
     unsigned int xoshiro256_25_result_1;
     unsigned int xoshiro256_25_result_2;
-  
+   
  
-
     double u1;
     double u2;
 
@@ -109,58 +143,18 @@ class Gadget{
 
     double spare;
     bool hasSpare = false;
-
  
-    ~Gadget();
+    GadgetType type = signed_decomposition_gadget;
 
-    Gadget() = default;
+    ~DiscreteGaussianSamplingGadget();
 
-    Gadget(int N, long Q, int basis, GadgetType type);
-
-    Gadget(int N, long Q, int basis, double stddev, GadgetType type);
-
-   Gadget(const Gadget &other);
-
-    Gadget& operator=(const Gadget other);
- 
-
-    void setup_type_specific_parameters(); 
+    DiscreteGaussianSamplingGadget(int degree, long Q, long base, double stddev);
 
     void sample(long** out, long *in);
-
-    long** sample(long *in);
-
-    long* get_gadget_vector();
-
-    long** init_out();
-
-    void delete_out(long** out);
-
- 
-
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-        ar(type, N, Q, basis);   
-        if(type == discrete_gaussian_gadget){
-            ar(stddev);
-        } 
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-        ar(type, N, Q, basis);
-        if(type == discrete_gaussian_gadget){
-            ar(stddev);
-            this->rand = Sampler(0.0, stddev);
-        } 
-        setup_type_specific_parameters();
-    } 
-
-
-
+  
     private:
+
+    void setup_type_specific_parameters(); 
 
     void decomp(long **d_ct, long* poly);
 
@@ -195,26 +189,16 @@ class Gadget{
     inline double gen_gaussian();
 
     inline float gen_gaussian_float();
-
-    //inline double gen_gaussian_sigma();
-
- /*
-    inline void gen_gaussians_sigmas(double* stddevs, double** array);
-    
-    inline void gen_gaussians_sigma(double** array);
- */
   
-    //inline void gen_gaussians1d(); 
-
     /*
         Implements the Karney method
     */
     inline long gen_discrete_gauss(float c);
  
     inline int d1_d2_of_karney();
- 
-
+  
 };
+ 
 
 }
 

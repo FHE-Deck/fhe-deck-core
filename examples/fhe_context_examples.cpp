@@ -361,8 +361,7 @@ void test_for_signed_limied_short_int(){
     std::cout << "Decrypt(ct4): " << context.decrypt(&ct4) << std::endl; 
  
     std::cout << "Decrypt(mct4): " << context.decrypt(&mct4) << std::endl;
-
-
+ 
     Ciphertext ct_add = ct1 + mct1;
     assertm(context.decrypt(&ct_add) == 0, "context.decrypt(&ct1 + mct1) == 0");
     std::cout << "Decrypt(ct_add = ct1 + mct1): OK"  << std::endl; 

@@ -13,6 +13,8 @@ namespace fhe_deck{
 class AbstractAccumulator{
     public:
 
+    bool amortization = false;
+     
     virtual void setup_amortization()  = 0;
 
 };
@@ -21,25 +23,52 @@ class AbstractAccumulator{
 
 class HomomorphicAccumulator{
     public:
+ 
+    std::shared_ptr<AbstractAccumulator> accumulator;
 
     HomomorphicAccumulator(std::shared_ptr<AbstractAccumulator> accumulator){
         this->accumulator = accumulator;
     }
-
-    std::shared_ptr<AbstractAccumulator> accumulator;
-
+ 
 };
+
 
 class RotationPolyAccumulator : public AbstractAccumulator{ 
 
     public:
+ 
+    RotationPoly rot_poly;
+    RotationPoly rot_poly_amortized;  
+    bool amortization = true;
 
     RotationPolyAccumulator(RotationPoly rot_poly);
 
     void setup_amortization();
 
+};
+
+
+
+class RLWEAccumulator : public AbstractAccumulator{ 
+
+    public:
+
+    RLWECT acc; 
     RotationPoly rot_poly;
     RotationPoly rot_poly_amortized;  
+
+    bool amortization = false;
+
+    RLWEAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly);
+
+    RLWEAccumulator(RLWECT &acc);
+
+    RLWEAccumulator(RLWEAccumulator &other);
+ 
+    RLWEAccumulator& operator=(const RLWEAccumulator other);
+
+    void setup_amortization();
+
 };
 
   
@@ -92,7 +121,7 @@ class BlindRotationPublicKey{
     // LWE after modulus switching to rotation_size;
     std::shared_ptr<LWEParam> actual_lwe_par;   
  
-    virtual void blind_rotate(std::shared_ptr<BlindRotateOutput> out, long* lwe_ct_in, std::shared_ptr<AbstractAccumulator> acc_msg, GadgetMulMode mode = deter) = 0;
+    virtual void blind_rotate(std::shared_ptr<BlindRotateOutput> out, LWECT* lwe_ct_in, std::shared_ptr<AbstractAccumulator> acc_msg) = 0;
    
     virtual std::shared_ptr<BlindRotateOutput> init_blind_rotate_output() = 0; 
 

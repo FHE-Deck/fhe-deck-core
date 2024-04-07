@@ -37,9 +37,9 @@ void ntrunium_gen::init_binary_key(){
         sizeof_u = 1;
         this->u = new long[sizeof_u];
         u[0] = 1;
-        sizeof_ext_s = lwe->param->n;
+        sizeof_ext_s = lwe->param->dim;
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe->param->n; ++i){
+        for(int i = 0; i < lwe->param->dim; ++i){
             this->ext_s[i] = lwe->s[i];
         }
 }
@@ -50,21 +50,21 @@ void ntrunium_gen::init_ternary_key(){
         this->u = new long[sizeof_u];
         u[0] = -1;
         u[1] = 1;
-        sizeof_ext_s = 2*lwe->param->n; 
+        sizeof_ext_s = 2*lwe->param->dim; 
         this->ext_s = new long[sizeof_ext_s];
-        for(int i = 0; i < lwe->param->n; ++i){
+        for(int i = 0; i < lwe->param->dim; ++i){
             switch(lwe->s[i]){
                     case -1:
                             ext_s[i] = 1;
-                            ext_s[i+lwe->param->n] = 0;
+                            ext_s[i+lwe->param->dim] = 0;
                             break;
                     case 0:  
                             ext_s[i] = 0;
-                            ext_s[i+lwe->param->n] = 0;
+                            ext_s[i+lwe->param->dim] = 0;
                             break;
                     case 1:  
                             ext_s[i] = 0;
-                            ext_s[i+lwe->param->n] = 1;
+                            ext_s[i+lwe->param->dim] = 1;
                             break;
                     default: std::cout << "Fatal Error: lwe.s[" << i << "]: " << lwe->s[i] << std::endl;
             } 

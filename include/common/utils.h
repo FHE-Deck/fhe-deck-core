@@ -10,6 +10,8 @@
 #include <string>
 #include "sample.h"
 #include "enums.h" 
+
+#include <fftw3.h>
  
 
 namespace fhe_deck{
@@ -17,7 +19,7 @@ namespace fhe_deck{
 class Utils{
 
     public:
-
+  
         static void set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, long Q);
 
         static void set_array_from_polynomial(long *array, int sizeof_array, NTL::ZZ_pX poly);
@@ -47,6 +49,8 @@ class Utils{
         static int power_times(long x, long base);
 
         static bool is_power_of(long x, long base);
+
+        static long pow(long x, long base);
 
         static long abs(long x);
 
@@ -102,6 +106,8 @@ class Utils{
         static std::string to_string(double *poly, int sizeof_poly);
 
         static std::string to_string(int *poly, int sizeof_poly);
+
+        static std::string complex_to_string(fftw_complex* in, int from, int size);
 
         static void set(long* out, long* in, int sizeof_in);
 

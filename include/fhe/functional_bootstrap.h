@@ -61,18 +61,18 @@ class FunctionalBootstrapPublicKey{
     FunctionalBootstrapPublicKey& operator=(const FunctionalBootstrapPublicKey other);
   
     LWECT encrypt(long message);
-    
-    void bootstrap(long *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, long *lwe_ct_in, GadgetMulMode mode);
      
-    void full_domain_bootstrap(long *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, long *lwe_ct_in, GadgetMulMode mode, int t);
-   
-    void liu_micciancio_polyakov_bootstrap(long *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, long *lwe_ct_in, GadgetMulMode mode, int t);
+    void bootstrap(LWECT *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, LWECT *lwe_ct_in);
      
-    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
+    void full_domain_bootstrap(LWECT *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, LWECT *lwe_ct_in, int t);
    
-    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
-  
-    std::vector<LWECT> liu_micciancio_polyakov_bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, long *lwe_ct_in, GadgetMulMode mode, PlaintextEncoding encoding);
+    void liu_micciancio_polyakov_bootstrap(LWECT *lwe_ct_out, std::shared_ptr<AbstractAccumulator> acc_in, LWECT *lwe_ct_in, int t);
+      
+    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding encoding);
+ 
+    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding encoding);
+ 
+    std::vector<LWECT> liu_micciancio_polyakov_bootstrap(std::vector<std::shared_ptr<AbstractAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding encoding);
     
  
     template <class Archive>
@@ -247,7 +247,7 @@ class FunctionalBootstrapSecretKey{
     {   
         ar(rlwe_gadget_sk, lwe_gadget_sk, extract_lwe_sk, masking_size, stddev_masking, default_encoding);  
           
-        long q = rlwe_gadget_sk->gadget_param->rlwe_param->N * 2;  
+        long q = rlwe_gadget_sk->gadget_param->rlwe_param->degree * 2;  
         this->lwe_sk = lwe_gadget_sk->lwe->modulus_switch(q);    
         if(lwe_gadget_sk->gadget_param.lwe_param->key_d == binary){   
             this->init_binary_key(); 
@@ -255,7 +255,6 @@ class FunctionalBootstrapSecretKey{
             this->init_ternary_key();
         }     
     }  
-
  
     private:
   

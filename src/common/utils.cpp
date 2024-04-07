@@ -138,6 +138,14 @@ bool Utils::is_power_of(long x, long base){
     }
 }
 
+long Utils::pow(long x, long base){
+    long out = 1;
+    for(int i= 0; i < x; ++i){
+        out *= base;
+    }
+    return out;
+ }
+
 
 long Utils::abs(long x){
     if(x >= 0){
@@ -337,16 +345,7 @@ void Utils::mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int
     }
 }  
 
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 std::string Utils::to_string(long *poly, int sizeof_poly){
@@ -395,6 +394,18 @@ std::string Utils::to_string(int *poly, int sizeof_poly){
     return str;
 }
 
+
+std::string Utils::complex_to_string(fftw_complex* in, int from, int size){
+    std::string out = "";
+    for(int i = from; i < size; ++i){
+        out += "(";
+        out += std::to_string(in[i][0])  ;
+        out += ", " ;
+        out +=  std::to_string(in[i][1]) ;
+        out += ")";
+    }
+    return out;
+}
 
 void Utils::set(long* out, long* in, int sizeof_in){
     for(int i = 0; i < sizeof_in; ++i){

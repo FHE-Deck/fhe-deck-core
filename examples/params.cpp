@@ -15,8 +15,8 @@ run_B(void)
     auto ct = context.encrypt(0);
     assert(ct.is_lwe_ct);
     std::cout << "[>] LWE parameters (secret key)" << std::endl;
-    std::cout << "n: " << ct.lwe_c->param->n << std::endl;
-    std::cout << "Q: " << ct.lwe_c->param->Q << std::endl;
+    std::cout << "n: " << ct.lwe_c->param->dim << std::endl;
+    std::cout << "Q: " << ct.lwe_c->param->modulus << std::endl;
     std::cout << "dist: " << ct.lwe_c->param->key_d << std::endl;
     std::cout << "stddev: " << ct.lwe_c->param->stddev << std::endl;
     assert(ct.lwe_c->param->key_d == ternary);
@@ -24,8 +24,8 @@ run_B(void)
     ct = context.encrypt_public(0);
     assert(ct.is_lwe_ct);
     std::cout << "[>] LWE parameters (public key)" << std::endl;
-    std::cout << "n: " << ct.lwe_c->param->n << std::endl;
-    std::cout << "Q: " << ct.lwe_c->param->Q << std::endl;
+    std::cout << "n: " << ct.lwe_c->param->dim << std::endl;
+    std::cout << "Q: " << ct.lwe_c->param->modulus << std::endl;
     std::cout << "dist: " << ct.lwe_c->param->key_d << std::endl;
     std::cout << "stddev: " << ct.lwe_c->param->stddev << std::endl;
     assert(ct.lwe_c->param->key_d == binary);
@@ -42,16 +42,16 @@ run_NTT(void)
     auto ct = context.encrypt(0);
     assert(ct.is_lwe_ct);
     std::cout << "[>] LWE parameters (secret key)" << std::endl;
-    std::cout << "n: " << ct.lwe_c->param->n << std::endl;
-    std::cout << "Q: " << ct.lwe_c->param->Q << std::endl;
+    std::cout << "n: " << ct.lwe_c->param->dim << std::endl;
+    std::cout << "Q: " << ct.lwe_c->param->modulus << std::endl;
     std::cout << "dist: " << ct.lwe_c->param->key_d << std::endl;
     std::cout << "stddev: " << ct.lwe_c->param->stddev << std::endl;
 
     ct = context.encrypt_public(0);
     assert(ct.is_lwe_ct);
     std::cout << "[>] LWE parameters (public key)" << std::endl;
-    std::cout << "n: " << ct.lwe_c->param->n << std::endl;
-    std::cout << "Q: " << ct.lwe_c->param->Q << std::endl;
+    std::cout << "n: " << ct.lwe_c->param->dim << std::endl;
+    std::cout << "Q: " << ct.lwe_c->param->modulus << std::endl;
     std::cout << "dist: " << ct.lwe_c->param->key_d << std::endl;
     std::cout << "stddev: " << ct.lwe_c->param->stddev << std::endl;
 }

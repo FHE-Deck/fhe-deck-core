@@ -17,8 +17,9 @@ class LWEParam{
 
   public:  
 
-  int n;
-  long Q; 
+  // LWE Dimension
+  int dim;
+  long modulus; 
 
   // TODO: Actually key_d and stddev should be rather in secret key params
   KeyDistribution key_d;
@@ -26,7 +27,7 @@ class LWEParam{
 
   LWEParam() = default;
  
-  LWEParam(int n, long Q, KeyDistribution key_d, double stddev); 
+  LWEParam(int dim, long modulus, KeyDistribution key_d, double stddev); 
    
     long* init_ct();
  
@@ -49,16 +50,15 @@ class LWEParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(n, Q);
+      ar(dim, modulus);
       ar(key_d, stddev); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(n, Q);
-      ar(key_d, stddev);
-      
+      ar(dim, modulus);
+      ar(key_d, stddev); 
     } 
   
 };
@@ -97,16 +97,25 @@ class LWECT{
  
     void mul(long b);
     
-    void add(LWECT *ct);
+    void add(LWECT *in);
+
+    void add(LWECT *out, LWECT *in);
  
     void sub(LWECT *ct);
+
+    void sub(LWECT *out, LWECT *in);
     
-    void add_lazy(LWECT *ct); 
-     
-  
+    void add_lazy(LWECT *in); 
+
+    void add_lazy(LWECT* out, LWECT *in); 
+      
     void add(long b);
+
+    void add(LWECT* out, long b);
   
     void sub(long b);
+
+    void sub(LWECT*, long b);
    
     LWECT operator+(long b);
 
@@ -132,7 +141,7 @@ class LWECT{
       ar(param); 
 
       std::vector<long> ct_arr; 
-      for(int i = 0; i < param->n+1; ++i){
+      for(int i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
       }
       ar(ct_arr) ;
@@ -144,8 +153,8 @@ class LWECT{
       ar(param);
       std::vector<long> ct_arr;
       ar(ct_arr);
-      ct = new long[param->n+1];
-      for(int i = 0; i < param->n+1; ++i){
+      ct = new long[param->dim+1];
+      for(int i = 0; i < param->dim+1; ++i){
         ct[i] = ct_arr[i];
       }
       this->init = true;
@@ -246,7 +255,7 @@ class LWESK {
     { 
       ar(param);  
       std::vector<long> s_arr; 
-      for(int i = 0; i < param->n; ++i){
+      for(int i = 0; i < param->dim; ++i){
         s_arr.push_back(s[i]);
       }
       ar(s_arr) ;
@@ -258,8 +267,8 @@ class LWESK {
       ar(param);
       std::vector<long> s_arr;
       ar(s_arr);
-      this->s = new long[param->n];
-      for(int i = 0; i < param->n; ++i){
+      this->s = new long[param->dim];
+      for(int i = 0; i < param->dim; ++i){
         this->s[i] = s_arr[i];
       } 
     } 
@@ -274,14 +283,15 @@ class LWESK {
 class LWEGadgetParam{
 
   public:
-    int basis;
+    // Decomposition Base
+    long base;
     int ell;
     int k;
     std::shared_ptr<LWEParam> lwe_param;
 
     LWEGadgetParam() = default;
 
-    LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, int basis);
+    LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long basis);
 
     long** init_gadget_ct(); 
 
@@ -292,13 +302,13 @@ class LWEGadgetParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_param, basis, ell, k);
+      ar(lwe_param, base, ell, k);
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_param, basis, ell, k);
+      ar(lwe_param, base, ell, k);
     } 
  
 };

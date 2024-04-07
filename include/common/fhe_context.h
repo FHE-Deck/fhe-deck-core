@@ -97,18 +97,18 @@ class FHEContext{
 
 
     // Run functional bootstrapping (requires public key)
-    Ciphertext eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, GadgetMulMode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut);
    
     // Generate rotation_poly and run LUT
-    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding, GadgetMulMode mode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding);
   
-    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), GadgetMulMode mode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space));
   
-    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding, GadgetMulMode mode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding);
   
-    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message), GadgetMulMode mode = deter);
+    Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message));
   
-    std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> luts, GadgetMulMode mode = deter);
+    std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> luts);
   
     // Evaluates scalar + Sum_i(scalars[i] * ct_vec[i]) 
     Ciphertext eval_affine_function(std::vector<Ciphertext> ct_vec, std::vector<long> scalars, long scalar);

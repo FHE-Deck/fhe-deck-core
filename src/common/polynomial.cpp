@@ -85,7 +85,7 @@ void IntelHexlNTTEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2
         out->poly_eval_form = PolynomialEvalForm(new long[out->degree], out->degree, out->coef_modulus); 
     }
     if(in_1->is_eval_form && in_2->is_eval_form){
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form); 
+        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form);
             out->is_eval_form = true; 
     }else{ 
         throw std::logic_error("IntelHexlNTTEngine::mul: Polynomials must be in eval form.");
@@ -136,7 +136,7 @@ FFTWNegacyclicEngine::FFTWNegacyclicEngine(int degree, long coef_modulus){
     engine = FFTPlan(negacyclic, degree, false);  
 }
  
-void FFTWNegacyclicEngine::to_eval(Polynomial *in){  
+void FFTWNegacyclicEngine::to_eval(Polynomial *in){ 
     this->to_eval(in, in); 
 }
 
@@ -148,31 +148,31 @@ void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){
     engine.to_eval_form(out->eval_fftw, in->coefs); 
 }
 
-void FFTWNegacyclicEngine::to_eval(Polynomial *out, Polynomial *in){  
-    if(in->is_eval_form){  
+void FFTWNegacyclicEngine::to_eval(Polynomial *out, Polynomial *in){ 
+    if(in->is_eval_form){ 
         out->poly_eval_form = in->poly_eval_form;
         out->is_eval_form = true;
         return;
     }
-    if(!out->poly_eval_form.is_init){  
+    if(!out->poly_eval_form.is_init){ 
         out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly(), engine.plan_size, out->coef_modulus); 
-    }  
-    to_eval(&out->poly_eval_form, in);   
-    out->is_eval_form = true; 
+    } 
+    to_eval(&out->poly_eval_form, in); 
+    out->is_eval_form = true;
 }
 
 void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){ 
     long *in_poly;
-    fftw_complex *out_poly;  
+    fftw_complex *out_poly;
     for (int i = 0; i < in->array_size; ++i)
-    {    
+    {  
         in_poly = &in->poly_array[i * in->degree];
-        out_poly = &out->eval_fftw[i * out->size]; 
-        engine.to_eval_form_scale(out_poly, in_poly, 2.0); 
+        out_poly = &out->eval_fftw[i * out->size];  
+        engine.to_eval_form_scale(out_poly, in_poly, 2.0);  
     } 
 }
 
-void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){
+void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){ 
     engine.to_coef_form(out->coefs, in->eval_fftw);
     // Divide by the scale (polynomial size times two.)
     // NOTE: For FHE its nice to scale one of the polynomials in the key
@@ -206,20 +206,18 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArray
 }
 
 void FFTWNegacyclicEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
-    // Remind that one of the polynomials must be scaled by the plan_size times two.
-        // NOTE: Scaling is done in to_coef. Sometimes we want to have the scaling precomputed. 
-        //    Currently this class doesn't keep track of it. 
+    // Remind that one of the polynomials must be scaled by the plan_size times two. 
     engine.mul_eval_form(out->eval_fftw, 
             in_1->eval_fftw, 
-            in_2->eval_fftw); 
+            in_2->eval_fftw);  
 }
  
 void FFTWNegacyclicEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){   
     if(!out->poly_eval_form.is_init){  
         out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly(), engine.plan_size, out->coef_modulus);
     }
-    if(in_1->is_eval_form && in_2->is_eval_form){
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form);
+    if(in_1->is_eval_form && in_2->is_eval_form){ 
+        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form); 
             out->is_eval_form = true;  
     }else{ 
         throw std::logic_error("FFTWNegacyclicEngine::mul: Polynomials must be in eval form.");
@@ -244,18 +242,17 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in
     fftw_complex* in_2_temp = in_2->eval_fftw;
     fftw_complex* fft_prod_new = new fftw_complex[in_2->size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2->size]; 
-   
-    // TODO: Need to check if we need to scale anything here. 
+    
     engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
     for(int i = 1; i < in_2->array_size; ++i){
         in_1_temp = &in_1->poly_array[i * in_1->degree];
-        in_2_temp = &in_2->eval_fftw[i * in_2->size]; 
+        in_2_temp = &in_2->eval_fftw[i * in_2->size];
+        
         engine.to_eval_form(fft_prod_new, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, fft_prod_new, in_2_temp); 
-        engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new);
- 
+        engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
     if(coef_form){ 
         engine.to_coef_form(out->coefs, fft_multisum_eval_new);
@@ -349,8 +346,8 @@ void FFTWLongNegacyclicEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial
         out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly_l(), engine.plan_size, out->coef_modulus);
     }
     if(in_1->is_eval_form && in_2->is_eval_form){ 
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form); 
-            out->is_eval_form = true;  
+        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form);
+        out->is_eval_form = true;  
     }else{ 
         throw std::logic_error("FFTWNegacyclicEngine::mul: Polynomials must be in eval form.");
     }
@@ -521,7 +518,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
     if(arithmetic == hexl_ntt){
         return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(degree, coef_modulus));
     }
-    if(arithmetic == double_fft){
+    if(arithmetic == double_fft){ 
         return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWNegacyclicEngine(degree, coef_modulus));
     }
     if(arithmetic == long_double_fft){
@@ -649,9 +646,7 @@ void PolynomialEvalForm::add(PolynomialEvalForm *out, PolynomialEvalForm *other)
         for(int i = 0; i < size; ++i){
             out->eval_long[i] = this->eval_long[i] + other->eval_long[i];
         }
-    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for fftw and fftw' that it has to be plan size
+    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){ 
         for(int i = 0; i < size; ++i){
             out->eval_fftw[i][0] = this->eval_fftw[i][0] + other->eval_fftw[i][0];
             out->eval_fftw[i][1] = this->eval_fftw[i][1] + other->eval_fftw[i][1];
@@ -671,9 +666,7 @@ void PolynomialEvalForm::sub(PolynomialEvalForm *out, PolynomialEvalForm *other)
         for(int i = 0; i < size; ++i){
             out->eval_long[i] = this->eval_long[i] - other->eval_long[i];
         }
-    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){ 
         for(int i = 0; i < size; ++i){
             out->eval_fftw[i][0] = this->eval_fftw[i][0] - other->eval_fftw[i][0];
             out->eval_fftw[i][1] = this->eval_fftw[i][1] - other->eval_fftw[i][1];
@@ -693,9 +686,7 @@ void PolynomialEvalForm::mul(PolynomialEvalForm *out, long scalar){
         for(int i = 0; i < size; ++i){
             out->eval_long[i] = this->eval_long[i] * scalar;
         }
-    }else if(out->is_eval_fftw && this->is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out->is_eval_fftw && this->is_eval_fftw){ 
         for(int i = 0; i < size; ++i){
             out->eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
             out->eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
@@ -715,9 +706,7 @@ void PolynomialEvalForm::neg(PolynomialEvalForm *out){
         for(int i = 0; i < size; ++i){
             out->eval_long[i] = -this->eval_long[i];
         }
-    }else if(out->eval_fftw && this->eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out->eval_fftw && this->eval_fftw){ 
         for(int i = 0; i < size; ++i){
             out->eval_fftw[i][0] = -this->eval_fftw[i][0];
             out->eval_fftw[i][1] = -this->eval_fftw[i][1];
@@ -773,6 +762,7 @@ Polynomial::Polynomial(int degree, long coef_modulus, std::shared_ptr<Polynomial
 void Polynomial::init(int degree, long coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;
+    this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
     this->coefs = new long[degree];
     is_init = true;
 }
@@ -979,10 +969,26 @@ void Polynomial::mul(Polynomial *out, long scalar){
     }
     if(this->is_eval_form && out->is_eval_form){
         this->poly_eval_form.mul(&out->poly_eval_form, scalar);
-    }else if(!this->is_eval_form && !out->is_eval_form){
-        for(int j=0; j < this->degree; ++j){
-            out->coefs[j] = (this->coefs[j] * scalar) % this->coef_modulus;
-        } 
+    }else if(!this->is_eval_form && !out->is_eval_form){  
+        int scalar_bit_size = Utils::number_of_bits(scalar);
+        if((scalar_bit_size + this->coef_modulus_bit_size) < 64){
+            for(int j=0; j < this->degree; ++j){ 
+                out->coefs[j] = (this->coefs[j] * scalar) % this->coef_modulus;  
+            }
+        }else{
+            // Note that we need to handle the case scalar is bigger. 
+            int free_bits = 63 - this->coef_modulus_bit_size;
+            long div = Utils::pow(free_bits, 2); 
+            for(int j=0; j < this->degree; ++j){  
+                long temp_scalar = scalar;
+                while(temp_scalar > div){ 
+                    // TODO: Make bit shift with free_bits
+                    temp_scalar /= div; 
+                    out->coefs[j] = (this->coefs[j] * div) % this->coef_modulus;  
+                }  
+                out->coefs[j] = (this->coefs[j] * temp_scalar) % this->coef_modulus;   
+            } 
+        }
     }else{
         throw std::logic_error("Polynomial::mul(Polynomial *out, Polynomial *other): No multiplication engin set!");
     }
@@ -997,12 +1003,13 @@ void Polynomial::mul(Polynomial *out, Polynomial *other){
 }
 
 void Polynomial::mul(Polynomial *out, Polynomial *other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){  
+    // TODO Doesn't make sense here - Why not immediately compute the eval forms without playing around with those Polynomial classes?
     Polynomial eval_this(this->degree, this->coef_modulus);
     Polynomial eval_other(this->degree, this->coef_modulus); 
     mul_engine->to_eval(&eval_this, this); 
- 
-    mul_engine->to_eval(&eval_other, other); 
-    mul_engine->mul(out, &eval_this, &eval_other); 
+  
+    mul_engine->to_eval(&eval_other, other);  
+    mul_engine->mul(out, &eval_this, &eval_other);  
     mul_engine->to_coef(out);  
 }
  
@@ -1152,28 +1159,26 @@ PolynomialArrayEvalForm::~PolynomialArrayEvalForm(){
 }
 
 
-PolynomialArrayEvalForm::PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int array_size){
-    //std::cout << "PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int size, long coef_modulus, int array_size): "   << std::endl;
-    this->is_init = true;
-    this->mul_engine = mul_engine;
+PolynomialArrayEvalForm::PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int array_size){ 
+    this->is_init = true; 
     this->array_size = array_size; 
   
     if(mul_engine->type == hexl_ntt){ 
-        std::shared_ptr<IntelHexlNTTEngine> engine = std::dynamic_pointer_cast<IntelHexlNTTEngine>(mul_engine);
+        std::shared_ptr<IntelHexlNTTEngine> engine = std::static_pointer_cast<IntelHexlNTTEngine>(mul_engine);
         this->size = engine->degree;
         this->coef_modulus = engine->coef_modulus;
         this->full_size = this->size * array_size; 
         this->eval_long = new long[full_size]; 
         this->is_eval_long = true;  
     }else if(mul_engine->type == double_fft){
-        std::shared_ptr<FFTWNegacyclicEngine> engine = std::dynamic_pointer_cast<FFTWNegacyclicEngine>(mul_engine);
-        this->size = engine->engine.plan_size;
+        std::shared_ptr<FFTWNegacyclicEngine> engine = std::static_pointer_cast<FFTWNegacyclicEngine>(mul_engine); 
+        this->size = engine->engine.plan_size; 
         this->coef_modulus = engine->coef_modulus;
         this->full_size = this->size * array_size; 
         this->eval_fftw = new fftw_complex[full_size];  
         this->is_eval_fftw = true;  
     }else if(mul_engine->type == long_double_fft){
-        std::shared_ptr<FFTWLongNegacyclicEngine> engine = std::dynamic_pointer_cast<FFTWLongNegacyclicEngine>(mul_engine);
+        std::shared_ptr<FFTWLongNegacyclicEngine> engine = std::static_pointer_cast<FFTWLongNegacyclicEngine>(mul_engine);
         this->size = engine->engine.plan_size;
         this->coef_modulus = engine->coef_modulus;
         this->full_size = this->size * array_size; 
@@ -1195,8 +1200,7 @@ PolynomialArrayEvalForm::PolynomialArrayEvalForm(const PolynomialArrayEvalForm &
     this->array_size = other.array_size;
     this->coef_modulus = other.coef_modulus;
 
-    this->full_size = size * array_size; 
-    this->mul_engine = other.mul_engine;
+    this->full_size = size * array_size;  
     if(this->is_eval_long){
         this->eval_long = new long[this->full_size];
         Utils::cp(this->eval_long, other.eval_long, this->full_size);
@@ -1219,6 +1223,7 @@ PolynomialArrayEvalForm::PolynomialArrayEvalForm(const PolynomialArrayEvalForm &
 
 
 PolynomialArrayEvalForm& PolynomialArrayEvalForm::operator=(const PolynomialArrayEvalForm other){ 
+ 
     this->is_init = other.is_init;
     this->size = other.size;
     this->is_eval_long = other.is_eval_long;
@@ -1227,8 +1232,7 @@ PolynomialArrayEvalForm& PolynomialArrayEvalForm::operator=(const PolynomialArra
     this->array_size = other.array_size;
     this->coef_modulus = other.coef_modulus;
  
-    this->full_size = size * array_size; 
-    this->mul_engine = other.mul_engine; 
+    this->full_size = size * array_size;  
 
     if(this->is_eval_long){
         this->eval_long = new long[full_size];
@@ -1250,17 +1254,15 @@ PolynomialArrayEvalForm& PolynomialArrayEvalForm::operator=(const PolynomialArra
     } 
     return *this;
 }
- 
 
+ 
 
 void PolynomialArrayEvalForm::add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
     if(out.is_eval_long && this->is_eval_long && other.is_eval_long){
         for(int i = 0; i < full_size; ++i){
             out.eval_long[i] = this->eval_long[i] + other.eval_long[i];
         }
-    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for fftw and fftw' that it has to be plan size
+    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){ 
         for(int i = 0; i < full_size; ++i){
             out.eval_fftw[i][0] = this->eval_fftw[i][0] + other.eval_fftw[i][0];
             out.eval_fftw[i][1] = this->eval_fftw[i][1] + other.eval_fftw[i][1];
@@ -1281,9 +1283,7 @@ void PolynomialArrayEvalForm::sub(PolynomialArrayEvalForm &out, PolynomialArrayE
         for(int i = 0; i < full_size; ++i){
             out.eval_long[i] = this->eval_long[i] - other.eval_long[i];
         }
-    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){ 
         for(int i = 0; i < full_size; ++i){
             out.eval_fftw[i][0] = this->eval_fftw[i][0] - other.eval_fftw[i][0];
             out.eval_fftw[i][1] = this->eval_fftw[i][1] - other.eval_fftw[i][1];
@@ -1303,9 +1303,7 @@ void PolynomialArrayEvalForm::mul(PolynomialArrayEvalForm &out, long scalar){
         for(int i = 0; i < full_size; ++i){
             out.eval_long[i] = this->eval_long[i] * scalar;
         }
-    }else if(out.is_eval_fftw && this->is_eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out.is_eval_fftw && this->is_eval_fftw){ 
         for(int i = 0; i < full_size; ++i){
             out.eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
             out.eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
@@ -1325,9 +1323,7 @@ void PolynomialArrayEvalForm::neg(PolynomialArrayEvalForm &out){
         for(int i = 0; i < full_size; ++i){
             out.eval_long[i] = -this->eval_long[i];
         }
-    }else if(out.eval_fftw && this->eval_fftw){
-        // TODO: check whether that is actually correct here: problem may be that the plan size may be bigger than just size!!!
-        // Or just keep that in mind when instantiating for 
+    }else if(out.eval_fftw && this->eval_fftw){ 
         for(int i = 0; i < full_size; ++i){
             out.eval_fftw[i][0] = -this->eval_fftw[i][0];
             out.eval_fftw[i][1] = -this->eval_fftw[i][1];

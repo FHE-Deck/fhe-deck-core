@@ -5,6 +5,7 @@
 #include <random>
 #include "enums.h"
 
+#include "utils.h"
 
 namespace fhe_deck{
 
@@ -38,7 +39,7 @@ class FFTPlan{
 
     FFTPlan(const FFTPlan& other);
 
-    FFTPlan& operator=(const FFTPlan other);
+    FFTPlan& operator=(FFTPlan other);
 
     ~FFTPlan();
 
@@ -50,7 +51,7 @@ class FFTPlan{
 
     void to_eval_form(fftw_complex* eval_form, int *poly);
    
-    // It divides the coefficients by plan_size before computing the FFT
+    // TODO: Delete
     void to_eval_form_scale(fftw_complex* eval_form, long *poly);
 
     // It divides the coefficients by (plan_size * additional_scale) before computing the FFT

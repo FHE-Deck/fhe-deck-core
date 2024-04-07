@@ -37,34 +37,20 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
    
     GINXBlindRotationKey& operator=(const GINXBlindRotationKey other);
   
-    void blind_rotate(std::shared_ptr<BlindRotateOutput> out, long* lwe_ct_in, std::shared_ptr<AbstractAccumulator> acc_msg, GadgetMulMode mode = deter);
+    void blind_rotate(std::shared_ptr<BlindRotateOutput> out, LWECT* lwe_ct_in, std::shared_ptr<AbstractAccumulator> acc_msg);
 
     std::shared_ptr<BlindRotateOutput> init_blind_rotate_output();
 
     std::shared_ptr<AbstractAccumulator> prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding);
 
     std::shared_ptr<AbstractAccumulator> prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding);
-
-    // TODO: Here I actually need some accumulator setup, and these have to be somehow defined there.
-    std::shared_ptr<AbstractAccumulator> get_acc_msb(){  
-        RotationPoly poly = RotationPoly::rot_msb(4, rlwe_gadget_param->rlwe_param->N, rlwe_gadget_param->rlwe_param->Q);  
-        AbstractAccumulator *acc = new RotationPolyAccumulator(poly);  
-
-        std::shared_ptr<AbstractAccumulator> out = std::shared_ptr<AbstractAccumulator>(acc);
-  
-        return out; 
-    }
-
-    std::shared_ptr<AbstractAccumulator> get_acc_one(PlaintextEncoding output_encoding){
-        RotationPoly poly = RotationPoly::rot_one(rlwe_gadget_param->rlwe_param->N, output_encoding.ciphertext_modulus);
-        poly.coefs[1] = output_encoding.encode_message(1);
-        AbstractAccumulator *acc = new RotationPolyAccumulator(poly);  
-        return std::shared_ptr<AbstractAccumulator>(acc); 
-    }
  
+    std::shared_ptr<AbstractAccumulator> get_acc_msb();
+  
+    std::shared_ptr<AbstractAccumulator> get_acc_one(PlaintextEncoding output_encoding);
   
     private:
-    
+     
     void blind_rotation_key_gen(std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk, long* ext_s);
 
     // Temporary variable used in blind rotate. Initialized in the constructors because initialization is expensive.
@@ -76,7 +62,7 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     long* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
     long* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
 
-    void copy_blind_rotation_key(RLWEGadgetCT *bk);
+    void copy_blind_rotation_key(RLWEGadgetCT *bk); 
 
 };
 

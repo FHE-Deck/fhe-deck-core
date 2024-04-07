@@ -325,6 +325,7 @@ class Polynomial{
 
     // Coefficient Modulus Q
     long coef_modulus;
+    int coef_modulus_bit_size;
     // Degree
     int degree;
 
@@ -425,7 +426,7 @@ class PolynomialArrayCoefForm{
     // Size of the array
     int array_size;
 
-    // full_size = degree * array_size. Initialized in the constructors
+    // full_size = degree * array_size. Initialized in the constructors. 
     int full_size;
  
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
@@ -447,8 +448,8 @@ class PolynomialArrayCoefForm{
 
     void set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
   
-    void set_polynomial_at(int i, Polynomial *poly);
-  
+    void set_polynomial_at(int i, Polynomial *poly); 
+ 
     void add(PolynomialArrayCoefForm *out, PolynomialArrayCoefForm *other);
   
     void sub(PolynomialArrayCoefForm *out, PolynomialArrayCoefForm *other);
@@ -483,10 +484,7 @@ class PolynomialArrayEvalForm{
 
     fftwl_complex* eval_fftwl;
     bool is_eval_fftwl = false;
-  
-
-    // TODO: Most Likely we don't need the mul_engine anymore.
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
+   
     bool is_init = false; 
      
     ~PolynomialArrayEvalForm();
@@ -494,13 +492,11 @@ class PolynomialArrayEvalForm{
     PolynomialArrayEvalForm() = default;
 
     PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int array_size);
- 
 
     PolynomialArrayEvalForm(const PolynomialArrayEvalForm &other);
 
     PolynomialArrayEvalForm& operator=(const PolynomialArrayEvalForm other);
   
-
     // NOTE: There is no modulus reduction here
     void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
     // NOTE: There is no modulus reduction here

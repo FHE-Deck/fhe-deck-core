@@ -212,7 +212,7 @@ HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message)){
  
  
 // Run functional bootstrapping
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, GadgetMulMode mode){  
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut){  
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     } 
@@ -223,13 +223,13 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, G
     }else if(is_tfhe && ct_in->is_lwe_ct){       
         LWECT ct_out(ct_in->lwe_c->param);  
         if(ct_in->encoding.type == full_domain){    
-            tfhe_boot_pk->full_domain_bootstrap(ct_out.ct, lut.accumulator, ct_in->lwe_c->ct, deter, ct_in->encoding.plaintext_space);
+            tfhe_boot_pk->full_domain_bootstrap(&ct_out, lut.accumulator, ct_in->lwe_c, ct_in->encoding.plaintext_space);
         }else if(ct_in->encoding.type == partial_domain){  
-            tfhe_boot_pk->bootstrap(ct_out.ct,  lut.accumulator, ct_in->lwe_c->ct, deter); 
+            tfhe_boot_pk->bootstrap(&ct_out,  lut.accumulator, ct_in->lwe_c); 
         }else if(ct_in->encoding.type == signed_limied_short_int){   
             LWECT c_in_copy(ct_in->lwe_c);  
             c_in_copy = c_in_copy + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space); 
-            tfhe_boot_pk->bootstrap(ct_out.ct, lut.accumulator, c_in_copy.ct, deter);   
+            tfhe_boot_pk->bootstrap(&ct_out, lut.accumulator, &c_in_copy);   
         } 
         else{
             throw std::logic_error("Non existend encoding type!");
@@ -241,10 +241,11 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut, G
 }
  
 
-std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> lut_vec, GadgetMulMode mode){ 
+std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> lut_vec){ 
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }  
+    // TODO: Why copy this? Why not take lut_vec?
     std::vector<std::shared_ptr<AbstractAccumulator>> accumulator_vec;
     for(HomomorphicAccumulator i: lut_vec){
         accumulator_vec.push_back(i.accumulator); 
@@ -257,13 +258,13 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
     }else if(is_tfhe){  
         std::vector<LWECT> out_vec_lwe;  
         if(ct_in->encoding.type == full_domain){ 
-            out_vec_lwe = tfhe_boot_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
+            out_vec_lwe = tfhe_boot_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
         }else if(ct_in->encoding.type == partial_domain){ 
-            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, ct_in->lwe_c->ct, mode, ct_in->encoding);
+            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
         }else if(ct_in->encoding.type == signed_limied_short_int){ 
             LWECT ct_cast = ct_in->lwe_c;
             ct_cast = ct_cast + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space);
-            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, ct_cast.ct, mode, ct_in->encoding); 
+            out_vec_lwe = tfhe_boot_pk->bootstrap(accumulator_vec, &ct_cast, ct_in->encoding); 
         } 
         else{
              throw std::logic_error("Non existend encoding type!");
@@ -279,36 +280,36 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
 
 
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding, GadgetMulMode mode){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
-    return eval_lut(ct_in, lut, mode);
+    return eval_lut(ct_in, lut);
 }
  
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), GadgetMulMode mode){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space)){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
     HomomorphicAccumulator lut = this->genrate_lut(f);
-    return eval_lut(ct_in, lut, mode);
+    return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding, GadgetMulMode mode){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
-    return eval_lut(ct_in, lut, mode);
+    return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), GadgetMulMode mode){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message)){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     }
     HomomorphicAccumulator lut = this->genrate_lut(f);
-    return eval_lut(ct_in, lut, mode);
+    return eval_lut(ct_in, lut);
 }
  
  
@@ -415,7 +416,8 @@ void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct){
     auto id = [](long m, long t) -> long {
         return m % t;
     };    
-    Ciphertext out_ct = eval_lut(&ct, id, simul);  
+    // TODO Need to reword sanitization completely
+    Ciphertext out_ct = eval_lut(&ct, id);  
     send_Ciphertext(os, out_ct);
 }
 
