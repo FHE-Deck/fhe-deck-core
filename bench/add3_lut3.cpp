@@ -115,22 +115,6 @@ test_add3_lut3(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
     std::vector<RotationPoly> lut1;
     std::vector<long (*)(long)> flut1;
     auto lut1idx0 = [](long I) -> long {
-        /* GATE 2 (LUT3 _15_ INIT 0x17 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut1.push_back(ctx.genrate_lut(lut1idx0));
-    flut1.push_back(lut1idx0);
-    auto lut1idx1 = [](long I) -> long {
         /* GATE 4 (LUT3 _17_ INIT 0x96 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -141,6 +125,22 @@ test_add3_lut3(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
             case  5: return 0;
             case  6: return 0;
             case  7: return 1;
+            default: assert(0);
+        };
+    };
+    lut1.push_back(ctx.genrate_lut(lut1idx0));
+    flut1.push_back(lut1idx0);
+    auto lut1idx1 = [](long I) -> long {
+        /* GATE 2 (LUT3 _15_ INIT 0x17 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 0;
             default: assert(0);
         };
     };
@@ -199,13 +199,13 @@ test_add3_lut3(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
     };
 
     std::cerr << "\rLUT2   ";
-    Ciphertext gin2 = 1 * gout1[0] + 2 * ct_a2 + 4 * ct_b2;
+    Ciphertext gin2 = 1 * gout1[1] + 2 * ct_a2 + 4 * ct_b2;
     std::vector<Ciphertext> gout2 = ctx.eval_lut_amortized(&gin2, lut2);
 
     std::cerr << "\r          \r";
     std::vector<long> test_out;
     test_out.push_back(ctx.decrypt(&gout0[0])); /* out0 */
-    test_out.push_back(ctx.decrypt(&gout1[1])); /* out1 */
+    test_out.push_back(ctx.decrypt(&gout1[0])); /* out1 */
     test_out.push_back(ctx.decrypt(&gout2[0])); /* out2 */
     test_out.push_back(ctx.decrypt(&gout2[1])); /* out3 */
     return test_out;

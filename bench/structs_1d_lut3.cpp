@@ -126,22 +126,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut0;
     std::vector<long (*)(long)> flut0;
     auto lut0idx0 = [](long I) -> long {
-        /* GATE 11 (LUT2 _162_ INIT 0x8 PERM 01) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut0.push_back(ctx.genrate_lut(lut0idx0));
-    flut0.push_back(lut0idx0);
-    auto lut0idx1 = [](long I) -> long {
         /* GATE 52 (LUT2 _203_ INIT 0x6 PERM 01) */
         switch (I) {
             case  0: return 0;
@@ -152,6 +136,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  5: return 1;
             case  6: return 1;
             case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut0.push_back(ctx.genrate_lut(lut0idx0));
+    flut0.push_back(lut0idx0);
+    auto lut0idx1 = [](long I) -> long {
+        /* GATE 11 (LUT2 _162_ INIT 0x8 PERM 01) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 1;
             default: assert(0);
         };
     };
@@ -210,28 +210,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT1   ";
-    Ciphertext gin1 = 1 * gout0[0] + 2 * ct_data1 + 4 * ct_data33;
+    Ciphertext gin1 = 1 * gout0[1] + 2 * ct_data1 + 4 * ct_data33;
     std::vector<Ciphertext> gout1 = ctx.eval_lut_amortized(&gin1, lut1);
 
     std::vector<RotationPoly> lut2;
     std::vector<long (*)(long)> flut2;
     auto lut2idx0 = [](long I) -> long {
-        /* GATE 54 (LUT3 _205_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut2.push_back(ctx.genrate_lut(lut2idx0));
-    flut2.push_back(lut2idx0);
-    auto lut2idx1 = [](long I) -> long {
         /* GATE 9 (LUT3 _160_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -241,6 +225,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut2.push_back(ctx.genrate_lut(lut2idx0));
+    flut2.push_back(lut2idx0);
+    auto lut2idx1 = [](long I) -> long {
+        /* GATE 54 (LUT3 _205_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -261,22 +261,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut3;
     std::vector<long (*)(long)> flut3;
     auto lut3idx0 = [](long I) -> long {
-        /* GATE 8 (LUT3 _159_ INIT 0x2b PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut3.push_back(ctx.genrate_lut(lut3idx0));
-    flut3.push_back(lut3idx0);
-    auto lut3idx1 = [](long I) -> long {
         /* GATE 55 (LUT3 _206_ INIT 0x69 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -286,6 +270,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 1;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut3.push_back(ctx.genrate_lut(lut3idx0));
+    flut3.push_back(lut3idx0);
+    auto lut3idx1 = [](long I) -> long {
+        /* GATE 8 (LUT3 _159_ INIT 0x2b PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 0;
             case  7: return 0;
             default: assert(0);
         };
@@ -300,7 +300,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT3   ";
-    Ciphertext gin3 = 1 * gout2[1] + 2 * ct_data3 + 4 * ct_data35;
+    Ciphertext gin3 = 1 * gout2[0] + 2 * ct_data3 + 4 * ct_data35;
     std::vector<Ciphertext> gout3 = ctx.eval_lut_amortized(&gin3, lut3);
 
     std::vector<RotationPoly> lut4;
@@ -345,28 +345,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT4   ";
-    Ciphertext gin4 = 1 * gout3[0] + 2 * ct_data4 + 4 * ct_data36;
+    Ciphertext gin4 = 1 * gout3[1] + 2 * ct_data4 + 4 * ct_data36;
     std::vector<Ciphertext> gout4 = ctx.eval_lut_amortized(&gin4, lut4);
 
     std::vector<RotationPoly> lut5;
     std::vector<long (*)(long)> flut5;
     auto lut5idx0 = [](long I) -> long {
-        /* GATE 57 (LUT3 _208_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut5.push_back(ctx.genrate_lut(lut5idx0));
-    flut5.push_back(lut5idx0);
-    auto lut5idx1 = [](long I) -> long {
         /* GATE 6 (LUT3 _157_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -376,6 +360,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut5.push_back(ctx.genrate_lut(lut5idx0));
+    flut5.push_back(lut5idx0);
+    auto lut5idx1 = [](long I) -> long {
+        /* GATE 57 (LUT3 _208_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -396,22 +396,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut6;
     std::vector<long (*)(long)> flut6;
     auto lut6idx0 = [](long I) -> long {
-        /* GATE 58 (LUT3 _209_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut6.push_back(ctx.genrate_lut(lut6idx0));
-    flut6.push_back(lut6idx0);
-    auto lut6idx1 = [](long I) -> long {
         /* GATE 5 (LUT3 _156_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -421,6 +405,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut6.push_back(ctx.genrate_lut(lut6idx0));
+    flut6.push_back(lut6idx0);
+    auto lut6idx1 = [](long I) -> long {
+        /* GATE 58 (LUT3 _209_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -435,7 +435,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT6   ";
-    Ciphertext gin6 = 1 * gout5[1] + 2 * ct_data6 + 4 * ct_data38;
+    Ciphertext gin6 = 1 * gout5[0] + 2 * ct_data6 + 4 * ct_data38;
     std::vector<Ciphertext> gout6 = ctx.eval_lut_amortized(&gin6, lut6);
 
     std::vector<RotationPoly> lut7;
@@ -480,28 +480,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT7   ";
-    Ciphertext gin7 = 1 * gout6[1] + 2 * ct_data7 + 4 * ct_data39;
+    Ciphertext gin7 = 1 * gout6[0] + 2 * ct_data7 + 4 * ct_data39;
     std::vector<Ciphertext> gout7 = ctx.eval_lut_amortized(&gin7, lut7);
 
     std::vector<RotationPoly> lut8;
     std::vector<long (*)(long)> flut8;
     auto lut8idx0 = [](long I) -> long {
-        /* GATE 60 (LUT3 _211_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut8.push_back(ctx.genrate_lut(lut8idx0));
-    flut8.push_back(lut8idx0);
-    auto lut8idx1 = [](long I) -> long {
         /* GATE 3 (LUT3 _154_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -511,6 +495,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut8.push_back(ctx.genrate_lut(lut8idx0));
+    flut8.push_back(lut8idx0);
+    auto lut8idx1 = [](long I) -> long {
+        /* GATE 60 (LUT3 _211_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -531,22 +531,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut9;
     std::vector<long (*)(long)> flut9;
     auto lut9idx0 = [](long I) -> long {
-        /* GATE 61 (LUT3 _212_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut9.push_back(ctx.genrate_lut(lut9idx0));
-    flut9.push_back(lut9idx0);
-    auto lut9idx1 = [](long I) -> long {
         /* GATE 2 (LUT3 _153_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -556,6 +540,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut9.push_back(ctx.genrate_lut(lut9idx0));
+    flut9.push_back(lut9idx0);
+    auto lut9idx1 = [](long I) -> long {
+        /* GATE 61 (LUT3 _212_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -570,28 +570,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT9   ";
-    Ciphertext gin9 = 1 * gout8[1] + 2 * ct_data9 + 4 * ct_data41;
+    Ciphertext gin9 = 1 * gout8[0] + 2 * ct_data9 + 4 * ct_data41;
     std::vector<Ciphertext> gout9 = ctx.eval_lut_amortized(&gin9, lut9);
 
     std::vector<RotationPoly> lut10;
     std::vector<long (*)(long)> flut10;
     auto lut10idx0 = [](long I) -> long {
-        /* GATE 13 (LUT3 _164_ INIT 0x2b PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut10.push_back(ctx.genrate_lut(lut10idx0));
-    flut10.push_back(lut10idx0);
-    auto lut10idx1 = [](long I) -> long {
         /* GATE 1 (LUT3 _152_ INIT 0x69 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -601,6 +585,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 1;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut10.push_back(ctx.genrate_lut(lut10idx0));
+    flut10.push_back(lut10idx0);
+    auto lut10idx1 = [](long I) -> long {
+        /* GATE 13 (LUT3 _164_ INIT 0x2b PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 0;
             case  7: return 0;
             default: assert(0);
         };
@@ -615,28 +615,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT10   ";
-    Ciphertext gin10 = 1 * gout9[1] + 2 * ct_data10 + 4 * ct_data42;
+    Ciphertext gin10 = 1 * gout9[0] + 2 * ct_data10 + 4 * ct_data42;
     std::vector<Ciphertext> gout10 = ctx.eval_lut_amortized(&gin10, lut10);
 
     std::vector<RotationPoly> lut11;
     std::vector<long (*)(long)> flut11;
     auto lut11idx0 = [](long I) -> long {
-        /* GATE 12 (LUT3 _163_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut11.push_back(ctx.genrate_lut(lut11idx0));
-    flut11.push_back(lut11idx0);
-    auto lut11idx1 = [](long I) -> long {
         /* GATE 15 (LUT3 _166_ INIT 0xd4 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -650,6 +634,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut11.push_back(ctx.genrate_lut(lut11idx0));
+    flut11.push_back(lut11idx0);
+    auto lut11idx1 = [](long I) -> long {
+        /* GATE 12 (LUT3 _163_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
     lut11.push_back(ctx.genrate_lut(lut11idx1));
     flut11.push_back(lut11idx1);
     auto fvec11 = [flut11](long I) -> std::vector<long> {
@@ -660,28 +660,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT11   ";
-    Ciphertext gin11 = 1 * gout10[0] + 2 * ct_data11 + 4 * ct_data43;
+    Ciphertext gin11 = 1 * gout10[1] + 2 * ct_data11 + 4 * ct_data43;
     std::vector<Ciphertext> gout11 = ctx.eval_lut_amortized(&gin11, lut11);
 
     std::vector<RotationPoly> lut12;
     std::vector<long (*)(long)> flut12;
     auto lut12idx0 = [](long I) -> long {
-        /* GATE 17 (LUT3 _168_ INIT 0x17 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut12.push_back(ctx.genrate_lut(lut12idx0));
-    flut12.push_back(lut12idx0);
-    auto lut12idx1 = [](long I) -> long {
         /* GATE 14 (LUT3 _165_ INIT 0x96 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -695,6 +679,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut12.push_back(ctx.genrate_lut(lut12idx0));
+    flut12.push_back(lut12idx0);
+    auto lut12idx1 = [](long I) -> long {
+        /* GATE 17 (LUT3 _168_ INIT 0x17 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
     lut12.push_back(ctx.genrate_lut(lut12idx1));
     flut12.push_back(lut12idx1);
     auto fvec12 = [flut12](long I) -> std::vector<long> {
@@ -705,28 +705,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT12   ";
-    Ciphertext gin12 = 1 * gout11[1] + 2 * ct_data12 + 4 * ct_data44;
+    Ciphertext gin12 = 1 * gout11[0] + 2 * ct_data12 + 4 * ct_data44;
     std::vector<Ciphertext> gout12 = ctx.eval_lut_amortized(&gin12, lut12);
 
     std::vector<RotationPoly> lut13;
     std::vector<long (*)(long)> flut13;
     auto lut13idx0 = [](long I) -> long {
-        /* GATE 19 (LUT3 _170_ INIT 0xd4 PERM 012) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 0;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 1;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut13.push_back(ctx.genrate_lut(lut13idx0));
-    flut13.push_back(lut13idx0);
-    auto lut13idx1 = [](long I) -> long {
         /* GATE 16 (LUT3 _167_ INIT 0x69 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -740,6 +724,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut13.push_back(ctx.genrate_lut(lut13idx0));
+    flut13.push_back(lut13idx0);
+    auto lut13idx1 = [](long I) -> long {
+        /* GATE 19 (LUT3 _170_ INIT 0xd4 PERM 012) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 0;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 1;
+            case  7: return 1;
+            default: assert(0);
+        };
+    };
     lut13.push_back(ctx.genrate_lut(lut13idx1));
     flut13.push_back(lut13idx1);
     auto fvec13 = [flut13](long I) -> std::vector<long> {
@@ -750,28 +750,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT13   ";
-    Ciphertext gin13 = 1 * gout12[0] + 2 * ct_data13 + 4 * ct_data45;
+    Ciphertext gin13 = 1 * gout12[1] + 2 * ct_data13 + 4 * ct_data45;
     std::vector<Ciphertext> gout13 = ctx.eval_lut_amortized(&gin13, lut13);
 
     std::vector<RotationPoly> lut14;
     std::vector<long (*)(long)> flut14;
     auto lut14idx0 = [](long I) -> long {
-        /* GATE 21 (LUT3 _172_ INIT 0x17 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut14.push_back(ctx.genrate_lut(lut14idx0));
-    flut14.push_back(lut14idx0);
-    auto lut14idx1 = [](long I) -> long {
         /* GATE 18 (LUT3 _169_ INIT 0x96 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -785,6 +769,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut14.push_back(ctx.genrate_lut(lut14idx0));
+    flut14.push_back(lut14idx0);
+    auto lut14idx1 = [](long I) -> long {
+        /* GATE 21 (LUT3 _172_ INIT 0x17 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
     lut14.push_back(ctx.genrate_lut(lut14idx1));
     flut14.push_back(lut14idx1);
     auto fvec14 = [flut14](long I) -> std::vector<long> {
@@ -795,28 +795,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT14   ";
-    Ciphertext gin14 = 1 * gout13[0] + 2 * ct_data14 + 4 * ct_data46;
+    Ciphertext gin14 = 1 * gout13[1] + 2 * ct_data14 + 4 * ct_data46;
     std::vector<Ciphertext> gout14 = ctx.eval_lut_amortized(&gin14, lut14);
 
     std::vector<RotationPoly> lut15;
     std::vector<long (*)(long)> flut15;
     auto lut15idx0 = [](long I) -> long {
-        /* GATE 23 (LUT3 _174_ INIT 0xd4 PERM 012) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 0;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 1;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut15.push_back(ctx.genrate_lut(lut15idx0));
-    flut15.push_back(lut15idx0);
-    auto lut15idx1 = [](long I) -> long {
         /* GATE 20 (LUT3 _171_ INIT 0x69 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -830,6 +814,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut15.push_back(ctx.genrate_lut(lut15idx0));
+    flut15.push_back(lut15idx0);
+    auto lut15idx1 = [](long I) -> long {
+        /* GATE 23 (LUT3 _174_ INIT 0xd4 PERM 012) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 0;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 1;
+            case  7: return 1;
+            default: assert(0);
+        };
+    };
     lut15.push_back(ctx.genrate_lut(lut15idx1));
     flut15.push_back(lut15idx1);
     auto fvec15 = [flut15](long I) -> std::vector<long> {
@@ -840,7 +840,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT15   ";
-    Ciphertext gin15 = 1 * gout14[0] + 2 * ct_data15 + 4 * ct_data47;
+    Ciphertext gin15 = 1 * gout14[1] + 2 * ct_data15 + 4 * ct_data47;
     std::vector<Ciphertext> gout15 = ctx.eval_lut_amortized(&gin15, lut15);
 
     std::vector<RotationPoly> lut16;
@@ -885,7 +885,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT16   ";
-    Ciphertext gin16 = 1 * gout15[0] + 2 * ct_data16 + 4 * ct_data48;
+    Ciphertext gin16 = 1 * gout15[1] + 2 * ct_data16 + 4 * ct_data48;
     std::vector<Ciphertext> gout16 = ctx.eval_lut_amortized(&gin16, lut16);
 
     std::vector<RotationPoly> lut17;
@@ -1026,22 +1026,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut20;
     std::vector<long (*)(long)> flut20;
     auto lut20idx0 = [](long I) -> long {
-        /* GATE 33 (LUT3 _184_ INIT 0x17 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut20.push_back(ctx.genrate_lut(lut20idx0));
-    flut20.push_back(lut20idx0);
-    auto lut20idx1 = [](long I) -> long {
         /* GATE 30 (LUT3 _181_ INIT 0x96 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -1052,6 +1036,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  5: return 0;
             case  6: return 0;
             case  7: return 1;
+            default: assert(0);
+        };
+    };
+    lut20.push_back(ctx.genrate_lut(lut20idx0));
+    flut20.push_back(lut20idx0);
+    auto lut20idx1 = [](long I) -> long {
+        /* GATE 33 (LUT3 _184_ INIT 0x17 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 0;
             default: assert(0);
         };
     };
@@ -1110,28 +1110,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT21   ";
-    Ciphertext gin21 = 1 * gout20[0] + 2 * ct_data21 + 4 * ct_data53;
+    Ciphertext gin21 = 1 * gout20[1] + 2 * ct_data21 + 4 * ct_data53;
     std::vector<Ciphertext> gout21 = ctx.eval_lut_amortized(&gin21, lut21);
 
     std::vector<RotationPoly> lut22;
     std::vector<long (*)(long)> flut22;
     auto lut22idx0 = [](long I) -> long {
-        /* GATE 34 (LUT3 _185_ INIT 0x96 PERM 012) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut22.push_back(ctx.genrate_lut(lut22idx0));
-    flut22.push_back(lut22idx0);
-    auto lut22idx1 = [](long I) -> long {
         /* GATE 37 (LUT3 _188_ INIT 0x17 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -1142,6 +1126,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  5: return 0;
             case  6: return 0;
             case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut22.push_back(ctx.genrate_lut(lut22idx0));
+    flut22.push_back(lut22idx0);
+    auto lut22idx1 = [](long I) -> long {
+        /* GATE 34 (LUT3 _185_ INIT 0x96 PERM 012) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 1;
             default: assert(0);
         };
     };
@@ -1161,22 +1161,6 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     std::vector<RotationPoly> lut23;
     std::vector<long (*)(long)> flut23;
     auto lut23idx0 = [](long I) -> long {
-        /* GATE 36 (LUT3 _187_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut23.push_back(ctx.genrate_lut(lut23idx0));
-    flut23.push_back(lut23idx0);
-    auto lut23idx1 = [](long I) -> long {
         /* GATE 39 (LUT3 _190_ INIT 0xd4 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -1190,6 +1174,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut23.push_back(ctx.genrate_lut(lut23idx0));
+    flut23.push_back(lut23idx0);
+    auto lut23idx1 = [](long I) -> long {
+        /* GATE 36 (LUT3 _187_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
     lut23.push_back(ctx.genrate_lut(lut23idx1));
     flut23.push_back(lut23idx1);
     auto fvec23 = [flut23](long I) -> std::vector<long> {
@@ -1200,28 +1200,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT23   ";
-    Ciphertext gin23 = 1 * gout22[1] + 2 * ct_data23 + 4 * ct_data55;
+    Ciphertext gin23 = 1 * gout22[0] + 2 * ct_data23 + 4 * ct_data55;
     std::vector<Ciphertext> gout23 = ctx.eval_lut_amortized(&gin23, lut23);
 
     std::vector<RotationPoly> lut24;
     std::vector<long (*)(long)> flut24;
     auto lut24idx0 = [](long I) -> long {
-        /* GATE 38 (LUT3 _189_ INIT 0x96 PERM 012) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 1;
-            case  2: return 1;
-            case  3: return 0;
-            case  4: return 1;
-            case  5: return 0;
-            case  6: return 0;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut24.push_back(ctx.genrate_lut(lut24idx0));
-    flut24.push_back(lut24idx0);
-    auto lut24idx1 = [](long I) -> long {
         /* GATE 41 (LUT3 _192_ INIT 0x17 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -1235,6 +1219,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             default: assert(0);
         };
     };
+    lut24.push_back(ctx.genrate_lut(lut24idx0));
+    flut24.push_back(lut24idx0);
+    auto lut24idx1 = [](long I) -> long {
+        /* GATE 38 (LUT3 _189_ INIT 0x96 PERM 012) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 1;
+            case  2: return 1;
+            case  3: return 0;
+            case  4: return 1;
+            case  5: return 0;
+            case  6: return 0;
+            case  7: return 1;
+            default: assert(0);
+        };
+    };
     lut24.push_back(ctx.genrate_lut(lut24idx1));
     flut24.push_back(lut24idx1);
     auto fvec24 = [flut24](long I) -> std::vector<long> {
@@ -1245,28 +1245,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT24   ";
-    Ciphertext gin24 = 1 * gout23[1] + 2 * ct_data24 + 4 * ct_data56;
+    Ciphertext gin24 = 1 * gout23[0] + 2 * ct_data24 + 4 * ct_data56;
     std::vector<Ciphertext> gout24 = ctx.eval_lut_amortized(&gin24, lut24);
 
     std::vector<RotationPoly> lut25;
     std::vector<long (*)(long)> flut25;
     auto lut25idx0 = [](long I) -> long {
-        /* GATE 40 (LUT3 _191_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut25.push_back(ctx.genrate_lut(lut25idx0));
-    flut25.push_back(lut25idx0);
-    auto lut25idx1 = [](long I) -> long {
         /* GATE 43 (LUT3 _194_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -1276,6 +1260,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut25.push_back(ctx.genrate_lut(lut25idx0));
+    flut25.push_back(lut25idx0);
+    auto lut25idx1 = [](long I) -> long {
+        /* GATE 40 (LUT3 _191_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -1290,28 +1290,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT25   ";
-    Ciphertext gin25 = 1 * gout24[1] + 2 * ct_data25 + 4 * ct_data57;
+    Ciphertext gin25 = 1 * gout24[0] + 2 * ct_data25 + 4 * ct_data57;
     std::vector<Ciphertext> gout25 = ctx.eval_lut_amortized(&gin25, lut25);
 
     std::vector<RotationPoly> lut26;
     std::vector<long (*)(long)> flut26;
     auto lut26idx0 = [](long I) -> long {
-        /* GATE 42 (LUT3 _193_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut26.push_back(ctx.genrate_lut(lut26idx0));
-    flut26.push_back(lut26idx0);
-    auto lut26idx1 = [](long I) -> long {
         /* GATE 45 (LUT3 _196_ INIT 0x2b PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -1321,6 +1305,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 0;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut26.push_back(ctx.genrate_lut(lut26idx0));
+    flut26.push_back(lut26idx0);
+    auto lut26idx1 = [](long I) -> long {
+        /* GATE 42 (LUT3 _193_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 0;
             default: assert(0);
         };
@@ -1335,7 +1335,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT26   ";
-    Ciphertext gin26 = 1 * gout25[1] + 2 * ct_data26 + 4 * ct_data58;
+    Ciphertext gin26 = 1 * gout25[0] + 2 * ct_data26 + 4 * ct_data58;
     std::vector<Ciphertext> gout26 = ctx.eval_lut_amortized(&gin26, lut26);
 
     std::vector<RotationPoly> lut27;
@@ -1380,28 +1380,12 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT27   ";
-    Ciphertext gin27 = 1 * gout26[1] + 2 * ct_data27 + 4 * ct_data59;
+    Ciphertext gin27 = 1 * gout26[0] + 2 * ct_data27 + 4 * ct_data59;
     std::vector<Ciphertext> gout27 = ctx.eval_lut_amortized(&gin27, lut27);
 
     std::vector<RotationPoly> lut28;
     std::vector<long (*)(long)> flut28;
     auto lut28idx0 = [](long I) -> long {
-        /* GATE 49 (LUT3 _200_ INIT 0x2b PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 1;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 0;
-            case  7: return 0;
-            default: assert(0);
-        };
-    };
-    lut28.push_back(ctx.genrate_lut(lut28idx0));
-    flut28.push_back(lut28idx0);
-    auto lut28idx1 = [](long I) -> long {
         /* GATE 46 (LUT3 _197_ INIT 0x69 PERM 012) */
         switch (I) {
             case  0: return 1;
@@ -1411,6 +1395,22 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
             case  4: return 0;
             case  5: return 1;
             case  6: return 1;
+            case  7: return 0;
+            default: assert(0);
+        };
+    };
+    lut28.push_back(ctx.genrate_lut(lut28idx0));
+    flut28.push_back(lut28idx0);
+    auto lut28idx1 = [](long I) -> long {
+        /* GATE 49 (LUT3 _200_ INIT 0x2b PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 1;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 0;
             case  7: return 0;
             default: assert(0);
         };
@@ -1470,7 +1470,7 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
     };
 
     std::cerr << "\rLUT29   ";
-    Ciphertext gin29 = 1 * gout28[0] + 2 * ct_data29 + 4 * ct_data61;
+    Ciphertext gin29 = 1 * gout28[1] + 2 * ct_data29 + 4 * ct_data61;
     std::vector<Ciphertext> gout29 = ctx.eval_lut_amortized(&gin29, lut29);
 
     std::vector<RotationPoly> lut30;
@@ -1504,35 +1504,35 @@ test_structs_1d_lut3(FHEContext& ctx, uint64_t data = 0)
 
     std::cerr << "\r          \r";
     std::vector<long> test_out;
-    test_out.push_back(ctx.decrypt(&gout0[1])); /* out1 */
+    test_out.push_back(ctx.decrypt(&gout0[0])); /* out1 */
     test_out.push_back(ctx.decrypt(&gout1[0])); /* out2 */
-    test_out.push_back(ctx.decrypt(&gout2[0])); /* out3 */
-    test_out.push_back(ctx.decrypt(&gout3[1])); /* out4 */
+    test_out.push_back(ctx.decrypt(&gout2[1])); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout3[0])); /* out4 */
     test_out.push_back(ctx.decrypt(&gout4[1])); /* out5 */
-    test_out.push_back(ctx.decrypt(&gout5[0])); /* out6 */
-    test_out.push_back(ctx.decrypt(&gout6[0])); /* out7 */
+    test_out.push_back(ctx.decrypt(&gout5[1])); /* out6 */
+    test_out.push_back(ctx.decrypt(&gout6[1])); /* out7 */
     test_out.push_back(ctx.decrypt(&gout7[1])); /* out8 */
-    test_out.push_back(ctx.decrypt(&gout8[0])); /* out9 */
-    test_out.push_back(ctx.decrypt(&gout9[0])); /* out10 */
-    test_out.push_back(ctx.decrypt(&gout10[1])); /* out11 */
-    test_out.push_back(ctx.decrypt(&gout11[0])); /* out12 */
-    test_out.push_back(ctx.decrypt(&gout12[1])); /* out13 */
-    test_out.push_back(ctx.decrypt(&gout13[1])); /* out14 */
-    test_out.push_back(ctx.decrypt(&gout14[1])); /* out15 */
-    test_out.push_back(ctx.decrypt(&gout15[1])); /* out16 */
+    test_out.push_back(ctx.decrypt(&gout8[1])); /* out9 */
+    test_out.push_back(ctx.decrypt(&gout9[1])); /* out10 */
+    test_out.push_back(ctx.decrypt(&gout10[0])); /* out11 */
+    test_out.push_back(ctx.decrypt(&gout11[1])); /* out12 */
+    test_out.push_back(ctx.decrypt(&gout12[0])); /* out13 */
+    test_out.push_back(ctx.decrypt(&gout13[0])); /* out14 */
+    test_out.push_back(ctx.decrypt(&gout14[0])); /* out15 */
+    test_out.push_back(ctx.decrypt(&gout15[0])); /* out16 */
     test_out.push_back(ctx.decrypt(&gout16[1])); /* out17 */
     test_out.push_back(ctx.decrypt(&gout17[1])); /* out18 */
     test_out.push_back(ctx.decrypt(&gout18[1])); /* out19 */
     test_out.push_back(ctx.decrypt(&gout19[0])); /* out20 */
-    test_out.push_back(ctx.decrypt(&gout20[1])); /* out21 */
+    test_out.push_back(ctx.decrypt(&gout20[0])); /* out21 */
     test_out.push_back(ctx.decrypt(&gout21[1])); /* out22 */
-    test_out.push_back(ctx.decrypt(&gout22[0])); /* out23 */
-    test_out.push_back(ctx.decrypt(&gout23[0])); /* out24 */
-    test_out.push_back(ctx.decrypt(&gout24[0])); /* out25 */
-    test_out.push_back(ctx.decrypt(&gout25[0])); /* out26 */
-    test_out.push_back(ctx.decrypt(&gout26[0])); /* out27 */
+    test_out.push_back(ctx.decrypt(&gout22[1])); /* out23 */
+    test_out.push_back(ctx.decrypt(&gout23[1])); /* out24 */
+    test_out.push_back(ctx.decrypt(&gout24[1])); /* out25 */
+    test_out.push_back(ctx.decrypt(&gout25[1])); /* out26 */
+    test_out.push_back(ctx.decrypt(&gout26[1])); /* out27 */
     test_out.push_back(ctx.decrypt(&gout27[1])); /* out28 */
-    test_out.push_back(ctx.decrypt(&gout28[1])); /* out29 */
+    test_out.push_back(ctx.decrypt(&gout28[0])); /* out29 */
     test_out.push_back(ctx.decrypt(&gout29[0])); /* out30 */
     test_out.push_back(ctx.decrypt(&gout30[0])); /* out31 */
     return test_out;

@@ -202,30 +202,6 @@ test_add3_lut4(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
     std::vector<RotationPoly> lut1;
     std::vector<long (*)(long)> flut1;
     auto lut1idx0 = [](long I) -> long {
-        /* GATE 4 (LUT3 _14_ INIT 0x69 PERM 012) */
-        switch (I) {
-            case  0: return 1;
-            case  1: return 0;
-            case  2: return 0;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 0;
-            case  8: return 1;
-            case  9: return 0;
-            case 10: return 0;
-            case 11: return 1;
-            case 12: return 0;
-            case 13: return 1;
-            case 14: return 1;
-            case 15: return 0;
-            default: assert(0);
-        };
-    };
-    lut1.push_back(ctx.genrate_lut(lut1idx0));
-    flut1.push_back(lut1idx0);
-    auto lut1idx1 = [](long I) -> long {
         /* GATE 1 (LUT3 _11_ INIT 0xd4 PERM 012) */
         switch (I) {
             case  0: return 0;
@@ -247,6 +223,30 @@ test_add3_lut4(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
             default: assert(0);
         };
     };
+    lut1.push_back(ctx.genrate_lut(lut1idx0));
+    flut1.push_back(lut1idx0);
+    auto lut1idx1 = [](long I) -> long {
+        /* GATE 4 (LUT3 _14_ INIT 0x69 PERM 012) */
+        switch (I) {
+            case  0: return 1;
+            case  1: return 0;
+            case  2: return 0;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
+            case  7: return 0;
+            case  8: return 1;
+            case  9: return 0;
+            case 10: return 0;
+            case 11: return 1;
+            case 12: return 0;
+            case 13: return 1;
+            case 14: return 1;
+            case 15: return 0;
+            default: assert(0);
+        };
+    };
     lut1.push_back(ctx.genrate_lut(lut1idx1));
     flut1.push_back(lut1idx1);
     auto fvec1 = [flut1](long I) -> std::vector<long> {
@@ -264,8 +264,8 @@ test_add3_lut4(FHEContext& ctx, uint8_t a = 0, uint8_t b = 0)
     std::vector<long> test_out;
     test_out.push_back(ctx.decrypt(&gout0[2])); /* out0 */
     test_out.push_back(ctx.decrypt(&gout0[0])); /* out1 */
-    test_out.push_back(ctx.decrypt(&gout1[0])); /* out2 */
-    test_out.push_back(ctx.decrypt(&gout1[1])); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout1[1])); /* out2 */
+    test_out.push_back(ctx.decrypt(&gout1[0])); /* out3 */
     return test_out;
 }
 

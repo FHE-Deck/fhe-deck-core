@@ -71,22 +71,6 @@ test_const4_lut3(FHEContext& ctx, uint8_t a = 0)
     std::vector<RotationPoly> lut1;
     std::vector<long (*)(long)> flut1;
     auto lut1idx0 = [](long I) -> long {
-        /* GATE 1 (LUT3 _08_ INIT 0xf8 PERM 201) */
-        switch (I) {
-            case  0: return 0;
-            case  1: return 0;
-            case  2: return 1;
-            case  3: return 1;
-            case  4: return 0;
-            case  5: return 1;
-            case  6: return 1;
-            case  7: return 1;
-            default: assert(0);
-        };
-    };
-    lut1.push_back(ctx.genrate_lut(lut1idx0));
-    flut1.push_back(lut1idx0);
-    auto lut1idx1 = [](long I) -> long {
         /* GATE 3 (LUT3 _10_ INIT 0x87 PERM 201) */
         switch (I) {
             case  0: return 1;
@@ -96,6 +80,22 @@ test_const4_lut3(FHEContext& ctx, uint8_t a = 0)
             case  4: return 1;
             case  5: return 0;
             case  6: return 0;
+            case  7: return 1;
+            default: assert(0);
+        };
+    };
+    lut1.push_back(ctx.genrate_lut(lut1idx0));
+    flut1.push_back(lut1idx0);
+    auto lut1idx1 = [](long I) -> long {
+        /* GATE 1 (LUT3 _08_ INIT 0xf8 PERM 201) */
+        switch (I) {
+            case  0: return 0;
+            case  1: return 0;
+            case  2: return 1;
+            case  3: return 1;
+            case  4: return 0;
+            case  5: return 1;
+            case  6: return 1;
             case  7: return 1;
             default: assert(0);
         };
@@ -133,8 +133,8 @@ test_const4_lut3(FHEContext& ctx, uint8_t a = 0)
     std::vector<long> test_out;
     test_out.push_back(ctx.decrypt(&gout0[0])); /* out1 */
     test_out.push_back(ctx.decrypt(&gout1[2])); /* out2 */
-    test_out.push_back(ctx.decrypt(&gout1[1])); /* out3 */
-    test_out.push_back(ctx.decrypt(&gout1[0])); /* out4 */
+    test_out.push_back(ctx.decrypt(&gout1[0])); /* out3 */
+    test_out.push_back(ctx.decrypt(&gout1[1])); /* out4 */
     return test_out;
 }
 
