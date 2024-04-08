@@ -139,14 +139,7 @@ class FHEContext{
     void save_Ciphertext(std::string file_name, Ciphertext &ct);
 
     Ciphertext load_Ciphertext(std::string file_name);
-
-
-private:
  
-    RotationPoly generate_rotation_poly_for_signed_limied_short_int_encoding(long (*f)(long message));
-
-    RotationPoly generate_rotation_poly_for_signed_limied_short_int_encoding(long (*f)(long message, long plaintext_space));
-
 
 };
   

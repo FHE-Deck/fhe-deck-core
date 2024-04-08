@@ -19,6 +19,8 @@ Gadget::~Gadget(){
 
         delete[] c_pert;
         delete[] z_pert; 
+ 
+ 
     }
     if(is_deter_temp_init){
         delete[] signed_poly; 
@@ -81,22 +83,8 @@ void Gadget::setup_type_specific_parameters(){
  
         this->k = Utils::power_times(basis, 2);  
         this->ell = Utils::power_times(Q, basis);   
-/*
-        long temp = 2;
-        while(temp < basis){
-            temp *= 2;
-            this->k++;
-        }
-        this->ell = 1;
-        temp = basis; 
-        std::cout << "Compute ell" << std::endl;
-        std::cout << "basis: " << basis << std::endl;
-        std::cout << "Q: " << Q << std::endl;
-        while(temp < Q){
-            temp *= basis; 
-            this->ell++;
-        }  
-*/ 
+        this->ell_minus_one = this->ell-1;
+ 
         // Initialize temporary arrays:
         signed_poly = new long[N]; 
         sign = new long[N]; 
@@ -108,6 +96,7 @@ void Gadget::setup_type_specific_parameters(){
         }
         this->k = Utils::power_times(basis, 2);
         this->ell = Utils::power_times(Q, basis);  
+        this->ell_minus_one = this->ell-1;
         if(Utils::is_power_of(Q, basis)){
             is_power_of_base_modulus = true;
             precompute_constants_for_power_of_base_gaussian_sampling();
@@ -214,8 +203,7 @@ void Gadget::gaussian_sample(long **out, long* in){
     }
 }
  
-
-
+ 
 
 void Gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
     mask = basis-1;  
@@ -226,43 +214,108 @@ void Gadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
         shift = k*i;
         for(long j=0; j < N; ++j){
             prev_gauss = gaussians[j];
-            // Here we sample the new gaussian  
-            //gaussians[j] = rand.gaussian(basis);
-            gaussians[j] =   (long)rand.normal_dist(rand.e1) << k;
+            // Here we sample the new gaussian    
+            //gaussians[j] = (long)(gen_gaussian() * sigma) << k;
+            gaussians[j] = gen_discrete_gauss(0.0f) << k;
             // The jth coefficients of the ith (decomposed) polynomial 
             out[i][j] = (in[j] & mask) >> shift; 
             out[i][j] += gaussians[j] - prev_gauss; 
             gaussians[j] = gaussians[j] >> k;
         }
         mask = mask << k;
+         
     }
 }
+ 
 
-/*
-// Old gaussian_sample_general_modulus. Inefficient. But, lets leave it for now. 
-void gadget::gaussian_sample_general_modulus(long **out, long* in){ 
-    long* decomp = new long[ell];
-    for(int i = 0; i < N; ++i){ 
-        sample_G(decomp, in[i]);
-        for(int j = 0; j < ell; ++j){
-            out[j][i] = decomp[j];
-        }
-    }
-    delete[] decomp;
-} 
-*/
 
-  
+
 void Gadget::gaussian_sample_general_modulus(long **out, long* in){   
   
     long beta;
  
     long integer;
-    double floating=0.0;
-
+    double floating=0.0; 
     // Additional stuff for perturb_D
     double temp;
+ 
+     
+    for(int k = 0; k < N; ++k){ 
+ 
+        // Additional stuff for base decompositon
+        // TODO: Perhaps I can make it faster by merging this into the previous for loop?
+        long mask = basis-1; 
+        long shift; 
+        // Start base_decomposition(u, in[k]);  
+        for(long i = 0; i < ell; ++i){
+            shift = this->k*i; 
+            u[i] = (in[k] & mask) >> shift; 
+            mask = mask << this->k;
+        } 
+        // End base_decomposition(u, in[k]);  
 
+ 
+        // Start of perturb_B(p) 
+        z_pert[0] =  gen_gaussian();
+        //beta = 0;
+        beta = -(z_pert[0] * h[0]); 
+        for(int i = 1; i < ell; ++i){  
+            c_pert[i] = beta * inv_l[i]; 
+            integer = c_pert[i];
+            floating = c_pert[i] - integer;   
+            z_pert[i] = integer + (long)(gen_gaussian() * sigmas[i]  + floating);  
+            //z_pert[i] = integer + (long)(gen_gaussian_float() * sigmas[i]  + floating); 
+            beta = -(z_pert[i] * h[i]); 
+        }
+        z_pert[ell] = 0;
+        p[0] = two_times_basis_plus_one * z_pert[0] + basis * z_pert[1]; 
+        for(int i = 1; i < ell; ++i){
+            p[i] = basis * (z_pert[i-1] + 2*z_pert[i] + z_pert[i+1]); 
+        } 
+        // End of perturb_B(p)
+
+
+        // Computing the c values
+        c[0] = (u[0] - p[0]) * inv_basis;  
+        for(int i = 1; i < ell; ++i){ 
+            c[i] = (c[i-1] + (double)(u[i] - p[i])) * inv_basis;
+        }  
+  
+        // Start of sample_D(z, c);  
+        temp = -c[ell_minus_one]/d[ell_minus_one]; 
+        integer = temp;
+        floating = temp - integer;  
+        //z[ell_minus_one] = integer + (long)(gen_gaussian() * sigma + floating);
+        z[ell_minus_one] = integer + gen_discrete_gauss(floating);
+        double out_ell_minus_one = (double)z[ell_minus_one];
+        for(int i = 0; i < ell_minus_one; ++i){ 
+            temp =  -(c[i] - out_ell_minus_one * d[i]); 
+            integer = temp;
+            floating = temp - integer;  
+            //z[i] = integer + (long)(gen_gaussian() * sigma + floating);
+            z[i] = integer + gen_discrete_gauss(floating);
+        } 
+        // End of sample_D(z, c);  
+  
+        out[0][k] = basis * z[0] + q_decomp[0] * out_ell_minus_one + u[0]; 
+        for(int i = 1; i < ell_minus_one; ++i){ 
+            out[i][k] = basis * z[i] - z[i-1] + q_decomp[i] * out_ell_minus_one + u[i];  
+        } 
+        out[ell_minus_one][k] =  q_decomp[ell_minus_one] * out_ell_minus_one -  z[ell-2] + u[ell_minus_one];  
+    }  
+} 
+  
+
+/*
+void Gadget::gaussian_sample_general_modulus(long **out, long* in){   
+  
+    long beta;
+ 
+    long integer;
+    double floating=0.0; 
+    // Additional stuff for perturb_D
+    double temp;
+  
     for(int k = 0; k < N; ++k){ 
         // Start of perturb_B(p)
         z_pert[0] = (long)(rand_sigmas[0].normal_dist(rand_sigmas[0].e1)); 
@@ -284,7 +337,7 @@ void Gadget::gaussian_sample_general_modulus(long **out, long* in){
 
  
         // Additional stuff for base decompositon
-        // TODO: The masks and shifts can be precomputed
+        // TODO: Perhaps I can make it faster by merging this into the previous for loop?
         long mask = basis-1; 
         long shift; 
         // Start base_decomposition(u, in[k]);  
@@ -325,6 +378,7 @@ void Gadget::gaussian_sample_general_modulus(long **out, long* in){
     } 
  
 } 
+*/
 
 
 void Gadget::sample_G(long* out, long in){ 
@@ -401,11 +455,21 @@ void Gadget::precompute_constants_for_power_of_base_gaussian_sampling(){
     for(long j = 0; j < N; ++j){
         gaussians[j] = 0;
     }  
+
+    sigma  = stddev;
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+    std::mt19937_64 e(seed);
+    std::uniform_int_distribution<unsigned long> uniform(0, 0xffffffffffffffff);  
+    xorshift_s = uniform(e);
+    hasSpare = false;
+
 }
 
-void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){ 
+void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){  
+
     q_decomp = new long[ell];
-    Gadget::base_decomposition(q_decomp, Q); 
+    Gadget::base_decomposition(q_decomp, Q);  
     sigma = stddev/(double)(basis + 1); 
     rand_sigma = Sampler(0.0, stddev);  
     sigmas = new double[ell];
@@ -419,6 +483,7 @@ void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
     h[0] = 0; 
     d = new double[ell];
     d[0] = (double)q_decomp[0]/(double)basis;
+ 
 
     for(int i = 1; i < ell; ++i){
         l[i] = sqrt(basis + (double)basis/(double)(ell-i)); 
@@ -427,11 +492,12 @@ void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
         inv_l[i] = 1.0/l[i];
          
         sigmas[i] = sigma/l[i];   
-         
+  
         rand_sigmas[i] = Sampler(0.0, sigmas[i]); 
     }
 
-    d_stddev = sigma / d[ell-1];  
+ 
+    d_stddev = sigma / d[ell-1];   
     rand_d_stddev = Sampler(0.0, d_stddev);   
      
     inv_basis = (double)1.0/basis; 
@@ -447,6 +513,24 @@ void Gadget::precompute_constants_for_general_modulus_gaussian_sampling(){
     c_pert = new double[ell];
     z_pert = new long[ell+1];
 
+   
+
+   // Initiate xoshiro256 state
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+    std::mt19937_64 e(seed);
+    std::uniform_int_distribution<unsigned long> uniform(0, 0xffffffffffffffff);
+    xoshiro256_s = new long[4];
+    xoshiro256_s[0] = uniform(e);
+    xoshiro256_s[1] = uniform(e);
+    xoshiro256_s[2] = uniform(e);
+    xoshiro256_s[3] = uniform(e);
+ 
+    xorshift_s = uniform(e);
+    hasSpare = false;
+     
+       
+
     is_precomputed = true;
 }
 
@@ -459,4 +543,213 @@ void Gadget::base_decomposition(long* out, long in){
         out[i] = (in & mask) >> shift; 
         mask = mask << k;
     }
+}
+
+
+void Gadget::xorshift64(){ 
+	xorshift_s ^= xorshift_s << 13;
+	xorshift_s ^= xorshift_s >> 7;
+	xorshift_s ^= xorshift_s << 17; 
+    //I'm extracting only the upper 53 bits.  
+	xoshiro256_result = xorshift_s & 0x1fffffffffffff;
+}
+
+
+int Gadget::xorshift25(){ 
+    if(hasSpare){
+        hasSpare = false;
+        return xoshiro256_25_result_2;
+    }
+	xorshift_s ^= xorshift_s << 13;
+	xorshift_s ^= xorshift_s >> 7;
+	xorshift_s ^= xorshift_s << 17; 
+    //I'm extracting only the upper 53 bits.  
+	//xoshiro256_result = xorshift_s & 0x1fffffffffffff;
+    xoshiro256_25_result_1 = xorshift_s & 0x1FFFFFF;
+    xoshiro256_25_result_2 = (xorshift_s>>25) & 0x1FFFFFF;
+    hasSpare  = true;
+    return xoshiro256_25_result_1;
+}
+
+
+ 
+void Gadget::xoshiro256p(){
+    //xoshiro256_result = 1212342353425;
+
+    // Note: I'm extracting only the upper 53 bits. Hence the  
+    xoshiro256_result = (xoshiro256_s[0] + xoshiro256_s[3]) & xoshiro_mask;
+
+	xoshiro256_t = xoshiro256_s[1] << 17;
+ 
+	xoshiro256_s[1] ^= (xoshiro256_s[2] ^ xoshiro256_s[0]);
+	xoshiro256_s[3] ^= xoshiro256_s[1];
+	xoshiro256_s[0] ^= xoshiro256_s[3];
+
+	xoshiro256_s[2] ^= xoshiro256_t;
+	xoshiro256_s[3] = (xoshiro256_s[3] << 45) | (xoshiro256_s[3] >> (64 - 45));
+      
+}
+
+
+   
+/*
+Marsaglia polar method (Kindof Slow)
+double Gadget::gen_gaussian(double mean, double stddev){
+ 
+    if (hasSpare) {
+        hasSpare = false;
+        return spare * stddev + mean;
+    } else {
+        double u, v, s;
+        do {
+            //u = (xoshiro256p() / 9007199254740992) * 2.0 - 1.0;
+            //v = (xoshiro256p() / 9007199254740992) * 2.0 - 1.0;
+            // We multiply by 2 so lets precompute this and change the divisor.
+            u = (xoshiro256p() / 4503599627370496) - 1.0;
+            v = (xoshiro256p() / 4503599627370496) - 1.0;
+            s = u * u + v * v;
+        } while (s >= 1.0 || s == 0.0);
+        //std::cout << "Are we comming out?" << std::endl;
+        s = sqrt(-2.0 * log(s) / s);
+        spare = v * s;
+        hasSpare = true;
+        return mean + stddev * u * s;
+    }
+} 
+
+*/
+
+  
+  
+/*
+Box-Muller method
+*/ 
+double Gadget::gen_gaussian(){ 
+    if (hasSpare) {
+        hasSpare = false;
+        return spare ;
+    } else {       
+        hasSpare = true;
+        do
+        {
+            xorshift64();    
+        }
+        while(xoshiro256_result  <= 2);   
+  
+        u1 =  (double)xoshiro256_result * div_const_u1; 
+        xorshift64(); 
+        u2 = (double)xoshiro256_result * div_const_u2;  
+        float u2_float = (float)u2;
+        auto mag =  std::sqrt(-2.0f * std::log((float)u1)); 
+        spare  = (double)(mag * std::sin(u2_float)); 
+        return (double)(mag * std::cos(u2_float));
+    } 
+}  
+
+/*
+Box-Muller method, over floats. We don't need big precision here because we multiply by the standard deviation,
+*/  
+float Gadget::gen_gaussian_float(){ 
+    if (hasSpare) {
+        hasSpare = false;
+        return spare_float ;
+    } else {       
+        hasSpare = true;
+        do
+        {
+            xorshift64();    
+        }
+        while(xoshiro256_result  <= 2);   
+  
+        u1_float =  (float)(xoshiro256_result & 0x1FFFFFF) * div_const_u1_float; 
+        xorshift64(); 
+        u2_float = (float)(xoshiro256_result & 0x1FFFFFF) * div_const_u2_float;  
+  
+        auto mag =  std::sqrt(-2.0f * std::log(u1_float)); 
+        spare_float  = mag * std::sin(u2_float); 
+        return mag * std::cos(u2_float);
+    } 
+}  
+
+
+
+ 
+
+
+long Gadget::gen_discrete_gauss(float c){
+
+    int sigma = this->sigma;
+    int k;
+    int s;
+    float tmp;
+    int i0; 
+    float x;
+    int j; 
+    float exp_inp; 
+    unsigned int bias;
+  
+    do{ 
+        k = d1_d2_of_karney();   
+   
+        xorshift64(); 
+        s = 1 * (-((xoshiro256_result>>52) & 1));
+    
+       
+        j =((xoshiro256_result & 0x1FFFFFF) % sigma);
+        tmp = k * sigma + s * c;
+        i0 = (int)tmp + j; 
+   
+        x = (((float)i0 - tmp))/sigma; 
+
+        if(x >= 1){  
+            continue;
+        }
+        if(x == 0){
+            if(k == 0 && s < 0){
+                continue;
+            } 
+            else{ 
+                return s * (i0);
+            }
+        }
+        exp_inp = minus_half * x * (2 * k + x);
+ 
+           
+        exp_inp *= (5+exp_inp);
+        exp_inp *= (20+exp_inp);
+        exp_inp *= (60+exp_inp);
+        exp_inp *= (120+exp_inp);
+        exp_inp *= (120+exp_inp); 
+        exp_inp *= 0.0013888888f; 
+        bias = (unsigned int)(exp_inp * 33554431.0f);  
+        if(((unsigned int)(xoshiro256_result>>25) & 0x1FFFFFF) <= bias){  
+            return s * (i0) ;
+        } 
+    }while(true); 
+}
+
+
+int Gadget::d1_d2_of_karney(){
+    int k ;
+    bool reject;   
+    int k_times_k_minus_one;
+    do{ 
+        k = -1;
+        reject = false;
+        do{ 
+            ++k; 
+            // 20351791 = exp(-0.5) * 2**25
+        } while(xorshift25() < 20351791); 
+        if(k < 2){ 
+            return k;
+        }
+        k_times_k_minus_one = k * (k - 1); 
+        for(int i = 0; i < k_times_k_minus_one; ++i){ 
+            if(xorshift25() >= 20351791){
+                reject = true;
+                break;
+            }
+        }  
+    }while(reject);  
+    return k; 
 }

@@ -135,7 +135,9 @@ RLWECT RLWESK::encrypt(long* m){
     return out;
 }
 
+
 RLWECT RLWESK::scale_and_encrypt(long* m, int t){ 
+    // TODO: Potential problem if Q is too big. The scale may require to be a long double.
     double scale = (double)param->Q/t;
     long* m_scaled = new long[param->N];
     for(int i = 0; i < param->N; ++i){
@@ -147,7 +149,7 @@ RLWECT RLWESK::scale_and_encrypt(long* m, int t){
 }
 
 
-void RLWESK::phase(long *phase, const RLWECT *ct){  
+void RLWESK::phase(long *phase, const RLWECT *ct){   
     if(sk_arithmetic == double_fft){   
         fftw_complex *eval_a = new fftw_complex[engine.plan_size]; 
         engine.to_eval_form(eval_a, ct->a);
@@ -159,10 +161,10 @@ void RLWESK::phase(long *phase, const RLWECT *ct){
         }  
         delete[] eval_a;
         delete[] as; 
-    }else if(sk_arithmetic == hexl_ntt){    
+    }else if(sk_arithmetic == hexl_ntt){     
         long* eval_a_ntt = param->init_poly(); 
-        long* a_mod_form = param->init_poly();
-        Utils::array_mod_form(a_mod_form, ct->a, param->N, param->Q);
+        long* a_mod_form = param->init_poly(); 
+        Utils::array_mod_form(a_mod_form, ct->a, param->N, param->Q); 
         ntt.ComputeForward((uint64_t*) eval_a_ntt, (uint64_t*) a_mod_form, 1, 1);   
         intel::hexl::EltwiseMultMod((uint64_t*) eval_a_ntt, (uint64_t*) eval_a_ntt, (uint64_t*) eval_s_ntt, param->N, param->Q, 1);
         ntt.ComputeInverse((uint64_t*) eval_a_ntt, (uint64_t*)  eval_a_ntt, 1, 1);  
@@ -185,11 +187,11 @@ long* RLWESK::decrypt(const RLWECT *ct, int t){
 }
 
 // Uses SK
-void RLWESK::decrypt(long *out, const RLWECT *ct, int t){ 
-    long *phase = new long[param->N]; 
-    this->phase(phase, ct); 
-    Utils::array_rounding(out, phase, param->N, param->Q, t);
-    delete[] phase;
+void RLWESK::decrypt(long *out, const RLWECT *ct, int t){  
+    //long *phase = new long[param->N];  
+    this->phase(out, ct);  
+    Utils::array_rounding(out, out, param->N, param->Q, t); 
+    //delete[] phase;
 }
 
  
@@ -213,6 +215,7 @@ RLWEGadgetSK& RLWEGadgetSK::operator=(const RLWEGadgetSK other){
 
 
 RLWEGadgetCT RLWEGadgetSK::gadget_encrypt(long* msg){   
+     
     RLWEGadgetCT out(gadget_param);  
    long* msg_cpy = gadget_param.rlwe_param->init_zero_poly();
    for(int i = 0; i < gadget_param.rlwe_param->N; ++i){
@@ -222,6 +225,7 @@ RLWEGadgetCT RLWEGadgetSK::gadget_encrypt(long* msg){
     Utils::mul_mod(msg_x_sk, msg, gadget_param.rlwe_param->N, sk.s, gadget_param.rlwe_param->N, gadget_param.rlwe_param->N, gadget_param.rlwe_param->Q, gadget_param.rlwe_param->ring); 
     Utils::neg_mod(msg_x_sk, msg_x_sk, gadget_param.rlwe_param->N, gadget_param.rlwe_param->Q); 
       
+     
     out.gadget_ct[0] = sk.encrypt(msg_cpy); 
     for(int i = 1; i < gadget_param.ell_max; ++i){
         // Multiply msg by basis

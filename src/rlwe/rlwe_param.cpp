@@ -89,7 +89,9 @@ void RLWECT::set_computing_engine(){
 
 void RLWECT::negacyclic_rotate(RLWECT *out, int rot){ 
     Utils::negacyclic_rotate_poly(out->a, a, param->N, rot);
+    Utils::array_mod_form(out->a, out->a, param->N, param->Q);
     Utils::negacyclic_rotate_poly(out->b, b, param->N, rot);  
+    Utils::array_mod_form(out->b, out->b, param->N, param->Q);
 }
 
 
@@ -136,24 +138,26 @@ std::string RLWECT::to_string(){
  
  
 void RLWECT::add(long *out, long *in_1, long *in_2){
+    // Assert in_1 and in_2 are in mod form
       for(int i = 0; i < param->N; ++i){
             out[i] = (in_1[i] + in_2[i]) % param->Q; 
       }
-      Utils::array_signed_form(out, out, param->N, param->Q);
+      //Utils::array_signed_form(out, out, param->N, param->Q);
 }
 
 long* RLWECT::add(long *in_1, long *in_2){
-      long* out = param->init_poly();
-      add(out, in_1, in_2);
-      return out;
+    // Assert in_1 and in_2 are in mod form
+    long* out = param->init_poly();
+    add(out, in_1, in_2);
+    return out;
 }
 
 
 void RLWECT::sub(long *out, long *in_1, long *in_2){
       for(int i = 0; i < param->N; ++i){
-            out[i] = (in_1[i] - in_2[i]) % param->Q; 
+            out[i] = in_1[i] - in_2[i]; 
       }
-      Utils::array_signed_form(out, out, param->N, param->Q);
+      Utils::array_mod_form(out, out, param->N, param->Q);
 }
 
 long* RLWECT::sub(long *in_1, long *in_2){
@@ -164,10 +168,11 @@ long* RLWECT::sub(long *in_1, long *in_2){
 
 
 void RLWECT::neg(long *out, long *in){
+    // Assert array in mod form (Assert 0 <= in[i] < Q)
       for(int i = 0; i < param->N; ++i){
-            out[i] =  (-in[i]) % param->Q; 
+            out[i] =  param->Q-in[i]; 
       } 
-      Utils::array_signed_form(out, out, param->N, param->Q);
+      //Utils::array_mod_form(out, out, param->N, param->Q);
 }
 
 long* RLWECT::neg(long *in){
@@ -280,6 +285,7 @@ RLWEGadgetCT::RLWEGadgetCT(RLWEGadgetParam gadget_param){
     }else if(gadget_param.rlwe_param->arithmetic == hexl_ntt){ 
         init_ntt_eval(); 
     }else{ 
+        std::cout << "In RLWEGadgetCT(RLWEGadgetParam gadget_param)" << std::endl;
         throw std::logic_error("Non existent polynomial multiplication engine!"); 
     }
     this->is_init = true;
@@ -431,7 +437,6 @@ void RLWEGadgetCT::mul(RLWECT *out, const RLWECT *ct, GadgetMulMode mode){
     // Depending on whether we do randomized or deterministic:
     // We use either decompose, or gaussian sample.
     if(mode == simul){     
-
         //simul_ell_delete = gadget_param.ell;
         gadget_param.rand_gadget.sample(simul_ct_a_dec, ct->a);
         gadget_param.rand_gadget.sample(simul_ct_b_dec, ct->b); 
@@ -479,7 +484,9 @@ void RLWEGadgetCT::mul(RLWECT *out, const RLWECT *ct, GadgetMulMode mode){
  
 // Currently multisum_fft is lazy - modulus reduction happends only at the end.
 void RLWEGadgetCT::multisum_fft(long *out, long** arr, fftw_complex **c_arr, int ell, int w){ 
-    
+    // TODO: Note that we may get the arr polynomials in signed form
+    // Meaning, that the outcome of the evaluation may also be in some weird signed form.
+    // I think that this mod reduce isn't written to handle somehting like this.
     engine.to_eval_form(fft_multisum_eval, arr[0]);   
     engine.mul_eval_form(fft_multisum_eval, fft_multisum_eval, c_arr[0]);  
   
@@ -494,7 +501,9 @@ void RLWEGadgetCT::multisum_fft(long *out, long** arr, fftw_complex **c_arr, int
    
 // Multisum any multiplies every second ciphertext
 void RLWEGadgetCT::multisum_any_fft(long *out, long** arr, fftw_complex **c_arr){ 
-    
+    // TODO: Note that we may get the arr polynomials in signed form
+    // Meaning, that the outcome of the evaluation may also be in some weird signed form.
+    // I think that this mod reduce isn't written to handle somehting like this.
     engine.to_eval_form(fft_multisum_eval, arr[0]);   
     engine.mul_eval_form(fft_multisum_eval, fft_multisum_eval, c_arr[0]);  
   

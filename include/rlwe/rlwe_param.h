@@ -63,6 +63,7 @@ class RLWECT{
   
     std::shared_ptr<RLWEParam> param;
 
+    // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, a nd s is the secret key polynomial
     long *b;
     long *a;
    
@@ -218,9 +219,12 @@ class RLWEGadgetCT{
   RLWEGadgetParam gadget_param;
 
   bool is_init = false;
+  // Extended RLWE of a message M
   RLWECT *gadget_ct;
+  // Extended RLWE of a mesage M * sk with where sk is the secret key polynomial. 
   RLWECT *gadget_ct_sk;
 
+  // Ciphertext polynomials if we're using FFT engine
   FFTPlan engine;
   fftw_complex **eval_a;
   fftw_complex **eval_b;
@@ -228,7 +232,7 @@ class RLWEGadgetCT{
   fftw_complex **eval_a_sk;
   fftw_complex **eval_b_sk;
  
-
+  // Ciphertext polynomials if we're using NTT engine
   intel::hexl::NTT ntt; 
   long **ntt_eval_a;
   long **ntt_eval_b;
@@ -243,7 +247,6 @@ class RLWEGadgetCT{
   long** deter_ct_a_dec;
   long** deter_ct_b_dec;
 
-  
   // Mask for power of two modulus reduction
   long mask;
  

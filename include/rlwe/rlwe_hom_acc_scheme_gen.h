@@ -101,7 +101,7 @@ class TFHESecretKey{
 
 
 enum TFHENamedParams{ 
-    tfhe_small_test, tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized
+    tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized
 };
 
 

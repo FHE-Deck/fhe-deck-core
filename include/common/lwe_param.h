@@ -61,6 +61,7 @@ class LWEParam{
   
 };
 
+
 class LWECT{
  
   public:
@@ -100,7 +101,7 @@ class LWECT{
     
     void add_lazy(LWECT *ct); 
     
-    void switch_modulus(LWEParam &new_param);
+    //void switch_modulus(LWEParam &new_param);
   
     void add(long b);
   
@@ -158,6 +159,68 @@ LWECT operator+(long b, LWECT ct);
 LWECT operator-(long b, LWECT ct);
 
 LWECT operator*(long b, LWECT ct);
+
+
+
+class LWEModSwitcher{
+
+  public:
+  std::shared_ptr<LWEParam> from;
+  std::shared_ptr<LWEParam> to;
+
+  bool long_arithmetic = false;
+
+  // Some precomputation
+  int ct_size;
+  double Q_from;
+  double Q_to;
+  double temp; 
+  // If we need larger precision
+  long double long_Q_from;
+  long double long_Q_to;
+  long double long_temp; 
+
+  LWEModSwitcher() = default;
+
+  // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
+  LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to);
+  
+  void switch_modulus(long *out_ct, long *in_ct);
+    
+};
+
+
+
+/*
+class LWEToLWEKeySwitchKey{
+
+  public:
+
+    long ***ksk;
+    std::shared_ptr<LWEParam> origin;
+    // To
+    LWEGadgetParam destination;
+    KeySwitchType ks_type;
+
+
+    LWEToLWEKeySwitchKey();
+
+ 
+    // KS
+    void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
+    // KS
+    void lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in);
+    // KS
+    void lwe_to_lwe_key_switch(long *lwe_ct_out, long *lwe_ct_in);
+    // KS
+    void set_key_switch_type();
+
+    //key_switching_key_gen(LWEGadgetSK *sk);
+
+};
+*/
+
+
 
 
 class LWEGadgetParam{

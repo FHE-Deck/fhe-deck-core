@@ -15,9 +15,10 @@ LWEParam::LWEParam(int n, long Q, KeyDistribution key_d, double stddev){
 LWEParam LWEParam::modulus_switch(long new_modulus){  
     double new_stddev = (new_modulus * this->stddev)/this->Q;
     if(new_stddev < 3.2){
-        // TODO: This is a solrt of hack solution.
+        // TODO: This is a sort of hack solution.
         // Actually we should choose it based on the key distribution, and the expected rounding error for the key distribution.
         // But to do this, perhaps the key_d parameter should be a more complex struct with hamming weight etc.  
+        // Note: that this is needed only when making an encryption w.r.t. the modullus switched LWE. Fortunately, it's not used in the high level ingterface so I leave it for later.
         new_stddev = 3.2;
     } 
     LWEParam new_param(this->n, new_modulus, this->key_d, new_stddev); 
@@ -59,6 +60,7 @@ void LWEParam::add_lazy(long *out, long *ct_1, long *ct_2){
 
 
 void LWEParam::switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param){ 
+    // TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should.
     double temp; 
     for(int i = 0; i < n+1; ++i){
         temp =  new_param.Q *  in_ct[i];
@@ -67,13 +69,16 @@ void LWEParam::switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param){
 }
 
 
+// Deprecated
 void LWEParam::switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param){ 
+    // TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should. 
     double temp; 
     for(int i = 0; i < n+1; ++i){
-        temp =  new_param->Q *  in_ct[i];
+        temp =  new_param->Q * in_ct[i];
         out_ct[i] = (long)round(temp/(double)Q); 
     }
 }
+
 
 /*
 template <class Archive>
@@ -212,7 +217,7 @@ LWECT& LWECT::operator=(const LWECT other){
 
  
 LWECT LWECT::operator+(long b){   
-    LWECT ct_out(this);   
+    LWECT ct_out(this);    
     ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] + b, param->Q);
     return ct_out; 
 }
@@ -286,6 +291,133 @@ LWECT operator*(long b, LWECT ct){
 }
  
 
+LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to){
+    this->from = from;
+    this->to = to;
+
+    // Check if we need long arithmetic
+    int bits_from = Utils::number_of_bits(from->Q);
+    int bits_to = Utils::number_of_bits(to->Q);
+  
+    if(from->n != to->n){
+        throw std::logic_error("LWEModSwitcher::LWEModSwitcher: Dimension of the from and to LWE parametrs must the the same.");
+    }
+    ct_size = from->n+1;
+    if(bits_from+bits_to <= 52){
+        long_arithmetic = false;
+        Q_from = from->Q;
+        Q_to = to->Q; 
+    }else if(bits_from+bits_to <= 112){
+        long_arithmetic = true;
+        long_Q_from = (long double)from->Q;
+        long_Q_to = (long double)to->Q; 
+    }else{
+        throw std::logic_error("LWEModSwitcher::LWEModSwitcher: Too large moduli.");
+    }
+}
+
+
+void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){  
+    if(long_arithmetic){
+        for(int i = 0; i < ct_size; ++i){
+            long_temp =  long_Q_to * (long double)in_ct[i];
+            out_ct[i] = (long)roundl(long_temp/long_Q_from); 
+        } 
+    }else{
+        for(int i = 0; i < ct_size; ++i){
+            temp = Q_to *  (double)in_ct[i];
+            out_ct[i] = (long)(temp/Q_from); 
+        }
+    }   
+}
+
+
+
+
+/*
+long*** LWEToLWEKeySwitchKey::key_switching_key_gen(LWEGadgetSK *sk){ 
+    // Initialize the key switching key
+    long ***ksk = new long**[origin->n]; 
+    for(int i = 0; i < origin->n; ++i){
+        ksk[i] = new long*[destination.ell];
+        for(int j = 0; j < destination.ell; ++j){ 
+            ksk[i][j] = destination.lwe_param->init_ct();
+        }
+    } 
+    for(int i = 0; i < rlwe_gadget.gadget_param.rlwe_param->N; ++i){  
+        ksk[i] = sk.gadget_encrypt(-rlwe_gadget.sk.s[i]);  
+    } 
+    return ksk;
+}
+
+
+
+void LWEToLWEKeySwitchKey::set_key_switch_type(){ 
+    long bits_Q = Utils::power_times(destination.lwe_param->Q, 2);
+    long bits_base = Utils::power_times(destination.basis, 2);
+    long bits_N = Utils::power_times(origin->n, 2); 
+    destination.ell;
+    long sum_lazy_bits = bits_Q + bits_base + destination.ell + bits_N;
+    long sum_partial_lazy_bits = bits_Q + bits_base + destination.ell + 1;
+    if(sum_lazy_bits < 64){
+        std::cout << "rlwe_hom_acc_scheme: Using Lazy Key Switch" << std::endl;
+        ks_type = lazy_key_switch;
+    }else if(sum_partial_lazy_bits < 64){
+        std::cout << "rlwe_hom_acc_scheme: Using Partial Lazy Key Switch" << std::endl;
+        ks_type = partial_lazy_key_switch;
+    }else{
+        std::cout << "Using Standard Key Switch" << std::endl;
+        ks_type = standard_key_switch;
+    }
+}
+
+
+ 
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in){
+    destination.gadget_mul_lazy(lwe_ct_out, ksk[0], lwe_ct_in[1]); 
+    long *temp_lwe_ct = destination.lwe_param->init_ct(); 
+    for(int i=2; i < origin->n+1; ++i){  
+        destination.gadget_mul_lazy(temp_lwe_ct, ksk[i-1], lwe_ct_in[i]); 
+        destination.lwe_param->add_lazy(lwe_ct_out, lwe_ct_out, temp_lwe_ct); 
+    }  
+    lwe_ct_out[0] = lwe_ct_in[0] + lwe_ct_out[0];
+    Utils::array_mod_form(lwe_ct_out, lwe_ct_out, destination.lwe_param->n+1, destination.lwe_param->Q); 
+    delete[] temp_lwe_ct;
+}
+
+
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in){
+    destination.gadget_mul_lazy(lwe_ct_out, ksk[0], lwe_ct_in[1]); 
+    long *temp_lwe_ct = destination.lwe_param->init_ct(); 
+    for(int i=2; i < origin->n+1; ++i){  
+        destination.gadget_mul_lazy(temp_lwe_ct, ksk[i-1], lwe_ct_in[i]); 
+        destination.lwe_param->add_lazy(lwe_ct_out, lwe_ct_out, temp_lwe_ct); 
+        Utils::array_mod_form(lwe_ct_out, lwe_ct_out, destination.lwe_param->n+1, destination.lwe_param->Q);
+    } 
+    // Add the ``b'' term
+    lwe_ct_out[0] = lwe_ct_in[0] + lwe_ct_out[0]; 
+    Utils::array_mod_form(lwe_ct_out, lwe_ct_out, destination.lwe_param->n+1, destination.lwe_param->Q);
+    delete[] temp_lwe_ct;
+}
+
+ 
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(long *lwe_ct_out, long *lwe_ct_in){
+    destination.gadget_mul(lwe_ct_out, ksk[0], lwe_ct_in[1]); 
+    long *temp_lwe_ct = destination.lwe_param->init_ct(); 
+    for(int i=2; i < origin->n+1; ++i){  
+        destination.gadget_mul(temp_lwe_ct, ksk[i-1], lwe_ct_in[i]); 
+        destination.lwe_param->add(lwe_ct_out, lwe_ct_out, temp_lwe_ct); 
+    }  
+    lwe_ct_out[0] = lwe_ct_in[0] + lwe_ct_out[0];
+    Utils::array_mod_form(lwe_ct_out, lwe_ct_out, destination.lwe_param->n+1, destination.lwe_param->Q);
+    delete[] temp_lwe_ct;
+}
+
+*/
+
+
+   
+
  
 LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, int basis){
       this->lwe_param = lwe_par;
@@ -355,6 +487,6 @@ void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar
         delete[] temp_ct;
     } 
     // Modulus reduction only at the  end
-    Utils::array_mod_form(out_ct, out_ct, lwe_param->n+1, lwe_param->Q); 
+    //Utils::array_mod_form(out_ct, out_ct, lwe_param->n+1, lwe_param->Q); 
     delete[] scalar_decomposed;
 }
