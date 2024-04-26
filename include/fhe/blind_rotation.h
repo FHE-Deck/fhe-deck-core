@@ -4,138 +4,132 @@
 #include "lwe.h"
 #include "rlwe.h" 
 #include "rotation_poly.h"
-
+#include "vector_ciphertext.h"
 
 namespace fhe_deck{
 
+ 
+class VectorCTAccumulator{ 
 
-
-class AbstractAccumulator{
     public:
 
+    std::shared_ptr<VectorCT> acc; 
+    RotationPoly rot_poly;
+    RotationPoly rot_poly_amortized;   
     bool amortization = false;
-     
-    virtual void setup_amortization()  = 0;
 
+    VectorCTAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly, bool amortization = true);
+  
+    VectorCTAccumulator(VectorCTAccumulator &other);
+ 
+    VectorCTAccumulator& operator=(const VectorCTAccumulator other);
 };
-
-
 
 class HomomorphicAccumulator{
     public:
  
-    std::shared_ptr<AbstractAccumulator> accumulator;
+    std::shared_ptr<VectorCTAccumulator> accumulator;
 
-    HomomorphicAccumulator(std::shared_ptr<AbstractAccumulator> accumulator){
+    HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator> accumulator){
         this->accumulator = accumulator;
     }
- 
 };
 
-
-class RotationPolyAccumulator : public AbstractAccumulator{ 
+class AbstractAccumulatorBuilder{
 
     public:
- 
-    RotationPoly rot_poly;
-    RotationPoly rot_poly_amortized;  
-    bool amortization = true;
+    
+    virtual VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding) = 0;
 
-    RotationPolyAccumulator(RotationPoly rot_poly);
+    virtual VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding) = 0;
 
-    void setup_amortization();
-
-};
-
-
-
-class RLWEAccumulator : public AbstractAccumulator{ 
-
-    public:
-
-    RLWECT acc; 
-    RotationPoly rot_poly;
-    RotationPoly rot_poly_amortized;  
-
-    bool amortization = false;
-
-    RLWEAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly);
-
-    RLWEAccumulator(RLWECT &acc);
-
-    RLWEAccumulator(RLWEAccumulator &other);
- 
-    RLWEAccumulator& operator=(const RLWEAccumulator other);
-
-    void setup_amortization();
-
-};
-
+    virtual VectorCTAccumulator* get_acc_msb() = 0;
   
-/*
-    Wrapps the output of a blind rotation algorithm.
-    For instance can be a RLWE, NTRU, and other.
+    virtual VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) = 0;
 
-    Its a wrapper, because from the point aaf view of a ciphertext class, I dop't need post_rotation for instance.
-*/
+};
+
+class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
+
+    public:
+
+    std::shared_ptr<RLWEParam> param;
+
+    RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
+
+    VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding);
+
+    VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding); 
+
+    VectorCTAccumulator* get_acc_msb();
+  
+    VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
+};
+ 
+/*
+    Interface for outputs of a blind rotation algorithm.
+    I could use VectorCT instead, but I decided to go with a new interface because post rotation with an VectorCTAccumulator 
+    I don't feal that it belongs within the scope of an ciphertext.
+*/ 
 class BlindRotateOutput{
 
     public:
 
-    BlindRotationOutputType type;
+    VectorCT* accumulator;
 
-    RLWECT* rlwe_ct; 
+    ~BlindRotateOutput(){};
+  
+    virtual void extract_lwe(long* lwe_ct) = 0;
 
-    ~BlindRotateOutput();
+    virtual void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc) = 0; 
+};
 
-    BlindRotateOutput(RLWECT* rlwe_ct);
+class BlindRotateOutputBuilder{
+
+    public: 
+
+    virtual BlindRotateOutput* build() = 0; 
+};
+
+class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
+
+    public: 
+
+    std::shared_ptr<RLWEParam> param;
+
+    RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEParam> param);
+
+    BlindRotateOutput* build(); 
+};
+
+class RLWEBlindRotateOutput : public BlindRotateOutput{
+
+    public:
+    // Will point at the VectorCT accumulator. I will do casting already in the constructor. 
+    // The pointer is freed in the destructor. 
+    RLWECT* accumulator_ptr;
+
+    ~RLWEBlindRotateOutput();
+    
+    RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param);
 
     void extract_lwe(long* lwe_ct);
 
-    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<AbstractAccumulator> acc);
-
+    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
 };
-
-
-
-
+ 
 class BlindRotationPublicKey{
  
     public:
 
     virtual ~BlindRotationPublicKey(){};
-
-    // Size of the rotation vector.
-    // For example in FHEW over Z[X]/(X^N + 1), rotation_size = 2*N
-    // But if we implement over Z[X]/(X^N - 1), then the rotation size would be 2*N
-    long rotation_size;
-
-    // The actual size of the rotation vector. 
-    // For exmaple over Z[X]/(X^N + 1), the actual rotation size is N, because the polynomials have N coefficients.
-    // Over Z[X]/(X^N - 1) then the rotation size and the actual rotation 
-    long actual_rotation_size;
-
-    // LWE after modulus switching to rotation_size;
-    std::shared_ptr<LWEParam> lwe_par;  
-
-    // LWE after modulus switching to rotation_size;
-    std::shared_ptr<LWEParam> actual_lwe_par;   
- 
-    virtual void blind_rotate(std::shared_ptr<BlindRotateOutput> out, LWECT* lwe_ct_in, std::shared_ptr<AbstractAccumulator> acc_msg) = 0;
    
-    virtual std::shared_ptr<BlindRotateOutput> init_blind_rotate_output() = 0; 
-
-    virtual std::shared_ptr<AbstractAccumulator> prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding) = 0;
-
-    virtual std::shared_ptr<AbstractAccumulator> prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding) = 0;
-
-    // TODO: Here I actually need some accumulator setup, and these have to be somehow defined there.
-    virtual std::shared_ptr<AbstractAccumulator> get_acc_msb() = 0;
-    virtual std::shared_ptr<AbstractAccumulator> get_acc_one(PlaintextEncoding output_encoding) = 0;
+    std::shared_ptr<LWEParam> lwe_par;  
   
+    virtual void blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
+
 };
-
-
-}
+ 
+}// End of namespace fhe_deck
 
 #endif 

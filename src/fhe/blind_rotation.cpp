@@ -2,92 +2,86 @@
 
 using namespace fhe_deck;
 
-
-
-
-RotationPolyAccumulator::RotationPolyAccumulator(RotationPoly rot_poly){
+VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly, bool amortization){ 
+    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
+    acc_ptr->a.zeroize();
+    acc_ptr->b = rot_poly;  
+    acc = acc_ptr;
     this->rot_poly = rot_poly;
-    this->rot_poly_amortized = rot_poly;
-}
-
-void RotationPolyAccumulator::setup_amortization(){ 
-    if(this->rot_poly_amortized.is_amortized_form){
-        return;
-    }else{
+    this->rot_poly_amortized = rot_poly; 
+    this->amortization = amortization;
+    if(this->amortization){
         this->rot_poly_amortized.to_amortization_form();
-    } 
+    }
 }
 
-
-
-
-RLWEAccumulator::RLWEAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly){
-    acc = RLWECT(param);
-    acc.a.zeroize();
-    acc.b = rot_poly;  
-    this->rot_poly = rot_poly;
-    this->rot_poly_amortized = rot_poly;
-    this->amortization = true;
-}
-
-RLWEAccumulator::RLWEAccumulator(RLWECT &acc){
-    this->acc = acc;
-    this->amortization = false;
-}
-
-RLWEAccumulator::RLWEAccumulator(RLWEAccumulator &other){
+VectorCTAccumulator::VectorCTAccumulator(VectorCTAccumulator &other){
     this->acc = other.acc;
     this->rot_poly = other.rot_poly;
     this->rot_poly_amortized = other.rot_poly_amortized;
     this->amortization = other.amortization;
 }
 
-RLWEAccumulator& RLWEAccumulator::operator=(const RLWEAccumulator other){
+VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator other){
     this->acc = other.acc;
     this->rot_poly = other.rot_poly;
     this->rot_poly_amortized = other.rot_poly_amortized;
     this->amortization = other.amortization;
     return *this;
 }
- 
-void RLWEAccumulator::setup_amortization(){  
-    if(!this->amortization){
-        throw std::logic_error("RLWEAccumulator::setup_amortization(): Amortization is not set.");
-    }
-    if(this->rot_poly_amortized.is_amortized_form){
-        return;
-    }else{
-        this->rot_poly_amortized.to_amortization_form();
-    } 
-}  
-
-
-
-BlindRotateOutput::~BlindRotateOutput(){
-    if(this->type == bro_rlwe){
-        delete rlwe_ct;
-    } 
+  
+RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
+    this->param = param;
 }
 
-BlindRotateOutput::BlindRotateOutput(RLWECT* rlwe_ct){
-    this->type = bro_rlwe;
-    this->rlwe_ct = rlwe_ct;
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding){ 
+    RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
+    return new VectorCTAccumulator(this->param, poly);
+}
+
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding){
+    RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);  
+    return  new VectorCTAccumulator(this->param, poly);
+}
+
+VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_msb(){    
+    RotationPoly poly = RotationPoly::rot_msb(4, this->param->size, this->param->coef_modulus);   
+    VectorCTAccumulator *acc = new VectorCTAccumulator(this->param, poly, false);   
+    return new VectorCTAccumulator(this->param, poly, false); 
+}
+
+VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_one(PlaintextEncoding output_encoding){
+    RotationPoly poly = RotationPoly::rot_one(this->param->size, output_encoding.ciphertext_modulus);
+    poly.coefs[1] = output_encoding.encode_message(1); 
+    std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(this->param); 
+    return new VectorCTAccumulator(rlwe_param, poly, false);
 }
 
 
-void BlindRotateOutput::extract_lwe(long* lwe_ct){
-    if(this->type == bro_rlwe){
-        this->rlwe_ct->extract_lwe(lwe_ct);
-    }else{
-        throw std::logic_error("BlindRotateOutput::~BlindRotateOutput: BlindRotationOutputType not recognized!");
-    }
+RLWEBlindRotateOutputBuilder::RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEParam> param){
+    this->param = param;
 }
 
-void BlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<AbstractAccumulator> acc){
-    if(this->type == bro_rlwe){  
-        std::shared_ptr<RLWEAccumulator> acc_msg = std::static_pointer_cast<RLWEAccumulator>(acc);
-        this->rlwe_ct->mul(bl_out->rlwe_ct, &acc_msg->rot_poly_amortized);
-    }else{
-        throw std::logic_error("BlindRotateOutput::~BlindRotateOutput: BlindRotationOutputType not recognized!");
-    }
+BlindRotateOutput* RLWEBlindRotateOutputBuilder::build(){
+    return new RLWEBlindRotateOutput(param);
+}
+
+
+RLWEBlindRotateOutput::~RLWEBlindRotateOutput(){ 
+    delete accumulator; 
+}
+
+RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){ 
+    this->accumulator = param->init_ct();
+    this->accumulator_ptr = static_cast<RLWECT*>(accumulator);
+}
+
+void RLWEBlindRotateOutput::extract_lwe(long* lwe_ct){
+    RLWECT* acc_ptr = static_cast<RLWECT*>(accumulator);
+    acc_ptr->extract_lwe(lwe_ct);
+}
+
+void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
+    std::shared_ptr<RLWEBlindRotateOutput> out_ptr = std::static_pointer_cast<RLWEBlindRotateOutput>(bl_out); 
+    this->accumulator_ptr->mul(out_ptr->accumulator_ptr, &acc->rot_poly_amortized);
 }

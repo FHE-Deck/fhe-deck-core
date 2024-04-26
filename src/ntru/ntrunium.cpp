@@ -17,20 +17,20 @@ ntrunium::~ntrunium(){
 ntrunium::ntrunium(){ 
 } 
  
-ntrunium::ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par,  long ***ksk, ntru_gadget_ct* bk){ 
+ntrunium::ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct* bk){ 
     this->ntru_g_par = ntru_g_par;
     this->ntru_par = ntru_par;
     this->lwe_g_par = lwe_g_par;
     this->lwe_par = lwe_par; 
     // Init the params of the LWE secret key encoding
-    this->key_d = lwe_par->key_d;
+    this->key_d = key_d;
     if(key_d == binary){  
         init_binary_key(); 
     }else{ 
         init_ternary_key();
     }
     // NOTE: We have lwe_par_tiny lwe_par.Q/2, because in the functional_bootstrap we use the negacyclic ring
-    lwe_par_tiny = LWEParam(lwe_par->dim, lwe_par->modulus/2, lwe_par->key_d, lwe_par->stddev);
+    lwe_par_tiny = LWEParam(lwe_par->dim, lwe_par->modulus/2);
     // Set the key switching and blind rotation keys
     this->ksk = ksk; 
     this->bk_gadget = bk;      

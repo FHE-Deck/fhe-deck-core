@@ -13,8 +13,6 @@ class RotationPoly : public Polynomial{
  
 public:
 
-    //long* coefs;
-    //long N; 
     PlaintextEncoding output_encoding;
     bool is_encoded = true; 
     bool is_amortized_form = false;
@@ -25,9 +23,7 @@ public:
  
     RotationPoly(long (*f)(long message, long plaintext_space), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
-    RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
- 
-    RotationPoly(long* coefs, long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
   
     RotationPoly(const RotationPoly &poly);
 
@@ -47,7 +43,8 @@ public:
 
     static RotationPoly rot_one(long N, long Q); 
  
- 
+    /// TODO: Delete all deprecated methods after porting NTRU
+
     // Deprecated
     static long* rot_identity(int t, long N, long Q); 
 
@@ -61,7 +58,7 @@ public:
     static long* rot_square_and_div_by_4(int t, long N, long Q); 
 
     // TODO: Delete this stuff. 
-    // NOTE: REmind that this is a special rotation polynomial, and is not going to work correctly with all bootstrappings
+    // NOTE: Remind that this is a special rotation polynomial, and is not going to work correctly with all bootstrappings
     // Deprecated
     static long* rot_is_zero(int t, long N, long Q);
     // Deprecated

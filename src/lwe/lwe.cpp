@@ -1,30 +1,16 @@
 #include "lwe.h"
 
 using namespace fhe_deck;
- 
-
-LWEParam::LWEParam(int dim, long modulus, KeyDistribution key_d, double stddev){
+  
+LWEParam::LWEParam(int dim, long modulus){
     this->dim = dim;
     this->modulus = modulus;
-    this->key_d = key_d;
-    this->stddev = stddev;
 }
  
-
-LWEParam LWEParam::modulus_switch(long new_modulus){  
-    double new_stddev = (new_modulus * this->stddev)/this->modulus;
-    // TODO: Stddev in LWEParam has to disapear anyway.
-    if(new_stddev < 3.2){
-        // TODO: This is a sort of hack solution.
-        // Actually we should choose it based on the key distribution, and the expected rounding error for the key distribution.
-        // But to do this, perhaps the key_d parameter should be a more complex struct with hamming weight etc.  
-        // Note: that this is needed only when making an encryption w.r.t. the modullus switched LWE. Fortunately, it's not used in the high level ingterface so I leave it for later.
-        new_stddev = 3.2;
-    } 
-    LWEParam new_param(this->dim, new_modulus, this->key_d, new_stddev); 
+LWEParam LWEParam::modulus_switch(long new_modulus){   
+    LWEParam new_param(this->dim, new_modulus); 
     return new_param;
 }
-
 
 long* LWEParam::init_ct(){ 
     long* ct = new long[this->dim+1]; 
@@ -34,7 +20,6 @@ long* LWEParam::init_ct(){
     return ct;
 }
   
- 
 void LWEParam::scalar_mul(long *out, long *ct, long scalar){
     for(int i = 0; i <= dim; ++i){
         out[i] = (ct[i] * scalar) % modulus;
@@ -59,9 +44,9 @@ void LWEParam::add_lazy(long *out, long *ct_1, long *ct_2){
     }
 }
 
-
+/// Deprecated: 
 void LWEParam::switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param){ 
-    // TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should.
+    /// TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should.
     double temp; 
     for(int i = 0; i < dim+1; ++i){
         temp =  new_param.modulus *  in_ct[i];
@@ -69,18 +54,15 @@ void LWEParam::switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param){
     }
 }
 
-
-// Deprecated
+/// Deprecated: 
 void LWEParam::switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param){ 
-    // TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should. 
+    /// TODO: There is a bug here. If arithmetic is too big, then double will not be enough. Furthermore, the errors will actually be much higher then they should. 
     double temp; 
     for(int i = 0; i < dim+1; ++i){
         temp =  new_param->modulus * in_ct[i];
         out_ct[i] = (long)round(temp/(double)this->modulus); 
     }
 }
-
-  
 
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
@@ -97,19 +79,14 @@ LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
     }
 }
 
-
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
-    this->ct = param->init_ct();
-    //this->pe = c.pe;
+    this->ct = param->init_ct(); 
     for(int i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
     this->init = true;
 }
-
-
-
 
 LWECT::LWECT(LWECT &c){  
     this->param = c.param;
@@ -120,7 +97,6 @@ LWECT::LWECT(LWECT &c){
     this->init = true;
 }
 
-
 LWECT::LWECT(LWECT *c){  
     this->param = c->param;
     this->ct = param->init_ct(); 
@@ -129,8 +105,6 @@ LWECT::LWECT(LWECT *c){
     }
     this->init = true;
 }
- 
-
 
 LWECT::~LWECT(){    
     delete[] ct;
@@ -242,13 +216,11 @@ LWECT LWECT::operator+(LWECT b){
     return ct_out;
 }
    
-
 LWECT LWECT::operator+(LWECT *b){  
     LWECT ct_out(this);  
     ct_out.add(b); 
     return ct_out;
 }
-
 
 LWECT LWECT::operator-(long b){  
     LWECT ct_out(this);  
@@ -301,7 +273,6 @@ LWECT operator*(long b, LWECT ct){
     return ct_out; 
 }
  
-
 LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to){
     this->from = from;
     this->to = to;
@@ -327,7 +298,6 @@ LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<L
     }
 }
 
-
 void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){  
     if(long_arithmetic){
         for(int i = 0; i < ct_size; ++i){
@@ -345,12 +315,6 @@ void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){
     }   
 }
 
-
-
-
-   
-
- 
 LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long base){
       this->lwe_param = lwe_par;
       this->base = base; 
@@ -370,7 +334,6 @@ LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long base){
       }
 }
 
-
 long** LWEGadgetParam::init_gadget_ct(){
     long **gadget_ct = new long*[this->ell];
     for(int i = 0; i < this->ell; ++i){
@@ -378,8 +341,6 @@ long** LWEGadgetParam::init_gadget_ct(){
     } 
     return gadget_ct;
 }
-
-
 
 void LWEGadgetParam::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
     for(int i = 0; i < lwe_param->dim+1; ++i){
@@ -395,8 +356,6 @@ void LWEGadgetParam::gadget_mul(long *out_ct, long** gadget_ct, long scalar){
     delete[] scalar_decomposed;
     delete[] temp_ct;
 }
-
-
 
 void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar){  
     for(int i = 0; i < lwe_param->dim+1; ++i){
@@ -421,77 +380,48 @@ void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar
     delete[] scalar_decomposed;
 }
 
-
- 
-
-
-LWESK::~LWESK(){
-    if(is_init){
-        delete[] s;
-    }
+LWESK::~LWESK(){ 
+    delete[] key; 
 }
-
 
 LWESK::LWESK(){}
+  
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
+    this->param = lwe_par;  
+    this->key = new long[param->dim];  
+    this->stddev  = stddev;
+    this->key_type = key_type;
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
+    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev)); 
 
+    if(this->key_type == binary){  
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
+    }else{ 
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
+    }
+    sk_dist->fill_array(this->key, param->dim); 
+}
 
-LWESK::LWESK(int n, long Q,  double stddev, KeyDistribution key_d){ 
-    this->param = std::shared_ptr<LWEParam>(new LWEParam(n, Q, key_d, stddev));  
-    this->s = new long[param->dim];
-
-    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, Q));
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key, double stddev, KeyDistribution key_type){
+    this->param = lwe_par;  
+    this->key = new long[lwe_par->dim]; 
+    this->stddev  = stddev;
+    this->key_type = key_type;
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
     error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
-
-    if(key_d == binary){  
-        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
-    }else{ 
-        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
-    }
-    sk_dist->fill_array(this->s, param->dim);
-    is_init = true;
-}
-
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par){
-    this->param = lwe_par;  
-    this->s = new long[param->dim];  
-    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
-    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, param->stddev)); 
-    if(param->key_d == binary){  
-        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
-    }else{ 
-        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
-    }
-    sk_dist->fill_array(this->s, param->dim);
-    is_init = true;
-}
-
-
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key){
-    this->param = lwe_par;  
-    this->s = new long[lwe_par->dim]; 
-    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
-    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, param->stddev));
     for(int i = 0; i < lwe_par->dim; ++i){
-        this->s[i] = key[i];
-    } 
-    is_init = true;
+        this->key[i] = key[i];
+    }  
 }
-
 
 LWESK::LWESK(const LWESK &other){
     std::runtime_error("LWESK::LWESK(const LWESK &other): Don't copy the secret key!"); 
 }
  
-
 LWESK& LWESK::operator=(const LWESK other){
     std::runtime_error("LWESK::operator=(const LWESK other): Don't copy the secret key!"); 
     return *this;
 }
- 
-std::shared_ptr<LWEParam> LWESK::get_lwe_param(){
-    return param;
-} 
-
 
 long* LWESK::encrypt(long m){
     long *ct = param->init_ct(); 
@@ -505,48 +435,41 @@ LWECT LWESK::encrypt_ct(long m){
     return ct;
 }
 
-
-
 void LWESK::encrypt(long *ct, long m){     
     ct[0] = error_dist->next() + (long)m; 
     for(int i=1; i < param->dim+1; ++i){    
         ct[i] = Utils::integer_mod_form(unif_dist->next(), param->modulus); 
-        ct[0] -= s[i-1] * ct[i];
+        ct[0] -= key[i-1] * ct[i];
         ct[0] = Utils::integer_mod_form(ct[0] % param->modulus, param->modulus);
     }   
 }
 
-
- long* LWESK::scale_and_encrypt(long m, int t){
-    // TODO Potential problems when Q is too big. In this case should be long double
+long* LWESK::scale_and_encrypt(long m, int t){
+    /// TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->modulus/t;
     long m_scaled =  (long)round((double)m*scale); 
     return LWESK::encrypt(m_scaled);
- }
+    }
  
- void LWESK::scale_and_encrypt(long* ct, long m, int t){ 
-    // TODO Potential problems when Q is too big. In this case should be long double
+void LWESK::scale_and_encrypt(long* ct, long m, int t){ 
+    /// TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->modulus/t;
     long m_scaled =  (long)round((double)m*scale); 
     encrypt(ct, m_scaled); 
 } 
 
-
-
 long LWESK::phase(long *ct){
     long phase  = ct[0]; 
     for(int i = 1; i < param->dim+1; ++i){ 
-        phase += ct[i] * s[i-1];
+        phase += ct[i] * key[i-1];
         phase = phase % param->modulus; 
     }   
     return Utils::integer_mod_form(phase, param->modulus);
 }
 
-
 long LWESK::error(long *ct,  long m){   
     return Utils::integer_signed_form((LWESK::phase(ct) - m) % param->modulus, param->modulus); 
 }
-
 
 long LWESK::decrypt(long *ct, int t){ 
     long d_phase = LWESK::phase(ct);  
@@ -555,15 +478,7 @@ long LWESK::decrypt(long *ct, int t){
     return Utils::integer_mod_form(out, t);
 }
    
-std::shared_ptr<LWESK> LWESK::modulus_switch(long new_modulus){
-    LWEParam lwe_par = this->param->modulus_switch(new_modulus);
-    LWESK *lwe = new LWESK(std::shared_ptr<LWEParam>(new LWEParam(lwe_par.dim, lwe_par.modulus, lwe_par.key_d, lwe_par.stddev)), this->s); 
-    return std::shared_ptr<LWESK>(lwe);
-}
- 
-
 LWEGadgetSK::LWEGadgetSK(){}
-
 
 LWEGadgetSK::LWEGadgetSK(LWEGadgetParam lwe_g_par, std::shared_ptr<LWESK> lwe){
     this->lwe = lwe;
@@ -574,7 +489,6 @@ LWEGadgetSK::LWEGadgetSK(const LWEGadgetSK &other){
     this->gadget_param = other.gadget_param;
     this->lwe = other.lwe;
 }
-
 
 LWEGadgetSK& LWEGadgetSK::operator=(const LWEGadgetSK other){
     this->gadget_param = other.gadget_param;
@@ -597,12 +511,10 @@ void LWEGadgetSK::gadget_encrypt(long** gadget_ct, long m){
     } 
 }
  
-
 LWEPublicKey::~LWEPublicKey(){ 
     delete[] public_key; 
 }
 
- 
 LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stddev){
     this->size = size;
     this->stddev = stddev;
@@ -614,8 +526,6 @@ LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stdde
         public_key[i] = lwe_sk->encrypt(0);   
     }  
 }
-
-
 
 LWEPublicKey::LWEPublicKey(const LWEPublicKey &other){
     this->size = other.size;
@@ -644,7 +554,6 @@ LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
     return *this;
 }
 
-
 void LWEPublicKey::mask_ciphertext(long *ct){
     long* random_lwe = param->init_ct();
     long* temp = param->init_ct();
@@ -657,7 +566,6 @@ void LWEPublicKey::mask_ciphertext(long *ct){
     delete[] random_lwe;
     delete[] temp;
 }
-
 
 LWECT LWEPublicKey::encrypt(long message){
     LWECT out(param, public_key[0]);
@@ -672,8 +580,7 @@ LWECT LWEPublicKey::encrypt(long message){
     delete[] temp;
     return out;
 }
-
-
+ 
 LWECT LWEPublicKey::ciphertext_of_zero(){
     return LWEPublicKey::encrypt(0);
 }

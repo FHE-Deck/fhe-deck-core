@@ -5,13 +5,10 @@
 #include <random>
 #include <iostream> 
 #include "utils.h"
-
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
-
 namespace fhe_deck{
- 
 
 class LWEParam{
 
@@ -19,17 +16,14 @@ class LWEParam{
 
   // LWE Dimension
   int dim;
+
   long modulus; 
-
-  // TODO: Actually key_d and stddev should be rather in secret key params
-  KeyDistribution key_d;
-  double stddev;
-
+ 
   LWEParam() = default;
  
-  LWEParam(int dim, long modulus, KeyDistribution key_d, double stddev); 
+  LWEParam(int dim, long modulus); 
    
-    long* init_ct();
+  long* init_ct();
  
     // TODO: This is handled by a LWECT
     void scalar_mul(long *out, long *ct, long scalar);
@@ -51,18 +45,14 @@ class LWEParam{
     void save( Archive & ar ) const
     { 
       ar(dim, modulus);
-      ar(key_d, stddev); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(dim, modulus);
-      ar(key_d, stddev); 
     } 
-  
 };
-
 
 class LWECT{
  
@@ -133,8 +123,6 @@ class LWECT{
     
     LWECT operator*(long b);  
 
-
-
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -159,19 +147,13 @@ class LWECT{
       }
       this->init = true;
     } 
-
-
 };
-
 
 LWECT operator+(long b, LWECT ct);
 
 LWECT operator-(long b, LWECT ct);
 
 LWECT operator*(long b, LWECT ct);
-
- 
-
 
 class LWEModSwitcher{
 
@@ -197,12 +179,8 @@ class LWEModSwitcher{
   LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to);
   
   void switch_modulus(long *out_ct, long *in_ct);
-    
 };
-
  
-
-
 class LWESK {
  
     public:  
@@ -211,25 +189,22 @@ class LWESK {
     std::shared_ptr<Distribution> unif_dist;
     std::shared_ptr<Distribution> error_dist;
     std::shared_ptr<Distribution> sk_dist;
-
-    long *s;
-    bool is_init = false;
+    KeyDistribution key_type;
+    double stddev;
+    // Initialized in the constructors and freed in the destructor.
+    long *key; 
   
     ~LWESK();
-
+    
     LWESK();
-
-    LWESK(int n, long Q, double stddev, KeyDistribution key_d);
-
-    LWESK(std::shared_ptr<LWEParam> lwe_par);
   
-    LWESK(std::shared_ptr<LWEParam> lwe_par, long* key);
+    LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type);
+  
+    LWESK(std::shared_ptr<LWEParam> lwe_par, long* key, double stddev, KeyDistribution key_type);
  
     LWESK(const LWESK &other);
 
     LWESK& operator=(const LWESK other);
-
-    std::shared_ptr<LWEParam> get_lwe_param();
    
     long* encrypt(long m);
     
@@ -245,18 +220,16 @@ class LWESK {
     
     long error(long *ct, long m);
 
-    // NOTE: Decryption only makes sense with respect to a Plaintext encoding.   
+    /// NOTE: Decryption and encryption only makes sense with respect to a Plaintext encodings.   
     long decrypt(long *ct,  int t); 
- 
-    std::shared_ptr<LWESK> modulus_switch(long new_modulus);
- 
+   
     template <class Archive>
     void save( Archive & ar ) const
     { 
       ar(param);  
       std::vector<long> s_arr; 
       for(int i = 0; i < param->dim; ++i){
-        s_arr.push_back(s[i]);
+        s_arr.push_back(key[i]);
       }
       ar(s_arr) ;
     }
@@ -267,19 +240,13 @@ class LWESK {
       ar(param);
       std::vector<long> s_arr;
       ar(s_arr);
-      this->s = new long[param->dim];
+      this->key = new long[param->dim];
       for(int i = 0; i < param->dim; ++i){
-        this->s[i] = s_arr[i];
+        this->key[i] = s_arr[i];
       } 
     } 
-
 };
-
  
-
-
-
-
 class LWEGadgetParam{
 
   public:
@@ -292,11 +259,11 @@ class LWEGadgetParam{
     LWEGadgetParam() = default;
 
     LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long basis);
-
+    /// TODO: Should be handled in a LWEGadgetCT
     long** init_gadget_ct(); 
-
+    /// TODO: Should be handled in a LWEGadgetCT
     void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
-    
+    /// TODO: Should be handled in a LWEGadgetCT
     void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
     
     template <class Archive>
@@ -310,12 +277,7 @@ class LWEGadgetParam{
     {  
       ar(lwe_param, base, ell, k);
     } 
- 
 };
-
-
- 
-
 
 class LWEGadgetSK{
 
@@ -348,18 +310,12 @@ class LWEGadgetSK{
     }    
 };
 
-
-
-
-
 class LWEPublicKey{
 
   public:
  
-    /*
-      TODO Change this stddev stuff to uniform.
-      Gaussian here doens't make much sense.
-    */
+    /// TODO: Change this stddev stuff to uniform.
+    // Gaussian here doens't make much sense. 
     double stddev; 
     Sampler rand_masking;
   
@@ -381,13 +337,7 @@ class LWEPublicKey{
     LWECT encrypt(long message);
 
     LWECT ciphertext_of_zero();
- 
 };
-
-
- 
-
-
 
 }
 

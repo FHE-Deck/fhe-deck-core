@@ -11,7 +11,7 @@ int main(){
 
     FHEContext ctx; 
     std::cout << "Generate Keys..." << std::endl;
-    ctx.generate_context(tfhe_11_NTT_amortized);  
+    ctx.generate_context(FHENamedParams::tfhe_11_NTT_amortized);  
     
     auto first_bit = [](long m) -> long {
         return m % 2;

@@ -720,15 +720,13 @@ void PolynomialEvalForm::neg(PolynomialEvalForm *out){
         throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
     }
 }
-
-
+ 
 void PolynomialEvalForm::mod_reduce(long Q){
     if(this->eval_long){ 
         Utils::array_mod_form(this->eval_long, this->eval_long, size, Q); 
     } 
 }
-
-
+ 
 Polynomial::~Polynomial(){ 
     if(this->is_init){
         delete[] coefs;
@@ -776,8 +774,7 @@ Polynomial::Polynomial(const Polynomial &other){
     this->inv_engine = other.inv_engine;
     this->is_inv_engine_set = other.is_inv_engine_set;
 } 
- 
-
+  
 Polynomial& Polynomial::operator=(const Polynomial other){
     this->init(other.degree, other.coef_modulus);
     Utils::cp(this->coefs, other.coefs, this->degree); 
@@ -788,8 +785,7 @@ Polynomial& Polynomial::operator=(const Polynomial other){
     this->is_inv_engine_set = other.is_inv_engine_set;
     return *this;
 }
-
-
+ 
 void Polynomial::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->mul_engine = mul_engine;
     this->is_mul_engine_set = true; 
@@ -1012,8 +1008,7 @@ void Polynomial::mul(Polynomial *out, Polynomial *other, std::shared_ptr<Polynom
     mul_engine->mul(out, &eval_this, &eval_other);  
     mul_engine->to_coef(out);  
 }
- 
-
+  
 void Polynomial::inv(Polynomial *out){
     this->inv_engine->inv(out, *this);
 }
@@ -1021,39 +1016,7 @@ void Polynomial::inv(Polynomial *out){
 void Polynomial::inv(Polynomial *out, std::shared_ptr<PolynomialInversionEngine> inv_engine){
     inv_engine->inv(out, *this);
 }
-
-
-
-
-void Polynomial::to_eval(Polynomial *out, Polynomial *in, int size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){  
-    for(int i = 0; i < size; ++i){ 
-        mul_engine->to_eval(&out[i], &in[i]); 
-    }  
-}
-
-
-void Polynomial::multisum(Polynomial *out, Polynomial *in_1, Polynomial *in_2, int size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    Polynomial temp(out->degree, out->coef_modulus); 
-    mul_engine->mul(out, &in_1[0], &in_2[0]); 
-    for(int i = 1; i < size; ++i){
-        mul_engine->mul(&temp, &in_1[i], &in_2[i]); 
-        out->add(out, &temp);
-    }
-    mul_engine->to_coef(out, out); 
-}
-
-void Polynomial::multisum(Polynomial *out, Polynomial *in_1, Polynomial *in_2, int size, int jump, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    Polynomial temp(out->degree, out->coef_modulus); 
-    mul_engine->mul(out, &in_1[0], &in_2[0]); 
-    for(int i = 1; i < size; ++i){
-        mul_engine->mul(&temp, &in_1[i], &in_2[i*jump]); 
-        out->add(out, &temp);
-    }
-    mul_engine->to_coef(out, out); 
-}
-
-
-
+ 
 PolynomialArrayCoefForm::~PolynomialArrayCoefForm(){ 
     if(this->is_init){
         delete[] poly_array;
@@ -1085,8 +1048,7 @@ PolynomialArrayCoefForm::PolynomialArrayCoefForm(const PolynomialArrayCoefForm &
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  
 } 
- 
-
+  
 PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArrayCoefForm other){
     this->init(other.degree, other.coef_modulus, other.array_size);
     Utils::cp(this->poly_array, other.poly_array, this->full_size);  
@@ -1106,12 +1068,10 @@ void PolynomialArrayCoefForm::set_polynomial_at(int i, Polynomial *poly){
         this->poly_array[i * degree + j] = poly->coefs[j];
     }
 }
- 
-
+  
 void PolynomialArrayCoefForm::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->mul_engine = mul_engine;
 }
- 
   
 void PolynomialArrayCoefForm::add(PolynomialArrayCoefForm *out, PolynomialArrayCoefForm *other){
     for(int i = 0; i < full_size; ++i){

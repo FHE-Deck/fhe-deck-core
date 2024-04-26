@@ -55,7 +55,6 @@ class PolynomialMultiplicationEngine{
     virtual Polynomial mul(Polynomial *in_1, Polynomial *in_2) = 0;
    
     virtual void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true) = 0;
- 
 };
 
 
@@ -161,7 +160,6 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
     Polynomial mul(Polynomial *in_1, Polynomial *in_2); 
 
     void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true);
-
 };
 
 
@@ -302,8 +300,6 @@ class PolynomialEvalForm{
     void mod_reduce(long Q);
 };
 
-  
-
 class PolynomialInversionEngine{
 
     public: 
@@ -313,9 +309,7 @@ class PolynomialInversionEngine{
     virtual void inv(Polynomial *out, Polynomial &in) = 0;
  
 };
-
-  
-
+ 
 class Polynomial{
 
     public:
@@ -399,13 +393,7 @@ class Polynomial{
     void inv(Polynomial *out);
 
     void inv(Polynomial *out, std::shared_ptr<PolynomialInversionEngine> inv_engine); 
-     
-    static void to_eval(Polynomial *out, Polynomial *in, int size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-
-    static void multisum(Polynomial *out, Polynomial *in_1, Polynomial *in_2, int size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-
-    static void multisum(Polynomial *out, Polynomial *in_1, Polynomial *in_2, int size, int jump, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-    
+      
 };
  
 

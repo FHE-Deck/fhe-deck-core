@@ -10,6 +10,7 @@
 #include "hexl/hexl.hpp"
 #include "utils.h"
 #include "polynomial.h"
+#include "vector_ciphertext.h"
 
 
 #include <cereal/archives/binary.hpp>
@@ -17,19 +18,13 @@
  
 namespace fhe_deck{
  
-class RLWEParam{
+class RLWEParam : public VectorCTParam{
 
-  public:
- 
-    int degree; 
-    long coef_modulus;
-    // TODO: stddev is actually irrelevant to public RLWEParameters. Its only releveant to RLWESK. Maybe delete it from here? 
-    double stddev;
+  public: 
+    long coef_modulus; 
 
     RingType ring;
-    // Is this even used somewhere now? 
-    ModulusType mod_type;  
-    KeyDistribution key_type; 
+    ModulusType mod_type;   
     PolynomialArithmetic arithmetic = ntl;
 
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
@@ -37,13 +32,15 @@ class RLWEParam{
  
     RLWEParam() = default; 
        
-    RLWEParam(RingType ring, int degree, long coef_modulus, KeyDistribution key_type, ModulusType mod_type, double stddev, PolynomialArithmetic arithmetic);
+    RLWEParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
 
-    RLWEParam(int degree, long coef_modulus, KeyDistribution key_type, ModulusType mod_type, double stddev, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    RLWEParam(int ring_degree, long coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     RLWEParam(RLWEParam &c);
 
     RLWEParam& operator=(RLWEParam other);
+
+    VectorCT* init_ct();
        
     Polynomial init_poly();
  
@@ -52,21 +49,20 @@ class RLWEParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(ring, degree, stddev, coef_modulus, mod_type, key_type, arithmetic);  
+      ar(ring, size, coef_modulus, mod_type, arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(ring, degree, stddev, coef_modulus, mod_type, key_type, arithmetic);   
+      ar(ring, size, coef_modulus, mod_type, arithmetic);   
     } 
  
   private:
     void init_mul_engine(); 
 };
 
-
-class RLWECT{
+class RLWECT : public VectorCT{
 
     public:
   
@@ -84,17 +80,21 @@ class RLWECT{
   
     void negacyclic_rotate(RLWECT *out, int rot);
 
-    void add(RLWECT *out,  RLWECT *ct);
+    void cyclic_rotate(RLWECT *out, int rot);
+
+    void homomorphic_rotate(VectorCT *out, int rot);
+
+    void add(VectorCT *out,  VectorCT *ct);
  
     void add(RLWECT *out, Polynomial *x);
 
-    void sub(RLWECT *out, RLWECT *ct);
+    void sub(VectorCT *out, VectorCT *ct);
  
     void sub(RLWECT *out, Polynomial *x); 
  
     void mul(RLWECT *out, Polynomial *x);
 
-    void neg(RLWECT *out);
+    void neg(VectorCT *out);
 
     void extract_lwe(long *lwe_ct_out);
 
@@ -106,7 +106,7 @@ class RLWECT{
     void save( Archive & ar ) const
     {  
         ar(param);  
-        for(int i = 0; i < this->param->degree; ++i){
+        for(int i = 0; i < this->param->size; ++i){
           ar(a.coefs[i]);
           ar(b.coefs[i]);
         }  
@@ -118,20 +118,16 @@ class RLWECT{
         ar(param);    
         a = this->param->init_poly();
         b = this->param->init_poly(); 
-        for(int i = 0; i < this->param->degree; ++i){
+        for(int i = 0; i < this->param->size; ++i){
           ar(a.coefs[i]);
           ar(b.coefs[i]);
         } 
-    } 
- 
+    }  
 };
 
-
 enum GadgetMulMode {simul, deter};
-
-
-
-class RLWEGadgetParam{
+ 
+class RLWEGadgetParam : public GadgetVectorCTParam{
 
   public:
   
@@ -140,8 +136,8 @@ class RLWEGadgetParam{
   std::shared_ptr<Gadget> deter_gadget; 
 
   RLWEGadgetParam() = default;
-       
-  RLWEGadgetParam(std::shared_ptr<RLWEParam> rlwe_param, int basis, std::shared_ptr<Gadget> deter_gadget);
+        
+  RLWEGadgetParam(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> deter_gadget);
  
   RLWEGadgetParam(const RLWEGadgetParam &other);
  
@@ -159,12 +155,15 @@ class RLWEGadgetParam{
       ar(rlwe_param, deter_gadget);   
     }  
 };
- 
-class RLWEGadgetCT{
+
+class RLWEGadgetCT : public GadgetVectorCT{ 
 
   public:
  
-  std::shared_ptr<RLWEGadgetParam> gadget_param; 
+  std::shared_ptr<GadgetVectorCTParam> gadget_param; 
+  std::shared_ptr<RLWEParam> rlwe_param;
+  std::shared_ptr<Gadget> gadget;
+
   bool is_init = false;  
   PolynomialArrayEvalForm array_eval_a;
   PolynomialArrayEvalForm array_eval_b;
@@ -188,7 +187,7 @@ class RLWEGadgetCT{
 
   void init(std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
    
-  void mul(RLWECT *out, const RLWECT *ct);
+  void mul(VectorCT *out, const VectorCT *ct);
    
     template <class Archive>
     void save( Archive & ar ) const
@@ -214,22 +213,22 @@ class RLWEGadgetCT{
   
 };
   
- 
-
 class RLWESK{
 
     public:
 
     std::shared_ptr<RLWEParam> param; 
+    KeyDistribution key_type; 
     Polynomial sk; 
     bool is_init = false;  
     std::shared_ptr<Distribution> unif_dist;
     std::shared_ptr<Distribution> error_dist;
     std::shared_ptr<Distribution> sk_dist;
+    double noise_stddev;
   
     RLWESK() = default;
   
-    RLWESK(std::shared_ptr<RLWEParam> param); 
+    RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, double noise_stddev); 
   
     RLWESK(const RLWESK &other);
 
@@ -251,12 +250,14 @@ class RLWESK{
     void decrypt(Polynomial *out, RLWECT *ct, int t);
  
     void extract_lwe_key(long* lwe_key);
+
+    LWESK* extract_lwe_key();
     
     template <class Archive>
     void save( Archive & ar ) const
     { 
         std::vector<long> s_arr; 
-        for(int i = 0; i < param->degree; ++i){
+        for(int i = 0; i < param->size; ++i){
             s_arr.push_back(this->sk.coefs[i]);
         }
         ar(param, s_arr);  
@@ -270,8 +271,7 @@ class RLWESK{
     }  
 };
 
-
-class RLWEGadgetSK{
+class RLWEGadgetSK : public GadgetVectorCTSK{
 
     public:
  
@@ -285,8 +285,12 @@ class RLWEGadgetSK{
     RLWEGadgetSK(const RLWEGadgetSK &other);
 
     RLWEGadgetSK& operator=(const RLWEGadgetSK other);
-    
-    RLWEGadgetCT gadget_encrypt(long* msg); 
+      
+    //RLWEGadgetCT* gadget_encrypt(Polynomial *msg); 
+
+    GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
+
+    GadgetVectorCT* gadget_encrypt(long *msg, int size); 
  
     template <class Archive>
     void save( Archive & ar ) const
@@ -300,10 +304,7 @@ class RLWEGadgetSK{
       ar(gadget_param, sk);   
     } 
 };
-
-
-
-
+ 
 }
 
 #endif

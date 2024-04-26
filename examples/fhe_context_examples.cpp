@@ -12,7 +12,7 @@ void test_for_default_full_domain_encoding(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_B);
+    context.generate_context(FHENamedParams::tfhe_11_B);
     
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c1  = context.encrypt(1);  
@@ -176,7 +176,7 @@ void test_for_partial_domain_encoding(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_NTT);
+    context.generate_context(FHENamedParams::tfhe_11_NTT);
     //  The default encoding for this is actually full domain.  
     context.set_default_message_encoding_type(partial_domain);
  
@@ -293,7 +293,7 @@ void test_for_partial_domain_encoding(){
 void demo(){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_NTT);
+    context.generate_context(FHENamedParams::tfhe_11_NTT);
     context.set_default_message_encoding_type(signed_limied_short_int);
 
     Ciphertext c0  = context.encrypt(0);  
@@ -321,7 +321,7 @@ void test_for_signed_limied_short_int(){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     // NOTE: tfhe_11_NTT can still handle a plaintext space equal to 4, but if you test with tfhe_11_B teh test will most likely fail
-    context.generate_context(tfhe_11_NTT);
+    context.generate_context(FHENamedParams::tfhe_11_NTT);
     context.set_default_message_encoding_type(signed_limied_short_int);
      
 
@@ -483,7 +483,7 @@ void basic_Ciphertext_tests(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_B);
+    context.generate_context(FHENamedParams::tfhe_11_B);
     
     std::cout << "Encrypt..." << std::endl;
     std::cout << "Testing: lwe_ct c1  = context.encrypt_temp(1);  " << std::endl;
@@ -512,7 +512,7 @@ void amortized_full_domain_bootstrap_test(){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
-    context.generate_context(tfhe_11_NTT_amortized); 
+    context.generate_context(FHENamedParams::tfhe_11_NTT_amortized); 
     
     auto id = [](long m) -> long {
         return m;
@@ -633,7 +633,7 @@ void amortized_partial_domain_bootstrap_test(){
  
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_11_NTT_amortized);
+    context.generate_context(FHENamedParams::tfhe_11_NTT_amortized);
     context.set_default_message_encoding_type(partial_domain); 
   
     auto first_bit = [](long m) -> long {
@@ -731,7 +731,7 @@ void amortized_12_partial_domain_bootstrap_test(){
  
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(tfhe_12_NTT_amortized); 
+    context.generate_context(FHENamedParams::tfhe_12_NTT_amortized); 
   
     auto first_bit = [](long m) -> long {
         return m % 2;
@@ -915,7 +915,7 @@ void serialization_test(){
 
     FHEContext first_context; 
     std::cout << "Generate Keys..." << std::endl;
-    first_context.generate_context(tfhe_11_NTT);
+    first_context.generate_context(FHENamedParams::tfhe_11_NTT);
    
      
     first_context.save_secret_key("z_sk.cereal"); 

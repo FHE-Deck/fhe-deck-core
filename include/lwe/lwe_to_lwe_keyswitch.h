@@ -29,12 +29,14 @@ class LWEToLWEKeySwitchKey{
     LWEToLWEKeySwitchKey(const LWEToLWEKeySwitchKey &other);
    
     LWEToLWEKeySwitchKey& operator=(const LWEToLWEKeySwitchKey other);
- 
+  
     void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
 
     void lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in);
+    
+    void lwe_to_lwe_key_switch_bussy(long *lwe_ct_out, long *lwe_ct_in);
 
-    void lwe_to_lwe_key_switch(long *lwe_ct_out, long *lwe_ct_in);
+    void lwe_to_lwe_key_switch(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
 
     void set_key_switch_type();
 

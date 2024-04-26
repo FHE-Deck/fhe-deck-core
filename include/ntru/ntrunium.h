@@ -43,7 +43,7 @@ class ntrunium{
 
     ntrunium();
 
-    ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par,  long ***ksk, ntru_gadget_ct *bk);
+    ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct *bk);
       
     void init_binary_key();
 

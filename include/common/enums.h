@@ -24,10 +24,6 @@ enum FullDomainBootstrappingAlgorithm{
     liu_micciancio_polyakov 
 };
 
-enum BlindRotationOutputType{
-    bro_rlwe, blo_ntru
-};
-
 
 }
 

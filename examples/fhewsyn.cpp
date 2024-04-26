@@ -495,7 +495,7 @@ main(void)
 {
     FHEContext ctx;
     std::cout << "[+] ";
-    ctx.generate_context(tfhe_11_NTT_amortized);
+    ctx.generate_context(FHENamedParams::tfhe_11_NTT_amortized);
     ctx.set_default_message_encoding_type(partial_domain);
 
     test_lut3(ctx);

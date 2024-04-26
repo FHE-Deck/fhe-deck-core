@@ -60,7 +60,6 @@ RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long d
     } 
 }
 
-
 RotationPoly::RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form){
     this->degree = degree; 
     this->output_encoding = output_encoding;
@@ -93,19 +92,7 @@ RotationPoly::RotationPoly(long (*f)(long message), long degree, PlaintextEncodi
         i--;
     } 
 }
- 
-
-RotationPoly::RotationPoly(long* lookup_polynomial, long degree, PlaintextEncoding output_encoding, bool is_amortized_form){
-    this->degree = degree; 
-    this->output_encoding = output_encoding;
-    this->coef_modulus = output_encoding.ciphertext_modulus;
-    this->is_amortized_form = is_amortized_form;
-    this->coefs = new long[degree];
-    for(int i = 0; i < degree; ++i){  
-         this->coefs[i] = coefs[i];
-    } 
-}
- 
+  
 void RotationPoly::encode(){
     if(is_encoded){
         return;
@@ -133,8 +120,6 @@ void RotationPoly::encode(){
     is_encoded = false;
 }
 
-
-
 void RotationPoly::to_amortization_form(){
     if(is_amortized_form){
         return;
@@ -157,7 +142,6 @@ void RotationPoly::to_non_amortized_form(){
     is_amortized_form = false;
 }
  
-
 void RotationPoly::set_polynomial(long* coefs, long (*f)(long message), long t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t);  
     double scale = (double)t/N;
@@ -169,7 +153,6 @@ void RotationPoly::set_polynomial(long* coefs, long (*f)(long message), long t, 
     } 
 }
 
- 
 long* RotationPoly::rot_identity(int t, long N, long Q){
     auto id = [](long m) -> long {
         return m;
@@ -179,7 +162,6 @@ long* RotationPoly::rot_identity(int t, long N, long Q){
     return acc; 
 }
    
-
 /* Note: this doesn't realy compute the sign function. For zero for example it computes 1
 */
 RotationPoly RotationPoly::rot_msb(int t, long N, long Q){
@@ -206,7 +188,6 @@ RotationPoly RotationPoly::rot_one(long N, long Q){
     out.coefs = acc;
     return out;
 }
-
 
 // Computes the a univariate polynomial (should be used only with functional bootstrapping, for the negacyclic bootstrap this will output some nonsense)
 long* RotationPoly::rot_uni_poly(int* poly, int poly_size, int t, long N, long Q){ 
@@ -271,7 +252,6 @@ long* RotationPoly::rot_is_zero_of_poly(int* poly, int poly_size, int t, long N,
     return acc;
 }
  
- 
 // NOTE: I craft this polynomial to work with normal bootstrap assuming its message does not exceed t/2
 // Meaning that I scale the input message with 
 // NOTE: The function returns 1 on input 0, and 0 otherwise
@@ -307,7 +287,6 @@ long* RotationPoly::rot_is_zero(int t, long N, long Q){
     return acc;
 }
 
-
 // Return a rotation polynomial for the functional bootstrapping that computes the modular inverse
 long* RotationPoly::rot_inv_mod(int t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t);
@@ -334,8 +313,6 @@ long* RotationPoly::rot_inv_mod(int t, long N, long Q){
     return acc;
 }
 
-
- 
 long* RotationPoly::rot_square_and_div_by_4(int t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t);
     long delta_N_t = (long)round((double)N/(double)t);
@@ -350,13 +327,7 @@ long* RotationPoly::rot_square_and_div_by_4(int t, long N, long Q){
     }
     return acc;
 }
-
-
-
-
-
-
-
+ 
 // Function returns the rotation polynomial
 // The input t is the plaintext modulus
 // Also we have the dimension N of the polynomial and the modulus Q
@@ -371,7 +342,6 @@ long* RotationPoly::cyclic_rot_identity(int t, long N, long Q){
     }
     return acc;
 }
-
 
 long* RotationPoly::cyclic_rot_inv_mod(int t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t);
@@ -408,9 +378,7 @@ long* RotationPoly::cyclic_rot_square_and_div_by_4(int t, long N, long Q){
     }
     return acc;
 }
- 
-
-
+  
 long* RotationPoly::cyclic_rot_uni_poly(int* poly, int poly_size, int t, long N, long Q){
     long delta_Q_t = (long)round((double)Q/(double)t);
     long delta_N_t = (long)round((double)N/(double)t);

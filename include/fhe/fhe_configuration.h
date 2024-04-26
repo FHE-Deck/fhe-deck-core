@@ -13,39 +13,37 @@
 namespace fhe_deck{
  
 
-enum FHENamedParams{ 
+enum class FHENamedParams{ 
     tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized
 };
 
 
 class FHEConfiguration{ 
     
-    public:  
-    std::unique_ptr<FunctionalBootstrapSecretKey> boot_sk; 
-    std::shared_ptr<FunctionalBootstrapPublicKey> boot_pk;
-  
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_par;
-    LWEGadgetParam lwe_gadget_par;
+    public:   
 
-    //PolynomialArithmetic sk_arithmetic = ntl;
+    FHENamedParams name;
 
+    std::shared_ptr<LWESK> secret_key;
+    std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
+    std::shared_ptr<LWEPublicKey> encrypt_public_key; 
+    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+ 
     PlaintextEncoding default_encoding;
-
-    FullDomainBootstrappingAlgorithm fdfb_alg;
-
-    int masking_size;
-    double stddev_masking;
 
     FHEConfiguration() = default;
 
     FHEConfiguration(FHENamedParams name);
- 
-    // TODO: Isn't this deprecated?
-    void generate_bootstapping_keys(); 
+   
+    void generate_keys();
 
-    FunctionalBootstrapSecretKey generate_secret_key();
+    std::shared_ptr<LWESK> get_secret_key();
+    
+    std::shared_ptr<FunctionalBootstrapPublicKey> get_functional_bootstrap_pk();
 
-    void init_tfhe_small_test();
+    std::shared_ptr<LWEPublicKey> get_encrypt_pk(); 
+
+    std::shared_ptr<AbstractAccumulatorBuilder> get_accumulator_builder(); 
  
     void init_tfhe_11_NTT(); 
 
@@ -58,8 +56,6 @@ class FHEConfiguration{
     void init_tfhe_11_NTT_amortized(); 
 
     void init_tfhe_12_NTT_amortized();
- 
-
 };
 
 }

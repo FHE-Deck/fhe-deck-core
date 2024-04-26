@@ -21,9 +21,10 @@ class FHEContext{
     ntrunium_named_param_generator ntrunium_par;
     bool is_ntrunium = false;
  
-    FunctionalBootstrapSecretKey tfhe_boot_sk; 
-    std::shared_ptr<FunctionalBootstrapPublicKey> tfhe_boot_pk; 
-    bool is_tfhe = false;
+    std::shared_ptr<fhe_deck::LWESK> lwe_sk; 
+    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;  
+    std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
 
     // Flags to check whether the sk or pk are initialized.
     bool is_sk_init = false;
@@ -36,13 +37,7 @@ class FHEContext{
     void generate_context(ntrunium_named_param name);
 
     void generate_context(FHENamedParams name);
-
-    // This is going to generate both secret key and public key
-    // In the future we may have, some read secret/public key from file
-    // I also may have a function like: export public key, and export secret key. Right?
-    // But for now, store the secret key, bootstrapping key etc. internally.
-    void key_gen();
-
+ 
     // Return a LWE Ciphertext (requires secret key)
     Ciphertext encrypt(long message, PlaintextEncodingType type);  
 
@@ -53,7 +48,6 @@ class FHEContext{
     Ciphertext encrypt(long message, PlaintextEncoding encoding); 
 
     Ciphertext encrypt(long message);
-
 
     // Return a LWE Ciphertext (requires public key)
     Ciphertext encrypt_public(long message, PlaintextEncodingType type);  
@@ -95,7 +89,6 @@ class FHEContext{
 
     HomomorphicAccumulator genrate_lut(long (*f)(long message));
 
-
     // Run functional bootstrapping (requires public key)
     Ciphertext eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut);
    
@@ -121,7 +114,6 @@ class FHEContext{
 
     void load_secret_key(std::string file_name);
     
-
     void send_public_key(std::ofstream &os);
 
     void read_public_key(std::ifstream &is);
@@ -129,7 +121,6 @@ class FHEContext{
     void save_public_key(std::string file_name);
 
     void load_public_key(std::string file_name);
-
 
     void send_Ciphertext(std::ostream &os, Ciphertext &ct);
 
