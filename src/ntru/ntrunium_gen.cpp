@@ -86,9 +86,9 @@ ntrunium* ntrunium_gen::get_ntrunium(){
 long*** ntrunium_gen::ntru_to_lwe_key_switch_init(){  
     long ***ksk = new long**[ntru_g.gadget_param.param.N];  
     for(int i = 0; i < ntru_g.gadget_param.param.N; ++i){
-        ksk[i] = new long*[lwe_g.gadget_param.ell];
-        for(int j = 0; j < lwe_g.gadget_param.ell; ++j){ 
-            ksk[i][j] = lwe_g.gadget_param.lwe_param->init_ct();
+        ksk[i] = new long*[lwe_g.gadget_param->ell];
+        for(int j = 0; j < lwe_g.gadget_param->ell; ++j){ 
+            ksk[i][j] = lwe_g.gadget_param->lwe_param->init_ct();
         }
     }
     return ksk;
@@ -98,9 +98,9 @@ long*** ntrunium_gen::ntru_to_lwe_key_switch_init(){
 
 long*** ntrunium_gen::ntru_to_lwe_key_switch_key_gen(){ 
     long*** ksk = ntrunium_gen::ntru_to_lwe_key_switch_init();  
-    ksk[0] = lwe_g.gadget_encrypt(ntru_g.ntru.f[0]);  
+    ksk[0] = lwe_g.gadget_encrypt_long(ntru_g.ntru.f[0]);  
     for(int i = 1; i < ntru_g.gadget_param.param.N; ++i){ 
-        ksk[i] = lwe_g.gadget_encrypt(-ntru_g.ntru.f[ntru_g.gadget_param.param.N-i]);  
+        ksk[i] = lwe_g.gadget_encrypt_long(-ntru_g.ntru.f[ntru_g.gadget_param.param.N-i]);  
     } 
     return ksk;
 }
@@ -211,11 +211,11 @@ void ntrunium_named_param_generator::init_ntrunium_small_test_params_B(){
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q));  
     lwe = std::shared_ptr<LWESK>(new LWESK(param, lwe_stddev, binary));
-    lwe_g_par = LWEGadgetParam(param, lwe_basis);
+    lwe_g_par =  std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(param, lwe_basis));
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
-    lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
+    lwe_par_small = lwe_g.gadget_param->lwe_param->modulus_switch(q);  
 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_g.lwe->param->dim, q)); 
     this->lwe_small = std::shared_ptr<LWESK>(new LWESK(lwe_param_for_blind_rotation, lwe_g.lwe->key, lwe_g.lwe->stddev,  binary)); 
@@ -254,11 +254,11 @@ void ntrunium_named_param_generator::init_ntrunium_C_11_B(){
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q));  
     lwe = std::shared_ptr<LWESK>(new LWESK(param, lwe_stddev, binary));
-    lwe_g_par = LWEGadgetParam(param, lwe_basis);
+    lwe_g_par =  std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(param, lwe_basis));
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
-    lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
+    lwe_par_small = lwe_g.gadget_param->lwe_param->modulus_switch(q);  
     
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_g.lwe->param->dim, q)); 
     this->lwe_small = std::shared_ptr<LWESK>(new LWESK(lwe_param_for_blind_rotation, lwe_g.lwe->key, lwe_g.lwe->stddev,  binary)); 
@@ -299,11 +299,11 @@ void ntrunium_named_param_generator::init_ntrunium_C_12_B(){
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q));  
     lwe = std::shared_ptr<LWESK>(new LWESK(param, lwe_stddev, binary));
-    lwe_g_par = LWEGadgetParam(param, lwe_basis);
+    lwe_g_par =  std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(param, lwe_basis));
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
-    lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
+    lwe_par_small = lwe_g.gadget_param->lwe_param->modulus_switch(q);  
     
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_g.lwe->param->dim, q)); 
     this->lwe_small = std::shared_ptr<LWESK>(new LWESK(lwe_param_for_blind_rotation, lwe_g.lwe->key, lwe_g.lwe->stddev,  binary)); 
@@ -343,11 +343,11 @@ void ntrunium_named_param_generator::init_ntrunium_C_13_B(){
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q));  
     lwe = std::shared_ptr<LWESK>(new LWESK(param, lwe_stddev, binary));
-    lwe_g_par = LWEGadgetParam(param, lwe_basis);
+    lwe_g_par =  std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(param, lwe_basis));
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
-    lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
+    lwe_par_small = lwe_g.gadget_param->lwe_param->modulus_switch(q);  
 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_g.lwe->param->dim, q)); 
     this->lwe_small = std::shared_ptr<LWESK>(new LWESK(lwe_param_for_blind_rotation, lwe_g.lwe->key, lwe_g.lwe->stddev,  binary)); 
@@ -386,11 +386,11 @@ void ntrunium_named_param_generator::init_ntrunium_C_14_B(){
     lwe_basis = 2; 
     param = std::shared_ptr<LWEParam>(new LWEParam(n, Q));  
     lwe = std::shared_ptr<LWESK>(new LWESK(param, lwe_stddev, binary));
-    lwe_g_par = LWEGadgetParam(param, lwe_basis);
+    lwe_g_par =  std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(param, lwe_basis));
     lwe_g = LWEGadgetSK(lwe_g_par, lwe);
     // negacyclic ring so small lwe is:
     long q = 2 * ntru_g_par.param.N; 
-    lwe_par_small = lwe_g.gadget_param.lwe_param->modulus_switch(q);  
+    lwe_par_small = lwe_g.gadget_param->lwe_param->modulus_switch(q);  
     
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_g.lwe->param->dim, q)); 
     this->lwe_small = std::shared_ptr<LWESK>(new LWESK(lwe_param_for_blind_rotation, lwe_g.lwe->key, lwe_g.lwe->stddev,  binary)); 

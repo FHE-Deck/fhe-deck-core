@@ -15,6 +15,11 @@ VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<RLWEParam> param, Rotat
     }
 }
 
+VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc, bool amortization){
+    this->acc = acc;
+    this->amortization = amortization; 
+}
+
 VectorCTAccumulator::VectorCTAccumulator(VectorCTAccumulator &other){
     this->acc = other.acc;
     this->rot_poly = other.rot_poly;
@@ -75,10 +80,9 @@ RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){
     this->accumulator = param->init_ct();
     this->accumulator_ptr = static_cast<RLWECT*>(accumulator);
 }
-
-void RLWEBlindRotateOutput::extract_lwe(long* lwe_ct){
-    RLWECT* acc_ptr = static_cast<RLWECT*>(accumulator);
-    acc_ptr->extract_lwe(lwe_ct);
+  
+void RLWEBlindRotateOutput::extract_lwe(LWECT* out){ 
+    accumulator_ptr->extract_lwe(out->ct);
 }
 
 void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 

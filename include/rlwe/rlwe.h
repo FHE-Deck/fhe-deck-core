@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "polynomial.h"
 #include "vector_ciphertext.h"
+#include "plaintext_encoding.h"
 
 
 #include <cereal/archives/binary.hpp>
@@ -18,6 +19,7 @@
  
 namespace fhe_deck{
  
+
 class RLWEParam : public VectorCTParam{
 
   public: 
@@ -124,43 +126,18 @@ class RLWECT : public VectorCT{
         } 
     }  
 };
-
+ 
+/// TODO: Doens't see to be necesary except for some tests that have legacy code in them. 
 enum GadgetMulMode {simul, deter};
  
-class RLWEGadgetParam : public GadgetVectorCTParam{
 
-  public:
-  
-  std::shared_ptr<RLWEParam> rlwe_param;
-   
-  std::shared_ptr<Gadget> deter_gadget; 
 
-  RLWEGadgetParam() = default;
-        
-  RLWEGadgetParam(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> deter_gadget);
- 
-  RLWEGadgetParam(const RLWEGadgetParam &other);
- 
-  RLWEGadgetParam& operator=(const RLWEGadgetParam other);
-  
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-      ar(rlwe_param, deter_gadget);    
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-      ar(rlwe_param, deter_gadget);   
-    }  
-};
 
 class RLWEGadgetCT : public GadgetVectorCT{ 
 
   public:
  
-  std::shared_ptr<GadgetVectorCTParam> gadget_param; 
+  /// std::shared_ptr<GadgetVectorCTParam> gadget_param; 
   std::shared_ptr<RLWEParam> rlwe_param;
   std::shared_ptr<Gadget> gadget;
 
@@ -179,7 +156,7 @@ class RLWEGadgetCT : public GadgetVectorCT{
 
   RLWEGadgetCT() = default;
    
-  RLWEGadgetCT(std::shared_ptr<RLWEGadgetParam> gadget_param, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
+  RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
 
   RLWEGadgetCT(const RLWEGadgetCT& other);
 
@@ -192,13 +169,13 @@ class RLWEGadgetCT : public GadgetVectorCT{
     template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(gadget_param);     
+        ar(rlwe_param, gadget);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(gadget_param);     
+        ar(rlwe_param, gadget);      
         this->is_init = true;
     } 
   
@@ -234,20 +211,17 @@ class RLWESK{
 
     RLWESK& operator=(const RLWESK other);
   
-    void encrypt(RLWECT *out, Polynomial *m);
-
-    RLWECT encrypt(Polynomial *m);
+    void encrypt(RLWECT *out, Polynomial *m);  
+    
+    RLWECT encrypt(Polynomial *m); 
+    
+    RLWECT encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
  
-    RLWECT scale_and_encrypt(Polynomial* m, int t);
-
-    // Uses SK
-    void phase(Polynomial *phase, RLWECT *ct);
-
-    // Uses SK
-    Polynomial decrypt(RLWECT *ct, int t);
-
-    // Uses SK
-    void decrypt(Polynomial *out, RLWECT *ct, int t);
+    void partial_decrypt(Polynomial *phase, RLWECT *ct);
+  
+    Polynomial decrypt(RLWECT *ct, PlaintextEncoding encoding);
+  
+    void decrypt(Polynomial *out, RLWECT *ct, PlaintextEncoding encoding);
  
     void extract_lwe_key(long* lwe_key);
 
@@ -275,19 +249,18 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
 
     public:
  
-    std::shared_ptr<RLWEGadgetParam> gadget_param;  
+    //std::shared_ptr<RLWEGadgetParam> gadget_param;  
+    std::shared_ptr<Gadget> gadget;
     std::shared_ptr<RLWESK> sk;
 
     RLWEGadgetSK() = default;
 
-    RLWEGadgetSK(std::shared_ptr<RLWEGadgetParam> gadget_param, std::shared_ptr<RLWESK> sk);
+    RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWESK> sk);
 
     RLWEGadgetSK(const RLWEGadgetSK &other);
 
     RLWEGadgetSK& operator=(const RLWEGadgetSK other);
-      
-    //RLWEGadgetCT* gadget_encrypt(Polynomial *msg); 
-
+       
     GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
 
     GadgetVectorCT* gadget_encrypt(long *msg, int size); 
@@ -295,13 +268,13 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(gadget_param, sk);   
+      ar(gadget, sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(gadget_param, sk);   
+      ar(gadget, sk);   
     } 
 };
  

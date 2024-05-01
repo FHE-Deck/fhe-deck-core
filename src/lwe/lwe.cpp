@@ -69,7 +69,7 @@ LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->ct = param->init_ct();
     this->init = true; 
 }
-
+  
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
     this->param = lwe_param;
     this->ct = param->init_ct();
@@ -77,7 +77,15 @@ LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
     for(int i = 0; i < param->dim+1; ++i){
         this->ct[i] = ct[i];
     }
-}
+} 
+
+/*
+LWECT::LWECT(LWECT* in){
+    this->param = in->param;
+    this->init = in->init;
+    this->ct = in->ct;
+} 
+*/
 
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
@@ -315,23 +323,23 @@ void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){
     }   
 }
 
+  
 LWEGadgetParam::LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long base){
-      this->lwe_param = lwe_par;
-      this->base = base; 
-      // Note that for now, we accept only power of two basis (because our decomposition is written this way)
-      this->k = 1;
-      long temp = 2;
-      while(temp < base){
-            temp *= 2;
-            this->k++;
-      }
-      this->ell = 1;
-      temp = base;
-       
-      while(temp < this->lwe_param->modulus){
-            temp *= base;
-            this->ell++;
-      }
+    this->lwe_param = lwe_par;
+    this->base = base; 
+    /// TODO:  Note that for now, we accept only power of two basis (because our decomposition is written this way)
+    this->k = 1;
+    long temp = 2;
+    while(temp < base){
+        temp *= 2;
+        this->k++;
+    }
+    this->ell = 1;
+    temp = base; 
+    while(temp < this->lwe_param->modulus){
+        temp *= base;
+        this->ell++;
+    } 
 }
 
 long** LWEGadgetParam::init_gadget_ct(){
@@ -379,6 +387,79 @@ void LWEGadgetParam::gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar
     }  
     delete[] scalar_decomposed;
 }
+ 
+LWEGadgetCT::~LWEGadgetCT(){ 
+    for(int i = 0; i < this->ell; ++i){
+        delete[] ct_content[i];  
+    } 
+    delete[] ct_content;
+}
+
+LWEGadgetCT::LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, long base){
+    this->lwe_param = lwe_par;
+    this->base = base; 
+    /// TODO:  Note that for now, we accept only power of two basis (because our decomposition is written this way)
+    this->k = 1;
+    long temp = 2;
+    while(temp < base){
+        temp *= 2;
+        this->k++;
+    }
+    this->ell = 1;
+    temp = base; 
+    while(temp < this->lwe_param->modulus){
+        temp *= base;
+        this->ell++;
+    }
+    ct_content = init_gadget_ct(); 
+}
+
+void LWEGadgetCT::gadget_mul(LWECT *out_ct, long scalar){
+    for(int i = 0; i < lwe_param->dim+1; ++i){
+        out_ct->ct[i] = 0;
+    }
+    long *scalar_decomposed = new long[ell]; 
+    Utils::integer_decomp(scalar_decomposed, scalar, base, k, ell);
+    long *temp_ct = new long[lwe_param->dim+1];
+    for(int i = 0; i < ell; ++i){
+        lwe_param->scalar_mul(temp_ct, ct_content[i], scalar_decomposed[i]);
+        lwe_param->add(out_ct->ct, out_ct->ct, temp_ct);
+    }
+    delete[] scalar_decomposed;
+    delete[] temp_ct;
+} 
+    
+void LWEGadgetCT::gadget_mul_lazy(LWECT *out_ct, long scalar){
+    for(int i = 0; i < lwe_param->dim+1; ++i){
+        out_ct->ct[i] = 0;
+    }
+    long *scalar_decomposed = new long[ell]; 
+    Utils::integer_decomp(scalar_decomposed, scalar, base, k, ell);
+    if(base==2){
+        for(int i = 0; i < ell; ++i){
+            if(scalar_decomposed[i]==1){
+                lwe_param->add_lazy(out_ct->ct, out_ct->ct, ct_content[i]);
+            }
+        }
+    }else{
+        long *temp_ct = new long[lwe_param->dim+1];
+        for(int i = 0; i < ell; ++i){
+            lwe_param->scalar_mul_lazy(temp_ct, ct_content[i], scalar_decomposed[i]);
+            lwe_param->add_lazy(out_ct->ct, out_ct->ct, temp_ct);
+        } 
+        delete[] temp_ct;
+    }  
+    delete[] scalar_decomposed;
+}
+
+long** LWEGadgetCT::init_gadget_ct(){
+    long **gadget_ct = new long*[this->ell];
+    for(int i = 0; i < this->ell; ++i){
+        gadget_ct[i] = this->lwe_param->init_ct();
+    } 
+    return gadget_ct;
+}
+
 
 LWESK::~LWESK(){ 
     delete[] key; 
@@ -423,16 +504,18 @@ LWESK& LWESK::operator=(const LWESK other){
     return *this;
 }
 
+/*
 long* LWESK::encrypt(long m){
     long *ct = param->init_ct(); 
     LWESK::encrypt(ct, m);
     return ct;
-}
+} 
+*/
 
-LWECT LWESK::encrypt_ct(long m){
-    LWECT ct(param);
-    encrypt(ct.ct, m);
-    return ct;
+LWECT* LWESK::encrypt(long m){
+    LWECT* out = new LWECT(param);
+    encrypt(out->ct, m);
+    return out;
 }
 
 void LWESK::encrypt(long *ct, long m){     
@@ -444,21 +527,36 @@ void LWESK::encrypt(long *ct, long m){
     }   
 }
 
+/*
 long* LWESK::scale_and_encrypt(long m, int t){
     /// TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->modulus/t;
     long m_scaled =  (long)round((double)m*scale); 
     return LWESK::encrypt(m_scaled);
-    }
+}
+*/
+
+LWECT* LWESK::encode_and_encrypt(long m, PlaintextEncoding encoding){  
+    LWECT* out = new LWECT(this->param);
+    encrypt(out->ct, encoding.encode_message(m));
+    //return LWESK::encrypt(encoding.encode_message(m));
+    return out;
+}
  
+/*
 void LWESK::scale_and_encrypt(long* ct, long m, int t){ 
     /// TODO Potential problems when Q is too big. In this case should be long double
     double scale = (double)param->modulus/t;
     long m_scaled =  (long)round((double)m*scale); 
     encrypt(ct, m_scaled); 
 } 
+*/
 
-long LWESK::phase(long *ct){
+void LWESK::encode_and_encrypt(long* ct, long m, PlaintextEncoding encoding){   
+    encrypt(ct, encoding.encode_message(m)); 
+} 
+
+long LWESK::partial_decrypt(long *ct){
     long phase  = ct[0]; 
     for(int i = 1; i < param->dim+1; ++i){ 
         phase += ct[i] * key[i-1];
@@ -468,19 +566,23 @@ long LWESK::phase(long *ct){
 }
 
 long LWESK::error(long *ct,  long m){   
-    return Utils::integer_signed_form((LWESK::phase(ct) - m) % param->modulus, param->modulus); 
+    return Utils::integer_signed_form((LWESK::partial_decrypt(ct) - m) % param->modulus, param->modulus); 
 }
 
+/*
 long LWESK::decrypt(long *ct, int t){ 
-    long d_phase = LWESK::phase(ct);  
+    long d_phase = LWESK::partial_decrypt(ct);  
     // TODO Potential problems when Q is too big. In this case should be long double
     long out = round(((double)t/param->modulus) * d_phase); 
     return Utils::integer_mod_form(out, t);
 }
-   
-LWEGadgetSK::LWEGadgetSK(){}
+*/
 
-LWEGadgetSK::LWEGadgetSK(LWEGadgetParam lwe_g_par, std::shared_ptr<LWESK> lwe){
+long LWESK::decrypt(long *ct, PlaintextEncoding encoding){  
+    return encoding.decode_message(LWESK::partial_decrypt(ct));
+}
+    
+LWEGadgetSK::LWEGadgetSK(std::shared_ptr<LWEGadgetParam> lwe_g_par, std::shared_ptr<LWESK> lwe){
     this->lwe = lwe;
     this->gadget_param = lwe_g_par;
 }
@@ -496,18 +598,28 @@ LWEGadgetSK& LWEGadgetSK::operator=(const LWEGadgetSK other){
     return *this;
 }
 
-long** LWEGadgetSK::gadget_encrypt(long m){ 
-    long **gadget_ct = gadget_param.init_gadget_ct(); 
+long** LWEGadgetSK::gadget_encrypt_long(long m){ 
+    long **gadget_ct = gadget_param->init_gadget_ct(); 
     gadget_encrypt(gadget_ct, m);
     return gadget_ct;
 }
 
+LWEGadgetCT* LWEGadgetSK::gadget_encrypt(long m){ 
+    LWEGadgetCT* out = new LWEGadgetCT(gadget_param->lwe_param,  gadget_param->base);
+    gadget_encrypt(out->ct_content, m);
+    return out;
+}
+
 void LWEGadgetSK::gadget_encrypt(long** gadget_ct, long m){
-    long temp_base = 1; 
-    gadget_ct[0] = lwe->encrypt(m);
-    for(int i = 1; i < gadget_param.ell; ++i){
-        temp_base *= gadget_param.base; 
-        gadget_ct[i] = lwe->encrypt(m * temp_base);
+    long temp_base = 1;  
+    //gadget_ct[0] = lwe->encrypt(m);
+    gadget_ct[0] = lwe->param->init_ct();
+    lwe->encrypt(gadget_ct[0], m);
+    for(int i = 1; i < gadget_param->ell; ++i){
+        temp_base *= gadget_param->base; 
+        //gadget_ct[i] = lwe->encrypt(m * temp_base);
+        gadget_ct[i] = lwe->param->init_ct();
+        lwe->encrypt(gadget_ct[i], m * temp_base);
     } 
 }
  
@@ -523,7 +635,9 @@ LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stdde
     // Initialize the key switching key
     public_key = new long*[size]; 
     for(int i = 0; i < size; ++i){ 
-        public_key[i] = lwe_sk->encrypt(0);   
+        //public_key[i] = lwe_sk->encrypt(0);   
+        public_key[i] = lwe_sk->param->init_ct();
+        lwe_sk->encrypt(public_key[i], 0);
     }  
 }
 

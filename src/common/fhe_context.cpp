@@ -1,13 +1,7 @@
 #include "fhe_context.h"
 
 using namespace fhe_deck;
- 
-void FHEContext::generate_context(ntrunium_named_param name){  
-        ntrunium_par = ntrunium_named_param_generator(name);  
-        ntrunium_par.generate_bootstapping_keys();   
-        is_ntrunium = true;
-}
-
+  
 void FHEContext::generate_context(FHENamedParams name){   
     FHEConfiguration fhe_config = FHEConfiguration(name);  
     fhe_config.generate_keys();
@@ -52,7 +46,9 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){
     if(!is_sk_init){
         throw std::logic_error("No Secret Key Initialized!");
     }       
-    LWECT c(lwe_sk->encrypt_ct(encoding.encode_message(message))); 
+    LWECT* temp = lwe_sk->encrypt(encoding.encode_message(message));
+    LWECT c(temp); 
+    delete temp;
     return Ciphertext(c, encoding, this); 
 }
 
@@ -109,9 +105,8 @@ Ciphertext FHEContext::encrypt_public(long message){
 long FHEContext::decrypt(Ciphertext *c_in){
     if(!is_sk_init){
         throw std::logic_error("No Secret Key Initialized!");
-    } 
-    long phase = lwe_sk->phase(c_in->lwe_c->ct);    
-    return c_in->encoding.decode_message(phase);  
+    }  
+    return lwe_sk->decrypt(c_in->lwe_c->ct, c_in->encoding);
 }
  
 PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
@@ -349,7 +344,7 @@ void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct){
     auto id = [](long m, long t) -> long {
         return m % t;
     };    
-    // TODO Need to reword sanitization completely
+    /// TODO: Need to reword sanitization completely
     Ciphertext out_ct = eval_lut(&ct, id);  
     send_Ciphertext(os, out_ct);
 }

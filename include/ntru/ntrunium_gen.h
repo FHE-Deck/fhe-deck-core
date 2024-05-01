@@ -87,7 +87,7 @@ class ntrunium_named_param_generator{
     int lwe_basis;
     std::shared_ptr<LWEParam> param; 
     std::shared_ptr<LWESK> lwe; 
-    LWEGadgetParam lwe_g_par; 
+    std::shared_ptr<LWEGadgetParam> lwe_g_par; 
     LWEGadgetSK lwe_g; 
     LWEParam lwe_par_small;
 

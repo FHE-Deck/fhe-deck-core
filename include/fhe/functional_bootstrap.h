@@ -158,8 +158,7 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding);
 };
-
-
+ 
 // Here comes the implementation of the Kluczniak Schild Functional Bootstrapping from an upcomming paper. 
 class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
@@ -184,7 +183,6 @@ class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPub
     std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding);
 };
 
- 
 }
 
 #endif

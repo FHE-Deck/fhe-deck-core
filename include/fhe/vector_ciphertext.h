@@ -30,14 +30,10 @@ class VectorCT{
   
     virtual void neg(VectorCT *out) = 0; 
 };
-
-class GadgetVectorCTParam{};
-
+ 
 class GadgetVectorCT{
 
     public: 
-
-
 
     virtual ~GadgetVectorCT(){};
 

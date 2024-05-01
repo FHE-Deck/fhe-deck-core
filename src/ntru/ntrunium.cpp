@@ -4,7 +4,7 @@ using namespace fhe_deck;
 
 ntrunium::~ntrunium(){ 
     for(int i = 0; i < ntru_g_par.param.N; ++i){ 
-        for(int j = 0; j < lwe_g_par.ell; ++j){ 
+        for(int j = 0; j < lwe_g_par->ell; ++j){ 
             delete[] ksk[i][j];  
         }
         delete[] ksk[i];
@@ -17,7 +17,7 @@ ntrunium::~ntrunium(){
 ntrunium::ntrunium(){ 
 } 
  
-ntrunium::ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct* bk){ 
+ntrunium::ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, std::shared_ptr<LWEGadgetParam> lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct* bk){ 
     this->ntru_g_par = ntru_g_par;
     this->ntru_par = ntru_par;
     this->lwe_g_par = lwe_g_par;
@@ -52,22 +52,22 @@ void ntrunium::init_ternary_key(){
 }
  
 void ntrunium::ntru_to_lwe_key_switch(long *lwe_ct, ntru_ct *ct){ 
-    lwe_g_par.gadget_mul_lazy(lwe_ct, ksk[0], ct->c[0]);  
-    long *temp_lwe_ct = lwe_g_par.lwe_param->init_ct(); 
+    lwe_g_par->gadget_mul_lazy(lwe_ct, ksk[0], ct->c[0]);  
+    long *temp_lwe_ct = lwe_g_par->lwe_param->init_ct(); 
     for(int i=1; i < ntru_g_par.param.N; ++i){ 
-        lwe_g_par.gadget_mul_lazy(temp_lwe_ct, ksk[i], ct->c[i]); 
-        lwe_g_par.lwe_param->add_lazy(lwe_ct, lwe_ct, temp_lwe_ct); 
+        lwe_g_par->gadget_mul_lazy(temp_lwe_ct, ksk[i], ct->c[i]); 
+        lwe_g_par->lwe_param->add_lazy(lwe_ct, lwe_ct, temp_lwe_ct); 
     } 
     // Modulus reduction only at the very end
-    for(int i = 0; i < lwe_g_par.lwe_param->dim+1; ++i){
-        lwe_ct[i] = lwe_ct[i] % lwe_g_par.lwe_param->modulus;
+    for(int i = 0; i < lwe_g_par->lwe_param->dim+1; ++i){
+        lwe_ct[i] = lwe_ct[i] % lwe_g_par->lwe_param->modulus;
     } 
     delete(temp_lwe_ct);
 }
  
 void ntrunium::ntru_to_lwe_key_switch_delete(){
     for(int i = 0; i < ntru_g_par.param.N; ++i){ 
-        for(int j = 0; j < lwe_g_par.ell; ++j){ 
+        for(int j = 0; j < lwe_g_par->ell; ++j){ 
             delete(ksk[i][j]);  
         }
         delete(ksk[i]);
@@ -148,12 +148,12 @@ ntru_ct ntrunium::blind_rotate(ntru_ct *acc_in, long *lwe_ct){
    
 ntru_ct ntrunium::bootstrap(ntru_ct *acc_in, ntru_ct *ct, int t){ 
     // Key Switch (extract the dth coefficient) 
-    long* lwe_ct = lwe_g_par.lwe_param->init_ct();
+    long* lwe_ct = lwe_g_par->lwe_param->init_ct();
     ntru_to_lwe_key_switch(lwe_ct, ct); 
     // Modulus switch lwe_ct to ring size. 
-    long* lwe_ct_small = lwe_g_par.lwe_param->init_ct(); 
+    long* lwe_ct_small = lwe_g_par->lwe_param->init_ct(); 
     // Here we are already modulus switching to Z_2N
-    lwe_g_par.lwe_param->switch_modulus(lwe_ct_small, lwe_ct, lwe_par);  
+    lwe_g_par->lwe_param->switch_modulus(lwe_ct_small, lwe_ct, lwe_par);  
     lwe_ct_small[0] = lwe_ct_small[0] + round((double)lwe_par->modulus/(2 * t)); 
     lwe_ct_small[0] %= lwe_par->modulus;
     // Blind rotate  
@@ -166,13 +166,13 @@ ntru_ct ntrunium::bootstrap(ntru_ct *acc_in, ntru_ct *ct, int t){
   
 ntru_ct ntrunium::functional_bootstrap(ntru_ct *acc_in, ntru_ct* acc_msb, ntru_ct *ct, int t){ 
     // Key Switch (extract the dth coefficient) 
-    long* lwe_ct = lwe_g_par.lwe_param->init_ct();
-    long *lwe_c_N = lwe_g_par.lwe_param->init_ct();
+    long* lwe_ct = lwe_g_par->lwe_param->init_ct();
+    long *lwe_c_N = lwe_g_par->lwe_param->init_ct();
     ntru_to_lwe_key_switch(lwe_c_N, ct); 
 
     // Modulus switch lwe_ct to ring size.  
     // Here we are already modulus switching to Z_N
-    lwe_g_par.lwe_param->switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny);
+    lwe_g_par->lwe_param->switch_modulus(lwe_c_N, lwe_c_N, lwe_par_tiny);
   
     // Shifting to have the ``payload'' withing (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
@@ -197,7 +197,7 @@ ntru_ct ntrunium::functional_bootstrap(ntru_ct *acc_in, ntru_ct* acc_msb, ntru_c
     acc_rotated = acc_rotated.mod_switch(ntru_par);
 
     ntru_to_lwe_key_switch(lwe_ct, &acc_rotated); 
-    lwe_g_par.lwe_param->switch_modulus(lwe_ct, lwe_ct, lwe_par);  
+    lwe_g_par->lwe_param->switch_modulus(lwe_ct, lwe_ct, lwe_par);  
   
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N)
     // Actually, adding (long)round((double)lwe_par_tiny.Q/2*t) isn't that important anymore, 

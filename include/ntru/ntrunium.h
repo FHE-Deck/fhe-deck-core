@@ -11,6 +11,7 @@
 
 namespace fhe_deck{
 
+ 
 
 class ntrunium{
 
@@ -21,7 +22,7 @@ class ntrunium{
     // NTRU paramaters for NTRU ciphertexts (smaller modulus than the gadget NTRU, but the same key)
     ntru_param ntru_par;
     // LWE Gadget parameters for the key switching key (we key switch from ntru_par to LWE)
-    LWEGadgetParam lwe_g_par;
+    std::shared_ptr<LWEGadgetParam> lwe_g_par;
     // LWE parameters for modswithing to Z_2N. For the LWE that is blind rotated (in bootstrapping we modulus switch from lwe_g_par to lwe_par and blind rotate lwe_par)
     std::shared_ptr<LWEParam> lwe_par;
     // LWE parameters for modswithing to Z_N. For functional bootstrapping
@@ -43,7 +44,7 @@ class ntrunium{
 
     ntrunium();
 
-    ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, LWEGadgetParam lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct *bk);
+    ntrunium(ntru_gadget_param ntru_g_par, ntru_param ntru_par, std::shared_ptr<LWEGadgetParam> lwe_g_par, std::shared_ptr<LWEParam> lwe_par, KeyDistribution key_d,  long ***ksk, ntru_gadget_ct *bk);
       
     void init_binary_key();
 

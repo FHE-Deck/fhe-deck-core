@@ -239,7 +239,6 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(long 
             gaussians[j] = gaussians[j] >> k;
         }
         mask = mask << k;
-         
     }
 }
  
@@ -247,14 +246,13 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(long 
 void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out, long* in){   
   
     long beta;
- 
+
     long integer;
     double floating=0.0; 
     // Additional stuff for perturb_D
     double temp;
-  
-    for(int k = 0; k < degree; ++k){ 
- 
+
+    for(int k = 0; k < degree; ++k){  
         // Additional stuff for base decompositon
         // TODO: Perhaps I can make it faster by merging this into the previous for loop?
         long mask = base-1; 
@@ -266,7 +264,6 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
             mask = mask << this->k;
         } 
         // End base_decomposition(u, in[k]);  
-
  
         // Start of perturb_B(p) 
         z_pert[0] =  gen_gaussian();
@@ -286,14 +283,12 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
             p[i] = base * (z_pert[i-1] + 2*z_pert[i] + z_pert[i+1]); 
         } 
         // End of perturb_B(p)
-
-
+ 
         // Computing the c values
         c[0] = (u[0] - p[0]) * inv_basis;  
         for(int i = 1; i < digits; ++i){ 
             c[i] = (c[i-1] + (double)(u[i] - p[i])) * inv_basis;
-        }  
-  
+        }   
         // Start of sample_D(z, c);  
         temp = -c[ell_minus_one]/d[ell_minus_one]; 
         integer = temp;
@@ -308,8 +303,7 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
             //z[i] = integer + (long)(gen_gaussian() * sigma + floating);
             z[i] = integer + gen_discrete_gauss(floating);
         } 
-        // End of sample_D(z, c);  
-  
+        // End of sample_D(z, c);   
         out[0][k] = base * z[0] + q_decomp[0] * out_ell_minus_one + u[0]; 
         for(int i = 1; i < ell_minus_one; ++i){ 
             out[i][k] = base * z[i] - z[i-1] + q_decomp[i] * out_ell_minus_one + u[i];  
@@ -394,16 +388,14 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_power_of_base_gaus
     gaussians = new long[degree];
     for(long j = 0; j < degree; ++j){
         gaussians[j] = 0;
-    }  
-
+    }   
     sigma  = stddev;
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);
     std::uniform_int_distribution<unsigned long> uniform(0, 0xffffffffffffffff);  
     xorshift_s = uniform(e);
-    hasSpare = false;
-
+    hasSpare = false; 
 }
 
 void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_gaussian_sampling(){  

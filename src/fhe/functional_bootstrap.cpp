@@ -13,7 +13,7 @@ void FunctionalBootstrapPublicKey::bootstrap(LWECT *lwe_ct_out, std::shared_ptr<
     // 3) Blind rotate    
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
     // 4) Sample Extract    
-    br_out->extract_lwe(lwe_ct_out->ct);  
+    br_out->extract_lwe(lwe_ct_out);   
 }
  
 std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding){   
@@ -30,7 +30,7 @@ std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shar
     std::vector<LWECT> out_vec; 
     for(std::shared_ptr<VectorCTAccumulator> i:  acc_in_vec){      
         br_out->post_rotation(br_temp, i);   
-        br_temp->extract_lwe(lwe_ct_out.ct); 
+        br_temp->extract_lwe(&lwe_ct_out); 
         out_vec.push_back(lwe_ct_out); 
     }  
     return out_vec;
@@ -56,9 +56,9 @@ LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
     // Special Accumulator for teh full domain functional bootstrapping, computing the most signifficant bit.
     this->acc_msb = std::shared_ptr<VectorCTAccumulator>(this->accumulator_builder->get_acc_msb());   
     // Mod Switch from Extracted Q to 2 * N
-    this->ms_from_gadget_to_par = LWEModSwitcher(this->key_switch_key->destination.lwe_param, this->lwe_par);
+    this->ms_from_gadget_to_par = LWEModSwitcher(this->key_switch_key->destination->lwe_param, this->lwe_par);
     // Mod Switch from Extracted Q to N
-    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination.lwe_param, this->lwe_par_tiny);
+    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination->lwe_param, this->lwe_par_tiny);
 }
   
 void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT *lwe_ct_in, PlaintextEncoding &encoding){    
@@ -84,7 +84,7 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);   
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
-    br_out->extract_lwe(lwe_ct_out->ct);
+    br_out->extract_lwe(lwe_ct_out);
     // And again: 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_out); 
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
@@ -103,7 +103,7 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     // 3) Blind rotate 
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
     // 4) Sample Extract   
-    br_out->extract_lwe(lwe_ct_out->ct); 
+    br_out->extract_lwe(lwe_ct_out); 
 } 
 
 std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding){   
@@ -130,11 +130,11 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
-    br_out->extract_lwe(lwe_ct_out.ct);
+    br_out->extract_lwe(&lwe_ct_out);
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
     ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct);
-    // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
+    // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N)  
     for(int i = 0; i < lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;
     }  
@@ -149,7 +149,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     std::vector<LWECT> out_vec; 
     for(std::shared_ptr<VectorCTAccumulator> i:  acc_in_vec){    
         br_out->post_rotation(br_temp, i);   
-        br_temp->extract_lwe(lwe_ct_out.ct); 
+        br_temp->extract_lwe(&lwe_ct_out); 
         out_vec.push_back(lwe_ct_out);  
     }  
     return out_vec;

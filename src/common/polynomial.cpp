@@ -105,15 +105,12 @@ Polynomial IntelHexlNTTEngine::mul(Polynomial *in_1, Polynomial *in_2){
 }
 
 void IntelHexlNTTEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form){  
-
-
     long* in_1_temp = in_1->poly_array;
     long* in_2_temp = in_2->eval_long;
     long* temp = new long[in_2->size];  
     Utils::array_mod_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
     ntt.ComputeForward((uint64_t*) temp, (uint64_t*) in_1_temp, 1, 1);  
-    intel::hexl::EltwiseMultMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2->size, in_2->coef_modulus, 1);
-
+    intel::hexl::EltwiseMultMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2->size, in_2->coef_modulus, 1); 
     for(int i = 1; i < in_2->array_size; ++i){
         in_1_temp = &in_1->poly_array[i * in_1->degree];
         in_2_temp = &in_2->eval_long[i * in_2->size];

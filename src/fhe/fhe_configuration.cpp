@@ -67,7 +67,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base));
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt;
 
     // 2**9 + 400
@@ -77,7 +77,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     // 2**(26) 
     double lwe_stddev = 67108864;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
 
     default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
     FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
@@ -89,7 +89,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring).  
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -144,7 +144,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
      
     // 2**9 + 400
     int lwe_dim = 912;
@@ -152,7 +152,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     // 2**(26)
     double lwe_stddev = 67108864; 
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
     //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
 
     default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
@@ -166,7 +166,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -216,7 +216,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget));  
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget));  
    //sk_arithmetic = double_fft;
 
     // 2**9 + 430
@@ -225,7 +225,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     // 2**(14)
     double lwe_stddev = 16384;  
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
     //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
 
     default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
@@ -238,7 +238,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary));  
@@ -288,7 +288,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
 
     /// Parameters for the LWE to LWE Key Switching Key
     // 2**9 + 430
@@ -297,7 +297,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     // 2**(14) 
     double lwe_stddev = 16384;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
     //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
 
     default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
@@ -310,7 +310,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -363,7 +363,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt;
  
     int lwe_dim = 950;
@@ -372,7 +372,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     // 2**(23) 
     double lwe_stddev = 262144;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
     //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
 
     default_encoding = PlaintextEncoding(partial_domain, 8, coef_modulus); 
@@ -385,7 +385,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -447,7 +447,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
-    std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt; 
 
     int lwe_dim = 950;
@@ -456,7 +456,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     // 2**(23) 
     double lwe_stddev = 262144;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    LWEGadgetParam lwe_gadget_param = LWEGadgetParam(lwe_param, lwe_ks_decomp_base); 
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
     //LWEGadgetParam lwe_gadget_par = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
 
     default_encoding = PlaintextEncoding(partial_domain, 16, coef_modulus); 
@@ -469,7 +469,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(rlwe_gadget_param, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -500,3 +500,83 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
         blind_rotate_output_builder, 
         accumulator_builder));
 } 
+
+
+
+
+
+void FHEConfiguration::init_ntrunium_11_NTT(){ 
+    /// =================== Parameter Definition for the Functional Bootstrapping Algorithm
+
+    // 2**11
+    int degree = 2048; 
+    // 2**48 - 16383 % 2*(2**11) = 1 (NTT Friendly), Base-4096 decomposition of 281474976694273: [1, 4092, 4095, 4095], L_2 norm: 7091.016499769268
+    long coef_modulus = 281474976694273;
+    double rlwe_stddev = 3.2; 
+    // 2**8
+    long gadget_decomp_base = 256;  
+    // stddev_simul approx  2**(17.78)
+    double stddev_simul = 225812;  
+    int masking_size = 8192;
+    // stddev_simul approx  2**(12.37) 
+    double stddev_masking = 8192;
+    KeyDistribution rlwe_key_type = ternary;
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
+    //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
+    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base));
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
+    //sk_arithmetic = hexl_ntt;
+
+    // 2**9 + 400
+    int lwe_dim = 912;
+    // 2**7
+    int lwe_ks_decomp_base = 128;
+    // 2**(26) 
+    double lwe_stddev = 67108864;
+    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
+    std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
+
+    default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
+    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
+
+    /// =================== Generate Secret keys  
+    
+    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
+    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
+    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk = std::shared_ptr<LWEGadgetSK>(new LWEGadgetSK(lwe_gadget_param, g_lwe)); 
+    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
+    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
+    // lwe_sk after modulus switching to 2*N (for negacyclic ring).  
+    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
+    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
+    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
+    // This key is the main decryption key for the scheme.
+    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
+ 
+    /// =================== Generate Public Keys 
+
+    // Key Switching Key Gen
+    LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
+    // Masking Key Gen
+    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
+    // The blind rotation key  
+    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
+    // Init Accumulator builder
+    accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    // Build the public key 
+    // TODO: This modulus switching looks increadibly ugly
+    std::shared_ptr<LWEParam> lwe_param_rot = std::shared_ptr<LWEParam>(new LWEParam(lwe_param->modulus_switch(degree * 2))); 
+    std::shared_ptr<LWEParam> lwe_param_tiny = std::shared_ptr<LWEParam>(new LWEParam(lwe_param->modulus_switch(degree))); 
+    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
+    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+        lwe_param_rot, 
+        lwe_param_tiny,
+        blind_rotation_key, 
+        ks_public_key, 
+        blind_rotate_output_builder, 
+        accumulator_builder));
+} 
+ 

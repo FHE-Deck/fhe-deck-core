@@ -56,6 +56,8 @@ class FHEConfiguration{
     void init_tfhe_11_NTT_amortized(); 
 
     void init_tfhe_12_NTT_amortized();
+
+    void init_ntrunium_11_NTT(); 
 };
 
 }

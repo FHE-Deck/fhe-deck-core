@@ -33,9 +33,7 @@ class FHEContext{
     PlaintextEncoding default_encoding; 
   
     FHEContext() = default; 
- 
-    void generate_context(ntrunium_named_param name);
-
+  
     void generate_context(FHENamedParams name);
  
     // Return a LWE Ciphertext (requires secret key)

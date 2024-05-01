@@ -5,6 +5,7 @@
 #include <random>
 #include <iostream> 
 #include "utils.h"
+#include "plaintext_encoding.h"
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
@@ -69,7 +70,9 @@ class LWECT{
     // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
     LWECT(std::shared_ptr<LWEParam> lwe_par);
 
-    LWECT(std::shared_ptr<LWEParam> lwe_par, long* ct);
+    /// TODO: Delete this.
+    /// Need to get rid of such things after refactoring GadgetLWE and LWE-TO-LWE KeySwitch 
+    LWECT(std::shared_ptr<LWEParam> lwe_par, long* ct); 
 
     LWECT(const LWECT &c);
  
@@ -205,23 +208,21 @@ class LWESK {
     LWESK(const LWESK &other);
 
     LWESK& operator=(const LWESK other);
-   
-    long* encrypt(long m);
-    
-    LWECT encrypt_ct(long m);
-
-    void encrypt(long* ct, long m);
-    
-    long* scale_and_encrypt(long m, int t);
-    
-    void scale_and_encrypt(long* ct, long m, int t);
  
-    long phase(long *ct);
-    
-    long error(long *ct, long m);
+    LWECT* encrypt(long m);
 
-    /// NOTE: Decryption and encryption only makes sense with respect to a Plaintext encodings.   
-    long decrypt(long *ct,  int t); 
+    /// TODO: Should take a pointer to LWECT
+    void encrypt(long* ct, long m); 
+    
+    LWECT* encode_and_encrypt(long m, PlaintextEncoding encoding); 
+    /// TODO: Should take pointer to LWECT
+    void encode_and_encrypt(long* ct, long m, PlaintextEncoding encoding);
+    /// TODO: Should take pointer to LWECT
+    long partial_decrypt(long *ct);
+    /// TODO: Delete this
+    long error(long *ct, long m);
+    /// TODO: Should take pointer to LWECT
+    long decrypt(long *ct, PlaintextEncoding encoding); 
    
     template <class Archive>
     void save( Archive & ar ) const
@@ -246,7 +247,7 @@ class LWESK {
       } 
     } 
 };
- 
+  
 class LWEGadgetParam{
 
   public:
@@ -255,17 +256,15 @@ class LWEGadgetParam{
     int ell;
     int k;
     std::shared_ptr<LWEParam> lwe_param;
-
-    LWEGadgetParam() = default;
-
+   
     LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long basis);
-    /// TODO: Should be handled in a LWEGadgetCT
+    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
     long** init_gadget_ct(); 
-    /// TODO: Should be handled in a LWEGadgetCT
+    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
     void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
-    /// TODO: Should be handled in a LWEGadgetCT
+    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
     void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
-    
+  
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -279,21 +278,48 @@ class LWEGadgetParam{
     } 
 };
 
+
+class LWEGadgetCT{
+
+  public: 
+  std::shared_ptr<LWESK> lwe;
+  /// TODO: Instead of params perhaps we shold have the Gadgets. 
+  long base;
+  int ell;
+  int k;
+  std::shared_ptr<LWEParam> lwe_param;
+  
+  long** ct_content;  
+
+  ~LWEGadgetCT();
+
+  LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, long base);
+  
+  void gadget_mul(LWECT *out_ct, long scalar); 
+
+  void gadget_mul_lazy(LWECT *out_ct, long scalar);
+
+  private:
+  long** init_gadget_ct(); 
+};
+
 class LWEGadgetSK{
 
   public:
-    LWEGadgetParam gadget_param;
+    std::shared_ptr<LWEGadgetParam> gadget_param;
     std::shared_ptr<LWESK> lwe;
 
-    LWEGadgetSK();
+    LWEGadgetSK() = default;
 
-    LWEGadgetSK(LWEGadgetParam lwe_g_par, std::shared_ptr<LWESK> lwe);
+    LWEGadgetSK(std::shared_ptr<LWEGadgetParam> lwe_g_par, std::shared_ptr<LWESK> lwe);
   
     LWEGadgetSK(const LWEGadgetSK& other);
 
     LWEGadgetSK& operator=(const LWEGadgetSK other);
-  
-    long** gadget_encrypt(long m); 
+    /// TODO: Delete this after porting NTRU
+    long** gadget_encrypt_long(long m);  
+
+    LWEGadgetCT* gadget_encrypt(long m); 
 
     void gadget_encrypt(long** gadget_ct, long m);
  
@@ -310,12 +336,12 @@ class LWEGadgetSK{
     }    
 };
 
+
 class LWEPublicKey{
 
   public:
  
-    /// TODO: Change this stddev stuff to uniform.
-    // Gaussian here doens't make much sense. 
+    /// TODO: Change this stddev stuff to uniform. 
     double stddev; 
     Sampler rand_masking;
   

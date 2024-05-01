@@ -16,25 +16,22 @@ class LWEToLWEKeySwitchKey{
 
   public:
 
-    long ***ksk;
+    std::shared_ptr<std::unique_ptr<LWEGadgetCT>[]> key_content;
     std::shared_ptr<LWEParam> origin;
-    // To
-    LWEGadgetParam destination;
+    std::shared_ptr<LWEGadgetParam>  destination;
     KeySwitchType ks_type;
- 
-    ~LWEToLWEKeySwitchKey();
-
+   
     LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
  
     LWEToLWEKeySwitchKey(const LWEToLWEKeySwitchKey &other);
    
     LWEToLWEKeySwitchKey& operator=(const LWEToLWEKeySwitchKey other);
-  
-    void lwe_to_lwe_key_switch_lazy(long *lwe_ct_out, long *lwe_ct_in);
-
-    void lwe_to_lwe_key_switch_partial_lazy(long *lwe_ct_out, long *lwe_ct_in);
     
-    void lwe_to_lwe_key_switch_bussy(long *lwe_ct_out, long *lwe_ct_in);
+    void lwe_to_lwe_key_switch_lazy(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
+
+    void lwe_to_lwe_key_switch_partial_lazy(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
+    
+    void lwe_to_lwe_key_switch_bussy(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
 
     void lwe_to_lwe_key_switch(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
 

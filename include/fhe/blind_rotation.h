@@ -17,8 +17,10 @@ class VectorCTAccumulator{
     RotationPoly rot_poly;
     RotationPoly rot_poly_amortized;   
     bool amortization = false;
-
+  
     VectorCTAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly, bool amortization = true);
+
+    VectorCTAccumulator(std::shared_ptr<VectorCT> acc, bool amortization = false);
   
     VectorCTAccumulator(VectorCTAccumulator &other);
  
@@ -61,6 +63,9 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding); 
 
+    /// TODO: Implement the following.
+    //VectorCTAccumulator* prepare_accumulator(VectorCT* acc, PlaintextEncoding output_encoding); 
+
     VectorCTAccumulator* get_acc_msb();
   
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
@@ -79,7 +84,9 @@ class BlindRotateOutput{
 
     ~BlindRotateOutput(){};
   
-    virtual void extract_lwe(long* lwe_ct) = 0;
+    /// TODO: Input should be LWECT 
+    //virtual void extract_lwe(long* lwe_ct) = 0;
+    virtual void extract_lwe(LWECT* out) = 0;
 
     virtual void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc) = 0; 
 };
@@ -113,7 +120,9 @@ class RLWEBlindRotateOutput : public BlindRotateOutput{
     
     RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param);
 
-    void extract_lwe(long* lwe_ct);
+    //void extract_lwe(long* lwe_ct);
+
+    void extract_lwe(LWECT* out);
 
     void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
 };
