@@ -49,8 +49,7 @@ class GadgetVectorCTSK{
     /// Encrypt the input msg array
     virtual GadgetVectorCT* gadget_encrypt(long *msg, int size) = 0; 
     /// Encrypts the polynomials coefficients
-    virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0; 
-
+    virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0;  
 };
 
 }
