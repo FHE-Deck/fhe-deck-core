@@ -1,8 +1,7 @@
 #ifndef FHE_CONTEXT_H
 #define FHE_CONTEXT_H
 
-#include "ciphertext.h"
-#include "ntrunium_gen.h"
+#include "ciphertext.h" 
 #include "fhe_configuration.h"
 #include "enums.h" 
 #include "plaintext_encoding.h"
@@ -17,10 +16,7 @@ namespace fhe_deck{
 class FHEContext{
 
     public:
-
-    ntrunium_named_param_generator ntrunium_par;
-    bool is_ntrunium = false;
- 
+  
     std::shared_ptr<fhe_deck::LWESK> lwe_sk; 
     std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;  
     std::shared_ptr<LWEPublicKey> encrypt_pk; 

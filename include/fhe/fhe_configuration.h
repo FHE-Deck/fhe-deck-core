@@ -11,10 +11,9 @@
 
 
 namespace fhe_deck{
- 
-
+  
 enum class FHENamedParams{ 
-    tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized
+    tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized, ntrunium_12_NTT
 };
 
 
@@ -57,7 +56,8 @@ class FHEConfiguration{
 
     void init_tfhe_12_NTT_amortized();
 
-    void init_ntrunium_11_NTT(); 
+    void init_ntrunium_12_NTT(); 
+ 
 };
 
 }

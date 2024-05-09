@@ -3,30 +3,27 @@
 using namespace fhe_deck;
 
  
-SignedDecompositionGadget::SignedDecompositionGadget(int degree, long Q, long base){
+SignedDecompositionGadget::SignedDecompositionGadget(int degree, long modulus, long base){
     this->degree = degree;
-    this->Q = Q;
+    this->modulus = modulus;
     this->base = base;
-
-    this->k = 1;
-    // Compute the k, parameter (remind k is such that 2**k = base)  
-    // meaning that for now we support only power of two base 
-    this->k = Utils::power_times(base, 2);  
-    this->digits = Utils::power_times(Q, base);  
+    this->bits_base = Utils::power_times(base, 2);  
+    this->digits = Utils::power_times(modulus, base);  
+    /// TODO: Check if bits_base is a power of two.
 }
 
 void SignedDecompositionGadget::sample(long** out, long *poly){  
     long* signed_poly = new long[degree];
     int* sign = new int[degree];
-    Utils::array_signed_form(signed_poly, poly, degree, Q); 
-    long half = Q/2;
+    Utils::array_signed_form(signed_poly, poly, degree, modulus); 
+    long half = modulus/2;
     // Extracting the signs
     for(int i = 0; i < degree; ++i){  
         if(poly[i] <= half){
             signed_poly[i] = poly[i];
             sign[i] = 1;
         }else{
-            signed_poly[i] = abs(poly[i]-Q);
+            signed_poly[i] = abs(poly[i]-modulus);
             sign[i] = -1;
         }
     }
@@ -46,12 +43,12 @@ void SignedDecompositionGadget::decomp(long **d_ct, long* poly){
     long mask = base-1;
     long shift;
     for(int i = 0; i < digits; ++i){
-        shift = k*i;
+        shift = bits_base*i;
         for(int j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
             d_ct[i][j] = (poly[j] & mask) >> shift;
         }
-        mask = mask << k;
+        mask = mask << bits_base;
     }
 }
   
@@ -89,7 +86,7 @@ DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long 
     this->type = discrete_gaussian_gadget;
     this->stddev = stddev;
     this->degree = degree;
-    this->Q = Q;
+    this->modulus = modulus;
     this->base = base; 
     setup_type_specific_parameters(); 
 }
@@ -97,12 +94,12 @@ DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long 
 
 void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
     if(this->type == signed_decomposition_gadget){
-        this->k = 1;
+        this->bits_base = 1;
         // Compute the k, parameter (remind k is such that 2**k = base)  
         // meaning that for now we support only power of two base
         // TODO: Compute these values with functions from utils 
-        this->k = Utils::power_times(base, 2);  
-        this->digits = Utils::power_times(Q, base);   
+        this->bits_base = Utils::power_times(base, 2);  
+        this->digits = Utils::power_times(modulus, base);   
         this->ell_minus_one = this->digits-1;
  
         // Initialize temporary arrays:
@@ -117,10 +114,10 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
         if(!Utils::is_power_of(base, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
-        this->k = Utils::power_times(base, 2);
-        this->digits = Utils::power_times(Q, base);  
+        this->bits_base = Utils::power_times(base, 2);
+        this->digits = Utils::power_times(modulus, base);  
         this->ell_minus_one = this->digits-1;
-        if(Utils::is_power_of(Q, base)){
+        if(Utils::is_power_of(modulus, base)){
             is_power_of_base_modulus = true;
             precompute_constants_for_power_of_base_gaussian_sampling();
         }else{ 
@@ -178,25 +175,25 @@ void DiscreteGaussianSamplingGadget::decomp(long **d_ct, long* poly){
     long mask = base-1;
     long shift;
     for(int i = 0; i < digits; ++i){
-        shift = k*i;
+        shift = bits_base*i;
         for(int j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
             d_ct[i][j] = (poly[j] & mask) >> shift;
         }
-        mask = mask << k;
+        mask = mask << bits_base;
     }
 }
  
 void DiscreteGaussianSamplingGadget::signed_decomp(long **d_ct, long* poly){ 
-    Utils::array_signed_form(signed_poly, poly, degree, Q); 
-    long half = Q/2;
+    Utils::array_signed_form(signed_poly, poly, degree, modulus); 
+    long half = modulus/2;
     // Extracting the signs
     for(int i = 0; i < degree; ++i){  
         if(poly[i] <= half){
             signed_poly[i] = poly[i];
             sign[i] = 1;
         }else{
-            signed_poly[i] = abs(poly[i]-Q);
+            signed_poly[i] = abs(poly[i]-modulus);
             sign[i] = -1;
         }
     }
@@ -227,18 +224,18 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(long 
         gaussians[j] = 0;
     }  
     for(long i = 0; i < digits; ++i){
-        shift = k*i;
+        shift = bits_base*i;
         for(long j=0; j < degree; ++j){
             prev_gauss = gaussians[j];
             // Here we sample the new gaussian    
             //gaussians[j] = (long)(gen_gaussian() * sigma) << k;
-            gaussians[j] = gen_discrete_gauss(0.0f) << k;
+            gaussians[j] = gen_discrete_gauss(0.0f) << bits_base;
             // The jth coefficients of the ith (decomposed) polynomial 
             out[i][j] = (in[j] & mask) >> shift; 
             out[i][j] += gaussians[j] - prev_gauss; 
-            gaussians[j] = gaussians[j] >> k;
+            gaussians[j] = gaussians[j] >> bits_base;
         }
-        mask = mask << k;
+        mask = mask << bits_base;
     }
 }
  
@@ -259,9 +256,9 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
         long shift; 
         // Start base_decomposition(u, in[k]);  
         for(long i = 0; i < digits; ++i){
-            shift = this->k*i; 
+            shift = this->bits_base*i; 
             u[i] = (in[k] & mask) >> shift; 
-            mask = mask << this->k;
+            mask = mask << this->bits_base;
         } 
         // End base_decomposition(u, in[k]);  
  
@@ -401,7 +398,7 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_power_of_base_gaus
 void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_gaussian_sampling(){  
 
     q_decomp = new long[digits];
-    DiscreteGaussianSamplingGadget::base_decomposition(q_decomp, Q);  
+    DiscreteGaussianSamplingGadget::base_decomposition(q_decomp, modulus);  
     sigma = stddev/(double)(base + 1); 
     rand_sigma = Sampler(0.0, stddev);  
     sigmas = new double[digits];
@@ -468,13 +465,12 @@ void DiscreteGaussianSamplingGadget::base_decomposition(long* out, long in){
     long mask = base-1;
     long shift; 
     for(long i = 0; i < digits; ++i){
-        shift = k*i; 
+        shift = bits_base*i; 
         out[i] = (in & mask) >> shift; 
-        mask = mask << k;
+        mask = mask << bits_base;
     }
 }
-
-
+ 
 void DiscreteGaussianSamplingGadget::xorshift64(){ 
 	xorshift_s ^= xorshift_s << 13;
 	xorshift_s ^= xorshift_s >> 7;
@@ -482,8 +478,7 @@ void DiscreteGaussianSamplingGadget::xorshift64(){
     //I'm extracting only the upper 53 bits.  
 	xoshiro256_result = xorshift_s & 0x1fffffffffffff;
 }
-
-
+ 
 int DiscreteGaussianSamplingGadget::xorshift25(){ 
     if(hasSpare){
         hasSpare = false;
@@ -499,8 +494,6 @@ int DiscreteGaussianSamplingGadget::xorshift25(){
     hasSpare  = true;
     return xoshiro256_25_result_1;
 }
-
-
  
 void DiscreteGaussianSamplingGadget::xoshiro256p(){
     //xoshiro256_result = 1212342353425;
@@ -518,9 +511,7 @@ void DiscreteGaussianSamplingGadget::xoshiro256p(){
 	xoshiro256_s[3] = (xoshiro256_s[3] << 45) | (xoshiro256_s[3] >> (64 - 45));
       
 }
-
-
-   
+ 
 /*
 Marsaglia polar method (Kindof Slow)
 double Gadget::gen_gaussian(double mean, double stddev){

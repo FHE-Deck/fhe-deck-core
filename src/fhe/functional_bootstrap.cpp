@@ -49,16 +49,16 @@ LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
     this->accumulator_builder = accumulator_builder;
     this->lwe_par = lwe_par; 
     this->lwe_par_tiny = lwe_par_tiny;
-
+ 
     // Initialize BlindRotateOutputs  
-    this->br_out = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build());
+    this->br_out = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build()); 
     this->br_temp = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build());
-    // Special Accumulator for teh full domain functional bootstrapping, computing the most signifficant bit.
+    // Special Accumulator for the full domain functional bootstrapping, computing the most signifficant bit. 
     this->acc_msb = std::shared_ptr<VectorCTAccumulator>(this->accumulator_builder->get_acc_msb());   
-    // Mod Switch from Extracted Q to 2 * N
-    this->ms_from_gadget_to_par = LWEModSwitcher(this->key_switch_key->destination->lwe_param, this->lwe_par);
-    // Mod Switch from Extracted Q to N
-    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination->lwe_param, this->lwe_par_tiny);
+    // Mod Switch from Extracted Q to 2 * N 
+    this->ms_from_gadget_to_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par);
+    // Mod Switch from Extracted Q to N 
+    this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par_tiny);
 }
   
 void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT *lwe_ct_in, PlaintextEncoding &encoding){    

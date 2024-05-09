@@ -14,14 +14,14 @@ class VectorCTAccumulator{
 
     public:
 
-    std::shared_ptr<VectorCT> acc; 
+    std::shared_ptr<VectorCT> acc_content; 
     RotationPoly rot_poly;
     RotationPoly rot_poly_amortized;   
     bool amortization = false;
     
-    VectorCTAccumulator(std::shared_ptr<VectorCT> acc, RotationPoly rot_poly, bool amortization = true);
+    VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, RotationPoly rot_poly, bool amortization = true);
 
-    VectorCTAccumulator(std::shared_ptr<VectorCT> acc, bool amortization = false);
+    VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, bool amortization = false);
   
     VectorCTAccumulator(VectorCTAccumulator &other);
  
@@ -48,8 +48,7 @@ class AbstractAccumulatorBuilder{
 
     virtual VectorCTAccumulator* get_acc_msb() = 0;
   
-    virtual VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) = 0;
-
+    virtual VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) = 0; 
 };
 
 class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
@@ -77,7 +76,10 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     std::shared_ptr<NTRUParam> param;
 
-    NTRUAccumulatorBuilder(std::shared_ptr<NTRUParam> param);
+    std::shared_ptr<NTRUSK> sk;
+    bool is_sk_set = false;
+
+    NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk);
 
     VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding);
 

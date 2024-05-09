@@ -7,8 +7,7 @@
 #include <NTL/ZZ_p.h>
 #include <complex>
 #include "sample.h"
-#include "utils.h"
-#include "ntru_param.h"
+#include "utils.h" 
 #include "fft_plan.h"
 
 #include "lwe.h"
@@ -63,15 +62,14 @@ class NTRUParam : public VectorCTParam{
   private:
     void init_mul_engine(); 
 };
-
-/// TODO: Implement
+ 
 class NTRUCT : public VectorCT{
 
     public:
   
     std::shared_ptr<NTRUParam> param; 
     // Polynomials c 
-    Polynomial c; 
+    Polynomial ct_content; 
     NTRUCT() = default;
 
     NTRUCT(std::shared_ptr<NTRUParam> param);
@@ -99,8 +97,11 @@ class NTRUCT : public VectorCT{
     void neg(VectorCT *out);
 
     void extract_lwe(long *lwe_ct_out);
-
+    /// TODO: Why not return a pointer?
+    /// TODO: Why not get a pointer as input? 
     LWECT extract_lwe(std::shared_ptr<LWEParam> lwe_par);
+
+    void extract_lwe(LWECT *out);
  
     std::string to_string();
     
@@ -117,8 +118,6 @@ class NTRUCT : public VectorCT{
     }  
 };
 
-
-/// TODO: Implement
 class NTRUSK{
 
     public:
@@ -167,7 +166,7 @@ class NTRUSK{
     // Encrypts msg * inv_f.  
     NTRUCT kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
  
-    void extract_lwe_key(long* lwe_key);
+    //void extract_lwe_key(long* lwe_key);
 
     LWESK* extract_lwe_key();
 
@@ -194,21 +193,15 @@ class NTRUSK{
 class NTRUGadgetCT : public GadgetVectorCT{ 
 
   public:
- 
-  /// std::shared_ptr<GadgetVectorCTParam> gadget_param; 
+  
   std::shared_ptr<NTRUParam> ntru_param;
   std::shared_ptr<Gadget> gadget;
 
   bool is_init = false;  
-  PolynomialArrayEvalForm array_eval_a;
-  //PolynomialArrayEvalForm array_eval_b;
-  PolynomialArrayEvalForm array_eval_a_sk;
-  //PolynomialArrayEvalForm array_eval_b_sk;
+  PolynomialArrayEvalForm array_eval_a;  
    
-  long** deter_ct_a_dec;
-  //long** deter_ct_b_dec;  
-  PolynomialArrayCoefForm deter_ct_a_dec_poly;
-  //PolynomialArrayCoefForm deter_ct_b_dec_poly;
+  long** deter_ct_a_dec; 
+  PolynomialArrayCoefForm deter_ct_a_dec_poly; 
    
   ~NTRUGadgetCT();
 
@@ -244,9 +237,7 @@ class NTRUGadgetCT : public GadgetVectorCT{
   void set_gadget_decomp_arrays();
   
 };
-  
- 
-/// TODO: Implement
+   
 class NTRUGadgetSK : public GadgetVectorCTSK{
 
     public:
@@ -283,113 +274,7 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
     } 
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class ntru_sk {
-  
-  public:
-
-    ntru_param param;
-    long *f;
-    long *inv_f; 
-
-    bool modulus_switched = false;
-    ntru_param higher_mod_param;
-
-    ~ntru_sk();
-
-    ntru_sk();
-
-    // The construtor chooses ternary secret keys
-    ntru_sk(ntru_param param);
-
-    // The construtor takes key from the outside
-    ntru_sk(ntru_param param, long *f, long *inv_f);
-
-    // The construtor takes key from the outside, setd the modulus switched flag, and the higher_mod_param
-    // This is used only when creating a ntru_sk instance by modulus switching
-    ntru_sk(ntru_param param, long *f, long *inv_f, ntru_param higher_mod_param);
  
-    ntru_sk& operator=(const ntru_sk other);
-
-    // TODO These should go to sample
-    static void ternary_poly(NTL::ZZ_pX &temp_f, ntru_param &param);
-
-    static void gaussian_poly(NTL::ZZ_pX &temp_f, ntru_param &param);
-
-    // Generates SK
-    void key_gen();
-
-    // Generates SK
-    void static key_gen(long *f, long *inv_f, ntru_param &param);
-   
-    ntru_ct encrypt(long* msg);
-
-    void encrypt(ntru_ct *ct_out, long* msg); 
-
-    // Just as encrypt but perfoms computation via NTL
-    void naive_encrypt(ntru_ct *ct_out, long* msg);
-
-    // Encrypts msg * inv_f. Doesn't scale the message! 
-    ntru_ct kdm_encrypt(long* msg);
-
-    // Encrypts msg * inv_f. Doesn't scale the message!
-    void kdm_encrypt(ntru_ct *ct_out, long* msg);
-    // Encrypts msg * inv_f. Scales the message (so message should be mod t)
-    void kdm_scale_and_encrypt(ntru_ct *ct_out, long* msg, int t);
-    // Encrypts msg * inv_f. Scales the message (so message should be mod t) 
-    ntru_ct kdm_scale_and_encrypt(long* msg, int t);
-
-    // Uses SK
-    //void phase(long *phase, long *ct);
-    void phase(long *phase, ntru_ct *ct);
-
-    void error(long *err, ntru_ct *ct, long* msg);
-
-    // Uses SK 
-    long* decrypt(ntru_ct *ct, int t);
-    // Uses SK 
-    void decrypt(long *out, ntru_ct *ct, int t);
- 
-    // Uses SK 
-    long decrypt_coef(ntru_ct *ct, int t);
-
-    // Change name to switch_modulus
-    ntru_sk mod_switch(long new_modulus);
-  
-};
-
-
-class gadget_ntru{
- 
-  public: 
-
-    ntru_gadget_param gadget_param;
-
-    ntru_sk ntru;
-
-    gadget_ntru();
-
-    gadget_ntru(ntru_gadget_param gadget_param, ntru_sk ntru);
-   
-    ntru_gadget_ct gadget_encrypt(long* msg); 
- 
-    void gadget_encrypt(long** out, long* msg); 
-
-};
-
-}
+} /// End of namespace fhe_deck
 
 #endif

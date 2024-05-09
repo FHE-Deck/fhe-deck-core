@@ -658,3 +658,23 @@ long Utils::count_negative(long* in, int N){
     }
     return out;
 }
+
+
+LongIntegerMultipler::LongIntegerMultipler(unsigned long modulus){ 
+    this->modulus = modulus;
+    unsigned long bits_modulus = Utils::power_times(modulus, 2);  
+    this->bits_base = 63 - bits_modulus; 
+    this->base = Utils::pow(bits_base, 2); 
+    this->modulus_log_base = Utils::power_times(modulus, base);  
+    this->decomp = std::unique_ptr<long[]>(new long[modulus_log_base]); 
+}
+
+unsigned long LongIntegerMultipler::mul(unsigned long in_1, unsigned long in_2){  
+    Utils::integer_decomp(decomp.get(), in_2, base, bits_base, modulus_log_base);   
+    unsigned long out = (in_1 * decomp[modulus_log_base - 1]) % modulus;   
+    for(int i = 1; i < modulus_log_base; ++i){  
+        out = (out * base) % modulus; 
+        out = (out +  (decomp[modulus_log_base - i - 1] * in_1)) % modulus;  
+    } 
+    return out;
+}

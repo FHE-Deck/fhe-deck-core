@@ -26,7 +26,7 @@ class LWEParam{
    
   long* init_ct();
  
-    // TODO: This is handled by a LWECT
+    // TODO: This is handled by a LWECT (to use it I need to have an array of LWECT's in GadgetCT, then I can switch the methods)
     void scalar_mul(long *out, long *ct, long scalar);
     // TODO: This is handled by a LWECT
     void scalar_mul_lazy(long *out, long *ct, long scalar);
@@ -34,13 +34,11 @@ class LWEParam{
     void add(long *out, long *ct_1, long *ct_2);
     // TODO: This is handled by a LWECT
     void add_lazy(long *out, long *ct_1, long *ct_2); 
-
-    LWEParam modulus_switch(long new_modulus);
-
+  
     // TODO: This is handled by a LWEModSwitcher
-    void switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param);
+    //void switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param);
     // TODO: This is handled by a LWEModSwitcher
-    void switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param);
+    //void switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param);
  
     template <class Archive>
     void save( Archive & ar ) const
@@ -83,29 +81,33 @@ class LWECT{
     ~LWECT();
 
     LWECT& operator=(const LWECT other);
-   
+    /// TODO: Delete
     void scalar_mul(long scalar);
-    
+    /// TODO: Delete
     void scalar_mul_lazy(long scalar);
- 
+    /// TODO: Delete
     void mul(long b);
-    
+
+    void mul(LWECT *out, long scalar);
+
+    void mul_lazy(LWECT *out, long scalar);
+    /// TODO: Delete
     void add(LWECT *in);
 
     void add(LWECT *out, LWECT *in);
- 
+    /// TODO: Delete
     void sub(LWECT *ct);
 
     void sub(LWECT *out, LWECT *in);
-    
+    /// TODO: Delete
     void add_lazy(LWECT *in); 
 
     void add_lazy(LWECT* out, LWECT *in); 
-      
+    /// TODO: Delete
     void add(long b);
 
     void add(LWECT* out, long b);
-  
+    /// TODO: Delete
     void sub(long b);
 
     void sub(LWECT*, long b);
@@ -196,6 +198,8 @@ class LWESK {
     double stddev;
     // Initialized in the constructors and freed in the destructor.
     long *key; 
+
+    std::unique_ptr<LongIntegerMultipler> multiplier;
   
     ~LWESK();
     
@@ -211,18 +215,26 @@ class LWESK {
  
     LWECT* encrypt(long m);
 
-    /// TODO: Should take a pointer to LWECT
+    /// TODO: Delete
     void encrypt(long* ct, long m); 
+
+    void encrypt(LWECT* ct, long m); 
     
     LWECT* encode_and_encrypt(long m, PlaintextEncoding encoding); 
     /// TODO: Should take pointer to LWECT
     void encode_and_encrypt(long* ct, long m, PlaintextEncoding encoding);
-    /// TODO: Should take pointer to LWECT
+    void encode_and_encrypt(LWECT* in, long m, PlaintextEncoding encoding);
+
+    /// TODO: TODO Delete
     long partial_decrypt(long *ct);
+
+    long partial_decrypt(LWECT *in);
     /// TODO: Delete this
     long error(long *ct, long m);
-    /// TODO: Should take pointer to LWECT
+    /// TODO: Delete this
     long decrypt(long *ct, PlaintextEncoding encoding); 
+
+    long decrypt(LWECT *ct, PlaintextEncoding encoding); 
    
     template <class Archive>
     void save( Archive & ar ) const
@@ -232,7 +244,7 @@ class LWESK {
       for(int i = 0; i < param->dim; ++i){
         s_arr.push_back(key[i]);
       }
-      ar(s_arr) ;
+      ar(s_arr);
     }
         
     template <class Archive>
@@ -247,52 +259,18 @@ class LWESK {
       } 
     } 
 };
-  
-class LWEGadgetParam{
-
-  public:
-    // Decomposition Base
-    long base;
-    int ell;
-    int k;
-    std::shared_ptr<LWEParam> lwe_param;
-   
-    LWEGadgetParam(std::shared_ptr<LWEParam> lwe_par, long basis);
-    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
-    long** init_gadget_ct(); 
-    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
-    void gadget_mul(long *out_ct, long** gadget_ct, long scalar);
-    /// TODO: Handled in a LWEGadgetCT Delete after porting NTRU
-    void gadget_mul_lazy(long *out_ct, long** gadget_ct, long scalar);
-  
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-      ar(lwe_param, base, ell, k);
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-      ar(lwe_param, base, ell, k);
-    } 
-};
-
-
+    
 class LWEGadgetCT{
 
   public: 
-  std::shared_ptr<LWESK> lwe;
-  /// TODO: Instead of params perhaps we shold have the Gadgets. 
+  std::shared_ptr<LWESK> lwe; 
   long base;
-  int ell;
-  int k;
+  int digits;
+  int bits_base;  
   std::shared_ptr<LWEParam> lwe_param;
+   
+  std::unique_ptr<std::unique_ptr<LWECT>[]> ct_content;
   
-  long** ct_content;  
-
-  ~LWEGadgetCT();
-
   LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, long base);
   
   void gadget_mul(LWECT *out_ct, long scalar); 
@@ -305,34 +283,38 @@ class LWEGadgetCT{
 
 class LWEGadgetSK{
 
-  public:
-    std::shared_ptr<LWEGadgetParam> gadget_param;
+  public: 
+  
     std::shared_ptr<LWESK> lwe;
 
-    LWEGadgetSK() = default;
+    long base;
+    int digits;
+    int bits_base;  
 
-    LWEGadgetSK(std::shared_ptr<LWEGadgetParam> lwe_g_par, std::shared_ptr<LWESK> lwe);
+    LWEGadgetSK() = default;
+  
+    LWEGadgetSK(std::shared_ptr<LWESK> lwe, long base);
   
     LWEGadgetSK(const LWEGadgetSK& other);
 
-    LWEGadgetSK& operator=(const LWEGadgetSK other);
-    /// TODO: Delete this after porting NTRU
-    long** gadget_encrypt_long(long m);  
+    LWEGadgetSK& operator=(const LWEGadgetSK other); 
 
     LWEGadgetCT* gadget_encrypt(long m); 
 
-    void gadget_encrypt(long** gadget_ct, long m);
+    void gadget_encrypt(LWEGadgetCT*, long m);
+
+    //void gadget_encrypt(long** gadget_ct, long m);
  
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(gadget_param, lwe);  
+      ar(lwe, base);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(gadget_param, lwe);  
+      ar(lwe, base);  
     }    
 };
 
@@ -344,21 +326,22 @@ class LWEPublicKey{
     /// TODO: Change this stddev stuff to uniform. 
     double stddev; 
     Sampler rand_masking;
-  
-    long **public_key;
+   
+    std::unique_ptr<std::unique_ptr<LWECT>[]> public_key_ptr;
     int size; 
 
     std::shared_ptr<LWEParam> param;
-
-    ~LWEPublicKey();
-
+ 
     LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int key_size, double stddev);
 
     LWEPublicKey(const LWEPublicKey &other);
    
     LWEPublicKey& operator=(const LWEPublicKey other);
  
-    void mask_ciphertext(long *ct);
+    void mask_ciphertext(LWECT *ct);
+
+    /// TODO: Delete
+    //void mask_ciphertext(long *ct);
 
     LWECT encrypt(long message);
 

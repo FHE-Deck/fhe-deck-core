@@ -23,12 +23,12 @@ class Gadget{
     long base;
     // Number of digits after decomposition
     int digits;
-    // numbr of bits of the base (i.e. smallest k s.t. 2^k >= base) 
-    int k;  
+    // number of bits of the base (i.e. smallest k s.t. 2^k >= base) 
+    int bits_base;  
     // Degree of the polynomial        
     int degree;
     // Coefficient Modulus
-    long Q;
+    long modulus;
 
     virtual void sample(long** out, long *in) = 0;
 

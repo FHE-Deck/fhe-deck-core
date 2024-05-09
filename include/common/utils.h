@@ -8,6 +8,7 @@
 #include <NTL/ZZ_p.h>
 
 #include <string>
+#include <memory>
 #include "sample.h"
 #include "enums.h" 
 
@@ -29,8 +30,7 @@ class Utils{
         static void mod_polynomial(long *out, long *in, int sizeof_in, long modulus);
 
         static void mul_scalar(long *out, long *in, int sizeof_in, long scalar);
- 
-
+  
         static void mul_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus, RingType ring);
   
         static void add_mod(long *out, long *in_1, int sizeof_in_1, long *in_2, int sizeof_in_2, long N, long modulus);
@@ -94,9 +94,6 @@ class Utils{
 
         static void mod_reduce(long *out_poly, long double *in_poly_l, long modulus, int sizeof_in_poly); 
 
-
-
-
         static long integer_rounding(long in, long Q, long t);
 
         static void array_rounding(long *out, long *in, int sizeof_in, long Q, long t); 
@@ -152,6 +149,32 @@ class Utils{
         static long count_negative(long* in, int N);
 
 };
+
+/// @brief  The class is to handle multiplication of integers within 64-bit long.
+/// When multiplying integers where the modulus is higher than 32-bits, there may be a overflow.
+/// This class handles such multiplication correctly without implementing big integers.
+/// The trick is to build an algorithm analogous to the square-and-multiply method for modular exponentiation,
+/// but here we are in the additive group of integers.  
+class LongIntegerMultipler{
+    
+    public: 
+
+    /// @brief Modulus for the computation.
+    unsigned long modulus;
+    /// @brief Decomposition base
+    unsigned long base;
+    /// @brief Number of bits of the decomposition base
+    unsigned long bits_base;
+    /// @brief Modulus_log_base = Log_(base)(modulus)
+    unsigned int modulus_log_base;
+    /// @brief Table for digit decomposition
+    std::unique_ptr<long[]> decomp;
+
+    LongIntegerMultipler(unsigned long modulus);
+ 
+    unsigned long mul(unsigned long in_1, unsigned long in_2);
+};
+
 
 }
 

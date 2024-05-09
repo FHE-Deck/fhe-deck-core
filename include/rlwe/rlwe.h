@@ -100,6 +100,8 @@ class RLWECT : public VectorCT{
 
     void extract_lwe(long *lwe_ct_out);
 
+    /// TODO: Implement extract_lwe(LWECT *out);
+    /// TODO: Why not return a pointer?
     LWECT extract_lwe(std::shared_ptr<LWEParam> lwe_par);
  
     std::string to_string();
