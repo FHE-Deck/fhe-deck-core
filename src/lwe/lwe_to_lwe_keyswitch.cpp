@@ -1,13 +1,10 @@
 #include <lwe_to_lwe_keyswitch.h>
 
 using namespace fhe_deck;
-    
- 
+     
 LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){
-    origin = sk_origin->param;
-    //destination = sk_dest->gadget_param;
-    destination = sk_dest->lwe->param;
-    
+    origin = sk_origin->param; 
+    destination = sk_dest->lwe->param; 
     set_key_switch_type(sk_dest->base, sk_dest->digits);
     key_switching_key_gen(sk_origin, sk_dest);
 }
@@ -56,8 +53,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT *lwe_ct_out, LWECT *
     key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in->ct[1]); 
     LWECT temp_lwe_ct(destination);
     for(int i=2; i < origin->dim+1; ++i){  
-        key_content[i-1]->gadget_mul_lazy(&temp_lwe_ct, lwe_ct_in->ct[i]); 
-        //destination->lwe_param->add_lazy(lwe_ct_out->ct, lwe_ct_out->ct, temp_lwe_ct.ct); 
+        key_content[i-1]->gadget_mul_lazy(&temp_lwe_ct, lwe_ct_in->ct[i]);  
         lwe_ct_out->add_lazy(lwe_ct_out, &temp_lwe_ct);
     }  
     lwe_ct_out->ct[0] = lwe_ct_in->ct[0] + lwe_ct_out->ct[0];
@@ -68,10 +64,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT *lwe_ct_out,
     key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in->ct[1]); 
     LWECT temp_lwe_ct(destination);  
     for(int i=2; i < origin->dim+1; ++i){   
-        key_content[i-1]->gadget_mul_lazy(&temp_lwe_ct, lwe_ct_in->ct[i]); 
-       //destination->lwe_param->add_lazy(lwe_ct_out->ct, lwe_ct_out->ct, temp_lwe_ct.ct);  
-        //Utils::array_mod_form(lwe_ct_out->ct, lwe_ct_out->ct, destination->lwe_param->dim+1, destination->lwe_param->modulus); 
-        //destination->lwe_param->add(lwe_ct_out->ct, lwe_ct_out->ct, temp_lwe_ct.ct);  
+        key_content[i-1]->gadget_mul_lazy(&temp_lwe_ct, lwe_ct_in->ct[i]);  
         lwe_ct_out->add(lwe_ct_out, &temp_lwe_ct);
     }  
     // Add the ``b'' term
@@ -83,8 +76,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT *lwe_ct_out, LWECT 
     key_content[0]->gadget_mul(lwe_ct_out, lwe_ct_in->ct[1]); 
     LWECT temp_lwe_ct(destination);
     for(int i=2; i < origin->dim+1; ++i){  
-        key_content[i-1]->gadget_mul(&temp_lwe_ct, lwe_ct_in->ct[i]); 
-        //destination->lwe_param->add(lwe_ct_out->ct, lwe_ct_out->ct, temp_lwe_ct.ct); 
+        key_content[i-1]->gadget_mul(&temp_lwe_ct, lwe_ct_in->ct[i]);  
         lwe_ct_out->add(lwe_ct_out, &temp_lwe_ct);
     }  
     lwe_ct_out->ct[0] = lwe_ct_in->ct[0] + lwe_ct_out->ct[0];

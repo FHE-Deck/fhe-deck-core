@@ -27,9 +27,8 @@ void FHEConfiguration::generate_keys(){
     }else if(this->name == FHENamedParams::ntrunium_12_NTT){
         init_ntrunium_12_NTT();
     }
-    else{
-        // TODO: Should be an exception!
-        std::cout << "TFHEKeyGenerator::TFHEKeyGenerator: Parameter set note supported! Perhaps the chosen parameter set requires additional dependencies to be compiled?" <<  std::endl;
+    else{ 
+        throw std::runtime_error("TFHEKeyGenerator::TFHEKeyGenerator: Parameter set note supported! Perhaps the chosen parameter set requires additional dependencies to be compiled?"); 
     }
 }
 

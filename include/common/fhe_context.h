@@ -122,11 +122,10 @@ class FHEContext{
  
     void save_Ciphertext(std::string file_name, Ciphertext &ct);
 
-    Ciphertext load_Ciphertext(std::string file_name);
-  
+    Ciphertext load_Ciphertext(std::string file_name); 
 };
   
-}
+} /// End of namespace fhe_deck
  
 std::ostream& operator<<(std::ostream &out, const fhe_deck::Ciphertext &c);
 

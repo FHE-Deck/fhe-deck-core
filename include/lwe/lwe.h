@@ -17,29 +17,13 @@ class LWEParam{
 
   // LWE Dimension
   int dim;
-
+  // LWE Modulus
   long modulus; 
- 
+  /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
   LWEParam() = default;
  
   LWEParam(int dim, long modulus); 
-   
-  long* init_ct();
- 
-    // TODO: This is handled by a LWECT (to use it I need to have an array of LWECT's in GadgetCT, then I can switch the methods)
-    void scalar_mul(long *out, long *ct, long scalar);
-    // TODO: This is handled by a LWECT
-    void scalar_mul_lazy(long *out, long *ct, long scalar);
-    // TODO: This is handled by a LWECT
-    void add(long *out, long *ct_1, long *ct_2);
-    // TODO: This is handled by a LWECT
-    void add_lazy(long *out, long *ct_1, long *ct_2); 
-  
-    // TODO: This is handled by a LWEModSwitcher
-    //void switch_modulus(long *out_ct, long *in_ct, LWEParam &new_param);
-    // TODO: This is handled by a LWEModSwitcher
-    //void switch_modulus(long *out_ct, long *in_ct, std::shared_ptr<LWEParam> new_param);
- 
+    
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -62,16 +46,12 @@ class LWECT{
     bool init = false;
  
     long *ct;
-
+    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
     LWECT() = default;
 
     // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
     LWECT(std::shared_ptr<LWEParam> lwe_par);
-
-    /// TODO: Delete this.
-    /// Need to get rid of such things after refactoring GadgetLWE and LWE-TO-LWE KeySwitch 
-    LWECT(std::shared_ptr<LWEParam> lwe_par, long* ct); 
-
+  
     LWECT(const LWECT &c);
  
     LWECT(LWECT &c);
@@ -80,38 +60,24 @@ class LWECT{
 
     ~LWECT();
 
-    LWECT& operator=(const LWECT other);
-    /// TODO: Delete
-    void scalar_mul(long scalar);
-    /// TODO: Delete
-    void scalar_mul_lazy(long scalar);
-    /// TODO: Delete
-    void mul(long b);
+    LWECT& operator=(const LWECT other); 
 
     void mul(LWECT *out, long scalar);
 
-    void mul_lazy(LWECT *out, long scalar);
-    /// TODO: Delete
-    void add(LWECT *in);
+    void mul_lazy(LWECT *out, long scalar); 
 
-    void add(LWECT *out, LWECT *in);
-    /// TODO: Delete
-    void sub(LWECT *ct);
+    void add(LWECT *out, LWECT *in); 
 
-    void sub(LWECT *out, LWECT *in);
-    /// TODO: Delete
-    void add_lazy(LWECT *in); 
+    void sub(LWECT *out, LWECT *in); 
 
-    void add_lazy(LWECT* out, LWECT *in); 
-    /// TODO: Delete
-    void add(long b);
+    void add_lazy(LWECT* out, LWECT *in);  
 
-    void add(LWECT* out, long b);
-    /// TODO: Delete
-    void sub(long b);
+    void add(LWECT* out, long b); 
 
     void sub(LWECT*, long b);
    
+    /// TODO: Remove all theese operators after rewriting ciphertext.h
+    /// Actually at this level we don't need these operators. The 'convenient' operators are implemented in ciphertext.h
     LWECT operator+(long b);
 
     LWECT operator+(LWECT ct);
@@ -182,8 +148,8 @@ class LWEModSwitcher{
 
   // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
   LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to);
-  
-  void switch_modulus(long *out_ct, long *in_ct);
+   
+  void switch_modulus(LWECT *out_ct, LWECT *in_ct);
 };
  
 class LWESK {
@@ -200,10 +166,10 @@ class LWESK {
     long *key; 
 
     std::unique_ptr<LongIntegerMultipler> multiplier;
-  
-    ~LWESK();
     
-    LWESK();
+    ~LWESK();
+    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
+    LWESK() = default;
   
     LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type);
   
@@ -215,24 +181,13 @@ class LWESK {
  
     LWECT* encrypt(long m);
 
-    /// TODO: Delete
-    void encrypt(long* ct, long m); 
-
     void encrypt(LWECT* ct, long m); 
     
     LWECT* encode_and_encrypt(long m, PlaintextEncoding encoding); 
-    /// TODO: Should take pointer to LWECT
-    void encode_and_encrypt(long* ct, long m, PlaintextEncoding encoding);
+    
     void encode_and_encrypt(LWECT* in, long m, PlaintextEncoding encoding);
-
-    /// TODO: TODO Delete
-    long partial_decrypt(long *ct);
-
-    long partial_decrypt(LWECT *in);
-    /// TODO: Delete this
-    long error(long *ct, long m);
-    /// TODO: Delete this
-    long decrypt(long *ct, PlaintextEncoding encoding); 
+  
+    long partial_decrypt(LWECT *in); 
 
     long decrypt(LWECT *ct, PlaintextEncoding encoding); 
    
@@ -275,10 +230,7 @@ class LWEGadgetCT{
   
   void gadget_mul(LWECT *out_ct, long scalar); 
 
-  void gadget_mul_lazy(LWECT *out_ct, long scalar);
-
-  private:
-  long** init_gadget_ct(); 
+  void gadget_mul_lazy(LWECT *out_ct, long scalar); 
 };
 
 class LWEGadgetSK{
@@ -290,7 +242,7 @@ class LWEGadgetSK{
     long base;
     int digits;
     int bits_base;  
-
+    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
     LWEGadgetSK() = default;
   
     LWEGadgetSK(std::shared_ptr<LWESK> lwe, long base);
@@ -302,9 +254,7 @@ class LWEGadgetSK{
     LWEGadgetCT* gadget_encrypt(long m); 
 
     void gadget_encrypt(LWEGadgetCT*, long m);
-
-    //void gadget_encrypt(long** gadget_ct, long m);
- 
+  
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -339,10 +289,7 @@ class LWEPublicKey{
     LWEPublicKey& operator=(const LWEPublicKey other);
  
     void mask_ciphertext(LWECT *ct);
-
-    /// TODO: Delete
-    //void mask_ciphertext(long *ct);
-
+  
     LWECT encrypt(long message);
 
     LWECT ciphertext_of_zero();

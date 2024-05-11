@@ -54,8 +54,7 @@ class Ciphertext{
         Ciphertext operator*(long b);
  
 };
-
-
+ 
 }
   
 fhe_deck::Ciphertext operator+(long b, fhe_deck::Ciphertext ct);

@@ -67,9 +67,8 @@ class NTRUCT : public VectorCT{
 
     public:
   
-    std::shared_ptr<NTRUParam> param; 
-    // Polynomials c 
-    Polynomial ct_content; 
+    std::shared_ptr<NTRUParam> param;  
+    Polynomial ct_poly; 
     NTRUCT() = default;
 
     NTRUCT(std::shared_ptr<NTRUParam> param);
@@ -95,12 +94,7 @@ class NTRUCT : public VectorCT{
     void mul(NTRUCT *out, Polynomial *x);
 
     void neg(VectorCT *out);
-
-    void extract_lwe(long *lwe_ct_out);
-    /// TODO: Why not return a pointer?
-    /// TODO: Why not get a pointer as input? 
-    LWECT extract_lwe(std::shared_ptr<LWEParam> lwe_par);
-
+ 
     void extract_lwe(LWECT *out);
  
     std::string to_string();
@@ -122,8 +116,7 @@ class NTRUSK{
 
     public:
 
-    std::shared_ptr<NTRUParam> param;  
-
+    std::shared_ptr<NTRUParam> param;   
     Polynomial sk; 
     Polynomial inv_sk; 
     bool is_init = false;   
@@ -153,24 +146,18 @@ class NTRUSK{
     Polynomial decrypt(NTRUCT *ct, PlaintextEncoding encoding);
  
     void decrypt(Polynomial *out, NTRUCT *ct, PlaintextEncoding encoding);
-
-    /// TODO: the procedures below simply encrypt msg * inv_f, instead of just msg.
-    // So just use the encrypt procedure. 
-
-    // Encrypts msg * inv_f. Doesn't scale the message! 
+  
+    // Encrypts msg * inv_f. 
     NTRUCT kdm_encrypt(Polynomial* msg); 
-    // Encrypts msg * inv_f. Doesn't scale the message!
+    // Encrypts msg * inv_f.  
     void kdm_encrypt(NTRUCT *ct_out, Polynomial* msg);
     // Encrypts msg * inv_f. 
     void kdm_encode_and_encrypt(NTRUCT *ct_out, Polynomial* msg, PlaintextEncoding encoding);
     // Encrypts msg * inv_f.  
     NTRUCT kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
- 
-    //void extract_lwe_key(long* lwe_key);
-
+  
     LWESK* extract_lwe_key();
-
-    
+ 
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -273,7 +260,6 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
       ar(gadget, sk);   
     } 
 };
-
  
 } /// End of namespace fhe_deck
 

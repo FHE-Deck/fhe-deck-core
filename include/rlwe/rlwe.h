@@ -69,7 +69,7 @@ class RLWECT : public VectorCT{
     public:
   
     std::shared_ptr<RLWEParam> param; 
-    // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, a nd s is the secret key polynomial
+    // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial
     Polynomial a;
     Polynomial b; 
     RLWECT() = default;
@@ -97,12 +97,8 @@ class RLWECT : public VectorCT{
     void mul(RLWECT *out, Polynomial *x);
 
     void neg(VectorCT *out);
-
-    void extract_lwe(long *lwe_ct_out);
-
-    /// TODO: Implement extract_lwe(LWECT *out);
-    /// TODO: Why not return a pointer?
-    LWECT extract_lwe(std::shared_ptr<LWEParam> lwe_par);
+  
+    void extract_lwe(LWECT *out); 
  
     std::string to_string();
     
@@ -198,7 +194,7 @@ class RLWESK{
 
     std::shared_ptr<RLWEParam> param; 
     KeyDistribution key_type; 
-    Polynomial sk; 
+    Polynomial sk_poly; 
     bool is_init = false;  
     std::shared_ptr<Distribution> unif_dist;
     std::shared_ptr<Distribution> error_dist;
@@ -234,7 +230,7 @@ class RLWESK{
     { 
         std::vector<long> s_arr; 
         for(int i = 0; i < param->size; ++i){
-            s_arr.push_back(this->sk.coefs[i]);
+            s_arr.push_back(this->sk_poly.coefs[i]);
         }
         ar(param, s_arr);  
     }
@@ -253,11 +249,11 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
  
     //std::shared_ptr<RLWEGadgetParam> gadget_param;  
     std::shared_ptr<Gadget> gadget;
-    std::shared_ptr<RLWESK> sk;
+    std::shared_ptr<RLWESK> rlwe_sk;
 
     RLWEGadgetSK() = default;
 
-    RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWESK> sk);
+    RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWESK> rlwe_sk);
 
     RLWEGadgetSK(const RLWEGadgetSK &other);
 
@@ -270,13 +266,13 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(gadget, sk);   
+      ar(gadget, rlwe_sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(gadget, sk);   
+      ar(gadget, rlwe_sk);   
     } 
 };
  

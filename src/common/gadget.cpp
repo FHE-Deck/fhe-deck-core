@@ -96,8 +96,7 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
     if(this->type == signed_decomposition_gadget){
         this->bits_base = 1;
         // Compute the k, parameter (remind k is such that 2**k = base)  
-        // meaning that for now we support only power of two base
-        // TODO: Compute these values with functions from utils 
+        // meaning that for now we support only power of two base 
         this->bits_base = Utils::power_times(base, 2);  
         this->digits = Utils::power_times(modulus, base);   
         this->ell_minus_one = this->digits-1;
@@ -128,10 +127,7 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
         throw std::logic_error("Gadget::setup_type_specific_parameters(): Most likely wrong gadget type!");
     } 
 }
- 
-
-
-
+  
 void DiscreteGaussianSamplingGadget::sample(long** out, long *in){ 
     if(type == signed_decomposition_gadget){
         signed_decomp(out, in);
@@ -141,8 +137,7 @@ void DiscreteGaussianSamplingGadget::sample(long** out, long *in){
         std::cout << "Not Supported Gadget type." << std::endl;
     }
 }
-  
- 
+   
 long* Gadget::get_gadget_vector(){
     long* gadget_vector = new long[digits];
     int powers_of_basis = 1;

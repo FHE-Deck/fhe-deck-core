@@ -8,7 +8,7 @@ void FunctionalBootstrapPublicKey::bootstrap(LWECT *lwe_ct_out, std::shared_ptr<
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_in);  
  
     // 2) Mod switch to \ZZ_2N^{n+1}  
-    ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct);
+    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c);
   
     // 3) Blind rotate    
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
@@ -21,7 +21,8 @@ std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shar
     LWECT lwe_c(ms_from_gadget_to_par.from); 
     this->key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_in);  
     // 2) Mod switch to \ZZ_2N^{n+1}  
-    this->ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct); 
+    //this->ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct); 
+    this->ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c); 
     // 3) Blind rotate      
     this->acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding)); 
     this->blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_one); 
@@ -67,7 +68,7 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     LWECT lwe_c(ms_from_gadget_to_par.from); 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);  
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
-    ms_from_gadget_to_tiny_par.switch_modulus(lwe_c_N.ct, lwe_c_N.ct); 
+    ms_from_gadget_to_tiny_par.switch_modulus(&lwe_c_N, &lwe_c_N); 
     // Shifting to have the ``payload'' so that its within (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
     lwe_c.ct[0] = lwe_c_N.ct[0] + round((double)lwe_par_tiny->modulus/(2 * encoding.plaintext_space)); 
@@ -88,9 +89,9 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     // And again: 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_out); 
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
-    ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct); 
+    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c); 
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
-    // TODO: DO it through the LWECT class.... Unless the moduli don't fit..
+    /// TODO: Do it through the LWECT class.... Unless the moduli don't fit..
     //lwe_c.add(&lwe_c, &lwe_c_N);
     for(int i = 0; i < this->lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;
@@ -113,7 +114,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     LWECT lwe_ct_out(key_switch_key->origin);
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
-    ms_from_gadget_to_tiny_par.switch_modulus(lwe_c_N.ct, lwe_c_N.ct);
+    ms_from_gadget_to_tiny_par.switch_modulus(&lwe_c_N, &lwe_c_N);
     // Shifting to have the ``payload'' withing (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
     lwe_c.ct[0] = lwe_c_N.ct[0] + round((double)lwe_par_tiny->modulus/(2 * encoding.ticks)); 
@@ -133,7 +134,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     br_out->extract_lwe(&lwe_ct_out);
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
-    ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct);
+    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c);
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N)  
     for(int i = 0; i < lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;

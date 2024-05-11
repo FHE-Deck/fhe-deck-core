@@ -26,8 +26,7 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
  
     void blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg);
    
-    private: 
-    //void blind_rotation_key_gen(std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk, long* ext_s);
+    private:  
 
     void blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<long[]> ext_s);
 
@@ -35,6 +34,7 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     VectorCT* next_acc; 
    
     long* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
+    /// TODO: Leave this for a ternary blind rotation alg. that gonna be implemented in the future.
     long* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
 };
 

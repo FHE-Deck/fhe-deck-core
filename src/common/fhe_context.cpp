@@ -106,7 +106,7 @@ long FHEContext::decrypt(Ciphertext *c_in){
     if(!is_sk_init){
         throw std::logic_error("No Secret Key Initialized!");
     }  
-    return lwe_sk->decrypt(c_in->lwe_c->ct, c_in->encoding);
+    return lwe_sk->decrypt(c_in->lwe_c, c_in->encoding);
 }
  
 PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
@@ -116,8 +116,7 @@ PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
 void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, long plaintext_space){
     this->default_encoding = PlaintextEncoding(type, plaintext_space, default_encoding.ciphertext_modulus); 
 }
-
-// Return the plaintext space for FDFB or for native TFHE (minus one bit)
+ 
 long  FHEContext::get_default_plaintext_space(){
     return default_encoding.plaintext_space;
 }
@@ -137,8 +136,7 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
 HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
-    } 
-    //HomomorphicAccumulator out(accumulator_builder->prepare_accumulator(f, encoding)); 
+    }  
     HomomorphicAccumulator out(std::shared_ptr<VectorCTAccumulator>(accumulator_builder->prepare_accumulator(f, encoding))); 
     return out; 
 }
@@ -280,7 +278,7 @@ void FHEContext::read_secret_key(std::ifstream &is){
     iarchive(sk); 
     lwe_sk = sk;
     is_sk_init = true;
-    // TODO: If we want to use a sk, we also need to have the FHE configuration.
+    /// TODO: If we want to use a sk, we also need to have the FHE configuration.
     //default_encoding = tfhe_boot_sk->default_encoding; 
 }
  
@@ -308,7 +306,7 @@ void FHEContext::read_public_key(std::ifstream &is){
     iarchive(pk);  
     bootstrap_pk = pk;
     is_pk_init = true;
-    // TODO: Note that we will not have a default encoding (What to do about that?)
+    /// TODO: Note that we will not have a default encoding (What to do about that?)
     //default_encoding = tfhe_boot_pk->default_encoding; 
 }
  

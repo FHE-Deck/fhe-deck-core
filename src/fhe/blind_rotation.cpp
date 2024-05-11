@@ -1,26 +1,8 @@
 #include "blind_rotation.h"
 
 using namespace fhe_deck;
- 
-/*
-VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<RLWEParam> param, RotationPoly rot_poly, bool amortization){ 
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = rot_poly;  
-    acc = acc_ptr;
-    this->rot_poly = rot_poly;
-    this->rot_poly_amortized = rot_poly; 
-    this->amortization = amortization;
-    if(this->amortization){
-        this->rot_poly_amortized.to_amortization_form();
-    }
-}
-*/
-
-VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, RotationPoly rot_poly, bool amortization){ 
-    ///std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
-    //acc_ptr->a.zeroize();
-    //acc_ptr->b = rot_poly;  
+  
+VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, RotationPoly rot_poly, bool amortization){  
     this->acc_content = acc_content;
     this->rot_poly = rot_poly;
     this->rot_poly_amortized = rot_poly; 
@@ -72,8 +54,7 @@ VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long 
 }
 
 VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_msb(){    
-    RotationPoly poly = RotationPoly::rot_msb(4, this->param->size, this->param->coef_modulus);   
-    //VectorCTAccumulator *acc = new VectorCTAccumulator(this->param, poly, false);   
+    RotationPoly poly = RotationPoly::rot_msb(4, this->param->size, this->param->coef_modulus);    
     std::shared_ptr<RLWECT> acc_ptr(new RLWECT(param)); 
     acc_ptr->a.zeroize();
     acc_ptr->b = poly;  
@@ -167,7 +148,7 @@ RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){
 }
   
 void RLWEBlindRotateOutput::extract_lwe(LWECT* out){ 
-    accumulator_ptr->extract_lwe(out->ct);
+    accumulator_ptr->extract_lwe(out);
 }
 
 void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
@@ -185,7 +166,7 @@ NTRUBlindRotateOutput::NTRUBlindRotateOutput(std::shared_ptr<NTRUParam> param){
 }
   
 void NTRUBlindRotateOutput::extract_lwe(LWECT* out){ 
-    accumulator_ptr->extract_lwe(out->ct);
+    accumulator_ptr->extract_lwe(out);
 }
 
 void NTRUBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 

@@ -20,39 +20,13 @@ GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
 }
   
 void GINXBlindRotationKey::blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){    
-    acc->acc_content->homomorphic_rotate(out, lwe_ct_in->ct[0]);  
-    //if(key_d==binary){      
-        for(int i = 0; i < lwe_par->dim; ++i){    
-            out->homomorphic_rotate(next_acc, lwe_ct_in->ct[i+1]);   
-            next_acc->sub(next_acc, out);      
-            bk[i]->mul(next_acc, next_acc);    
-            next_acc->add(out, out); 
-        }  
-    /*
-    } 
-    else if(key_d==ternary){   
-        // Rotatate back (multipliation by X^{-ct[i+1]}) and mul with bk_eval[i]
-        long back_rotations;
-         for(int i = 0; i < lwe_par->dim; ++i){  
-            back_rotations = Utils::integer_mod_form(-lwe_ct_in->ct[i+1], lwe_par->modulus); 
-            out->homomorphic_rotate(next_acc, back_rotations);
-            next_acc->sub(next_acc, out);  
-            bk[i]->mul(out, next_acc);
-            // TODO: is this correct? Should be perhpa swith next ACC and not with out->acc
-            next_acc->add(out, out);  
-        } 
-        // Rotatate forward (multipliation by X^{ct[i+1]}) and mul with bk_eval[lwe_par.n+i]
-         for(int i = 0; i < lwe_par->dim; ++i){ 
-            out->homomorphic_rotate(next_acc, back_rotations);
-            next_acc->sub(next_acc, out);  
-            bk[lwe_par->dim+i]->mul(out, next_acc);
-            // TODO: is this correct? Should be perhpa swith next ACC and not with out->acc
-            next_acc->add(out, out);   
-        }
-    }else{ 
-        throw std::logic_error("GINXBlindRotationKey::blind_rotate: key_d not supported!");
-    } 
-    */
+    acc->acc_content->homomorphic_rotate(out, lwe_ct_in->ct[0]);     
+    for(int i = 0; i < lwe_par->dim; ++i){    
+        out->homomorphic_rotate(next_acc, lwe_ct_in->ct[i+1]);   
+        next_acc->sub(next_acc, out);      
+        bk[i]->mul(next_acc, next_acc);    
+        next_acc->add(out, out); 
+    }   
 }
    
 void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<long[]> ext_s){

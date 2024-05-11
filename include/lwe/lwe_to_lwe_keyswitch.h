@@ -6,19 +6,15 @@
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
-
-
-namespace fhe_deck{
-
-
  
+namespace fhe_deck{
+  
 class LWEToLWEKeySwitchKey{
 
   public:
 
     std::shared_ptr<std::unique_ptr<LWEGadgetCT>[]> key_content;
-    std::shared_ptr<LWEParam> origin;
-    //std::shared_ptr<LWEGadgetParam>  destination;
+    std::shared_ptr<LWEParam> origin; 
     std::shared_ptr<LWEParam>  destination;
     KeySwitchType ks_type;
    
@@ -42,7 +38,7 @@ class LWEToLWEKeySwitchKey{
 
 }; 
  
-}
+} /// End of nameespace fhe_deck
 
 
 #endif

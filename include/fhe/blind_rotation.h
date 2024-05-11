@@ -89,10 +89,7 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
   
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
 };
- 
-
-
-
+  
 /*
     Interface for outputs of a blind rotation algorithm.
     I could use VectorCT instead, but I decided to go with a new interface because post rotation with an VectorCTAccumulator 
@@ -105,9 +102,7 @@ class BlindRotateOutput{
     VectorCT* accumulator;
 
     ~BlindRotateOutput(){};
-  
-    /// TODO: Input should be LWECT 
-    //virtual void extract_lwe(long* lwe_ct) = 0;
+   
     virtual void extract_lwe(LWECT* out) = 0;
 
     virtual void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc) = 0; 
@@ -146,7 +141,8 @@ class NTRUBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
 class RLWEBlindRotateOutput : public BlindRotateOutput{
 
     public:
-    // Will point at the VectorCT accumulator. I will do casting already in the constructor. 
+    // Will point at the VectorCT accumulator. 
+    // I will do casting already in the constructor. 
     // The pointer is freed in the destructor. 
     RLWECT* accumulator_ptr;
 

@@ -27,9 +27,7 @@ class FunctionalBootstrapPublicKey{
     // Special accumulator for blind rotating just the Delta * 1. Its used for the amortized method given that is it supported.
     std::shared_ptr<VectorCTAccumulator> acc_one;
     // Generated from lwe_par, lwe_par_tiny, and extract_lwe_par
-    LWEModSwitcher ms_from_gadget_to_par;
-
-    LWEModSwitcher ms_from_gadget_to_tiny_par;
+    LWEModSwitcher ms_from_gadget_to_par; 
  
     std::shared_ptr<BlindRotateOutput> br_out;
     std::shared_ptr<BlindRotateOutput> br_temp;
@@ -130,9 +128,7 @@ class FunctionalBootstrapPublicKey{
 
         this->is_init = true;
         */
-    } 
-   
- 
+    }  
 };
 
 // The Bootstrapping algorithm from Liu, Micciancio, Polyakov. Large-Precision Homomorphic Sign Evaluation Using FHEW/TFHE Bootstrapping.
@@ -142,6 +138,7 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     // LWE after modulus switching to N (Is computed from lwe_par)
     std::shared_ptr<LWEParam> lwe_par_tiny;
+    LWEModSwitcher ms_from_gadget_to_tiny_par;
     
     // Special Accumulator for computing the MSB in Full Domain Functional Bootstrapping 
     std::shared_ptr<VectorCTAccumulator> acc_msb;

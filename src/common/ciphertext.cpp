@@ -68,7 +68,8 @@ Ciphertext::Ciphertext(Ciphertext &other){
 
 void Ciphertext::add(Ciphertext* ct){
     if(is_lwe_ct){
-        this->lwe_c->add(ct->lwe_c);
+        //this->lwe_c->add(ct->lwe_c);
+        this->lwe_c->add(this->lwe_c, ct->lwe_c);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
@@ -77,7 +78,8 @@ void Ciphertext::add(Ciphertext* ct){
 
 void Ciphertext::sub(Ciphertext* ct){
     if(is_lwe_ct){
-        this->lwe_c->sub(ct->lwe_c);
+        //this->lwe_c->sub(ct->lwe_c);
+        this->lwe_c->sub(this->lwe_c, ct->lwe_c);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
@@ -86,15 +88,13 @@ void Ciphertext::sub(Ciphertext* ct){
 
 void Ciphertext::mul(long b){
     if(is_lwe_ct){
-        this->lwe_c->mul(b);
+        //this->lwe_c->mul(b);
+        this->lwe_c->mul(this->lwe_c, b);
     }else{
        throw std::logic_error("Ciphertext type not supported!");
     }
 } 
-     
-
-
-
+      
 Ciphertext Ciphertext::operator+(long b){
     if(is_lwe_ct){ 
         LWECT c = this->lwe_c->operator+(this->encoding.encode_message(b));
@@ -103,8 +103,7 @@ Ciphertext Ciphertext::operator+(long b){
         throw std::logic_error("Ciphertext type not supported!");
     }
 }
-
-
+ 
 Ciphertext Ciphertext::operator+(Ciphertext ct){ 
     if(is_lwe_ct){ 
         LWECT c = this->lwe_c->operator+(ct.lwe_c);

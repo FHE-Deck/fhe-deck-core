@@ -7,56 +7,15 @@ LWEParam::LWEParam(int dim, long modulus){
     this->modulus = modulus;
 }
   
-long* LWEParam::init_ct(){ 
-    long* ct = new long[this->dim+1]; 
-    for(int i = 0; i < dim+1; ++i){
-        ct[i] = 0;
-    }
-    return ct;
-}
-   
-void LWEParam::scalar_mul(long *out, long *ct, long scalar){
-    for(int i = 0; i <= dim; ++i){
-        out[i] = (ct[i] * scalar) % modulus;
-    }
-}
-
-void LWEParam::scalar_mul_lazy(long *out, long *ct, long scalar){
-    for(int i = 0; i <= dim; ++i){
-        out[i] = (ct[i] * scalar);
-    }
-}
-
-void LWEParam::add(long *out, long *ct_1, long *ct_2){
-    for(int i = 0; i <= dim; ++i){
-        out[i] = (ct_1[i] + ct_2[i]) % modulus;
-    }
-}
-
-void LWEParam::add_lazy(long *out, long *ct_1, long *ct_2){
-    for(int i = 0; i <= dim; ++i){
-        out[i] = (ct_1[i] + ct_2[i]);
-    }
-} 
-  
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
-    this->ct = param->init_ct();
+    this->ct = new long[param->dim+1];
     this->init = true; 
 }
-  
-LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param, long* ct){
-    this->param = lwe_param;
-    this->ct = param->init_ct();
-    this->init = true;
-    for(int i = 0; i < param->dim+1; ++i){
-        this->ct[i] = ct[i];
-    }
-} 
-  
+   
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
-    this->ct = param->init_ct(); 
+    this->ct = new long[param->dim+1]; 
     for(int i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
@@ -65,7 +24,7 @@ LWECT::LWECT(const LWECT &c){
 
 LWECT::LWECT(LWECT &c){  
     this->param = c.param;
-    this->ct = param->init_ct(); 
+    this->ct = new long[param->dim+1]; 
     for(int i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
@@ -74,7 +33,7 @@ LWECT::LWECT(LWECT &c){
 
 LWECT::LWECT(LWECT *c){  
     this->param = c->param;
-    this->ct = param->init_ct(); 
+    this->ct = new long[param->dim+1]; 
     for(int i = 0; i < param->dim+1; ++i){
         this->ct[i] = c->ct[i];
     }
@@ -86,19 +45,7 @@ LWECT::~LWECT(){
         delete[] ct; 
     } 
 }
-
-void LWECT::scalar_mul(long scalar){
-    for(int i = 0; i <= param->dim; ++i){
-        ct[i] = (ct[i] * scalar) % param->modulus;
-    }
-}
-
-void LWECT::mul(long scalar){
-    for(int i = 0; i <= param->dim; ++i){
-        ct[i] = (ct[i] * scalar) % param->modulus;
-    }
-}
-
+ 
 void LWECT::mul(LWECT *out, long scalar){
     for(int i = 0; i <= param->dim; ++i){
         out->ct[i] = (ct[i] * scalar) % param->modulus;
@@ -110,61 +57,29 @@ void LWECT::mul_lazy(LWECT *out, long scalar){
         out->ct[i] = (ct[i] * scalar);
     }
 }
-
-void LWECT::scalar_mul_lazy(long scalar){
-    for(int i = 0; i <= param->dim; ++i){
-        ct[i] = (ct[i] * scalar);
-    }
-}
-
-void LWECT::add(LWECT *in){ 
-    for(int i = 0; i <= param->dim; ++i){
-        this->ct[i] = (this->ct[i] + in->ct[i]) % param->modulus;
-    }
-}
-
+ 
 void LWECT::add(LWECT *out, LWECT *in){
     for(int i = 0; i <= this->param->dim; ++i){
         out->ct[i] = (this->ct[i] + in->ct[i]) % this->param->modulus;
     }
 }
-
-void LWECT::sub(LWECT *c){
-    for(int i = 0; i <= this->param->dim; ++i){
-        this->ct[i] = Utils::integer_mod_form(this->ct[i] - c->ct[i], this->param->modulus);
-    }
-}
-
+ 
 void LWECT::sub(LWECT* out, LWECT *in){
     for(int i = 0; i <= this->param->dim; ++i){
         out->ct[i] = Utils::integer_mod_form(this->ct[i] - in->ct[i], this->param->modulus);
     }
 }
-
-void LWECT::add_lazy(LWECT *c){
-    for(int i = 0; i <= this->param->dim; ++i){
-        this->ct[i] = this->ct[i] + c->ct[i] ;
-    }
-}
-
+  
 void LWECT::add_lazy(LWECT* out, LWECT *in){
     for(int i = 0; i <= this->param->dim; ++i){
         out->ct[i] = this->ct[i] + in->ct[i];
     }
 }
- 
-void LWECT::add(long b){ 
-    this->ct[0] = (this->ct[0] + b) % this->param->modulus;
-}
-
+  
 void LWECT::add(LWECT* out, long b){ 
     out->ct[0] = (this->ct[0] + b) % this->param->modulus;
 }
-
-void LWECT::sub(long b){
-    this->ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
-}
-
+  
 void LWECT::sub(LWECT* out, long b){
     out->ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
 }
@@ -176,7 +91,7 @@ LWECT& LWECT::operator=(const LWECT other){
     }   
     if(init==false){
         this->param = other.param;
-        this->ct = param->init_ct(); 
+        this->ct = new long[param->dim+1]; 
         for(int i = 0; i < param->dim+1; ++i){
             this->ct[i] = other.ct[i];
         }
@@ -199,15 +114,15 @@ LWECT LWECT::operator+(long b){
     return ct_out; 
 }
 
-LWECT LWECT::operator+(LWECT b){  
-    LWECT ct_out(this);  
-    ct_out.add(&b); 
+LWECT LWECT::operator+(LWECT b){   
+    LWECT ct_out(param);
+    this->add(&ct_out, &b);
     return ct_out;
 }
    
-LWECT LWECT::operator+(LWECT *b){  
-    LWECT ct_out(this);  
-    ct_out.add(b); 
+LWECT LWECT::operator+(LWECT *b){   
+    LWECT ct_out(param);
+    this->add(&ct_out, b);
     return ct_out;
 }
 
@@ -217,15 +132,15 @@ LWECT LWECT::operator-(long b){
     return ct_out; 
 }
     
-LWECT LWECT::operator-(LWECT b){  
-    LWECT ct_out(this);  
-    ct_out.sub(&b); 
+LWECT LWECT::operator-(LWECT b){   
+    LWECT ct_out(param);
+    this->sub(&ct_out, &b);
     return ct_out;
 }
 
-LWECT LWECT::operator-(LWECT *b){  
-    LWECT ct_out(this);  
-    ct_out.sub(b); 
+LWECT LWECT::operator-(LWECT *b){   
+    LWECT ct_out(param);
+    this->sub(&ct_out, b);
     return ct_out;
 }
 
@@ -237,9 +152,9 @@ LWECT LWECT::operator-(){
     return ct_out;
 }
 
-LWECT LWECT::operator*(long b){
-    LWECT ct_out = new LWECT(this);  
-    ct_out.mul(b);
+LWECT LWECT::operator*(long b){ 
+    LWECT ct_out(param);
+    this->mul(&ct_out, b);
     return ct_out; 
 }  
     
@@ -256,20 +171,18 @@ LWECT operator-(long b, LWECT ct){
     return ct_out; 
 }
 
-LWECT operator*(long b, LWECT ct){
-    LWECT ct_out(&ct);  
-    ct_out.mul(b);
+LWECT operator*(long b, LWECT ct){ 
+    LWECT ct_out(ct.param);
+    ct.mul(&ct_out, b);
     return ct_out; 
 }
  
 LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to){
     this->from = from;
-    this->to = to;
-
-    // Check if we need long arithmetic
+    this->to = to; 
+    /// Check if we need long arithmetic.
     int bits_from = Utils::number_of_bits(from->modulus);
-    int bits_to = Utils::number_of_bits(to->modulus);
-  
+    int bits_to = Utils::number_of_bits(to->modulus); 
     if(from->dim != to->dim){
         throw std::logic_error("LWEModSwitcher::LWEModSwitcher: Dimension of the from and to LWE parametrs must the the same.");
     }
@@ -286,29 +199,27 @@ LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<L
         throw std::logic_error("LWEModSwitcher::LWEModSwitcher: Too large moduli.");
     }
 }
-
-void LWEModSwitcher::switch_modulus(long *out_ct, long *in_ct){  
+  
+void LWEModSwitcher::switch_modulus(LWECT *out_ct, LWECT *in_ct){  
     if(long_arithmetic){
         for(int i = 0; i < ct_size; ++i){
-            long_temp =  long_Q_to * (long double)in_ct[i];
-            out_ct[i] = (long)roundl(long_temp/long_Q_from); 
+            long_temp = long_Q_to * (long double)in_ct->ct[i];
+            out_ct->ct[i] = (long)roundl(long_temp/long_Q_from); 
         } 
     }else{ 
         for(int i = 0; i < ct_size; ++i){
             // Compute multiplicaiton on integers, and then convert to double
-            temp =  to->modulus * in_ct[i];
+            temp = to->modulus * in_ct->ct[i];
             // Divide and round to closest integer
-            out_ct[i] = (long)round(temp/Q_from); 
-        }
- 
+            out_ct->ct[i] = (long)round(temp/Q_from); 
+        } 
     }   
 }
-  
-
+   
 LWEGadgetCT::LWEGadgetCT(std::shared_ptr<LWEParam> lwe_param, long base){
     this->lwe_param = lwe_param;
     this->base = base;  
-    /// TODO:  Note that for now, we accept only power of two basis (because our decomposition is written this way)
+    /// TODO:  Add check: Note that for now, we accept only power of two basis (because our decomposition is written this way)
     this->bits_base = Utils::power_times(base, 2);  
     this->digits = Utils::power_times(lwe_param->modulus, base);   
     this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]);  
@@ -337,21 +248,10 @@ void LWEGadgetCT::gadget_mul_lazy(LWECT *out_ct, long scalar){
     }
     delete[] scalar_decomposed;  
 }
-
-long** LWEGadgetCT::init_gadget_ct(){
-    long **gadget_ct = new long*[this->digits];
-    for(int i = 0; i < this->digits; ++i){
-        gadget_ct[i] = this->lwe_param->init_ct();
-    } 
-    return gadget_ct;
-}
-
- 
+  
 LWESK::~LWESK(){ 
     delete[] key; 
 }
-
-LWESK::LWESK(){}
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
@@ -398,19 +298,7 @@ LWECT* LWESK::encrypt(long m){
     encrypt(out, m);
     return out;
 }
-
-void LWESK::encrypt(long *ct, long m){     
-    ct[0] = error_dist->next() + (long)m; 
-    for(int i=1; i < param->dim+1; ++i){     
-        /// TODO: I should assume the ct and key are in modular form. Then doing it here is not necessary.
-        ct[i] = Utils::integer_mod_form(unif_dist->next(), param->modulus); 
-        long k = Utils::integer_mod_form(key[i-1], param->modulus);
-        long c = Utils::integer_mod_form(ct[i], param->modulus);
-        ct[0] -= multiplier->mul(k,  c); 
-        ct[0] = Utils::integer_mod_form(ct[0], param->modulus); 
-    }   
-}
-
+ 
 void LWESK::encrypt(LWECT *in, long m){     
     in->ct[0] = error_dist->next() + (long)m; 
     for(int i=1; i < param->dim+1; ++i){      
@@ -425,29 +313,13 @@ void LWESK::encrypt(LWECT *in, long m){
   
 LWECT* LWESK::encode_and_encrypt(long m, PlaintextEncoding encoding){  
     LWECT* out = new LWECT(this->param);
-    encrypt(out->ct, encoding.encode_message(m)); 
+    encrypt(out, encoding.encode_message(m)); 
     return out;
 }
-  
-void LWESK::encode_and_encrypt(long* ct, long m, PlaintextEncoding encoding){   
-    encrypt(ct, encoding.encode_message(m)); 
-} 
-
-void LWESK::encode_and_encrypt(LWECT* in, long m, PlaintextEncoding encoding){   
-    encrypt(in->ct, encoding.encode_message(m)); 
-} 
-
-long LWESK::partial_decrypt(long *ct){
-    long phase = ct[0];   
-    for(int i = 1; i < param->dim+1; ++i){ 
-        /// TODO: Need to asssert that key and ct are always in modular form: No signed integers, because its lots of problems with those.
-        long k = Utils::integer_mod_form(key[i-1], param->modulus);  
-        long c = Utils::integer_mod_form(ct[i], param->modulus);  
-        phase = (phase + multiplier->mul(c, k)) % param->modulus; 
  
-    }   
-    return phase;  
-}
+void LWESK::encode_and_encrypt(LWECT* in, long m, PlaintextEncoding encoding){   
+    encrypt(in, encoding.encode_message(m)); 
+} 
  
 long LWESK::partial_decrypt(LWECT *in){
     long phase  = in->ct[0]; 
@@ -458,23 +330,15 @@ long LWESK::partial_decrypt(LWECT *in){
     }   
     return phase; 
 }
-
-long LWESK::error(long *ct,  long m){   
-    return Utils::integer_signed_form((LWESK::partial_decrypt(ct) - m) % param->modulus, param->modulus); 
-}
  
-long LWESK::decrypt(long *ct, PlaintextEncoding encoding){  
-    return encoding.decode_message(partial_decrypt(ct));
-}
-
 long LWESK::decrypt(LWECT *in, PlaintextEncoding encoding){
-    return encoding.decode_message(partial_decrypt(in->ct));
+    return encoding.decode_message(partial_decrypt(in));
 } 
  
 LWEGadgetSK::LWEGadgetSK(std::shared_ptr<LWESK> lwe, long base){ 
     this->lwe = lwe;  
     this->base = base;  
-    /// TODO:  Note that for now, we accept only power of two basis (because our decomposition is written this way)
+    /// TODO: Add Check: Note that for now, we accept only power of two basis (because our decomposition is written this way)
     this->bits_base = Utils::power_times(base, 2);  
     this->digits = Utils::power_times(lwe->param->modulus, base);   
 }
