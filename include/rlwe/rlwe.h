@@ -43,11 +43,7 @@ class RLWEParam : public VectorCTParam{
     RLWEParam& operator=(RLWEParam other);
 
     VectorCT* init_ct();
-       
-    Polynomial init_poly();
- 
-    Polynomial init_zero_poly();
-   
+      
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -66,10 +62,11 @@ class RLWEParam : public VectorCTParam{
 
 class RLWECT : public VectorCT{
 
-    public:
+  public:
   
     std::shared_ptr<RLWEParam> param; 
     // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial
+    /// TODO: should those be smart pointers? 
     Polynomial a;
     Polynomial b; 
     RLWECT() = default;
@@ -116,26 +113,20 @@ class RLWECT : public VectorCT{
     void load( Archive & ar )
     {   
         ar(param);    
-        a = this->param->init_poly();
-        b = this->param->init_poly(); 
+        a = *new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
+        b = *new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
         for(int i = 0; i < this->param->size; ++i){
           ar(a.coefs[i]);
           ar(b.coefs[i]);
         } 
     }  
 };
- 
-/// TODO: Doens't see to be necesary except for some tests that have legacy code in them. 
-enum GadgetMulMode {simul, deter};
- 
-
-
-
+  
+  
 class RLWEGadgetCT : public GadgetVectorCT{ 
 
   public:
- 
-  /// std::shared_ptr<GadgetVectorCTParam> gadget_param; 
+  
   std::shared_ptr<RLWEParam> rlwe_param;
   std::shared_ptr<Gadget> gadget;
 
@@ -211,13 +202,13 @@ class RLWESK{
   
     void encrypt(RLWECT *out, Polynomial *m);  
     
-    RLWECT encrypt(Polynomial *m); 
+    RLWECT* encrypt(Polynomial *m); 
     
-    RLWECT encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
+    RLWECT* encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
  
     void partial_decrypt(Polynomial *phase, RLWECT *ct);
   
-    Polynomial decrypt(RLWECT *ct, PlaintextEncoding encoding);
+    Polynomial* decrypt(RLWECT *ct, PlaintextEncoding encoding);
   
     void decrypt(Polynomial *out, RLWECT *ct, PlaintextEncoding encoding);
  
@@ -246,8 +237,7 @@ class RLWESK{
 class RLWEGadgetSK : public GadgetVectorCTSK{
 
     public:
- 
-    //std::shared_ptr<RLWEGadgetParam> gadget_param;  
+  
     std::shared_ptr<Gadget> gadget;
     std::shared_ptr<RLWESK> rlwe_sk;
 

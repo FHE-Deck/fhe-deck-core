@@ -21,25 +21,7 @@ LWECT::LWECT(const LWECT &c){
     }
     this->init = true;
 }
-
-LWECT::LWECT(LWECT &c){  
-    this->param = c.param;
-    this->ct = new long[param->dim+1]; 
-    for(int i = 0; i < param->dim+1; ++i){
-        this->ct[i] = c.ct[i];
-    }
-    this->init = true;
-}
-
-LWECT::LWECT(LWECT *c){  
-    this->param = c->param;
-    this->ct = new long[param->dim+1]; 
-    for(int i = 0; i < param->dim+1; ++i){
-        this->ct[i] = c->ct[i];
-    }
-    this->init = true;
-}
-
+ 
 LWECT::~LWECT(){     
     if(init){  
         delete[] ct; 
@@ -78,12 +60,24 @@ void LWECT::add_lazy(LWECT* out, LWECT *in){
   
 void LWECT::add(LWECT* out, long b){ 
     out->ct[0] = (this->ct[0] + b) % this->param->modulus;
+    for(int i = 1; i < param->dim+1; ++i){
+        out->ct[i] = this->ct[i];
+    } 
 }
   
 void LWECT::sub(LWECT* out, long b){
     out->ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
+    for(int i = 1; i < param->dim+1; ++i){
+        out->ct[i] = this->ct[i];
+    } 
 }
 
+void LWECT::neg(LWECT* out){   
+    for(int i = 0; i < param->dim+1; ++i){
+        out->ct[i] = Utils::integer_mod_form(-this->ct[i], param->modulus);
+    }  
+}
+ 
 LWECT& LWECT::operator=(const LWECT other){  
     if (this == &other)
     {
@@ -108,75 +102,15 @@ LWECT& LWECT::operator=(const LWECT other){
     return *this;
 } 
 
-LWECT LWECT::operator+(long b){   
-    LWECT ct_out(this);    
-    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] + b, param->modulus);
-    return ct_out; 
-}
-
-LWECT LWECT::operator+(LWECT b){   
-    LWECT ct_out(param);
-    this->add(&ct_out, &b);
-    return ct_out;
-}
-   
-LWECT LWECT::operator+(LWECT *b){   
-    LWECT ct_out(param);
-    this->add(&ct_out, b);
-    return ct_out;
-}
-
-LWECT LWECT::operator-(long b){  
-    LWECT ct_out(this);  
-    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] - b, param->modulus); 
-    return ct_out; 
-}
-    
-LWECT LWECT::operator-(LWECT b){   
-    LWECT ct_out(param);
-    this->sub(&ct_out, &b);
-    return ct_out;
-}
-
-LWECT LWECT::operator-(LWECT *b){   
-    LWECT ct_out(param);
-    this->sub(&ct_out, b);
-    return ct_out;
-}
-
-LWECT LWECT::operator-(){  
-    LWECT ct_out(this);  
+LWECT* LWECT::clone(){
+    LWECT* out = new LWECT(param);
     for(int i = 0; i < param->dim+1; ++i){
-        ct_out.ct[i] = Utils::integer_mod_form(-this->ct[i], param->modulus);
-    } 
-    return ct_out;
-}
+        out->ct[i] = this->ct[i];
+    }
+    out->init = true;
+    return out;
+} 
 
-LWECT LWECT::operator*(long b){ 
-    LWECT ct_out(param);
-    this->mul(&ct_out, b);
-    return ct_out; 
-}  
-    
-LWECT operator+(long b, LWECT ct){ 
-    LWECT ct_out(&ct);  
-    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] +  b, ct_out.param->modulus);
-    return ct_out; 
-}
-
-LWECT operator-(long b, LWECT ct){
-    LWECT temp = -ct;
-    LWECT ct_out(&temp);
-    ct_out.ct[0] = Utils::integer_mod_form(ct_out.ct[0] + b, ct_out.param->modulus);
-    return ct_out; 
-}
-
-LWECT operator*(long b, LWECT ct){ 
-    LWECT ct_out(ct.param);
-    ct.mul(&ct_out, b);
-    return ct_out; 
-}
- 
 LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to){
     this->from = from;
     this->to = to; 
@@ -398,21 +332,22 @@ void LWEPublicKey::mask_ciphertext(LWECT *ct){
     } 
 }
   
-LWECT LWEPublicKey::encrypt(long message){
-    LWECT out(param); 
+LWECT* LWEPublicKey::encrypt(long message){
+    LWECT* out = new LWECT(param); 
     long noise;
     noise = rand_masking.normal_dist(rand_masking.e1); 
-    public_key_ptr[0]->mul(&out, noise); 
+    public_key_ptr[0]->mul(out, noise); 
     LWECT temp(param);
     for(int i = 1; i < size; ++i){
         noise = rand_masking.normal_dist(rand_masking.e1); 
         public_key_ptr[i]->mul(&temp, noise); 
-        out.add(&out, &temp); 
+        out->add(out, &temp); 
     } 
-    out = out + message; 
+    //out = out + message;
+    out->add(out, message); 
     return out;    
 }
  
-LWECT LWEPublicKey::ciphertext_of_zero(){
+LWECT* LWEPublicKey::ciphertext_of_zero(){
     return LWEPublicKey::encrypt(0);
 }

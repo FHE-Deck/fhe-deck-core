@@ -4,8 +4,10 @@ using namespace fhe_deck;
 
 RLWECT::RLWECT(std::shared_ptr<RLWEParam> param){
     this->param = param; 
-    a = this->param->init_poly();
-    b = this->param->init_poly();   
+    /// TODO: Is this more readable/faster/better than just using a smart pointer for a and b? Or just standard build? 
+    // With smart pointer its a little shit
+    this->a = * new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
+    this->b = * new Polynomial(param->size, param->coef_modulus, param->mul_engine);   
 }
  
 RLWECT::RLWECT(const RLWECT &other){ 
@@ -132,19 +134,7 @@ void RLWEParam::init_mul_engine(){
 VectorCT* RLWEParam::init_ct(){
     return new RLWECT(std::shared_ptr<RLWEParam>(this));
 }
-
-Polynomial RLWEParam::init_poly(){ 
-    return Polynomial(size, coef_modulus, mul_engine); 
-}
- 
-Polynomial RLWEParam::init_zero_poly(){
-    Polynomial out(this->size, coef_modulus, mul_engine);
-    for(int i = 0; i < this->size; ++i){
-        out.coefs[i] = 0;
-    }
-    return out;
-}
- 
+  
 RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk){
     this->rlwe_param = rlwe_param;
     this->gadget = gadget;
@@ -289,18 +279,18 @@ void RLWESK::encrypt(RLWECT *out, Polynomial *m){
     out->b.add(&out->b, &message);  
 }
 
-RLWECT RLWESK::encrypt(Polynomial *m){   
-    RLWECT out(param);  
-    this->encrypt(&out, m);
+RLWECT* RLWESK::encrypt(Polynomial *m){   
+    RLWECT* out = new RLWECT(param);  
+    this->encrypt(out, m);
     return out;
 }
  
-RLWECT RLWESK::encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding){
+RLWECT* RLWESK::encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(m->coefs[i]);
     }
-    RLWECT out = encrypt(&m_scaled); 
+    RLWECT* out = encrypt(&m_scaled); 
     return out;
 }
 
@@ -318,9 +308,9 @@ void RLWESK::partial_decrypt(Polynomial *phase, RLWECT *ct){
     ct->b.sub(phase, phase); 
 }
   
-Polynomial RLWESK::decrypt(RLWECT *ct, PlaintextEncoding encoding){
-    Polynomial out(param->size, param->coef_modulus);
-    decrypt(&out, ct, encoding);  
+Polynomial* RLWESK::decrypt(RLWECT *ct, PlaintextEncoding encoding){
+    Polynomial* out = new Polynomial(param->size, param->coef_modulus);
+    decrypt(out, ct, encoding);  
     return out;
 }
  
@@ -373,20 +363,20 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     msg->mul(&msg_x_sk, &rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
     msg_x_sk.neg(&msg_x_sk); 
     // Encryptions of - msg* base**i    
-    gadget_ct.push_back(rlwe_sk->encrypt(msg));
+    gadget_ct.push_back(*rlwe_sk->encrypt(msg));
     for(int i = 1; i < digits; ++i){
         // Multiply msg by base
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
-        gadget_ct.push_back(rlwe_sk->encrypt(msg)); 
+        gadget_ct.push_back(*rlwe_sk->encrypt(msg)); 
     }  
     // Encryptions of - msg * sk * base**i    
-    gadget_ct_sk.push_back(rlwe_sk->encrypt(&msg_x_sk));
+    gadget_ct_sk.push_back(*rlwe_sk->encrypt(&msg_x_sk));
     for(int i = 1; i < digits; ++i){ 
         // Multiply msg by base
         msg_x_sk.mul(&msg_x_sk, base); 
         // Encrypt - msg * sk * base**i   
-        gadget_ct_sk.push_back(rlwe_sk->encrypt(&msg_x_sk));  
+        gadget_ct_sk.push_back(*rlwe_sk->encrypt(&msg_x_sk));  
     }     
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }

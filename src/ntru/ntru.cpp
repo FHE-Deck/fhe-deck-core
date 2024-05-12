@@ -45,10 +45,13 @@ VectorCT* NTRUParam::init_ct(){
     return new NTRUCT(std::shared_ptr<NTRUParam>(this));
 }
 
+/*
 Polynomial NTRUParam::init_poly(){ 
     return Polynomial(size, coef_modulus, mul_engine); 
 }
+*/
  
+/*
 Polynomial NTRUParam::init_zero_poly(){
     Polynomial out(this->size, coef_modulus, mul_engine);
     for(int i = 0; i < this->size; ++i){
@@ -56,10 +59,11 @@ Polynomial NTRUParam::init_zero_poly(){
     }
     return out;
 }
+*/
   
 NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param){
     this->param = param; 
-    this->ct_poly = this->param->init_poly();  
+    this->ct_poly = Polynomial(param->size, param->coef_modulus, param->mul_engine);  
 }
  
 NTRUCT::NTRUCT(const NTRUCT &other){ 
@@ -237,9 +241,9 @@ void NTRUSK::encrypt(NTRUCT *out, Polynomial *m){
         throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m is not initialized!");
     }  
     /// NOTE: We compute inv_sk * g + e + msg
-    Polynomial g = param->init_poly();
+    Polynomial g = Polynomial(param->size, param->coef_modulus, param->mul_engine);
     sk_dist->fill_array(g.coefs, g.degree);
-    Polynomial e = param->init_poly();
+    Polynomial e = Polynomial(param->size, param->coef_modulus, param->mul_engine);
     error_dist->fill_array(e.coefs, e.degree); 
     inv_sk.mul(&out->ct_poly, &g, param->mul_engine);
     out->ct_poly.add(&out->ct_poly, &e);

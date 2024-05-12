@@ -42,11 +42,7 @@ class NTRUParam : public VectorCTParam{
     NTRUParam& operator=(NTRUParam other);
 
     VectorCT* init_ct();
-       
-    Polynomial init_poly();
- 
-    Polynomial init_zero_poly();
-   
+         
     template <class Archive>
     void save( Archive & ar ) const
     { 

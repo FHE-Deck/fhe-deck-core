@@ -46,21 +46,20 @@ class LWECT{
     bool init = false;
  
     long *ct;
+
     /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
     LWECT() = default;
+
+    ~LWECT();
 
     // Initializes the ciphertext with zeros (the actual initialization will be done in some encrypt)
     LWECT(std::shared_ptr<LWEParam> lwe_par);
   
     LWECT(const LWECT &c);
- 
-    LWECT(LWECT &c);
-
-    LWECT(LWECT *c); 
-
-    ~LWECT();
-
+  
     LWECT& operator=(const LWECT other); 
+
+    LWECT* clone();
 
     void mul(LWECT *out, long scalar);
 
@@ -74,26 +73,10 @@ class LWECT{
 
     void add(LWECT* out, long b); 
 
-    void sub(LWECT*, long b);
-   
-    /// TODO: Remove all theese operators after rewriting ciphertext.h
-    /// Actually at this level we don't need these operators. The 'convenient' operators are implemented in ciphertext.h
-    LWECT operator+(long b);
+    void sub(LWECT* out, long b);
 
-    LWECT operator+(LWECT ct);
-
-    LWECT operator+(LWECT *ct);
-
-    LWECT operator-(long b);
-
-    LWECT operator-(LWECT ct);
-
-    LWECT operator-(LWECT *ct);
-
-    LWECT operator-();
-    
-    LWECT operator*(long b);  
-
+    void neg(LWECT* out);
+  
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -119,13 +102,7 @@ class LWECT{
       this->init = true;
     } 
 };
-
-LWECT operator+(long b, LWECT ct);
-
-LWECT operator-(long b, LWECT ct);
-
-LWECT operator*(long b, LWECT ct);
-
+ 
 class LWEModSwitcher{
 
   public:
@@ -290,9 +267,9 @@ class LWEPublicKey{
  
     void mask_ciphertext(LWECT *ct);
   
-    LWECT encrypt(long message);
+    LWECT* encrypt(long message);
 
-    LWECT ciphertext_of_zero();
+    LWECT* ciphertext_of_zero();
 };
 
 }

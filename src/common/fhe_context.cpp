@@ -45,10 +45,8 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type, long pl
 Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){  
     if(!is_sk_init){
         throw std::logic_error("No Secret Key Initialized!");
-    }       
-    LWECT* temp = lwe_sk->encrypt(encoding.encode_message(message));
-    LWECT c(temp); 
-    delete temp;
+    }        
+    LWECT c = *lwe_sk->encrypt(encoding.encode_message(message));
     return Ciphertext(c, encoding, this); 
 }
 
@@ -91,7 +89,7 @@ Ciphertext FHEContext::encrypt_public(long message, PlaintextEncoding encoding){
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
     } 
-    LWECT c = encrypt_pk->encrypt(encoding.encode_message(message)); 
+    LWECT c = *encrypt_pk->encrypt(encoding.encode_message(message)); 
     return Ciphertext(c, encoding, this);
 }
 
@@ -159,8 +157,7 @@ HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message), Plaintex
 HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message)){   
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(accumulator_builder->prepare_accumulator(f, default_encoding))); 
 }
- 
-// Run functional bootstrapping
+  
 Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut){  
     if(!is_pk_init){
         throw std::logic_error("No Public Key Initialized!");
@@ -170,9 +167,9 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut){
         bootstrap_pk->full_domain_bootstrap(&ct_out, lut.accumulator, ct_in->lwe_c, ct_in->encoding);
     }else if(ct_in->encoding.type == partial_domain){  
         bootstrap_pk->bootstrap(&ct_out,  lut.accumulator, ct_in->lwe_c); 
-    }else if(ct_in->encoding.type == signed_limied_short_int){   
-        LWECT c_in_copy(ct_in->lwe_c);  
-        c_in_copy = c_in_copy + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space); 
+    }else if(ct_in->encoding.type == signed_limied_short_int){    
+        LWECT c_in_copy(ct_in->lwe_c->param);
+        ct_in->lwe_c->add(&c_in_copy, ct_in->encoding.encode_message(ct_in->encoding.plaintext_space));
         bootstrap_pk->bootstrap(&ct_out, lut.accumulator, &c_in_copy);   
     } 
     else{
@@ -204,9 +201,9 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
         out_vec_lwe = bootstrap_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
     }else if(ct_in->encoding.type == partial_domain){ 
         out_vec_lwe = bootstrap_pk->bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
-    }else if(ct_in->encoding.type == signed_limied_short_int){ 
-        LWECT ct_cast = ct_in->lwe_c;
-        ct_cast = ct_cast + ct_in->encoding.encode_message(ct_in->encoding.plaintext_space);
+    }else if(ct_in->encoding.type == signed_limied_short_int){  
+        LWECT ct_cast(ct_in->lwe_c->param);
+        ct_in->lwe_c->add(&ct_cast, ct_in->encoding.encode_message(ct_in->encoding.plaintext_space));
         out_vec_lwe = bootstrap_pk->bootstrap(accumulator_vec, &ct_cast, ct_in->encoding); 
     } 
     else{
@@ -325,7 +322,7 @@ void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct){
         throw std::logic_error("No Public Key Initialized!");
     }
     cereal::BinaryOutputArchive oarchive(os);  
-    LWECT out_ct(ct.lwe_c);
+    LWECT out_ct = *ct.lwe_c;
     oarchive(out_ct); 
 }
 
