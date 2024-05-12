@@ -17,14 +17,17 @@ class FHEContext{
 
     public:
   
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk; 
-    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;  
-    std::shared_ptr<LWEPublicKey> encrypt_pk; 
-    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    //std::shared_ptr<fhe_deck::LWESK> lwe_sk; 
+    //std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;  
+    //std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    //std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    //std::shared_ptr<SanitizationKey> sanitization_pk;
+
+    std::unique_ptr<FHEConfiguration> config;
 
     // Flags to check whether the sk or pk are initialized.
-    bool is_sk_init = false;
-    bool is_pk_init = false;
+    //bool is_sk_init = false;
+    //bool is_pk_init = false;
   
     PlaintextEncoding default_encoding; 
   
@@ -94,6 +97,8 @@ class FHEContext{
     Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding);
   
     Ciphertext eval_lut(Ciphertext *ct_in, long (*f)(long message));
+
+    Ciphertext sanitize(Ciphertext *ct_in);
   
     std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> luts);
   

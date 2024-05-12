@@ -37,7 +37,7 @@ std::shared_ptr<LWESK> FHEConfiguration::get_secret_key(){
 }
     
 std::shared_ptr<FunctionalBootstrapPublicKey> FHEConfiguration::get_functional_bootstrap_pk(){
-    return fun_bootstrap_pk;
+    return bootstrap_pk;
 }
 
 std::shared_ptr<LWEPublicKey> FHEConfiguration::get_encrypt_pk(){
@@ -46,6 +46,10 @@ std::shared_ptr<LWEPublicKey> FHEConfiguration::get_encrypt_pk(){
 
 std::shared_ptr<AbstractAccumulatorBuilder> FHEConfiguration::get_accumulator_builder(){
     return accumulator_builder;
+}
+
+std::shared_ptr<SanitizationKey> FHEConfiguration::get_sanitization_key(){
+    return sanitization_pk;
 }
   
 void FHEConfiguration::init_tfhe_11_NTT(){ 
@@ -68,6 +72,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base));
+    std::shared_ptr<Gadget> rand_gadget(new DiscreteGaussianSamplingGadget(degree, coef_modulus, gadget_decomp_base, stddev_simul));
     //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt;
 
@@ -91,18 +96,19 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
     std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk(new RLWEGadgetSK(deter_gadget, rlwe)); 
+    std::shared_ptr<RLWEGadgetSK> rlwe_rand_gadget_sk(new RLWEGadgetSK(rand_gadget, rlwe)); 
     // This key is the main decryption key for the scheme.
     this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
  
     /// =================== Generate Public keys  
-    
-    /// TODO: Here we should generate a Sanitization Key (run procedure depending on Enum Configuration)
-
+     
     // Masking Key Gen
     this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
+    
 
     // The blind rotation key  (run procedure depending on Enum Configuration)
-    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe); 
+    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe);  
+    BlindRotationPublicKey *rand_blind_rotation_key = new GINXBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe);  
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Build the public key  
@@ -114,13 +120,20 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     // Generate the Functional Bootstrapping Public Key and its Specific Values 
     /// TODO: Initialize this lwe_param_tiny inside the LMPFunctionalBootstrapPublicKey constructor
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+    
+
+    sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(bootstrap_pk, accumulator_builder, encrypt_pk));
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
  
 
@@ -145,6 +158,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
+    std::shared_ptr<Gadget> sanit_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base)); 
     //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
      
     // 2**9 + 400
@@ -168,6 +182,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
     std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
+    std::shared_ptr<RLWEGadgetSK> rlwe_rand_gadget_sk(new RLWEGadgetSK(sanit_gadget, rlwe)); 
     // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
@@ -184,19 +199,27 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
+    BlindRotationPublicKey *rand_blind_rotation_key = new GINXBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe); 
     // Init Accumulator builder
     accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(bootstrap_pk, accumulator_builder, encrypt_pk, 4));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
 
 // Power of two parameter set
@@ -262,13 +285,18 @@ void FHEConfiguration::init_tfhe_11_B(){
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
 
  
@@ -334,13 +362,18 @@ void FHEConfiguration::init_tfhe_11_flood(){
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
 
 void FHEConfiguration::init_tfhe_11_NTT_amortized(){ 
@@ -409,13 +442,18 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
 
 
@@ -493,13 +531,18 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
 
 
@@ -571,12 +614,17 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     // TODO: This modulus switching looks increadibly ugly
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, ntru_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, ntru_param->size));  
-    fun_bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
+    bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
         accumulator_builder));
+
+    this->is_secret_key_set = true;
+    this->is_encrypt_pk_set = true;
+    this->is_bootstrap_pk_set = true;
+    this->is_sanitization_supported = true;
 } 
  

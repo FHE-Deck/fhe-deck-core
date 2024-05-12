@@ -12,9 +12,8 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
 
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    //context.generate_context(FHENamedParams::tfhe_11_B);
-    context.generate_context(param_set);
-    //context.generate_context(FHENamedParams::ntrunium_12_NTT);
+    
+    context.generate_context(param_set); 
     
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c1  = context.encrypt(1);  
@@ -290,6 +289,10 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     ct_nand = context.eval_lut(&combined, lut_fun_nand);
     assertm(context.decrypt(&ct_nand) == 0, "ct_nand(1, 1) == 0");
     std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl; 
+
+    Ciphertext sanitized = context.sanitize(&ct_nand);
+    assertm(context.decrypt(&sanitized) == 0, "sanitised == 0");
+    std::cout << "sanitized = ct_nand = 0: OK"   << std::endl; 
 }
 
 
@@ -956,6 +959,8 @@ int main(){
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
+
+   test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT_flood);
  
     test_for_signed_limied_short_int(FHENamedParams::tfhe_11_NTT);
  

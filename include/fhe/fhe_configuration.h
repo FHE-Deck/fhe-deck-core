@@ -4,7 +4,9 @@
  
 #include "lwe.h"
 #include "rlwe.h" 
+#include "ciphertext_sanitization.h"
 #include "functional_bootstrap.h"
+
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
@@ -24,10 +26,15 @@ class FHEConfiguration{
     FHENamedParams name;
 
     std::shared_ptr<LWESK> secret_key;
-    std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
-    std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    bool is_secret_key_set = false;
+    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk; 
+    bool is_bootstrap_pk_set = false;
     std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
- 
+    std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    bool is_encrypt_pk_set = false;
+    std::shared_ptr<SanitizationKey> sanitization_pk;
+    bool is_sanitization_supported = false;
+
     PlaintextEncoding default_encoding;
 
     FHEConfiguration() = default;
@@ -43,6 +50,8 @@ class FHEConfiguration{
     std::shared_ptr<LWEPublicKey> get_encrypt_pk(); 
 
     std::shared_ptr<AbstractAccumulatorBuilder> get_accumulator_builder(); 
+
+    std::shared_ptr<SanitizationKey> get_sanitization_key();
  
     void init_tfhe_11_NTT(); 
 
