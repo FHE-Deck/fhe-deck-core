@@ -5,6 +5,7 @@
 #include "lwe.h"
 #include "enums.h"  
 #include "plaintext_encoding.h" 
+#include "polynomial.h"
 
 namespace fhe_deck{
     

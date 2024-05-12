@@ -190,13 +190,13 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
     // The output vector of LWECT 
     std::vector<LWECT> out_vec_lwe;   
     if((ct_in->encoding.type == full_domain) && !bootstrap_pk->is_full_domain_bootstrap_function_amortizable){
-        // Amortization is not supported so lets run sequentially.
-        for(std::shared_ptr<VectorCTAccumulator> acc: accumulator_vec){
-            LWECT ct_out(ct_in->lwe_c->param);  
-            bootstrap_pk->full_domain_bootstrap(&ct_out, acc, ct_in->lwe_c, ct_in->encoding);
-            out_vec_lwe.push_back(ct_out);
-        }
-        // Otherwise we run the amortized procedures. 
+    // Amortization is not supported so lets run sequentially.
+    for(std::shared_ptr<VectorCTAccumulator> acc: accumulator_vec){
+        LWECT ct_out(ct_in->lwe_c->param);  
+        bootstrap_pk->full_domain_bootstrap(&ct_out, acc, ct_in->lwe_c, ct_in->encoding);
+        out_vec_lwe.push_back(ct_out);
+    }
+    // Otherwise we run the amortized procedures. 
     }else if(ct_in->encoding.type == full_domain){ 
         out_vec_lwe = bootstrap_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
     }else if(ct_in->encoding.type == partial_domain){ 

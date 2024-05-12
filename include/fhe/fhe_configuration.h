@@ -25,7 +25,7 @@ class FHEConfiguration{
 
     std::shared_ptr<LWESK> secret_key;
     std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
-    std::shared_ptr<LWEPublicKey> encrypt_public_key; 
+    std::shared_ptr<LWEPublicKey> encrypt_pk; 
     std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
  
     PlaintextEncoding default_encoding;

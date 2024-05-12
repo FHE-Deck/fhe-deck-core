@@ -10,8 +10,7 @@
 #include "lwe_to_lwe_keyswitch.h" 
  
 namespace fhe_deck{
- 
-
+  
 class FunctionalBootstrapPublicKey{
 
     public:

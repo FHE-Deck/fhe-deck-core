@@ -321,19 +321,8 @@ LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
     throw std::runtime_error("LWEPublicKey::LWEPublicKey(const LWEPublicKey &other)"); 
     return *this;
 }
-
-void LWEPublicKey::mask_ciphertext(LWECT *ct){ 
-    LWECT temp(param);
-    long noise; 
-    for(int i  = 0; i < size; ++i){
-        noise = rand_masking.normal_dist(rand_masking.e1); 
-        public_key_ptr[i]->mul(&temp, noise); 
-        ct->add(ct, &temp); 
-    } 
-}
-  
-LWECT* LWEPublicKey::encrypt(long message){
-    LWECT* out = new LWECT(param); 
+ 
+void LWEPublicKey::encrypt(LWECT* out, long message){
     long noise;
     noise = rand_masking.normal_dist(rand_masking.e1); 
     public_key_ptr[0]->mul(out, noise); 
@@ -342,9 +331,13 @@ LWECT* LWEPublicKey::encrypt(long message){
         noise = rand_masking.normal_dist(rand_masking.e1); 
         public_key_ptr[i]->mul(&temp, noise); 
         out->add(out, &temp); 
-    } 
-    //out = out + message;
+    }  
     out->add(out, message); 
+}
+  
+LWECT* LWEPublicKey::encrypt(long message){
+    LWECT* out = new LWECT(param);  
+    encrypt(out, message);
     return out;    
 }
  

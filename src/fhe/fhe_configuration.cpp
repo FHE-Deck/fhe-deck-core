@@ -41,7 +41,7 @@ std::shared_ptr<FunctionalBootstrapPublicKey> FHEConfiguration::get_functional_b
 }
 
 std::shared_ptr<LWEPublicKey> FHEConfiguration::get_encrypt_pk(){
-    return encrypt_public_key;
+    return encrypt_pk;
 }
 
 std::shared_ptr<AbstractAccumulatorBuilder> FHEConfiguration::get_accumulator_builder(){
@@ -99,7 +99,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     /// TODO: Here we should generate a Sanitization Key (run procedure depending on Enum Configuration)
 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
 
     // The blind rotation key  (run procedure depending on Enum Configuration)
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe); 
@@ -180,7 +180,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
@@ -252,7 +252,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
@@ -324,7 +324,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
@@ -399,7 +399,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
@@ -483,7 +483,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk); 
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, lwe_sk); 
@@ -563,7 +563,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     // Key Switching Key Gen
     LWEToLWEKeySwitchKey *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk);  
     // Masking Key Gen
-    this->encrypt_public_key = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+    this->encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key   
     BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(ntru_gadget_sk, lwe_sk); 

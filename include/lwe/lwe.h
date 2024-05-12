@@ -264,8 +264,8 @@ class LWEPublicKey{
     LWEPublicKey(const LWEPublicKey &other);
    
     LWEPublicKey& operator=(const LWEPublicKey other);
- 
-    void mask_ciphertext(LWECT *ct);
+  
+    void encrypt(LWECT* out, long message);
   
     LWECT* encrypt(long message);
 
