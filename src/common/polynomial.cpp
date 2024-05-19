@@ -2,6 +2,19 @@
  
 using namespace fhe_deck;
  
+
+void PolynomialMultiplicationEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){   
+    PolynomialEvalForm* eval_in_1 = init_polynomial_eval_form();
+    to_eval(eval_in_1, in_1);  
+    PolynomialEvalForm* eval_in_2 = init_polynomial_eval_form();
+    to_eval(eval_in_2, in_2); 
+    PolynomialEvalForm* eval_out = init_polynomial_eval_form(); 
+    mul(eval_out, eval_in_1, eval_in_2);  
+    to_coef(out, eval_out); 
+    delete eval_in_1;
+    delete eval_in_2;
+    delete eval_out;
+}
   
 IntelHexlNTTEngine::IntelHexlNTTEngine(int degree, long coef_modulus){ 
     this->degree = degree;
@@ -9,122 +22,124 @@ IntelHexlNTTEngine::IntelHexlNTTEngine(int degree, long coef_modulus){
     this->ntt = intel::hexl::NTT(degree, coef_modulus);
     this->type = hexl_ntt;
 }
- 
-void IntelHexlNTTEngine::to_coef(Polynomial *in){
-    this->to_coef(in, in); 
-}
-
+  
 void IntelHexlNTTEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){
-    ntt.ComputeInverse((uint64_t*) out->coefs, (uint64_t*)  in->eval_long, 1, 1);  
-    out->is_eval_form = false;
+    PolynomialEvalFormLongInteger* in_cast = static_cast<PolynomialEvalFormLongInteger*>(in);
+    ntt.ComputeInverse((uint64_t*) out->coefs, (uint64_t*)  in_cast->eval_long, 1, 1);   
 }
- 
-void IntelHexlNTTEngine::to_coef(Polynomial *out, Polynomial *in){
-    if(in->is_eval_form){ 
-        to_coef(out, &in->poly_eval_form); 
-    }else{
-        Utils::cp(out->coefs, in->coefs, in->degree); 
-    }
-}
-
+  
 void IntelHexlNTTEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in){
+    PolynomialArrayEvalFormLong* in_cast = static_cast<PolynomialArrayEvalFormLong*>(in);
     long* in_poly;
     long* out_poly;
     for(int i = 0; i < in->array_size; ++i){
-        in_poly = &in->eval_long[i * in->size];
+        in_poly = &in_cast->eval_long[i * in->size];
         out_poly = &out->poly_array[i * out->degree];
         ntt.ComputeInverse((uint64_t*) out_poly, (uint64_t*) in_poly, 1, 1);  
     } 
 }
 
-
-void IntelHexlNTTEngine::to_eval(Polynomial *in){ 
-    this->to_eval(in, in); 
+PolynomialEvalForm* IntelHexlNTTEngine::init_polynomial_eval_form(){ 
+    return new PolynomialEvalFormLongInteger(new long[degree], degree, coef_modulus);
 }
 
+PolynomialArrayEvalForm* IntelHexlNTTEngine::init_polynomial_array_eval_form(int array_size){ 
+    return new PolynomialArrayEvalFormLong(array_size, degree, coef_modulus); 
+}
+ 
 void IntelHexlNTTEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){ 
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
     // Here we make sure that the coefficients are in propper form.
     long* coefs_mod_form = new long[in->degree];
     Utils::array_mod_form(coefs_mod_form, in->coefs, in->degree, in->coef_modulus); 
-    ntt.ComputeForward((uint64_t*) out->eval_long, (uint64_t*) coefs_mod_form, 1, 1);  
+    ntt.ComputeForward((uint64_t*) out_cast->eval_long, (uint64_t*) coefs_mod_form, 1, 1);  
     delete[] coefs_mod_form;
 }
-
-void IntelHexlNTTEngine::to_eval(Polynomial *out, Polynomial *in){  
-    if(in->is_eval_form){ 
-        out->poly_eval_form = in->poly_eval_form;
-        out->is_eval_form = true;
-        return;
-    }
-    if(!out->poly_eval_form.is_init){  
-        out->poly_eval_form = PolynomialEvalForm(new long[out->degree], out->degree, out->coef_modulus);   
-    }   
-    this->to_eval(&out->poly_eval_form, in); 
-    out->is_eval_form = true; 
-}
-
-void IntelHexlNTTEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){
+ 
+void IntelHexlNTTEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){ 
+    PolynomialArrayEvalFormLong* out_cast = static_cast<PolynomialArrayEvalFormLong*>(out);
     long* in_poly;
-    long* out_poly;
+    long* out_poly; 
     for(int i = 0; i < in->array_size; ++i){
         in_poly = &in->poly_array[i * in->degree];
-        out_poly = &out->eval_long[i * out->size];
-        ntt.ComputeForward((uint64_t*) out_poly, (uint64_t*) in_poly, 1, 1);  
+        out_poly = &out_cast->eval_long[i * out_cast->size];
+        ntt.ComputeForward((uint64_t*) out_poly, (uint64_t*) in_poly, 1, 1);   
     } 
 }
 
-void IntelHexlNTTEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
-    intel::hexl::EltwiseMultMod((uint64_t*) out->eval_long, 
-                (uint64_t*) in_1->eval_long, 
-                (uint64_t*) in_2->eval_long, 
-                out->size, out->coef_modulus, 1);
+void IntelHexlNTTEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){ 
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
+    PolynomialEvalFormLongInteger* in_1_cast = static_cast<PolynomialEvalFormLongInteger*>(in_1);
+    PolynomialEvalFormLongInteger* in_2_cast = static_cast<PolynomialEvalFormLongInteger*>(in_2); 
+    intel::hexl::EltwiseMultMod((uint64_t*) out_cast->eval_long, 
+                (uint64_t*) in_1_cast->eval_long, 
+                (uint64_t*) in_2_cast->eval_long, 
+                out->size, out->coef_modulus, 1); 
 }
-
-void IntelHexlNTTEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){   
-    if(!out->poly_eval_form.is_init){ 
-        out->poly_eval_form = PolynomialEvalForm(new long[out->degree], out->degree, out->coef_modulus); 
-    }
-    if(in_1->is_eval_form && in_2->is_eval_form){
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form);
-            out->is_eval_form = true; 
-    }else{ 
-        throw std::logic_error("IntelHexlNTTEngine::mul: Polynomials must be in eval form.");
-    }
-}
-
-Polynomial IntelHexlNTTEngine::mul(Polynomial *in_1, Polynomial *in_2){ 
-    if(in_1->degree != in_2->degree){
-        throw std::logic_error("IntelHexlNTTEngine::mul: Size of polynomials doesn't match.");
-    }
-    if(in_1->coef_modulus != in_2->coef_modulus){
-        throw std::logic_error("IntelHexlNTTEngine::mul: Coefficient modulus doesn't match.");
-    }
-    Polynomial out(in_1->degree, in_1->coef_modulus); 
-    mul(&out, in_1, in_2);    
-    return out;
-}
-
-void IntelHexlNTTEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form){  
+ 
+void IntelHexlNTTEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormLong* in_2_cast = static_cast<PolynomialArrayEvalFormLong*>(in_2);
     long* in_1_temp = in_1->poly_array;
-    long* in_2_temp = in_2->eval_long;
-    long* temp = new long[in_2->size];  
+    long* in_2_temp = in_2_cast->eval_long; 
+    long* temp = new long[in_2_cast->size];  
+    /// TODO: Need to assure the input polynomials are already in mod_form
     Utils::array_mod_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
     ntt.ComputeForward((uint64_t*) temp, (uint64_t*) in_1_temp, 1, 1);  
-    intel::hexl::EltwiseMultMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2->size, in_2->coef_modulus, 1); 
-    for(int i = 1; i < in_2->array_size; ++i){
+    intel::hexl::EltwiseMultMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1); 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
         in_1_temp = &in_1->poly_array[i * in_1->degree];
-        in_2_temp = &in_2->eval_long[i * in_2->size];
+        in_2_temp = &in_2_cast->eval_long[i * in_2_cast->size]; 
         Utils::array_mod_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
         ntt.ComputeForward((uint64_t*) temp, (uint64_t*) in_1_temp, 1, 1);  
-        intel::hexl::EltwiseMultMod((uint64_t*) temp, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2->size, in_2->coef_modulus, 1);
-        intel::hexl::EltwiseAddMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) out->coefs, in_2->size, in_2->coef_modulus);
+        intel::hexl::EltwiseMultMod((uint64_t*) temp, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1);
+        intel::hexl::EltwiseAddMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) out->coefs, in_2_cast->size, in_2_cast->coef_modulus);
     }
-    if(coef_form){ 
-        ntt.ComputeInverse((uint64_t*) out->coefs, (uint64_t*) out->coefs, 1, 1);  
-    }
-    delete[] temp;
-
+    ntt.ComputeInverse((uint64_t*) out->coefs, (uint64_t*) out->coefs, 1, 1);  
+    delete[] temp; 
 }
+
+void IntelHexlNTTEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormLong* in_1_cast = static_cast<PolynomialArrayEvalFormLong*>(in_1);
+    PolynomialArrayEvalFormLong* in_2_cast = static_cast<PolynomialArrayEvalFormLong*>(in_2);
+    long* in_1_temp = in_1_cast->eval_long;
+    long* in_2_temp = in_2_cast->eval_long; 
+    long* temp = new long[in_2_cast->size];   
+    intel::hexl::EltwiseMultMod((uint64_t*) out->coefs, (uint64_t*) in_1_temp, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1); 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1_cast->eval_long[i * in_1_cast->size];
+        in_2_temp = &in_2_cast->eval_long[i * in_2_cast->size];    
+        intel::hexl::EltwiseMultMod((uint64_t*) temp, (uint64_t*) in_1_temp, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1);
+        intel::hexl::EltwiseAddMod((uint64_t*) out->coefs, (uint64_t*) temp, (uint64_t*) out->coefs, in_2_cast->size, in_2_cast->coef_modulus); 
+    }
+    ntt.ComputeInverse((uint64_t*) out->coefs, (uint64_t*) out->coefs, 1, 1);  
+    delete[] temp; 
+}
+
+
+void IntelHexlNTTEngine::multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormLong* in_2_cast = static_cast<PolynomialArrayEvalFormLong*>(in_2);
+    PolynomialArrayEvalFormLong* out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormLong*>(out_in_1_eval);
+    long* in_1_temp = in_1->poly_array;
+    long* in_2_temp = in_2_cast->eval_long; 
+    long* temp = new long[in_2_cast->size];  
+    long* out_eval = out_in_1_eval_cast->eval_long;
+    /// TODO: Need to assure the input polynomials is already in mod_form
+    Utils::array_mod_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
+    ntt.ComputeForward((uint64_t*) out_eval, (uint64_t*) in_1_temp, 1, 1);  
+    intel::hexl::EltwiseMultMod((uint64_t*) out_multisum->coefs, (uint64_t*) out_eval, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1); 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1->poly_array[i * in_1->degree];
+        in_2_temp = &in_2_cast->eval_long[i * in_2_cast->size]; 
+        out_eval = &out_in_1_eval_cast->eval_long[i * out_in_1_eval_cast->size];
+        Utils::array_mod_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
+        ntt.ComputeForward((uint64_t*) out_eval, (uint64_t*) in_1_temp, 1, 1);  
+        intel::hexl::EltwiseMultMod((uint64_t*) temp, (uint64_t*) out_eval, (uint64_t*) in_2_temp, in_2_cast->size, in_2_cast->coef_modulus, 1);
+        intel::hexl::EltwiseAddMod((uint64_t*) out_multisum->coefs, (uint64_t*) temp, (uint64_t*) out_multisum->coefs, in_2_cast->size, in_2_cast->coef_modulus);
+    }
+    ntt.ComputeInverse((uint64_t*) out_multisum->coefs, (uint64_t*) out_multisum->coefs, 1, 1);  
+    delete[] temp; 
+}
+
 
 FFTWNegacyclicEngine::FFTWNegacyclicEngine(int degree, long coef_modulus){ 
     this->degree = degree;
@@ -132,45 +147,35 @@ FFTWNegacyclicEngine::FFTWNegacyclicEngine(int degree, long coef_modulus){
     this->type = double_fft;
     engine = FFTPlan(negacyclic, degree, false);  
 }
- 
-void FFTWNegacyclicEngine::to_eval(Polynomial *in){ 
-    this->to_eval(in, in); 
+
+PolynomialEvalForm* FFTWNegacyclicEngine::init_polynomial_eval_form(){
+    return new PolynomialEvalFormFFTWComplex(engine.init_fft_poly(), engine.plan_size, coef_modulus);
 }
 
-void FFTWNegacyclicEngine::to_coef(Polynomial *in){
-    this->to_coef(in, in); 
+PolynomialArrayEvalForm* FFTWNegacyclicEngine::init_polynomial_array_eval_form(int array_size){
+    return new PolynomialArrayEvalFormFFTWComplex(this, array_size); 
 }
-
+  
 void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){
-    engine.to_eval_form(out->eval_fftw, in->coefs); 
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    engine.to_eval_form(out_cast->eval_fftw, in->coefs); 
 }
-
-void FFTWNegacyclicEngine::to_eval(Polynomial *out, Polynomial *in){ 
-    if(in->is_eval_form){ 
-        out->poly_eval_form = in->poly_eval_form;
-        out->is_eval_form = true;
-        return;
-    }
-    if(!out->poly_eval_form.is_init){ 
-        out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly(), engine.plan_size, out->coef_modulus); 
-    } 
-    to_eval(&out->poly_eval_form, in); 
-    out->is_eval_form = true;
-}
-
+ 
 void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){ 
+    PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
     long *in_poly;
     fftw_complex *out_poly;
     for (int i = 0; i < in->array_size; ++i)
     {  
         in_poly = &in->poly_array[i * in->degree];
-        out_poly = &out->eval_fftw[i * out->size];  
+        out_poly = &out_cast->eval_fftw[i * out_cast->size];  
         engine.to_eval_form_scale(out_poly, in_poly, 2.0);  
     } 
 }
 
 void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){ 
-    engine.to_coef_form(out->coefs, in->eval_fftw);
+    PolynomialEvalFormFFTWComplex* in_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in);
+    engine.to_coef_form(out->coefs, in_cast->eval_fftw);
     // Divide by the scale (polynomial size times two.)
     // NOTE: For FHE its nice to scale one of the polynomials in the key
     // That is this rescaling could be precomputed. But here the Engine and later Polynomial class are oblivious to that.
@@ -178,90 +183,110 @@ void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){
     double scale = (double)(engine.plan_size * 2);
     for(int i = 0; i < degree; ++i){   
         out->coefs[i] = round((double)out->coefs[i] / scale); 
-    }
-    out->is_eval_form = false;
+    } 
 }
- 
-void FFTWNegacyclicEngine::to_coef(Polynomial *out, Polynomial *in){
-     if(in->is_eval_form){ 
-        to_coef(out, &in->poly_eval_form); 
-    }else{
-        Utils::cp(out->coefs, in->coefs, in->degree);
-        out->is_eval_form = false;
-    }
-}
-
+  
 void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in){
+    PolynomialArrayEvalFormFFTWComplex* in_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in);
     long *out_poly;
     fftw_complex *in_poly;
-    for (int i = 0; i < in->array_size; ++i)
+    for (int i = 0; i < in_cast->array_size; ++i)
     {
-        in_poly = &in->eval_fftw[i * in->size];
+        in_poly = &in_cast->eval_fftw[i * in_cast->size];
         out_poly = &out->poly_array[i * out->degree];
         engine.to_coef_form(out_poly, in_poly); 
     }
 }
 
 void FFTWNegacyclicEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    PolynomialEvalFormFFTWComplex* in_1_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_1);
+    PolynomialEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_2);
     // Remind that one of the polynomials must be scaled by the plan_size times two. 
-    engine.mul_eval_form(out->eval_fftw, 
-            in_1->eval_fftw, 
-            in_2->eval_fftw);  
-}
- 
-void FFTWNegacyclicEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){   
-    if(!out->poly_eval_form.is_init){  
-        out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly(), engine.plan_size, out->coef_modulus);
-    }
-    if(in_1->is_eval_form && in_2->is_eval_form){ 
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form); 
-            out->is_eval_form = true;  
-    }else{ 
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Polynomials must be in eval form.");
-    }
-}
-
-Polynomial FFTWNegacyclicEngine::mul(Polynomial *in_1, Polynomial *in_2){
-    if(in_1->degree != in_2->degree){
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Size of polynomials doesn't match.");
-    }
-    if(in_1->coef_modulus != in_2->coef_modulus){
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Coefficient modulus doesn't match.");
-    }
-    Polynomial out(in_1->degree, in_1->coef_modulus); 
-    this->mul(&out, in_1, in_2);    
-    return out;
+    engine.mul_eval_form(out_cast->eval_fftw, 
+            in_1_cast->eval_fftw, 
+            in_2_cast->eval_fftw);  
 }
 
 
-void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form){   
+void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_2);
     long* in_1_temp = in_1->poly_array;
-    fftw_complex* in_2_temp = in_2->eval_fftw;
-    fftw_complex* fft_prod_new = new fftw_complex[in_2->size]; 
-    fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2->size]; 
+    fftw_complex* in_2_temp = in_2_cast->eval_fftw;
+    fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
+    fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
     
     engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
-    for(int i = 1; i < in_2->array_size; ++i){
+    for(int i = 1; i < in_2_cast->array_size; ++i){
         in_1_temp = &in_1->poly_array[i * in_1->degree];
-        in_2_temp = &in_2->eval_fftw[i * in_2->size];
+        in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
         
         engine.to_eval_form(fft_prod_new, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, fft_prod_new, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
-    }
-    if(coef_form){ 
-        engine.to_coef_form(out->coefs, fft_multisum_eval_new);
-        Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, in_1->coef_modulus);
-        out->is_eval_form = false; 
-    }
+    } 
+    engine.to_coef_form(out->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, in_1->coef_modulus); 
+    delete[] fft_prod_new; 
+    delete[] fft_multisum_eval_new; 
+}
+
+
+void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormFFTWComplex* in_1_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_1);
+    PolynomialArrayEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_2);
+    fftw_complex* in_1_temp = in_1_cast->eval_fftw;
+    fftw_complex* in_2_temp = in_2_cast->eval_fftw;
+    fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
+    fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
+    
+    //engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
+    engine.mul_eval_form(fft_multisum_eval_new, in_1_temp, in_2_temp);  
+ 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1_cast->eval_fftw[i * in_1_cast->size];
+        in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
+         
+        engine.mul_eval_form(fft_prod_new, in_1_temp, in_2_temp); 
+        engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
+    } 
+    engine.to_coef_form(out->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out->coefs, out->coefs, out->degree, in_1->coef_modulus); 
+    delete[] fft_prod_new; 
+    delete[] fft_multisum_eval_new; 
+}
+
+   
+void FFTWNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){   
+    PolynomialArrayEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_2);
+    PolynomialArrayEvalFormFFTWComplex* out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out_in_1_eval);
+    long* in_1_temp = in_1->poly_array;
+    fftw_complex* out_eval = out_in_1_eval_cast->eval_fftw;
+    fftw_complex* in_2_temp = in_2_cast->eval_fftw;
+    fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
+    fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
+    
+    engine.to_eval_form(out_eval, in_1_temp);   
+    engine.mul_eval_form(fft_multisum_eval_new, out_eval, in_2_temp);  
+ 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1->poly_array[i * in_1->degree];
+        out_eval = &out_in_1_eval_cast->eval_fftw[i * out_in_1_eval_cast->size];
+        in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
+        
+        engine.to_eval_form(out_eval, in_1_temp);  
+        engine.mul_eval_form(fft_prod_new, out_eval, in_2_temp); 
+        engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
+    } 
+    engine.to_coef_form(out_multisum->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, in_1->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
  
-
-
+  
 FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int degree, long coef_modulus){ 
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
@@ -269,224 +294,133 @@ FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int degree, long coef_modulus
     this->type = long_double_fft;
 }
  
-void FFTWLongNegacyclicEngine::to_eval(Polynomial *in){ 
-    this->to_eval(in, in); 
+PolynomialEvalForm* FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
+    return new PolynomialEvalFormFFTWLongComplex(engine.init_fft_poly_l(), engine.plan_size, coef_modulus);
 }
 
-void FFTWLongNegacyclicEngine::to_coef(Polynomial *in){
-    this->to_coef(in, in); 
+PolynomialArrayEvalForm* FFTWLongNegacyclicEngine::init_polynomial_array_eval_form(int size){
+    return new PolynomialArrayEvalFormFFTWLongComplex(this, size);
 }
  
 void FFTWLongNegacyclicEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){
-    engine.to_eval_form_l(out->eval_fftwl, in->coefs);   
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    engine.to_eval_form_l(out_cast->eval_fftwl, in->coefs);   
 }
-
-void FFTWLongNegacyclicEngine::to_eval(Polynomial *out, Polynomial *in){ 
-    if(in->is_eval_form){
-        out->poly_eval_form = in->poly_eval_form;
-        out->is_eval_form = true;
-        return;
-    }
-    if(!out->poly_eval_form.is_init){ 
-        out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly_l(), engine.plan_size,  out->coef_modulus);
-    } 
-    to_eval(&out->poly_eval_form, in);   
-    out->is_eval_form = true;
-}
-
+ 
 void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){
+    PolynomialArrayEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out);
     long *in_poly;
     fftwl_complex *out_poly;
     for (int i = 0; i < in->array_size; ++i)
     {
         in_poly = &in->poly_array[i * in->degree];
-        out_poly = &out->eval_fftwl[i * out->size];
+        out_poly = &out_cast->eval_fftwl[i * out_cast->size];
         engine.to_eval_form_l(out_poly, in_poly); 
     }
 } 
 
 void FFTWLongNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){
-    engine.to_coef_form_l(out->coefs, in->eval_fftwl);   
-        double scale = (double)(engine.plan_size * 2);
+    PolynomialEvalFormFFTWLongComplex* in_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(in);
+    engine.to_coef_form_l(out->coefs, in_cast->eval_fftwl);   
+        long double scale = (long double)(engine.plan_size * 2);
         for(int i = 0; i < degree; ++i){   
-            out->coefs[i] = round((double)out->coefs[i] / scale); 
-        }
-        out->is_eval_form = false;
+            out->coefs[i] = roundl((long double)out->coefs[i] / scale); 
+        } 
 }
- 
-void FFTWLongNegacyclicEngine::to_coef(Polynomial *out, Polynomial *in){
-     if(in->is_eval_form){  
-        to_coef(out, &in->poly_eval_form); 
-    }else{
-        Utils::cp(out->coefs, in->coefs, in->degree);
-        out->is_eval_form = false;
-    }
-}
-
+  
 void FFTWLongNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in){
+    PolynomialArrayEvalFormFFTWLongComplex* in_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(in);
     long *out_poly;
     fftwl_complex *in_poly;
-    for (int i = 0; i < in->array_size; ++i)
+    for (int i = 0; i < in_cast->array_size; ++i)
     {
-        in_poly = &in->eval_fftwl[i * in->size];
+        in_poly = &in_cast->eval_fftwl[i * in_cast->size];
         out_poly = &out->poly_array[i * out->degree];
         engine.to_coef_form_l(out_poly, in_poly); 
     }
 }
 
 void FFTWLongNegacyclicEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
-    engine.mul_eval_form_l(out->eval_fftwl, in_1->eval_fftwl, in_2->eval_fftwl);
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    PolynomialEvalFormFFTWLongComplex* in_1_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(in_1);
+    PolynomialEvalFormFFTWLongComplex* in_2_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(in_2);
+    engine.mul_eval_form_l(out_cast->eval_fftwl, in_1_cast->eval_fftwl, in_2_cast->eval_fftwl);
 }
- 
-void FFTWLongNegacyclicEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){  
-    if(!out->poly_eval_form.is_init){ 
-        out->poly_eval_form = PolynomialEvalForm(engine.init_fft_poly_l(), engine.plan_size, out->coef_modulus);
-    }
-    if(in_1->is_eval_form && in_2->is_eval_form){ 
-        this->mul(&out->poly_eval_form, &in_1->poly_eval_form, &in_2->poly_eval_form);
-        out->is_eval_form = true;  
-    }else{ 
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Polynomials must be in eval form.");
-    }
-}
-
-Polynomial FFTWLongNegacyclicEngine::mul(Polynomial *in_1, Polynomial *in_2){
-    if(in_1->degree != in_2->degree){
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Size of polynomials doesn't match.");
-    }
-    if(in_1->coef_modulus != in_2->coef_modulus){
-        throw std::logic_error("FFTWNegacyclicEngine::mul: Coefficient modulus doesn't match.");
-    }
-    Polynomial out(in_1->degree, in_1->coef_modulus); 
-    mul(&out, in_1, in_2);    
-    return out;
-}
-
-void FFTWLongNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form){
+  
+void FFTWLongNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){
+    PolynomialArrayEvalFormFFTWLongComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(in_2);
     long* in_1_temp = in_1->poly_array;
-    fftwl_complex* in_2_temp = in_2->eval_fftwl;
-    fftwl_complex* temp = new fftwl_complex[in_2->size]; 
+    fftwl_complex* in_2_temp = in_2_cast->eval_fftwl;
+    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast->size]; 
+    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast->size]; 
     
-    engine.to_eval_form_l(temp, in_1_temp);  
-    engine.mul_eval_form_l(out->poly_eval_form.eval_fftwl, temp, in_2_temp);  
-
-    for(int i = 1; i < in_2->array_size; ++i){
+    engine.to_eval_form_l(fft_multisum_eval_new, in_1_temp);   
+    engine.mul_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
+ 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
         in_1_temp = &in_1->poly_array[i * in_1->degree];
-        in_2_temp = &in_2->eval_fftwl[i * in_2->size];
+        in_2_temp = &in_2_cast->eval_fftwl[i * in_2_cast->size];
         
-        engine.to_eval_form_l(temp, in_1_temp);  
-        engine.mul_eval_form_l(temp, temp, in_2_temp); 
-        engine.add_eval_form_l(out->poly_eval_form.eval_fftwl, out->poly_eval_form.eval_fftwl, temp); 
+        engine.to_eval_form_l(fft_prod_new, in_1_temp);  
+        engine.mul_eval_form_l(fft_prod_new, fft_prod_new, in_2_temp); 
+        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
-    if(coef_form){
-        this->to_coef(out); 
+    engine.to_coef_form_l(out->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, in_1->coef_modulus); 
+    delete[] fft_prod_new; 
+    delete[] fft_multisum_eval_new;  
+}
+
+void FFTWLongNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2){
+    PolynomialArrayEvalFormFFTWLongComplex* in_1_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(in_1);
+    PolynomialArrayEvalFormFFTWLongComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(in_2);
+    fftwl_complex* in_1_temp = in_1_cast->eval_fftwl;
+    fftwl_complex* in_2_temp = in_2_cast->eval_fftwl;
+    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast->size]; 
+    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast->size]; 
+       
+    engine.mul_eval_form_l(fft_multisum_eval_new, in_1_temp, in_2_temp);  
+ 
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1_cast->eval_fftwl[i * in_1_cast->size];
+        in_2_temp = &in_2_cast->eval_fftwl[i * in_2_cast->size];
+         
+        engine.mul_eval_form_l(fft_prod_new, in_1_temp, in_2_temp); 
+        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
+    engine.to_coef_form_l(out->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out->coefs, out->coefs, out->degree, in_1->coef_modulus); 
+    delete[] fft_prod_new; 
+    delete[] fft_multisum_eval_new;  
 }
+
+void FFTWLongNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){
+    PolynomialArrayEvalFormFFTWLongComplex* out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out_in_1_eval);
+    PolynomialArrayEvalFormFFTWLongComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(in_2);
+    long* in_1_temp = in_1->poly_array;
+    fftwl_complex* out_eval_temp = out_in_1_eval_cast->eval_fftwl;
+    fftwl_complex* in_2_temp = in_2_cast->eval_fftwl;
+    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast->size]; 
+    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast->size]; 
+    
+    engine.to_eval_form_l(out_eval_temp, in_1_temp);   
+    engine.mul_eval_form_l(fft_multisum_eval_new, out_eval_temp, in_2_temp);  
  
-NTLMultiplicationEngine::NTLMultiplicationEngine(int degree, long coef_modulus, RingType ring_type){ 
-    this->degree = degree;
-    this->coef_modulus = coef_modulus;  
-    this->ring = this->get_ring_poly(ring_type); 
-    this->type = ntl;
-}
- 
-void NTLMultiplicationEngine::to_eval(Polynomial *in){ 
-    throw std::runtime_error("NTLMultiplicationEngine::to_eval(Polynomial *in): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::to_coef(Polynomial *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_coef(Polynomial *in): Not supported for NTL.");
-}
- 
-void NTLMultiplicationEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_eval(PolynomialEvalForm *out, Polynomial *in): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::to_eval(Polynomial *out, Polynomial *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_eval(Polynomial *out, Polynomial *in): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_coef(Polynomial *out, PolynomialEvalForm *in): Not supported for NTL.");
-}
- 
-void NTLMultiplicationEngine::to_coef(Polynomial *out, Polynomial *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_coef(Polynomial *out, Polynomial *in): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in){
-    throw std::runtime_error("NTLMultiplicationEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in): Not supported for NTL.");
-}
- 
-void NTLMultiplicationEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
-    throw std::logic_error("NTLMultiplicationEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2): Not supported for NTL.");
-}
-
-void NTLMultiplicationEngine::mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2){  
-    NTL::ZZ_pX in_1_poly;
-   this->set_polynomial_from_array(in_1_poly, in_1->coefs, degree, coef_modulus);
-   NTL::ZZ_pX in_2_poly;
-   this->set_polynomial_from_array(in_2_poly, in_2->coefs, degree, coef_modulus);
-   NTL::ZZ_pX res = NTL::MulMod(in_1_poly, in_2_poly, ring); 
-   this->set_array_from_polynomial(out->coefs, degree, res);
-}
-
-Polynomial NTLMultiplicationEngine::mul(Polynomial *in_1, Polynomial *in_2){
-    if(in_1->degree != in_2->degree){
-        throw std::logic_error("NTLMultiplicationEngine::mul: Size of polynomials doesn't match.");
+    for(int i = 1; i < in_2_cast->array_size; ++i){
+        in_1_temp = &in_1->poly_array[i * in_1->degree];
+        in_2_temp = &in_2_cast->eval_fftwl[i * in_2_cast->size];
+        out_eval_temp = &out_in_1_eval_cast->eval_fftwl[i * out_in_1_eval_cast->size];
+        
+        engine.to_eval_form_l(out_eval_temp, in_1_temp);  
+        engine.mul_eval_form_l(fft_prod_new, out_eval_temp, in_2_temp); 
+        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
-    if(in_1->coef_modulus != in_2->coef_modulus){
-        throw std::logic_error("NTLMultiplicationEngine::mul: Coefficient modulus doesn't match.");
-    }
-    Polynomial out(in_1->degree, in_1->coef_modulus); 
-    mul(&out, in_1, in_2);    
-    return out;
+    engine.to_coef_form_l(out_multisum->coefs, fft_multisum_eval_new);
+    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, in_1->coef_modulus); 
+    delete[] fft_prod_new; 
+    delete[] fft_multisum_eval_new;  
 }
- 
-void NTLMultiplicationEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form){
-    throw std::runtime_error("NTLMultiplicationEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2): Not implemented Yet.");
-}
-
-NTL::ZZ_pX NTLMultiplicationEngine::get_ring_poly(RingType ring){
-    NTL::ZZ_pX out;
-    long *psi_arr = new long[degree+1]; 
-    psi_arr[degree] = 1;
-    for(int i=1; i < degree; ++i){
-            psi_arr[i] = 0;
-    } 
-    if(ring==cyclic){
-        psi_arr[0] = coef_modulus-1;
-    }else{
-        psi_arr[0] = 1;
-    }
-    this->set_polynomial_from_array(out, psi_arr, degree+1, coef_modulus); 
-    delete[] psi_arr;
-    return out;
-}
-
-void NTLMultiplicationEngine::set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, long Q){
-    NTL::ZZ_p coef;
-    coef.init(NTL::ZZ(Q));
-    for(int i = 0; i < sizeof_f; ++i){
-        coef = f[i];
-        NTL::SetCoeff(poly, i, coef);
-    } 
-}
-
-void NTLMultiplicationEngine::set_array_from_polynomial(long *f, int sizeof_array, NTL::ZZ_pX poly){ 
-    for(int i = 0; i < sizeof_array; ++i){
-        f[i] = 0;
-    }
-    long deg = NTL::deg(poly);
-    for(int i = 0; i <= deg; ++i){
-         f[i] = NTL::conv<long>(poly[i]);
-    } 
-}
-
+   
 void PolynomialMultiplicationEngineBuilder::set_coef_modulus(long coef_modulus){
     this->coef_modulus = coef_modulus;
 }
@@ -527,206 +461,176 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
     throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): Polynomial arithmetic not supported!");
 }
 
-PolynomialEvalForm::~PolynomialEvalForm(){
-    if(is_eval_long){
+PolynomialEvalFormLongInteger::~PolynomialEvalFormLongInteger(){
+    if(is_init){
         delete[] eval_long;
     }
-    if(is_eval_fftw){
-        delete[] eval_fftw;
+}
+
+PolynomialEvalFormLongInteger::PolynomialEvalFormLongInteger(long* eval_long, int size, long coef_modulus){
+    this->eval_long = eval_long;
+    this->coef_modulus = coef_modulus;
+    this->is_init = true; 
+    this->size = size;
+}
+
+void PolynomialEvalFormLongInteger::zeroize(){ 
+    for(int i = 0; i < size; ++i){
+        this->eval_long[i] = 0;
     }
-    if(is_eval_fftwl){
-        delete[] eval_fftwl;
+}
+
+void PolynomialEvalFormLongInteger::add(PolynomialEvalForm *out, PolynomialEvalForm *other){ 
+    PolynomialEvalFormLongInteger* other_cast = static_cast<PolynomialEvalFormLongInteger*>(other);
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_long[i] = this->eval_long[i] + other_cast->eval_long[i];
+    }
+}
+
+void PolynomialEvalFormLongInteger::sub(PolynomialEvalForm *out, PolynomialEvalForm *other){
+    PolynomialEvalFormLongInteger* other_cast = static_cast<PolynomialEvalFormLongInteger*>(other);
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_long[i] = this->eval_long[i] - other_cast->eval_long[i];
+    }  
+}
+
+void PolynomialEvalFormLongInteger::mul(PolynomialEvalForm *out, long scalar){
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_long[i] = this->eval_long[i] * scalar;
+    } 
+}
+ 
+void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm *out){
+    PolynomialEvalFormLongInteger* out_cast = static_cast<PolynomialEvalFormLongInteger*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_long[i] = -this->eval_long[i];
+    } 
+}
+ 
+void PolynomialEvalFormLongInteger::mod_reduce(long Q){
+    Utils::array_mod_form(this->eval_long, this->eval_long, size, Q);  
+} 
+
+PolynomialEvalFormFFTWComplex::~PolynomialEvalFormFFTWComplex(){
+    if(is_init){
+        delete[] eval_fftw;
     }
 }
  
-PolynomialEvalForm::PolynomialEvalForm(long* eval_long, int size, long coef_modulus){ 
-    this->eval_long = eval_long;  
+PolynomialEvalFormFFTWComplex::PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int size, long coef_modulus){
+    this->eval_fftw = eval_fftw;
     this->coef_modulus = coef_modulus;
-    this->is_init = true;
-    this->is_eval_long = true;
+    this->is_init = true; 
     this->size = size; 
 }
 
-PolynomialEvalForm::PolynomialEvalForm(fftw_complex* eval_fftw, int size, long coef_modulus){
-    this->eval_fftw = eval_fftw;
-    this->coef_modulus = coef_modulus;
-    this->is_init = true;
-    this->is_eval_fftw = true;
-    this->size = size;
+void PolynomialEvalFormFFTWComplex::zeroize(){
+    for(int i = 0; i < size; ++i){
+        this->eval_fftw[i][0] = 0;
+        this->eval_fftw[i][1] = 0;
+    }
 }
 
-PolynomialEvalForm::PolynomialEvalForm(fftwl_complex* eval_fftwl, int size, long coef_modulus){
+void PolynomialEvalFormFFTWComplex::add(PolynomialEvalForm *out, PolynomialEvalForm *other){
+    PolynomialEvalFormFFTWComplex* other_cast = static_cast<PolynomialEvalFormFFTWComplex*>(other);
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] + other_cast->eval_fftw[i][0];
+        out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] + other_cast->eval_fftw[i][1];
+    } 
+}
+
+void PolynomialEvalFormFFTWComplex::sub(PolynomialEvalForm *out, PolynomialEvalForm *other){
+    PolynomialEvalFormFFTWComplex* other_cast = static_cast<PolynomialEvalFormFFTWComplex*>(other);
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] - other_cast->eval_fftw[i][0];
+        out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] - other_cast->eval_fftw[i][1];
+    } 
+}
+
+void PolynomialEvalFormFFTWComplex::mul(PolynomialEvalForm *out, long scalar){
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
+        out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
+    }  
+}
+ 
+void PolynomialEvalFormFFTWComplex::neg(PolynomialEvalForm *out){ 
+    PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_fftw[i][0] = -this->eval_fftw[i][0];
+        out_cast->eval_fftw[i][1] = -this->eval_fftw[i][1];
+    } 
+}
+
+void PolynomialEvalFormFFTWComplex::mod_reduce(long Q){ 
+}
+
+PolynomialEvalFormFFTWLongComplex::~PolynomialEvalFormFFTWLongComplex(){
+    if(is_init){
+        delete[] eval_fftwl;
+    }
+}
+  
+PolynomialEvalFormFFTWLongComplex::PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int size, long coef_modulus){
     this->eval_fftwl = eval_fftwl;
     this->coef_modulus = coef_modulus;
-    this->is_init = true;
-    this->is_eval_fftwl = true;
-    this->size = size;
+    this->is_init = true; 
+    this->size = size; 
+}
+
+void PolynomialEvalFormFFTWLongComplex::zeroize(){
+    for(int i = 0; i < size; ++i){
+        this->eval_fftwl[i][0] = 0;
+        this->eval_fftwl[i][1] = 0;
+    }
+}
+
+void PolynomialEvalFormFFTWLongComplex::add(PolynomialEvalForm *out, PolynomialEvalForm *other){
+    PolynomialEvalFormFFTWLongComplex* other_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(other);
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < size; ++ i){
+        out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] + other_cast->eval_fftwl[i][0];
+        out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] + other_cast->eval_fftwl[i][1];
+    }       
 }
  
-PolynomialEvalForm::PolynomialEvalForm(const PolynomialEvalForm &other){ 
-    this->is_init = other.is_init;
-    this->size = other.size;
-    this->coef_modulus = other.coef_modulus;
-    this->is_eval_long = other.is_eval_long;
-    this->is_eval_fftw = other.is_eval_fftw;
-    this->is_eval_fftwl = other.is_eval_fftwl; 
-    if(is_eval_long){
-        eval_long = new long[size];
-        Utils::cp(this->eval_long, other.eval_long, size);
-    }
-    if(is_eval_fftw){
-        eval_fftw = new fftw_complex[size];
-        for(int i = 0; i < size; ++i){
-            eval_fftw[i][0] = other.eval_fftw[i][0];
-            eval_fftw[i][1] = other.eval_fftw[i][1];
-        }
-    }
-    if(is_eval_fftwl){
-        eval_fftwl = new fftwl_complex[size];
-        for(int i = 0; i < size; ++i){
-            eval_fftwl[i][0] = other.eval_fftwl[i][0];
-            eval_fftwl[i][1] = other.eval_fftwl[i][1];
-        }
-    }
-}
-
-PolynomialEvalForm& PolynomialEvalForm::operator=(const PolynomialEvalForm other){ 
-    this->is_init = other.is_init;
-    this->size = other.size;
-    this->coef_modulus = other.coef_modulus;
-    this->is_eval_long = other.is_eval_long;
-    this->is_eval_fftw = other.is_eval_fftw;
-    this->is_eval_fftwl = other.is_eval_fftwl; 
-    if(this->is_eval_long){ 
-        this->eval_long = new long[this->size]; 
-        Utils::cp(this->eval_long, other.eval_long, this->size);
-    }
-    if(this->is_eval_fftw){
-        this->eval_fftw = new fftw_complex[size];
-        for(int i = 0; i < size; ++i){
-            this->eval_fftw[i][0] = other.eval_fftw[i][0];
-            this->eval_fftw[i][1] = other.eval_fftw[i][1];
-        }
-    }
-    if(this->is_eval_fftwl){
-        this->eval_fftwl = new fftwl_complex[size];
-        for(int i = 0; i < size; ++i){
-            this->eval_fftwl[i][0] = other.eval_fftwl[i][0];
-            this->eval_fftwl[i][1] = other.eval_fftwl[i][1];
-        }
-    }
-    return *this;
-}
-
-void PolynomialEvalForm::zeroize(){
-    if(this->is_eval_long){
-        for(int i = 0; i < size; ++i){
-            this->eval_long[i] = 0;
-        }
-    }else if(this->is_eval_fftw){
-        for(int i = 0; i < size; ++i){
-            this->eval_fftw[i][0] = 0;
-            this->eval_fftw[i][1] = 0;
-        }
-    }else if(this->is_eval_fftwl){
-        for(int i = 0; i < size; ++i){
-            this->eval_fftwl[i][0] = 0;
-            this->eval_fftwl[i][1] = 0;
-        }
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-void PolynomialEvalForm::add(PolynomialEvalForm *out, PolynomialEvalForm *other){
-    if(out->is_eval_long && this->is_eval_long && other->is_eval_long){
-        for(int i = 0; i < size; ++i){
-            out->eval_long[i] = this->eval_long[i] + other->eval_long[i];
-        }
-    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){ 
-        for(int i = 0; i < size; ++i){
-            out->eval_fftw[i][0] = this->eval_fftw[i][0] + other->eval_fftw[i][0];
-            out->eval_fftw[i][1] = this->eval_fftw[i][1] + other->eval_fftw[i][1];
-        } 
-    }else if(out->is_eval_fftwl && this->is_eval_fftwl && other->is_eval_fftwl){
-        for(int i = 0; i < size; ++i){
-            out->eval_fftwl[i][0] = this->eval_fftwl[i][0] + other->eval_fftwl[i][0];
-            out->eval_fftwl[i][1] = this->eval_fftwl[i][1] + other->eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-void PolynomialEvalForm::sub(PolynomialEvalForm *out, PolynomialEvalForm *other){
-    if(out->is_eval_long && this->is_eval_long && other->is_eval_long){
-        for(int i = 0; i < size; ++i){
-            out->eval_long[i] = this->eval_long[i] - other->eval_long[i];
-        }
-    }else if(out->is_eval_fftw && this->is_eval_fftw && other->is_eval_fftw){ 
-        for(int i = 0; i < size; ++i){
-            out->eval_fftw[i][0] = this->eval_fftw[i][0] - other->eval_fftw[i][0];
-            out->eval_fftw[i][1] = this->eval_fftw[i][1] - other->eval_fftw[i][1];
-        } 
-    }else if(out->is_eval_fftwl && this->is_eval_fftwl && other->is_eval_fftwl){
-        for(int i = 0; i < size; ++i){
-            out->eval_fftwl[i][0] = this->eval_fftwl[i][0] - other->eval_fftwl[i][0];
-            out->eval_fftwl[i][1] = this->eval_fftwl[i][1] - other->eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-void PolynomialEvalForm::mul(PolynomialEvalForm *out, long scalar){
-    if(out->is_eval_long && this->is_eval_long){
-        for(int i = 0; i < size; ++i){
-            out->eval_long[i] = this->eval_long[i] * scalar;
-        }
-    }else if(out->is_eval_fftw && this->is_eval_fftw){ 
-        for(int i = 0; i < size; ++i){
-            out->eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
-            out->eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
-        } 
-    }else if(out->is_eval_fftwl && this->is_eval_fftwl){
-        for(int i = 0; i < size; ++i){
-            out->eval_fftwl[i][0] = this->eval_fftwl[i][0] * scalar;
-            out->eval_fftwl[i][1] = this->eval_fftwl[i][1] * scalar;
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
- 
-void PolynomialEvalForm::neg(PolynomialEvalForm *out){
-    if(out->is_eval_long && this->is_eval_long){
-        for(int i = 0; i < size; ++i){
-            out->eval_long[i] = -this->eval_long[i];
-        }
-    }else if(out->eval_fftw && this->eval_fftw){ 
-        for(int i = 0; i < size; ++i){
-            out->eval_fftw[i][0] = -this->eval_fftw[i][0];
-            out->eval_fftw[i][1] = -this->eval_fftw[i][1];
-        } 
-    }else if(out->eval_fftwl && this->eval_fftwl){
-        for(int i = 0; i < size; ++i){
-            out->eval_fftwl[i][0] = -this->eval_fftwl[i][0];
-            out->eval_fftwl[i][1] = -this->eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
- 
-void PolynomialEvalForm::mod_reduce(long Q){
-    if(this->eval_long){ 
-        Utils::array_mod_form(this->eval_long, this->eval_long, size, Q); 
+void PolynomialEvalFormFFTWLongComplex::sub(PolynomialEvalForm *out, PolynomialEvalForm *other){
+    PolynomialEvalFormFFTWLongComplex* other_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(other);
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < size; ++i){
+        out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] - other_cast->eval_fftwl[i][0];
+        out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] - other_cast->eval_fftwl[i][1];
     } 
+}
+
+void PolynomialEvalFormFFTWLongComplex::mul(PolynomialEvalForm *out, long scalar){
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < size; ++i){
+            out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] * scalar;
+            out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] * scalar;
+        } 
+}
+ 
+void PolynomialEvalFormFFTWLongComplex::neg(PolynomialEvalForm *out){
+    PolynomialEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < size; ++i){
+            out_cast->eval_fftwl[i][0] = -this->eval_fftwl[i][0];
+            out_cast->eval_fftwl[i][1] = -this->eval_fftwl[i][1];
+        } 
+}
+ 
+void PolynomialEvalFormFFTWLongComplex::mod_reduce(long Q){
 }
  
 Polynomial::~Polynomial(){ 
     if(this->is_init){
-        delete[] coefs;
+        delete[] coefs; 
     } 
 }
 
@@ -764,8 +668,7 @@ void Polynomial::init(int degree, long coef_modulus){
  
 Polynomial::Polynomial(const Polynomial &other){
     this->init(other.degree, other.coef_modulus); 
-    Utils::cp(this->coefs, other.coefs, this->degree); 
-    this->poly_eval_form = other.poly_eval_form;
+    Utils::cp(this->coefs, other.coefs, this->degree);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -774,8 +677,7 @@ Polynomial::Polynomial(const Polynomial &other){
   
 Polynomial& Polynomial::operator=(const Polynomial other){
     this->init(other.degree, other.coef_modulus);
-    Utils::cp(this->coefs, other.coefs, this->degree); 
-    this->poly_eval_form = other.poly_eval_form;
+    Utils::cp(this->coefs, other.coefs, this->degree);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -801,59 +703,14 @@ void Polynomial::negacyclic_rotate(Polynomial *out, long rotation){
     Utils::negacyclic_rotate_poly(out->coefs, this->coefs, this->degree, rotation);  
     Utils::array_mod_form(out->coefs, out->coefs, this->degree, this->coef_modulus);
 }
-
-void Polynomial::to_eval(){
-    mul_engine->to_eval(this);
+ 
+void Polynomial::to_eval(PolynomialEvalForm *out){ 
+    mul_engine->to_eval(out, this);
 }
-
-
-void Polynomial::to_eval(PolynomialEvalForm *out){
-    throw std::logic_error("Polynomial::to_eval(PolynomialEvalForm *out): Not Implemented Yet!");
-}
-
-void Polynomial::to_eval(Polynomial *out){
-    if(this->degree != out->degree){
-        throw std::logic_error("Polynomial::to_eval: Both Polynomials must be the same size!");
-    }
-    if(this->coef_modulus != out->coef_modulus){
-        throw std::logic_error("Polynomial::to_eval: Both Polynomials must have the same coefficient modulus!");
-    } 
-    if(this->is_eval_form){
-        out->poly_eval_form = this->poly_eval_form;
-        out->is_eval_form = true;
-    }else{ 
-        Utils::cp(out->coefs, this->coefs, degree);
-        mul_engine->to_eval(out); 
-    }
-}
-
-void Polynomial::to_coef(){
-    mul_engine->to_coef(this);
-}
-
-void Polynomial::to_coef(Polynomial *out){
-    if(this->degree != out->degree){
-        throw std::logic_error("Polynomial::to_coef: Both Polynomials must be the same size!");
-    }
-    if(this->coef_modulus != out->coef_modulus){
-        throw std::logic_error("Polynomial::to_coef: Both Polynomials must have the same coefficient modulus!");
-    }
-
-    if(out->is_eval_form){
-        out->poly_eval_form = this->poly_eval_form; 
-        mul_engine->to_coef(out);
-    }else{
-        Utils::cp(out->coefs, this->coefs, degree);
-    }
-}
-
+ 
 void Polynomial::zeroize(){
-    if(this->is_eval_form){
-        this->poly_eval_form.zeroize();
-    }else{
-        for(int i = 0; i < degree; ++i){
-            coefs[i] = 0;
-        }
+    for(int i = 0; i < degree; ++i){
+        coefs[i] = 0;
     }
 }
 
@@ -869,13 +726,7 @@ Polynomial Polynomial::clone(){
     }else if(is_inv_engine_set){
         out = Polynomial(degree, coef_modulus, inv_engine);
     }
-    if(!is_eval_form){ 
-        Utils::cp(out.coefs, coefs, degree);
-        out.is_eval_form = false;
-    }else{
-        out.poly_eval_form = poly_eval_form;
-        out.is_eval_form = true;
-    }
+    Utils::cp(out.coefs, coefs, degree);
     out.is_init = true;
     return out;
 }
@@ -886,19 +737,8 @@ void Polynomial::add(Polynomial *out, Polynomial *other){
     }
     if(this->coef_modulus != other->coef_modulus){
         throw std::logic_error("Polynomial::add: Both Polynomials must have the same coefficient modulus!");
-    }
-    if(this->is_eval_form && other->is_eval_form){
-        this->poly_eval_form.add(&out->poly_eval_form, &other->poly_eval_form); 
-        out->poly_eval_form.mod_reduce(this->coef_modulus);
-        return;
-    }
-    if(!this->is_eval_form && !other->is_eval_form){
-        this->add_coef(out, other); 
-        return;
-    }
-    else{
-        throw std::logic_error("Polynomial::add: Both Polynomials must be in the same form (coef or eval)!");
-    }
+    } 
+    this->add_coef(out, other);  
 }
 
 void Polynomial::add_coef(Polynomial *out, Polynomial *other){
@@ -916,18 +756,7 @@ void Polynomial::sub(Polynomial *out, Polynomial *other){
     if(this->coef_modulus != other->coef_modulus){
         throw std::logic_error("Polynomial::add: Both Polynomials must have the same coefficient modulus!");
     }
-    if(this->is_eval_form && other->is_eval_form){
-        this->poly_eval_form.sub(&out->poly_eval_form, &other->poly_eval_form);
-        this->poly_eval_form.mod_reduce(this->coef_modulus);
-        return;
-    }
-    if(!this->is_eval_form && !other->is_eval_form){ 
-        sub_coef(out, other);
-        return;
-    }
-    else{
-        throw std::logic_error("Polynomial::add: Both Polynomials must be in the same form (coef or eval)!");
-    }
+    sub_coef(out, other);
 }
 
 void Polynomial::sub_coef(Polynomial *out, Polynomial *other){
@@ -938,12 +767,7 @@ void Polynomial::sub_coef(Polynomial *out, Polynomial *other){
 }
 
 void Polynomial::neg(Polynomial *out){
-    if(is_eval_form){
-        this->poly_eval_form.neg(&out->poly_eval_form);
-        out->poly_eval_form.mod_reduce(this->coef_modulus);
-    }else{
-        neg_coef(out); 
-    }
+    neg_coef(out);  
 }
 
 void Polynomial::neg_coef(Polynomial *out){
@@ -959,32 +783,27 @@ void Polynomial::mul(Polynomial *out, long scalar){
     }
     if(this->coef_modulus != out->coef_modulus){
         throw std::logic_error("Polynomial::mul(Polynomial *out, long scalar): Coefficient moduli of polynomials don't match!");
-    }
-    if(this->is_eval_form && out->is_eval_form){
-        this->poly_eval_form.mul(&out->poly_eval_form, scalar);
-    }else if(!this->is_eval_form && !out->is_eval_form){  
-        int scalar_bit_size = Utils::number_of_bits(scalar);
-        if((scalar_bit_size + this->coef_modulus_bit_size) < 64){
-            for(int j=0; j < this->degree; ++j){ 
-                out->coefs[j] = (this->coefs[j] * scalar) % this->coef_modulus;  
-            }
-        }else{
-            // Note that we need to handle the case scalar is bigger. 
-            int free_bits = 63 - this->coef_modulus_bit_size;
-            long div = Utils::pow(free_bits, 2); 
-            for(int j=0; j < this->degree; ++j){  
-                long temp_scalar = scalar;
-                while(temp_scalar > div){ 
-                    // TODO: Make bit shift with free_bits
-                    temp_scalar /= div; 
-                    out->coefs[j] = (this->coefs[j] * div) % this->coef_modulus;  
-                }  
-                out->coefs[j] = (this->coefs[j] * temp_scalar) % this->coef_modulus;   
-            } 
+    } 
+    int scalar_bit_size = Utils::number_of_bits(scalar);
+    if((scalar_bit_size + this->coef_modulus_bit_size) < 64){
+        for(int j=0; j < this->degree; ++j){ 
+            out->coefs[j] = (this->coefs[j] * scalar) % this->coef_modulus;  
         }
     }else{
-        throw std::logic_error("Polynomial::mul(Polynomial *out, Polynomial *other): No multiplication engin set!");
-    }
+        /// TODO: The case where the scalar is bigger is handled by LongIntegerMultipler class in util.h. Use it here.
+         // Note that we need to handle the case scalar is bigger. 
+        int free_bits = 63 - this->coef_modulus_bit_size;
+        long div = Utils::pow(free_bits, 2); 
+        for(int j=0; j < this->degree; ++j){  
+            long temp_scalar = scalar;
+            while(temp_scalar > div){ 
+                /// TODO: Make bit shift with free_bits instead of difision
+                temp_scalar /= div; 
+                out->coefs[j] = (this->coefs[j] * div) % this->coef_modulus;  
+            }  
+            out->coefs[j] = (this->coefs[j] * temp_scalar) % this->coef_modulus;   
+        } 
+    } 
 }
 
 void Polynomial::mul(Polynomial *out, Polynomial *other){   
@@ -996,14 +815,7 @@ void Polynomial::mul(Polynomial *out, Polynomial *other){
 }
 
 void Polynomial::mul(Polynomial *out, Polynomial *other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){  
-    // TODO Doesn't make sense here - Why not immediately compute the eval forms without playing around with those Polynomial classes?
-    Polynomial eval_this(this->degree, this->coef_modulus);
-    Polynomial eval_other(this->degree, this->coef_modulus); 
-    mul_engine->to_eval(&eval_this, this); 
-  
-    mul_engine->to_eval(&eval_other, other);  
-    mul_engine->mul(out, &eval_this, &eval_other);  
-    mul_engine->to_coef(out);  
+    mul_engine->mul(out, this, other); 
 }
   
 void Polynomial::inv(Polynomial *out){
@@ -1097,217 +909,159 @@ void PolynomialArrayCoefForm::mul(PolynomialArrayCoefForm *out, long scalar){
         out->poly_array[i] %= this->coef_modulus;
     }
 }
-   
- 
 
-PolynomialArrayEvalForm::~PolynomialArrayEvalForm(){ 
+PolynomialArrayEvalFormLong::~PolynomialArrayEvalFormLong(){
     if(this->is_init){
-        if(is_eval_long){ 
-            delete[] eval_long;
-        }
-        if(is_eval_fftw){ 
-            delete[] eval_fftw;
-        }
-        if(is_eval_fftwl){ 
-            delete[] eval_fftwl;
-        }
-    }
-    
+        delete[] eval_long;
+    } 
 }
 
-
-PolynomialArrayEvalForm::PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int array_size){ 
+PolynomialArrayEvalFormLong::PolynomialArrayEvalFormLong(int array_size, long degree, long coef_modulus){
+    this->array_size = array_size;
+    this->size = degree;
+    this->coef_modulus = coef_modulus;
+    this->full_size = array_size * this->size;
+    this->eval_long = new long[full_size];
     this->is_init = true; 
-    this->array_size = array_size; 
-  
-    if(mul_engine->type == hexl_ntt){ 
-        std::shared_ptr<IntelHexlNTTEngine> engine = std::static_pointer_cast<IntelHexlNTTEngine>(mul_engine);
-        this->size = engine->degree;
-        this->coef_modulus = engine->coef_modulus;
-        this->full_size = this->size * array_size; 
-        this->eval_long = new long[full_size]; 
-        this->is_eval_long = true;  
-    }else if(mul_engine->type == double_fft){
-        std::shared_ptr<FFTWNegacyclicEngine> engine = std::static_pointer_cast<FFTWNegacyclicEngine>(mul_engine); 
-        this->size = engine->engine.plan_size; 
-        this->coef_modulus = engine->coef_modulus;
-        this->full_size = this->size * array_size; 
-        this->eval_fftw = new fftw_complex[full_size];  
-        this->is_eval_fftw = true;  
-    }else if(mul_engine->type == long_double_fft){
-        std::shared_ptr<FFTWLongNegacyclicEngine> engine = std::static_pointer_cast<FFTWLongNegacyclicEngine>(mul_engine);
-        this->size = engine->engine.plan_size;
-        this->coef_modulus = engine->coef_modulus;
-        this->full_size = this->size * array_size; 
-        this->eval_fftwl = new fftwl_complex[full_size]; 
-        this->is_eval_fftwl = true; 
-    }else{
-        throw std::logic_error("PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int size, int array_size): Multiplication engine not suported!");
+}
+
+void PolynomialArrayEvalFormLong::add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormLong* other_cast = static_cast<PolynomialArrayEvalFormLong*>(other);
+    PolynomialArrayEvalFormLong* out_cast = static_cast<PolynomialArrayEvalFormLong*>(out);
+    for(int i = 0; i < full_size; ++i){
+         out_cast->eval_long[i] = this->eval_long[i] + other_cast->eval_long[i];
+    }
+}
+
+void PolynomialArrayEvalFormLong::sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormLong* other_cast = static_cast<PolynomialArrayEvalFormLong*>(other);
+    PolynomialArrayEvalFormLong* out_cast = static_cast<PolynomialArrayEvalFormLong*>(out);
+    for(int i = 0; i < full_size; ++i){
+         out_cast->eval_long[i] = this->eval_long[i] - other_cast->eval_long[i];
+    }
+}
+
+
+void PolynomialArrayEvalFormLong::mul(PolynomialArrayEvalForm *out, long scalar){
+    PolynomialArrayEvalFormLong* out_cast = static_cast<PolynomialArrayEvalFormLong*>(out); 
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_long[i] = this->eval_long[i] * scalar;
+    }
+}
+
+void PolynomialArrayEvalFormLong::neg(PolynomialArrayEvalForm *out){
+    PolynomialArrayEvalFormLong* out_cast = static_cast<PolynomialArrayEvalFormLong*>(out); 
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_long[i] = -this->eval_long[i];
+    }
+}
+
+void PolynomialArrayEvalFormLong::mod_reduce(long modulus){
+    Utils::array_mod_form(this->eval_long, this->eval_long, full_size, modulus); 
+}
+
+
+PolynomialArrayEvalFormFFTWComplex::~PolynomialArrayEvalFormFFTWComplex(){
+    if(this->is_init){
+        delete[] eval_fftw;
+    }
+}   
+
+PolynomialArrayEvalFormFFTWComplex::PolynomialArrayEvalFormFFTWComplex(FFTWNegacyclicEngine* mul_engine, int array_size){ 
+    this->array_size = array_size;
+    this->size = mul_engine->engine.plan_size; 
+    this->coef_modulus = mul_engine->coef_modulus;
+    this->full_size = this->size * array_size; 
+    this->eval_fftw = new fftw_complex[full_size];   
+}
+
+
+void PolynomialArrayEvalFormFFTWComplex::add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormFFTWComplex* other_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(other);
+    PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < full_size; ++i){
+            out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] + other_cast->eval_fftw[i][0];
+            out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] + other_cast->eval_fftw[i][1];
+        } 
+}
+
+void PolynomialArrayEvalFormFFTWComplex::sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormFFTWComplex* other_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(other);
+    PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < full_size; ++i){
+            out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] - other_cast->eval_fftw[i][0];
+            out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] - other_cast->eval_fftw[i][1];
+        } 
+}
+
+
+void PolynomialArrayEvalFormFFTWComplex::mul(PolynomialArrayEvalForm *out, long scalar){
+    PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
+     for(int i = 0; i < full_size; ++i){
+            out_cast->eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
+            out_cast->eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
+        } 
+}
+
+void PolynomialArrayEvalFormFFTWComplex::neg(PolynomialArrayEvalForm *out){
+    PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
+    for(int i = 0; i < full_size; ++i){
+            out_cast->eval_fftw[i][0] = -this->eval_fftw[i][0];
+            out_cast->eval_fftw[i][1] = -this->eval_fftw[i][1];
+        } 
+}
+
+void PolynomialArrayEvalFormFFTWComplex::mod_reduce(long modulus){ 
+}
+
+
+PolynomialArrayEvalFormFFTWLongComplex::~PolynomialArrayEvalFormFFTWLongComplex(){
+    if(this->is_init){
+        delete[] eval_fftwl;
+    }
+}
+
+PolynomialArrayEvalFormFFTWLongComplex::PolynomialArrayEvalFormFFTWLongComplex(FFTWLongNegacyclicEngine* mul_engine, int array_size){ 
+    this->array_size = array_size;
+    this->size = mul_engine->engine.plan_size;
+    this->coef_modulus = mul_engine->coef_modulus;
+    this->full_size = this->size * array_size; 
+    this->eval_fftwl = new fftwl_complex[full_size];  
+}
+
+void PolynomialArrayEvalFormFFTWLongComplex::add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out);
+    PolynomialArrayEvalFormFFTWLongComplex* other_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(other);
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] + other_cast->eval_fftwl[i][0];
+        out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] + other_cast->eval_fftwl[i][1];
     } 
 }
- 
 
-
-PolynomialArrayEvalForm::PolynomialArrayEvalForm(const PolynomialArrayEvalForm &other){ 
-    this->is_init = other.is_init;
-    this->size = other.size;
-    this->is_eval_long = other.is_eval_long;
-    this->is_eval_fftw = other.is_eval_fftw;
-    this->is_eval_fftwl = other.is_eval_fftwl; 
-    this->array_size = other.array_size;
-    this->coef_modulus = other.coef_modulus;
-
-    this->full_size = size * array_size;  
-    if(this->is_eval_long){
-        this->eval_long = new long[this->full_size];
-        Utils::cp(this->eval_long, other.eval_long, this->full_size);
-    }
-    if(this->is_eval_fftw){
-        this->eval_fftw = new fftw_complex[full_size];
-        for(int i = 0; i < this->full_size; ++i){
-            this->eval_fftw[i][0] = other.eval_fftw[i][0];
-            this->eval_fftw[i][1] = other.eval_fftw[i][1];
-        }
-    }
-    if(this->is_eval_fftwl){
-        this->eval_fftwl = new fftwl_complex[full_size];
-        for(int i = 0; i < this->full_size; ++i){
-            this->eval_fftwl[i][0] = other.eval_fftwl[i][0];
-            this->eval_fftwl[i][1] = other.eval_fftwl[i][1];
-        }
-    }
-}
-
-
-PolynomialArrayEvalForm& PolynomialArrayEvalForm::operator=(const PolynomialArrayEvalForm other){ 
- 
-    this->is_init = other.is_init;
-    this->size = other.size;
-    this->is_eval_long = other.is_eval_long;
-    this->is_eval_fftw = other.is_eval_fftw;
-    this->is_eval_fftwl = other.is_eval_fftwl; 
-    this->array_size = other.array_size;
-    this->coef_modulus = other.coef_modulus;
- 
-    this->full_size = size * array_size;  
-
-    if(this->is_eval_long){
-        this->eval_long = new long[full_size];
-        Utils::cp(this->eval_long, other.eval_long, full_size);
-    }
-    if(this->is_eval_fftw){ 
-        this->eval_fftw = new fftw_complex[full_size]; 
-        for(int i = 0; i < this->full_size; ++i){
-            this->eval_fftw[i][0] = other.eval_fftw[i][0];
-            this->eval_fftw[i][1] = other.eval_fftw[i][1];
-        } 
-    }
-    if(this->is_eval_fftwl){
-        this->eval_fftwl = new fftwl_complex[full_size];
-        for(int i = 0; i < full_size; ++i){
-            this->eval_fftwl[i][0] = other.eval_fftwl[i][0];
-            this->eval_fftwl[i][1] = other.eval_fftwl[i][1];
-        }
-    } 
-    return *this;
-}
-
- 
-
-void PolynomialArrayEvalForm::add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    if(out.is_eval_long && this->is_eval_long && other.is_eval_long){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_long[i] = this->eval_long[i] + other.eval_long[i];
-        }
-    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){ 
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftw[i][0] = this->eval_fftw[i][0] + other.eval_fftw[i][0];
-            out.eval_fftw[i][1] = this->eval_fftw[i][1] + other.eval_fftw[i][1];
-        } 
-    }else if(out.is_eval_fftwl && this->is_eval_fftwl && other.is_eval_fftwl){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftwl[i][0] = this->eval_fftwl[i][0] + other.eval_fftwl[i][0];
-            out.eval_fftwl[i][1] = this->eval_fftwl[i][1] + other.eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-
-void PolynomialArrayEvalForm::sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    if(out.is_eval_long && this->is_eval_long && other.is_eval_long){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_long[i] = this->eval_long[i] - other.eval_long[i];
-        }
-    }else if(out.is_eval_fftw && this->is_eval_fftw && other.is_eval_fftw){ 
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftw[i][0] = this->eval_fftw[i][0] - other.eval_fftw[i][0];
-            out.eval_fftw[i][1] = this->eval_fftw[i][1] - other.eval_fftw[i][1];
-        } 
-    }else if(out.is_eval_fftwl && this->is_eval_fftwl && other.is_eval_fftwl){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftwl[i][0] = this->eval_fftwl[i][0] - other.eval_fftwl[i][0];
-            out.eval_fftwl[i][1] = this->eval_fftwl[i][1] - other.eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-void PolynomialArrayEvalForm::mul(PolynomialArrayEvalForm &out, long scalar){
-    if(out.is_eval_long && this->is_eval_long){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_long[i] = this->eval_long[i] * scalar;
-        }
-    }else if(out.is_eval_fftw && this->is_eval_fftw){ 
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
-            out.eval_fftw[i][1] = this->eval_fftw[i][1] * scalar;
-        } 
-    }else if(out.is_eval_fftwl && this->is_eval_fftwl){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftwl[i][0] = this->eval_fftwl[i][0] * scalar;
-            out.eval_fftwl[i][1] = this->eval_fftwl[i][1] * scalar;
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-void PolynomialArrayEvalForm::neg(PolynomialArrayEvalForm &out){
-    if(out.is_eval_long && this->is_eval_long){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_long[i] = -this->eval_long[i];
-        }
-    }else if(out.eval_fftw && this->eval_fftw){ 
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftw[i][0] = -this->eval_fftw[i][0];
-            out.eval_fftw[i][1] = -this->eval_fftw[i][1];
-        } 
-    }else if(out.eval_fftwl && this->eval_fftwl){
-        for(int i = 0; i < full_size; ++i){
-            out.eval_fftwl[i][0] = -this->eval_fftwl[i][0];
-            out.eval_fftwl[i][1] = -this->eval_fftwl[i][1];
-        } 
-    }else{
-        throw std::logic_error("PolynomialEvalForm::add: No evaluation form initialized!");
-    }
-}
-
-
-void PolynomialArrayEvalForm::mod_reduce(long modulus){
-    if(this->eval_long){ 
-        Utils::array_mod_form(this->eval_long, this->eval_long, full_size, modulus); 
+void PolynomialArrayEvalFormFFTWLongComplex::sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){
+    PolynomialArrayEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out);
+    PolynomialArrayEvalFormFFTWLongComplex* other_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(other);
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] - other_cast->eval_fftwl[i][0];
+        out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] - other_cast->eval_fftwl[i][1];
     } 
 }
- 
 
+void PolynomialArrayEvalFormFFTWLongComplex::mul(PolynomialArrayEvalForm *out, long scalar){
+    PolynomialArrayEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_fftwl[i][0] = this->eval_fftwl[i][0] * scalar;
+        out_cast->eval_fftwl[i][1] = this->eval_fftwl[i][1] * scalar;
+    }
+}
 
+void PolynomialArrayEvalFormFFTWLongComplex::neg(PolynomialArrayEvalForm *out){
+    PolynomialArrayEvalFormFFTWLongComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex*>(out);
+    for(int i = 0; i < full_size; ++i){
+        out_cast->eval_fftwl[i][0] = -this->eval_fftwl[i][0];
+        out_cast->eval_fftwl[i][1] = -this->eval_fftwl[i][1];
+    } 
+}
 
-
-
-
-
-
-
+void PolynomialArrayEvalFormFFTWLongComplex::mod_reduce(long modulus){
+}

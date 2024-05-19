@@ -32,6 +32,8 @@ class RLWEParam : public VectorCTParam{
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     bool is_mul_engine_init = false;
  
+    ~RLWEParam() = default; 
+
     RLWEParam() = default; 
        
     RLWEParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
@@ -42,7 +44,7 @@ class RLWEParam : public VectorCTParam{
 
     RLWEParam& operator=(RLWEParam other);
 
-    VectorCT* init_ct();
+    VectorCT* init_ct(std::shared_ptr<VectorCTParam> param);
       
     template <class Archive>
     void save( Archive & ar ) const
@@ -65,10 +67,13 @@ class RLWECT : public VectorCT{
   public:
   
     std::shared_ptr<RLWEParam> param; 
-    // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial
-    /// TODO: should those be smart pointers? 
+    // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial 
     Polynomial a;
     Polynomial b; 
+
+    
+    ~RLWECT() = default;
+
     RLWECT() = default;
 
     RLWECT(std::shared_ptr<RLWEParam> param);
@@ -131,10 +136,10 @@ class RLWEGadgetCT : public GadgetVectorCT{
   std::shared_ptr<Gadget> gadget;
 
   bool is_init = false;  
-  PolynomialArrayEvalForm array_eval_a;
-  PolynomialArrayEvalForm array_eval_b;
-  PolynomialArrayEvalForm array_eval_a_sk;
-  PolynomialArrayEvalForm array_eval_b_sk;
+  std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;
+  std::shared_ptr<PolynomialArrayEvalForm> array_eval_b;
+  std::shared_ptr<PolynomialArrayEvalForm> array_eval_a_sk;
+  std::shared_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
    
   long** deter_ct_a_dec;
   long** deter_ct_b_dec;  
@@ -158,24 +163,24 @@ class RLWEGadgetCT : public GadgetVectorCT{
     template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(rlwe_param, gadget);     
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b,array_eval_a_sk, array_eval_b_sk);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(rlwe_param, gadget);      
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b,array_eval_a_sk, array_eval_b_sk);  
         this->is_init = true;
     } 
   
   private:
 
-  // Temporary variable needed for multiplication. Its initialized in already in the constructors.
+  /// @brief Variable needed for multiplication. Its initialized in already in the constructors.
   RLWECT out_minus;
+  /// @brief Temporary variable which stores the evaluation form of a decomposed polynomial. Used in Multiplication, initialized in init.
+  std::shared_ptr<PolynomialArrayEvalForm> decomp_poly_array_eval_form;
   
   void init_gadget_decomp_tables();
-
-  void set_gadget_decomp_arrays();
   
 };
   
@@ -186,6 +191,7 @@ class RLWESK{
     std::shared_ptr<RLWEParam> param; 
     KeyDistribution key_type; 
     Polynomial sk_poly; 
+    std::unique_ptr<PolynomialEvalForm> sk_poly_eval; 
     bool is_init = false;  
     std::shared_ptr<Distribution> unif_dist;
     std::shared_ptr<Distribution> error_dist;

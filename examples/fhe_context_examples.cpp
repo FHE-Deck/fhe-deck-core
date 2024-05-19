@@ -506,8 +506,7 @@ void basic_Ciphertext_tests(FHENamedParams param_set){
     std::cout << "Testing: lwe_ct& lwe_ct::operator=(const lwe_ct other)" << std::endl;
     c1 = c2;
     assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
-    std::cout << "context.decrypt(&c1) == 1: OK" << std::endl;  
-    
+    std::cout << "context.decrypt(&c1) == 1: OK" << std::endl;   
 }
 
 

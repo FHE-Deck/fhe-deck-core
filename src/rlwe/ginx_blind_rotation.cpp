@@ -3,9 +3,14 @@
 using namespace fhe_deck;
   
 
+GINXBlindRotationKey::~GINXBlindRotationKey(){  
+    delete next_acc;  
+}
+
 GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk){ 
     this->lwe_par = lwe_sk->param;   
-    this->next_acc = gadget_sk->vector_ct_param->init_ct();
+    this->next_acc = gadget_sk->vector_ct_param->init_ct(gadget_sk->vector_ct_param);
+
     // The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
     std::shared_ptr<long[]> ext_s;
     this->key_d = lwe_sk->key_type; 
@@ -34,7 +39,7 @@ void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCT
     for(int i = 0; i < sizeof_ext_s; ++i){    
         msg[0] =  ext_s[i]; 
         bk.push_back(std::unique_ptr<GadgetVectorCT>(rlwe_gadget_sk->gadget_encrypt(msg, 1)));
-    }     
+    }      
 }
 
 long* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){

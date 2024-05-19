@@ -41,7 +41,7 @@ class NTRUParam : public VectorCTParam{
 
     NTRUParam& operator=(NTRUParam other);
 
-    VectorCT* init_ct();
+    VectorCT* init_ct(std::shared_ptr<VectorCTParam> param);
          
     template <class Archive>
     void save( Archive & ar ) const
@@ -181,7 +181,7 @@ class NTRUGadgetCT : public GadgetVectorCT{
   std::shared_ptr<Gadget> gadget;
 
   bool is_init = false;  
-  PolynomialArrayEvalForm array_eval_a;  
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_a;  
    
   long** deter_ct_a_dec; 
   PolynomialArrayCoefForm deter_ct_a_dec_poly; 

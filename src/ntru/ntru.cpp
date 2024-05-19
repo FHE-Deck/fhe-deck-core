@@ -40,10 +40,10 @@ void NTRUParam::init_mul_engine(){
     this->mul_engine = mul_engine_builder.build(); 
     this->is_mul_engine_init = true;
 }
-
-VectorCT* NTRUParam::init_ct(){
-    return new NTRUCT(std::shared_ptr<NTRUParam>(this));
-}
+ 
+VectorCT* NTRUParam::init_ct(std::shared_ptr<VectorCTParam> param){
+    return new NTRUCT(std::static_pointer_cast<NTRUParam>(param));
+} 
 
 /*
 Polynomial NTRUParam::init_poly(){ 
@@ -150,12 +150,15 @@ void NTRUGadgetCT::init(std::vector<NTRUCT> &gadget_ct){
                                             ntru_param->coef_modulus,  
                                             gadget->digits);  
  
-    this->array_eval_a = PolynomialArrayEvalForm(ntru_param->mul_engine, 
-                                                gadget->digits);   
+    //this->array_eval_a = std::unique_ptr<PolynomialArrayEvalForm>(new PolynomialArrayEvalForm(ntru_param->mul_engine, 
+     //                                           gadget->digits));  
+
+     this->array_eval_a = std::unique_ptr<PolynomialArrayEvalForm>(ntru_param->mul_engine->init_polynomial_array_eval_form(gadget->digits)); 
+
     for(int i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, &gadget_ct[i].ct_poly);
     }  
-    ntru_param->mul_engine->to_eval(&array_eval_a, &array_coef);  
+    ntru_param->mul_engine->to_eval(array_eval_a.get(), &array_coef);  
     
     init_gadget_decomp_tables();  
     set_gadget_decomp_arrays();
@@ -182,7 +185,7 @@ void NTRUGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     NTRUCT* out_ptr = static_cast<NTRUCT*>(out);
     const NTRUCT* ct_ptr = static_cast<const NTRUCT*>(ct);
     gadget->sample(deter_ct_a_dec, ct_ptr->ct_poly.coefs); 
-    ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, &array_eval_a);
+    ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
 }
   
 void NTRUGadgetCT::init_gadget_decomp_tables(){
@@ -358,7 +361,7 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
         gadget_ct.push_back(sk->encrypt(msg)); 
-    }   
+    }    
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  

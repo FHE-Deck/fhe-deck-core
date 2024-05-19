@@ -23,7 +23,7 @@ void SignedDecompositionGadget::sample(long** out, long *poly){
             signed_poly[i] = poly[i];
             sign[i] = 1;
         }else{
-            signed_poly[i] = abs(poly[i]-modulus);
+            signed_poly[i] = std::abs<long>(poly[i]-modulus);
             sign[i] = -1;
         }
     }

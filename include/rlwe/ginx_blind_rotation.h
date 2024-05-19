@@ -20,7 +20,7 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     KeyDistribution key_d;
     int sizeof_ext_s;  
  
-    ~GINXBlindRotationKey(){};
+    ~GINXBlindRotationKey();
       
     GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk);
  

@@ -51,9 +51,9 @@ LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
     this->lwe_par = lwe_par; 
     this->lwe_par_tiny = lwe_par_tiny;
  
-    // Initialize BlindRotateOutputs  
+    // Initialize BlindRotateOutputs   
     this->br_out = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build()); 
-    this->br_temp = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build());
+    this->br_temp = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build()); 
     // Special Accumulator for the full domain functional bootstrapping, computing the most signifficant bit. 
     this->acc_msb = std::shared_ptr<VectorCTAccumulator>(this->accumulator_builder->get_acc_msb());   
     // Mod Switch from Extracted Q to 2 * N 

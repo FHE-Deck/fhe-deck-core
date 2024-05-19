@@ -32,30 +32,33 @@ class PolynomialMultiplicationEngine{
 
     PolynomialArithmetic type;
 
-    virtual void to_eval(Polynomial *in) = 0;
- 
-    virtual void to_coef(Polynomial *in) = 0;
+    virtual PolynomialEvalForm* init_polynomial_eval_form() = 0;
 
-    virtual void to_eval(PolynomialEvalForm *out, Polynomial *in) = 0;
-
-    virtual void to_eval(Polynomial *out, Polynomial *in) = 0;
+    virtual PolynomialArrayEvalForm* init_polynomial_array_eval_form(int array_size) = 0;
+  
+    virtual void to_eval(PolynomialEvalForm *out, Polynomial *in) = 0; 
 
     virtual void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in) = 0;
   
-    virtual void to_coef(Polynomial *out, PolynomialEvalForm *in) = 0;
-
-    virtual void to_coef(Polynomial *out, Polynomial *in) = 0;
+    virtual void to_coef(Polynomial *out, PolynomialEvalForm *in) = 0; 
 
     virtual void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in) = 0;
 
     virtual void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2) = 0;
-
-    virtual void mul(Polynomial *out, Polynomial *in_1,  Polynomial *in_2) = 0;
-
-    virtual Polynomial mul(Polynomial *in_1, Polynomial *in_2) = 0;
+ 
+    virtual void mul(Polynomial *out, Polynomial *in_1,  Polynomial *in_2); 
    
-    virtual void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true) = 0;
+    virtual void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2) = 0;
+
+    virtual void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2) = 0;
+ 
+    virtual void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2) = 0;
+
+    /// TODO: I need a Multisum that Has two outputs - Polynomial *out, and Polynomial PolynomialArrayEvalForm of the first PolynomialArrayCoefForm
+    /// TODO: Then I need another multisum that takes a Gadget.
 };
+
+
 
 
 class PolynomialMultiplicationEngineBuilder{
@@ -81,8 +84,7 @@ class PolynomialMultiplicationEngineBuilder{
 
     void set_modulus_type(ModulusType mod_type);
 
-    std::shared_ptr<PolynomialMultiplicationEngine> build();
-  
+    std::shared_ptr<PolynomialMultiplicationEngine> build(); 
 };
 
 
@@ -97,32 +99,25 @@ class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
 
     IntelHexlNTTEngine(int degree, long coef_modulus);
 
+    PolynomialEvalForm* init_polynomial_eval_form(); 
 
-    void to_eval(Polynomial *in);
-
-    void to_coef(Polynomial *in);
+    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int array_size);
  
-    void to_eval(PolynomialEvalForm *out, Polynomial *in);
-
-    void to_eval(Polynomial *out, Polynomial *in);
+    void to_eval(PolynomialEvalForm *out, Polynomial *in); 
 
     void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
 
     void to_coef(Polynomial *out, PolynomialEvalForm *in);
- 
-    void to_coef(Polynomial *out, Polynomial *in);
 
     void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
  
     void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
+    
+    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 
-    void mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2);
+    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
 
-    Polynomial mul(Polynomial *in_1, Polynomial *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true);
- 
-
+    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 };
 
 
@@ -136,30 +131,26 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
     long coef_modulus;
 
     FFTWNegacyclicEngine(int degree, long coef_modulus); 
-   
-    void to_eval(Polynomial *in);
+    
+    PolynomialEvalForm* init_polynomial_eval_form(); 
 
-    void to_coef(Polynomial *in);
+    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int array_size);
 
     void to_eval(PolynomialEvalForm *out, Polynomial *in);
-
-    void to_eval(Polynomial *out, Polynomial *in);
-
+    
     void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
 
     void to_coef(Polynomial *out, PolynomialEvalForm *in);
  
-    void to_coef(Polynomial *out, Polynomial *in);
-
     void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
   
     void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
 
-    void mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2);
+    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 
-    Polynomial mul(Polynomial *in_1, Polynomial *in_2); 
-
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true);
+    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
+ 
+    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 };
 
 
@@ -174,130 +165,125 @@ class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     FFTWLongNegacyclicEngine(int degree, long coef_modulus); 
   
-    void to_eval(Polynomial *in);
+    PolynomialEvalForm* init_polynomial_eval_form();
 
-    void to_coef(Polynomial *in);
-
+    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int array_size);
+ 
     void to_eval(PolynomialEvalForm *out, Polynomial *in);
-
-    void to_eval(Polynomial *out, Polynomial *in);
-
+ 
     void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
 
     void to_coef(Polynomial *out, PolynomialEvalForm *in);
- 
-    void to_coef(Polynomial *out, Polynomial *in);
-
+  
     void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
   
     void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
+ 
+    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 
-    void mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2);
+    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
 
-    Polynomial mul(Polynomial *in_1, Polynomial *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true);
+    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 
 };
-
-
-
-class NTLMultiplicationEngine : public PolynomialMultiplicationEngine{
-
-    public:
  
-    int degree;
-    long coef_modulus;
-
-    NTL::ZZ_pX ring;
-
-    NTLMultiplicationEngine(int degree, long coef_modulus, RingType ring); 
-  
-    void to_eval(Polynomial *in);
-
-    void to_coef(Polynomial *in);
-
-    void to_eval(PolynomialEvalForm *out, Polynomial *in);
-
-    void to_eval(Polynomial *out, Polynomial *in);
-
-    void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
  
-    void to_coef(Polynomial *out, PolynomialEvalForm *in);
-
-    void to_coef(Polynomial *out, Polynomial *in);
-
-    void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
-  
-    void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
-
-    void mul(Polynomial *out, Polynomial *in_1, Polynomial *in_2);
-
-    Polynomial mul(Polynomial *in_1, Polynomial *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2, bool coef_form = true);
-
-    private:
-    NTL::ZZ_pX get_ring_poly(RingType ring);
-
-    void set_polynomial_from_array(NTL::ZZ_pX &poly, long *f, int sizeof_f, long Q);
-
-    void set_array_from_polynomial(long *array, int sizeof_array, NTL::ZZ_pX poly);
-
-};
-
-
-
-
-// Wrapper for the different types of arithmetics we could handle
 class PolynomialEvalForm{
 
     public:
  
     int size;
     long coef_modulus;
+ 
+    virtual ~PolynomialEvalForm() = default;
 
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
-    bool is_mul_engine_set = false;
+    virtual void zeroize() = 0;
 
-    long* eval_long;
-    bool is_eval_long = false;
+    /// TODO: The thing with this modulus reduction is weird and not necessarily true. In NTT there is modulus reduction.
 
-    fftw_complex* eval_fftw;
-    bool is_eval_fftw = false;
+    /// NOTE: There is no modulus reduction here
+    virtual void add(PolynomialEvalForm *out, PolynomialEvalForm *other) = 0;
+    /// NOTE: There is no modulus reduction here
+    virtual void sub(PolynomialEvalForm *out, PolynomialEvalForm *other) = 0;
+    /// NOTE: There is no modulus reduction here
+    virtual void mul(PolynomialEvalForm *out, long scalar) = 0; 
+    /// NOTE: There is no modulus reduction here
+    virtual void neg(PolynomialEvalForm *out) = 0; 
 
-    fftwl_complex* eval_fftwl;
-    bool is_eval_fftwl = false;
+    /// TODO: Annother issue with this mod_reduce is its inconsistent, with the style as it should have on output.
+    virtual void mod_reduce(long Q) = 0;
+};
 
+class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
+
+    public:
+  
+    long* eval_long; 
     bool is_init = false;
 
-    ~PolynomialEvalForm();
- 
-    PolynomialEvalForm() = default;
-  
-    PolynomialEvalForm(long* eval_long, int size, long coef_modulus);
+    ~PolynomialEvalFormLongInteger();
 
-    PolynomialEvalForm(fftw_complex* eval_fftw, int size, long coef_modulus);
-
-    PolynomialEvalForm(fftwl_complex* eval_fftwl, int size, long coef_modulus);
-
-    PolynomialEvalForm(const PolynomialEvalForm &other);
-
-    PolynomialEvalForm& operator=(const PolynomialEvalForm other);
+    PolynomialEvalFormLongInteger(long* eval_long, int size, long coef_modulus);
 
     void zeroize();
 
-    // NOTE: There is no modulus reduction here
     void add(PolynomialEvalForm *out, PolynomialEvalForm *other);
-    // NOTE: There is no modulus reduction here
+
     void sub(PolynomialEvalForm *out, PolynomialEvalForm *other);
-    // NOTE: There is no modulus reduction here
+
     void mul(PolynomialEvalForm *out, long scalar);
 
-    // NOTE: There is no modulus reduction here
     void neg(PolynomialEvalForm *out);
 
-    void mod_reduce(long Q);
+    void mod_reduce(long Q); 
+};
+
+class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
+
+    public:
+ 
+    fftw_complex* eval_fftw;
+    bool is_init = false;
+
+    ~PolynomialEvalFormFFTWComplex();	
+
+    PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int size, long coef_modulus);
+
+    void zeroize();
+
+    void add(PolynomialEvalForm *out, PolynomialEvalForm *other);
+
+    void sub(PolynomialEvalForm *out, PolynomialEvalForm *other);
+
+    void mul(PolynomialEvalForm *out, long scalar);
+
+    void neg(PolynomialEvalForm *out);
+
+    void mod_reduce(long Q); 
+};
+
+class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
+
+    public:
+ 
+    fftwl_complex* eval_fftwl;
+    bool is_init = false;
+
+    ~PolynomialEvalFormFFTWLongComplex();	
+
+    PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int size, long coef_modulus);
+
+    void zeroize();
+
+    void add(PolynomialEvalForm *out, PolynomialEvalForm *other);
+
+    void sub(PolynomialEvalForm *out, PolynomialEvalForm *other);
+
+    void mul(PolynomialEvalForm *out, long scalar);
+
+    void neg(PolynomialEvalForm *out);
+
+    void mod_reduce(long Q); 
 };
 
 class PolynomialInversionEngine{
@@ -325,10 +311,7 @@ class Polynomial{
 
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     bool is_mul_engine_set = false;
- 
-    PolynomialEvalForm poly_eval_form;
-    bool is_eval_form = false;
-
+   
     std::shared_ptr<PolynomialInversionEngine> inv_engine;
     bool is_inv_engine_set = false;
 
@@ -353,17 +336,9 @@ class Polynomial{
     void set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
 
     void set_inversion_engine(std::shared_ptr<PolynomialInversionEngine> inv_engine);
-
-    void to_eval();
-
+ 
     void to_eval(PolynomialEvalForm *out);
-
-    void to_eval(Polynomial *out);
-
-    void to_coef();
-
-    void to_coef(Polynomial *out);
-
+   
     void zeroize();
 
     Polynomial clone();
@@ -395,9 +370,7 @@ class Polynomial{
     void inv(Polynomial *out, std::shared_ptr<PolynomialInversionEngine> inv_engine); 
       
 };
- 
-
- 
+   
 class PolynomialArrayCoefForm{
 
     public:
@@ -463,45 +436,98 @@ class PolynomialArrayEvalForm{
     int full_size;
 
     long coef_modulus;
-  
-    long* eval_long;
-    bool is_eval_long = false;
-
-    fftw_complex* eval_fftw;
-    bool is_eval_fftw = false;
-
-    fftwl_complex* eval_fftwl;
-    bool is_eval_fftwl = false;
-   
-    bool is_init = false; 
-     
-    ~PolynomialArrayEvalForm();
- 
-    PolynomialArrayEvalForm() = default;
-
-    PolynomialArrayEvalForm(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, int array_size);
-
-    PolynomialArrayEvalForm(const PolynomialArrayEvalForm &other);
-
-    PolynomialArrayEvalForm& operator=(const PolynomialArrayEvalForm other);
+    
+    virtual ~PolynomialArrayEvalForm() = default; 
   
     // NOTE: There is no modulus reduction here
-    void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    virtual void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other) = 0;
     // NOTE: There is no modulus reduction here
-    void sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    virtual void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other) = 0;
     // NOTE: There is no modulus reduction here
-    void mul(PolynomialArrayEvalForm &out, long scalar);
+    virtual void mul(PolynomialArrayEvalForm *out, long scalar) = 0;
  
     // NOTE: There is no modulus reduction here
-    void neg(PolynomialArrayEvalForm &out);
+    virtual void neg(PolynomialArrayEvalForm *out) = 0;
 
-    void mod_reduce(long modulus);  
-     
+    virtual void mod_reduce(long modulus) = 0;   
 };
 
 
+class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
 
-}
+    public:
+ 
+    long* eval_long; 
+
+    bool is_init = false; 
+
+    ~PolynomialArrayEvalFormLong();
+ 
+    PolynomialArrayEvalFormLong(int array_size, long degree, long coef_modulus);
+  
+    // NOTE: There is no modulus reduction here
+    void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void mul(PolynomialArrayEvalForm *out, long scalar); 
+    // NOTE: There is no modulus reduction here
+    void neg(PolynomialArrayEvalForm *out);
+
+    void mod_reduce(long modulus); 
+};
+
+class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
+
+    public:
+ 
+    fftw_complex* eval_fftw; 
+
+    bool is_init = false; 
+ 
+    ~PolynomialArrayEvalFormFFTWComplex();
+
+    PolynomialArrayEvalFormFFTWComplex(FFTWNegacyclicEngine* mul_engine, int array_size);
+  
+    // NOTE: There is no modulus reduction here
+    void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void mul(PolynomialArrayEvalForm *out, long scalar); 
+    // NOTE: There is no modulus reduction here
+    void neg(PolynomialArrayEvalForm *out);
+
+    void mod_reduce(long modulus); 
+};
+
+class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
+
+    public:
+  
+    fftwl_complex* eval_fftwl; 
+
+    bool is_init = false; 
+
+    ~PolynomialArrayEvalFormFFTWLongComplex();
+ 
+    PolynomialArrayEvalFormFFTWLongComplex(FFTWLongNegacyclicEngine* mul_engine, int array_size);
+  
+    // NOTE: There is no modulus reduction here
+    void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
+    // NOTE: There is no modulus reduction here
+    void mul(PolynomialArrayEvalForm *out, long scalar);
+ 
+    // NOTE: There is no modulus reduction here
+    void neg(PolynomialArrayEvalForm *out);
+
+    void mod_reduce(long modulus); 
+};
+
+
+}/// End of namespace fhe_deck
 
 
 #endif

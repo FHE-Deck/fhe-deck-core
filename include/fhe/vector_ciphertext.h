@@ -13,13 +13,14 @@ class VectorCTParam{
     // The size of the vector
     int size; 
     // Initiates a VectorCT object which is not necessarily decryptable. its for allocating space.
-    virtual VectorCT* init_ct() = 0;
+    virtual VectorCT* init_ct(std::shared_ptr<VectorCTParam> param) = 0;
 };
 
 class VectorCT{
 
     public:   
   
+    virtual ~VectorCT() = default;
     // Rotates the plaintext within the ciphertext without affecting its decryptability
     // Note that this isn't necessarily a cyclic rotation. It's up to the implementation how the rotation is done.
     virtual void homomorphic_rotate(VectorCT *out, int rot) = 0;
@@ -35,7 +36,7 @@ class GadgetVectorCT{
 
     public: 
 
-    virtual ~GadgetVectorCT(){};
+    virtual ~GadgetVectorCT() = default;
 
     virtual void mul(VectorCT *out, const VectorCT *ct) = 0;
 };

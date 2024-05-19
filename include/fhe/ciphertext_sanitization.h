@@ -10,6 +10,8 @@ class SanitizationKey{
 
     public: 
 
+    virtual ~SanitizationKey() = default;
+
     virtual void sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding) = 0;
 };
 
@@ -25,6 +27,8 @@ class DucasStehleWashingMachine : public SanitizationKey{
         std::shared_ptr<LWEPublicKey> masking_pk; 
 
         int washing_cycles;
+
+        ~DucasStehleWashingMachine() = default;
 
         DucasStehleWashingMachine(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
@@ -46,6 +50,8 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
 
         std::shared_ptr<LWEPublicKey> masking_pk; 
   
+        ~KluczniakRandomizedBootstrapping() = default;
+
         KluczniakRandomizedBootstrapping(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
             std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,

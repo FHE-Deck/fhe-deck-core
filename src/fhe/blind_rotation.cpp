@@ -138,12 +138,12 @@ BlindRotateOutput* NTRUBlindRotateOutputBuilder::build(){
     return new NTRUBlindRotateOutput(ntru_param); 
 }
 
-RLWEBlindRotateOutput::~RLWEBlindRotateOutput(){ 
-    delete accumulator; 
+RLWEBlindRotateOutput::~RLWEBlindRotateOutput(){  
+    delete accumulator;  
 }
 
-RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){ 
-    this->accumulator = param->init_ct();
+RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){  
+    this->accumulator = new RLWECT(param);
     this->accumulator_ptr = static_cast<RLWECT*>(accumulator);
 }
   
@@ -161,7 +161,7 @@ NTRUBlindRotateOutput::~NTRUBlindRotateOutput(){
 }
 
 NTRUBlindRotateOutput::NTRUBlindRotateOutput(std::shared_ptr<NTRUParam> param){ 
-    this->accumulator = param->init_ct();
+    this->accumulator = new NTRUCT(param);
     this->accumulator_ptr = static_cast<NTRUCT*>(accumulator);
 }
   

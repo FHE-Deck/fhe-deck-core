@@ -101,7 +101,7 @@ class BlindRotateOutput{
 
     VectorCT* accumulator;
 
-    ~BlindRotateOutput(){};
+    virtual ~BlindRotateOutput() = default;
    
     virtual void extract_lwe(LWECT* out) = 0;
 
@@ -175,7 +175,7 @@ class BlindRotationPublicKey{
  
     public:
 
-    virtual ~BlindRotationPublicKey(){};
+    virtual ~BlindRotationPublicKey() = default;
    
     std::shared_ptr<LWEParam> lwe_par;  
   
