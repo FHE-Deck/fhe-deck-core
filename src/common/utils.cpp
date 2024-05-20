@@ -105,6 +105,7 @@ NTL::ZZ_pX Utils::get_ring_poly(RingType ring, long N, long modulus){
         psi_arr[0] = 1;
     }
     Utils::set_polynomial_from_array(out, psi_arr, N+1, modulus); 
+    delete[] psi_arr;
     return out;
 }
 

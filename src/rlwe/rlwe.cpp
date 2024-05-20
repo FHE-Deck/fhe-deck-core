@@ -6,8 +6,8 @@ RLWECT::RLWECT(std::shared_ptr<RLWEParam> param){
     this->param = param; 
     /// TODO: Is this more readable/faster/better than just using a smart pointer for a and b? Or just standard build? 
     // With smart pointer its a little shit
-    this->a = * new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
-    this->b = * new Polynomial(param->size, param->coef_modulus, param->mul_engine);   
+    this->a = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
+    this->b = Polynomial(param->size, param->coef_modulus, param->mul_engine);   
 }
  
 RLWECT::RLWECT(const RLWECT &other){ 
@@ -137,13 +137,13 @@ VectorCT* RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){
 }
 
   
-RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk){
+RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk){
     this->rlwe_param = rlwe_param;
     this->gadget = gadget;
     this->init(gadget_ct, gadget_ct_sk);
 }
 
-void RLWEGadgetCT::init(std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk){     
+void RLWEGadgetCT::init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk){     
     PolynomialArrayCoefForm array_coef(rlwe_param->size,  
                                             rlwe_param->coef_modulus,  
                                             gadget->digits);  
@@ -155,23 +155,23 @@ void RLWEGadgetCT::init(std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gad
     this->array_eval_b_sk = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
  
     for(int i = 0; i < gadget->digits; ++i){ 
-        array_coef.set_polynomial_at(i, &gadget_ct[i].a);
+        array_coef.set_polynomial_at(i, &gadget_ct[i]->a);
     }  
      
     rlwe_param->mul_engine->to_eval(array_eval_a.get(), &array_coef);  
   
     for(int i = 0; i < gadget->digits; ++i){
-        array_coef.set_polynomial_at(i, &gadget_ct[i].b);
+        array_coef.set_polynomial_at(i, &gadget_ct[i]->b);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_b.get(), &array_coef); 
   
     for(int i = 0; i < gadget->digits; ++i){
-        array_coef.set_polynomial_at(i, &gadget_ct_sk[i].a);
+        array_coef.set_polynomial_at(i, &gadget_ct_sk[i]->a);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_a_sk.get(), &array_coef);  
    
     for(int i = 0; i < gadget->digits; ++i){
-        array_coef.set_polynomial_at(i, &gadget_ct_sk[i].b);
+        array_coef.set_polynomial_at(i, &gadget_ct_sk[i]->b);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_b_sk.get(), &array_coef);  
  
@@ -206,15 +206,14 @@ void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     /// TODO: Note that I may unintentionally compute twice as many FFT/NTTs her because I use deter_ct_a_dec_poly and deter_ct_b_dec_poly twice. 
     /// I should get the EvalForm of deter_ct_a_dec_poly and deter_ct_b_dec_poly, and then compute a inner product between them. 
     rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get()); 
-    //rlwe_param->mul_engine->multisum(&out_minus.a, &deter_ct_a_dec_poly, array_eval_a_sk.get());  
     rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get()); 
 
     gadget->sample(deter_ct_b_dec, ct_ptr->b.coefs);   
     rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_b_dec_poly, array_eval_b.get()); 
-    //rlwe_param->mul_engine->multisum(&out_ptr->a, &deter_ct_b_dec_poly, array_eval_a.get());
     rlwe_param->mul_engine->multisum(&out_ptr->a, decomp_poly_array_eval_form.get(), array_eval_a.get());
     out->add(out, &out_minus); 
 }
+
   
 void RLWEGadgetCT::init_gadget_decomp_tables(){
     /// TODO: Actuall both decomposition tables is overkill. We can realize everything with just one, and save on memory.
@@ -355,8 +354,8 @@ RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other){
 }
   
 GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){     
-    std::vector<RLWECT> gadget_ct; 
-    std::vector<RLWECT> gadget_ct_sk;    
+    std::vector<std::unique_ptr<RLWECT>> gadget_ct; 
+    std::vector<std::unique_ptr<RLWECT>> gadget_ct_sk;    
     Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     int digits = gadget->digits;
     long base = gadget->base; 
@@ -364,20 +363,20 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     msg->mul(&msg_x_sk, &rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
     msg_x_sk.neg(&msg_x_sk); 
     // Encryptions of - msg* base**i    
-    gadget_ct.push_back(*rlwe_sk->encrypt(msg));
+    gadget_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg)));
     for(int i = 1; i < digits; ++i){
         // Multiply msg by base
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
-        gadget_ct.push_back(*rlwe_sk->encrypt(msg)); 
+        gadget_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg))); 
     }  
     // Encryptions of - msg * sk * base**i    
-    gadget_ct_sk.push_back(*rlwe_sk->encrypt(&msg_x_sk));
+    gadget_ct_sk.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(&msg_x_sk)));
     for(int i = 1; i < digits; ++i){ 
         // Multiply msg by base
         msg_x_sk.mul(&msg_x_sk, base); 
         // Encrypt - msg * sk * base**i   
-        gadget_ct_sk.push_back(*rlwe_sk->encrypt(&msg_x_sk));  
+        gadget_ct_sk.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(&msg_x_sk)));  
     }     
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }

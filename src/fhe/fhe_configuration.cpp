@@ -257,7 +257,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     /// =================== Generate Secret keys 
     
     // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
+    std::shared_ptr<LWESK> g_lwe(new LWESK(lwe_param, lwe_stddev, binary)); 
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
     // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
     std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
@@ -283,7 +283,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
+    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder(new RLWEBlindRotateOutputBuilder(rlwe_param));
     bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
         lwe_param_tiny,
@@ -454,9 +454,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     this->is_bootstrap_pk_set = true;
     this->is_sanitization_supported = true;
 } 
-
-
-
+ 
 
 void FHEConfiguration::init_tfhe_12_NTT_amortized(){  
     // 2**12
@@ -543,8 +541,6 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     this->is_bootstrap_pk_set = true;
     this->is_sanitization_supported = true;
 } 
-
-
 
 
 

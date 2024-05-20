@@ -663,7 +663,7 @@ void Polynomial::init(int degree, long coef_modulus){
     this->coef_modulus = coef_modulus;
     this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
     this->coefs = new long[degree];
-    is_init = true;
+    this->is_init = true;
 }
  
 Polynomial::Polynomial(const Polynomial &other){
@@ -973,6 +973,7 @@ PolynomialArrayEvalFormFFTWComplex::PolynomialArrayEvalFormFFTWComplex(FFTWNegac
     this->coef_modulus = mul_engine->coef_modulus;
     this->full_size = this->size * array_size; 
     this->eval_fftw = new fftw_complex[full_size];   
+    this->is_init = true;
 }
 
 
@@ -1027,6 +1028,7 @@ PolynomialArrayEvalFormFFTWLongComplex::PolynomialArrayEvalFormFFTWLongComplex(F
     this->coef_modulus = mul_engine->coef_modulus;
     this->full_size = this->size * array_size; 
     this->eval_fftwl = new fftwl_complex[full_size];  
+    this->is_init = true;
 }
 
 void PolynomialArrayEvalFormFFTWLongComplex::add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other){

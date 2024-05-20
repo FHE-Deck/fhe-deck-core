@@ -118,8 +118,8 @@ class RLWECT : public VectorCT{
     void load( Archive & ar )
     {   
         ar(param);    
-        a = *new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
-        b = *new Polynomial(param->size, param->coef_modulus, param->mul_engine); 
+        a = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
+        b = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
         for(int i = 0; i < this->param->size; ++i){
           ar(a.coefs[i]);
           ar(b.coefs[i]);
@@ -150,13 +150,13 @@ class RLWEGadgetCT : public GadgetVectorCT{
 
   RLWEGadgetCT() = default;
    
-  RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
+  RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk);
 
   RLWEGadgetCT(const RLWEGadgetCT& other);
 
   RLWEGadgetCT& operator=(const RLWEGadgetCT other);
 
-  void init(std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
+  void init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk);
    
   void mul(VectorCT *out, const VectorCT *ct);
    
