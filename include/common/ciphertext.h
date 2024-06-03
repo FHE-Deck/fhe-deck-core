@@ -47,7 +47,7 @@ class Ciphertext{
 
     public: 
  
-        LWECT *lwe_c;
+        std::shared_ptr<LWECT> lwe_c;
         bool is_lwe_ct = false;
 
         bool is_init = false;
@@ -56,11 +56,11 @@ class Ciphertext{
 
         FHEContext* context;
 
-        ~Ciphertext();
+        ~Ciphertext() = default;
 
         Ciphertext() = default;
   
-        Ciphertext(LWECT &lwe_c, PlaintextEncoding encoding, FHEContext* context);
+        Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding encoding, FHEContext* context);
  
         Ciphertext(const Ciphertext &c);
 

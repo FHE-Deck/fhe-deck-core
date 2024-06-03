@@ -60,7 +60,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
         delete[] h;
         delete[] d;
         delete[] inv_l;
-        delete[] rand_sigmas;
+        //delete[] rand_sigmas;
         // Free the temporary tables:
         delete[] p;
         delete[] c;
@@ -69,7 +69,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
 
         delete[] c_pert;
         delete[] z_pert; 
- 
+        delete[] xoshiro256_s;
  
     }
     if(is_deter_temp_init){
@@ -82,7 +82,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
 }
  
 
-DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long Q, long base, double stddev){
+DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev){ 
     this->type = discrete_gaussian_gadget;
     this->stddev = stddev;
     this->degree = degree;
@@ -92,29 +92,17 @@ DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long 
 }
  
 
-void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
-    if(this->type == signed_decomposition_gadget){
-        this->bits_base = 1;
-        // Compute the k, parameter (remind k is such that 2**k = base)  
-        // meaning that for now we support only power of two base 
-        this->bits_base = Utils::power_times(base, 2);  
-        this->digits = Utils::power_times(modulus, base);   
-        this->ell_minus_one = this->digits-1;
- 
-        // Initialize temporary arrays:
-        signed_poly = new long[degree]; 
-        sign = new long[degree]; 
-        is_deter_temp_init = true;
-    }else if(this->type == discrete_gaussian_gadget){ 
+void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){ 
         if(this->stddev < base){ 
             throw std::logic_error("Gadget::setup_type_specific_parameters(): stddev < basis!");
         } 
-        this->rand = Sampler(0.0, this->stddev); 
+        //this->rand = Sampler(0.0, this->stddev); 
         if(!Utils::is_power_of(base, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
         this->bits_base = Utils::power_times(base, 2);
-        this->digits = Utils::power_times(modulus, base);  
+         
+        this->digits = Utils::power_times(modulus, base);   
         this->ell_minus_one = this->digits-1;
         if(Utils::is_power_of(modulus, base)){
             is_power_of_base_modulus = true;
@@ -122,10 +110,7 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
         }else{ 
             is_power_of_base_modulus = false;
             precompute_constants_for_general_modulus_gaussian_sampling();
-        }  
-    }else{
-        throw std::logic_error("Gadget::setup_type_specific_parameters(): Most likely wrong gadget type!");
-    } 
+        }   
 }
   
 void DiscreteGaussianSamplingGadget::sample(long** out, long *in){ 
@@ -306,7 +291,7 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
   
  
 
-
+/*
 void DiscreteGaussianSamplingGadget::sample_G(long* out, long in){ 
     long* p = new long[digits];
     double* c = new double[digits];
@@ -373,6 +358,7 @@ long DiscreteGaussianSamplingGadget::sample_Zt(double sigma, double center){
     // Implicitely takes as input stddev and tail_bound 
     return rand.gaussian(center, sigma);  
 }
+*/
 
 void DiscreteGaussianSamplingGadget::precompute_constants_for_power_of_base_gaussian_sampling(){
     is_power_of_basis_gaussian_temp_init = true;
@@ -390,14 +376,13 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_power_of_base_gaus
     hasSpare = false; 
 }
 
-void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_gaussian_sampling(){  
-
+void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_gaussian_sampling(){   
     q_decomp = new long[digits];
     DiscreteGaussianSamplingGadget::base_decomposition(q_decomp, modulus);  
     sigma = stddev/(double)(base + 1); 
-    rand_sigma = Sampler(0.0, stddev);  
+    //rand_sigma = Sampler(0.0, stddev);  
     sigmas = new double[digits];
-    rand_sigmas = new Sampler[digits];
+    //rand_sigmas = new Sampler[digits];
 
     r = base + 1;
     l = new double[digits];
@@ -417,12 +402,12 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_ga
          
         sigmas[i] = sigma/l[i];   
   
-        rand_sigmas[i] = Sampler(0.0, sigmas[i]); 
+        //rand_sigmas[i] = Sampler(0.0, sigmas[i]); 
     }
 
  
     d_stddev = sigma / d[digits-1];   
-    rand_d_stddev = Sampler(0.0, d_stddev);   
+    //rand_d_stddev = Sampler(0.0, d_stddev);   
      
     inv_basis = (double)1.0/base; 
     two_times_basis_plus_one = 2 * base + 1;

@@ -1,15 +1,10 @@
 #include "ciphertext.h"
 
 using namespace fhe_deck;
-
-Ciphertext::~Ciphertext(){ 
-    if(is_lwe_ct){
-        delete this->lwe_c; 
-    }
-}
+ 
   
-Ciphertext::Ciphertext(LWECT &lwe_c, PlaintextEncoding encoding, FHEContext* context){
-    this->lwe_c = new LWECT(lwe_c);
+Ciphertext::Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding encoding, FHEContext* context){
+    this->lwe_c = lwe_c;
     this->is_lwe_ct = true; 
     this->is_init = true;
     this->encoding = encoding; 
@@ -19,7 +14,7 @@ Ciphertext::Ciphertext(LWECT &lwe_c, PlaintextEncoding encoding, FHEContext* con
 Ciphertext::Ciphertext(const Ciphertext &other){ 
     this->encoding = other.encoding;
     if(other.is_lwe_ct){
-        this->lwe_c = other.lwe_c->clone();
+        this->lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone());
         this->is_lwe_ct = true; 
         this->is_init = true;
         this->context = other.context;
@@ -35,10 +30,10 @@ Ciphertext& Ciphertext::operator=(const Ciphertext other){
     }    
     if(!this->is_init && other.is_lwe_ct){  
         this->encoding = other.encoding;
-        this->lwe_c = other.lwe_c->clone();
+        this->lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone());
         this->is_lwe_ct = true; 
         this->is_init = true;  
-        this->context = other.context; 
+        this->context = other.context;  
         return *this;
     } else if(other.is_lwe_ct && this->is_lwe_ct){    
         this->encoding = other.encoding;
@@ -56,7 +51,7 @@ Ciphertext& Ciphertext::operator=(const Ciphertext other){
 Ciphertext::Ciphertext(Ciphertext &other){
     this->encoding = other.encoding;
     if(other.is_lwe_ct){
-        this->lwe_c = other.lwe_c->clone();
+        this->lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone());
         this->is_lwe_ct = true;
         this->is_init = true; 
         this->context = other.context;
@@ -67,7 +62,7 @@ Ciphertext::Ciphertext(Ciphertext &other){
 
 void Ciphertext::add(Ciphertext* ct){
     if(is_lwe_ct){ 
-        this->lwe_c->add(this->lwe_c, ct->lwe_c);
+        this->lwe_c->add(this->lwe_c.get(), ct->lwe_c.get());
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
@@ -76,7 +71,7 @@ void Ciphertext::add(Ciphertext* ct){
 
 void Ciphertext::sub(Ciphertext* ct){
     if(is_lwe_ct){ 
-        this->lwe_c->sub(this->lwe_c, ct->lwe_c);
+        this->lwe_c->sub(this->lwe_c.get(), ct->lwe_c.get());
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
@@ -85,7 +80,7 @@ void Ciphertext::sub(Ciphertext* ct){
 
 void Ciphertext::mul(long b){
     if(is_lwe_ct){ 
-        this->lwe_c->mul(this->lwe_c, b);
+        this->lwe_c->mul(this->lwe_c.get(), b);
     }else{
        throw std::logic_error("Ciphertext type not supported!");
     }
@@ -93,8 +88,8 @@ void Ciphertext::mul(long b){
       
 Ciphertext Ciphertext::operator+(long b){
     if(is_lwe_ct){ 
-        LWECT c(lwe_c->param);
-        lwe_c->add(&c, this->encoding.encode_message(b)); 
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->add(c.get(), this->encoding.encode_message(b)); 
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
@@ -104,8 +99,8 @@ Ciphertext Ciphertext::operator+(long b){
 
 Ciphertext Ciphertext::operator+(Ciphertext ct){ 
     if(is_lwe_ct){  
-        LWECT c(lwe_c->param);
-        lwe_c->add(&c, ct.lwe_c);
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->add(c.get(), ct.lwe_c.get());
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
@@ -115,8 +110,8 @@ Ciphertext Ciphertext::operator+(Ciphertext ct){
 
 Ciphertext Ciphertext::operator-(long b){
     if(is_lwe_ct){ 
-        LWECT c(lwe_c->param);
-        lwe_c->sub(&c, this->encoding.encode_message(b));
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->sub(c.get(), this->encoding.encode_message(b));
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
@@ -126,8 +121,8 @@ Ciphertext Ciphertext::operator-(long b){
 
 Ciphertext Ciphertext::operator-(Ciphertext ct){
     if(is_lwe_ct){ 
-        LWECT c(lwe_c->param);
-        lwe_c->sub(&c, ct.lwe_c);
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->sub(c.get(), ct.lwe_c.get());
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
@@ -137,8 +132,8 @@ Ciphertext Ciphertext::operator-(Ciphertext ct){
 
 Ciphertext Ciphertext::operator-(){
     if(is_lwe_ct){ 
-        LWECT c(lwe_c->param);
-        lwe_c->neg(&c);
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->neg(c.get());
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");
@@ -148,8 +143,8 @@ Ciphertext Ciphertext::operator-(){
 
 Ciphertext Ciphertext::operator*(long b){
     if(is_lwe_ct){ 
-        LWECT c(lwe_c->param);
-        lwe_c->mul(&c, b);
+        std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+        lwe_c->mul(c.get(), b);
         return Ciphertext(c, this->encoding, this->context);
     }else{
         throw std::logic_error("Ciphertext type not supported!");

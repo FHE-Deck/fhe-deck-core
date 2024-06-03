@@ -305,7 +305,8 @@ LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stdde
     this->size = size;
     this->stddev = stddev;
     this->param = lwe_sk->param;
-    this->rand_masking = Sampler(0.0, stddev);
+    //this->rand_masking = Sampler(0.0, stddev);
+    this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
     // Initialize the key switching key 
     this->public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
     for(int i = 0; i < size; ++i){   
@@ -324,11 +325,11 @@ LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
  
 void LWEPublicKey::encrypt(LWECT* out, long message){
     long noise;
-    noise = rand_masking.normal_dist(rand_masking.e1); 
+    noise = rand_masking->next();
     public_key_ptr[0]->mul(out, noise); 
     LWECT temp(param);
     for(int i = 1; i < size; ++i){
-        noise = rand_masking.normal_dist(rand_masking.e1); 
+        noise = rand_masking->next();
         public_key_ptr[i]->mul(&temp, noise); 
         out->add(out, &temp); 
     }  

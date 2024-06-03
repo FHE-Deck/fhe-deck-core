@@ -63,7 +63,7 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     bool is_power_of_base_modulus;
 
-    Sampler rand;
+    //Sampler rand;
     double stddev;
 
     int ell_minus_one;
@@ -71,15 +71,15 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     // Tables/values precomputed for genralized Gaussian sampling from [EC:GenMic18]. We are use the smae notation as in the paper, except that I use q_decomp instead of q ofor the decomposition of the modulus Q.
     long* q_decomp;
     double sigma;
-    Sampler rand_sigma;
+    //Sampler rand_sigma;
     double* sigmas;
-    Sampler* rand_sigmas;
+    //Sampler* rand_sigmas;
     long r;
     double* l;
     double* h;
     double* d;
     double d_stddev;
-    Sampler rand_d_stddev;
+    //Sampler rand_d_stddev;
     // Tail bound parameter
     // For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
     long tail_bound;

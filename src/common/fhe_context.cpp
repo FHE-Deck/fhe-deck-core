@@ -2,19 +2,10 @@
 
 using namespace fhe_deck;
   
-void FHEContext::generate_context(FHENamedParams name){   
-    //FHEConfiguration fhe_config = FHEConfiguration(name);  
+void FHEContext::generate_context(FHENamedParams name){    
     config = std::unique_ptr<FHEConfiguration>(new FHEConfiguration(name));
-    config->generate_keys();
-    //fhe_config.generate_keys();
-    //lwe_sk = fhe_config.get_secret_key();
-    //bootstrap_pk = fhe_config.get_functional_bootstrap_pk();
-    //encrypt_pk = fhe_config.get_encrypt_pk(); 
-    //accumulator_builder = fhe_config.get_accumulator_builder();
-    //sanitization_pk = fhe_config.get_sanitization_key();
-    default_encoding = config->default_encoding; 
-    //is_sk_init = true;
-    //is_pk_init = true;
+    config->generate_keys(); 
+    default_encoding = config->default_encoding;  
 }
 
 Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type){  
@@ -49,7 +40,7 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }        
-    LWECT c = *config->secret_key->encrypt(encoding.encode_message(message));
+    std::shared_ptr<LWECT> c(config->secret_key->encrypt(encoding.encode_message(message)));
     return Ciphertext(c, encoding, this); 
 }
 
@@ -92,7 +83,7 @@ Ciphertext FHEContext::encrypt_public(long message, PlaintextEncoding encoding){
     if(!config->is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
-    LWECT c = *config->encrypt_pk->encrypt(encoding.encode_message(message)); 
+    std::shared_ptr<LWECT> c(config->encrypt_pk->encrypt(encoding.encode_message(message))); 
     return Ciphertext(c, encoding, this);
 }
 
@@ -107,7 +98,7 @@ long FHEContext::decrypt(Ciphertext *c_in){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }  
-    return config->secret_key->decrypt(c_in->lwe_c, c_in->encoding);
+    return config->secret_key->decrypt(c_in->lwe_c.get(), c_in->encoding);
 }
  
 PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
@@ -165,15 +156,15 @@ Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut){
     if(!config->is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
-    LWECT ct_out(ct_in->lwe_c->param);  
+    std::shared_ptr<LWECT> ct_out(new LWECT(ct_in->lwe_c->param));  
     if(ct_in->encoding.type == full_domain){    
-        config->bootstrap_pk->full_domain_bootstrap(&ct_out, lut.accumulator, ct_in->lwe_c, ct_in->encoding);
+        config->bootstrap_pk->full_domain_bootstrap(ct_out.get(), lut.accumulator, ct_in->lwe_c.get(), ct_in->encoding);
     }else if(ct_in->encoding.type == partial_domain){  
-        config->bootstrap_pk->bootstrap(&ct_out,  lut.accumulator, ct_in->lwe_c); 
+        config->bootstrap_pk->bootstrap(ct_out.get(),  lut.accumulator, ct_in->lwe_c.get()); 
     }else if(ct_in->encoding.type == signed_limied_short_int){    
         LWECT c_in_copy(ct_in->lwe_c->param);
         ct_in->lwe_c->add(&c_in_copy, ct_in->encoding.encode_message(ct_in->encoding.plaintext_space));
-        config->bootstrap_pk->bootstrap(&ct_out, lut.accumulator, &c_in_copy);   
+        config->bootstrap_pk->bootstrap(ct_out.get(), lut.accumulator, &c_in_copy);   
     } 
     else{
         throw std::logic_error("Non existend encoding type!");
@@ -196,14 +187,14 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
     // Amortization is not supported so lets run sequentially.
     for(std::shared_ptr<VectorCTAccumulator> acc: accumulator_vec){
         LWECT ct_out(ct_in->lwe_c->param);  
-        config->bootstrap_pk->full_domain_bootstrap(&ct_out, acc, ct_in->lwe_c, ct_in->encoding);
+        config->bootstrap_pk->full_domain_bootstrap(&ct_out, acc, ct_in->lwe_c.get(), ct_in->encoding);
         out_vec_lwe.push_back(ct_out);
     }
     // Otherwise we run the amortized procedures. 
     }else if(ct_in->encoding.type == full_domain){ 
-        out_vec_lwe = config->bootstrap_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
+        out_vec_lwe = config->bootstrap_pk->full_domain_bootstrap(accumulator_vec, ct_in->lwe_c.get(), ct_in->encoding);
     }else if(ct_in->encoding.type == partial_domain){ 
-        out_vec_lwe = config->bootstrap_pk->bootstrap(accumulator_vec, ct_in->lwe_c, ct_in->encoding);
+        out_vec_lwe = config->bootstrap_pk->bootstrap(accumulator_vec, ct_in->lwe_c.get(), ct_in->encoding);
     }else if(ct_in->encoding.type == signed_limied_short_int){  
         LWECT ct_cast(ct_in->lwe_c->param);
         ct_in->lwe_c->add(&ct_cast, ct_in->encoding.encode_message(ct_in->encoding.plaintext_space));
@@ -215,7 +206,7 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
     // Load the LWECT's into the Ciphertext wrapper
     std::vector<Ciphertext> out_vec;
     for(LWECT ct: out_vec_lwe){
-        out_vec.push_back(Ciphertext(ct, ct_in->encoding, this));
+        out_vec.push_back(Ciphertext(std::shared_ptr<LWECT>(ct.clone()), ct_in->encoding, this));
     }  
     return out_vec;
 }
@@ -244,8 +235,8 @@ Ciphertext FHEContext::sanitize(Ciphertext *ct){
     if(!config->is_sanitization_supported){
         throw std::logic_error("Sanitization is not supported, or sanitization key is not loaded!");
     }
-    LWECT ct_out(ct->lwe_c->param);  
-    config->sanitization_pk->sanitize(&ct_out, ct->lwe_c, ct->encoding);
+    std::shared_ptr<LWECT> ct_out(new LWECT(ct->lwe_c->param));  
+    config->sanitization_pk->sanitize(ct_out.get(), ct->lwe_c.get(), ct->encoding);
     return Ciphertext(ct_out, ct->encoding, this); 
 }
 
@@ -325,7 +316,7 @@ Ciphertext FHEContext::read_Ciphertext(std::ifstream &is){
     cereal::BinaryInputArchive iarchive(is);  
     LWECT ct;
     iarchive(ct);
-    Ciphertext out(ct, this->default_encoding, this);
+    Ciphertext out(std::shared_ptr<LWECT>(ct.clone()), this->default_encoding, this);
     return out;
 }
  

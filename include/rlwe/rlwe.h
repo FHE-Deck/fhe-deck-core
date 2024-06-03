@@ -23,8 +23,7 @@ namespace fhe_deck{
 class RLWEParam : public VectorCTParam{
 
   public: 
-    long coef_modulus; 
-
+    long coef_modulus;  
     RingType ring;
     ModulusType mod_type;   
     PolynomialArithmetic arithmetic = ntl;
@@ -136,10 +135,10 @@ class RLWEGadgetCT : public GadgetVectorCT{
   std::shared_ptr<Gadget> gadget;
 
   bool is_init = false;  
-  std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;
-  std::shared_ptr<PolynomialArrayEvalForm> array_eval_b;
-  std::shared_ptr<PolynomialArrayEvalForm> array_eval_a_sk;
-  std::shared_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_a;
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_b;
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_a_sk;
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
    
   long** deter_ct_a_dec;
   long** deter_ct_b_dec;  
@@ -170,7 +169,9 @@ class RLWEGadgetCT : public GadgetVectorCT{
     void load( Archive & ar )
     {   
         ar(rlwe_param, gadget, array_eval_a, array_eval_b,array_eval_a_sk, array_eval_b_sk);  
-        this->is_init = true;
+        this->out_minus = RLWECT(rlwe_param);  
+        init_gadget_decomp_tables();    
+        this->is_init = true;  
     } 
   
   private:
@@ -224,19 +225,25 @@ class RLWESK{
     
     template <class Archive>
     void save( Archive & ar ) const
-    { 
-        std::vector<long> s_arr; 
-        for(int i = 0; i < param->size; ++i){
-            s_arr.push_back(this->sk_poly.coefs[i]);
-        }
-        ar(param, s_arr);  
+    {  
+        ar(param, key_type, sk_poly, noise_stddev);  
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {  
-      std::vector<long> s_arr;
-      ar(param, s_arr);    
+    {   
+      ar(param, key_type, sk_poly, noise_stddev);    
+      this->unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
+      this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
+      if(key_type == uniform){ 
+        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
+      }else if(key_type == ternary){ 
+          sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
+      }else if(key_type == binary){ 
+          sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
+      }  
+      this->sk_poly_eval = std::unique_ptr<PolynomialEvalForm>(param->mul_engine->init_polynomial_eval_form());  
+      this->sk_poly.to_eval(this->sk_poly_eval.get()); 
     }  
 };
 

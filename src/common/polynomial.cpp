@@ -676,7 +676,9 @@ Polynomial::Polynomial(const Polynomial &other){
 } 
   
 Polynomial& Polynomial::operator=(const Polynomial other){
-    this->init(other.degree, other.coef_modulus);
+    if(!this->is_init){ 
+        this->init(other.degree, other.coef_modulus);
+    }
     Utils::cp(this->coefs, other.coefs, this->degree);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 

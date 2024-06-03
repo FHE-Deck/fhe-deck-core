@@ -98,13 +98,13 @@ class NTRUCT : public VectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(param);   
+        ar(param, ct_poly);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(param);   
+        ar(param, ct_poly);   
     }  
 };
 
@@ -133,42 +133,38 @@ class NTRUSK{
   
     void encrypt(NTRUCT *out, Polynomial *m);
  
-    NTRUCT encrypt(Polynomial *m); 
+    NTRUCT* encrypt(Polynomial *m); 
 
-    NTRUCT encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
+    NTRUCT* encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
  
     void partial_decrypt(Polynomial *phase, NTRUCT *ct);
  
-    Polynomial decrypt(NTRUCT *ct, PlaintextEncoding encoding);
+    Polynomial* decrypt(NTRUCT *ct, PlaintextEncoding encoding);
  
     void decrypt(Polynomial *out, NTRUCT *ct, PlaintextEncoding encoding);
   
     // Encrypts msg * inv_f. 
-    NTRUCT kdm_encrypt(Polynomial* msg); 
+    NTRUCT* kdm_encrypt(Polynomial* msg); 
     // Encrypts msg * inv_f.  
     void kdm_encrypt(NTRUCT *ct_out, Polynomial* msg);
     // Encrypts msg * inv_f. 
     void kdm_encode_and_encrypt(NTRUCT *ct_out, Polynomial* msg, PlaintextEncoding encoding);
     // Encrypts msg * inv_f.  
-    NTRUCT kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
+    NTRUCT* kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
   
     LWESK* extract_lwe_key();
  
     template <class Archive>
     void save( Archive & ar ) const
-    { 
-        std::vector<long> s_arr; 
-        for(int i = 0; i < param->size; ++i){
-            s_arr.push_back(this->sk.coefs[i]);
-        }
-        ar(param, s_arr);  
+    {  
+        ar(param, sk, inv_sk, noise_stddev);  
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {  
-      std::vector<long> s_arr;
-      ar(param, s_arr);    
+    {   
+      ar(param, sk, inv_sk, noise_stddev);  
+      this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
     }  
 };
 
@@ -190,32 +186,33 @@ class NTRUGadgetCT : public GadgetVectorCT{
 
   NTRUGadgetCT() = default;
    
-  NTRUGadgetCT(std::shared_ptr<NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<NTRUCT> &gadget_ct);
+  NTRUGadgetCT(std::shared_ptr<NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<NTRUCT>> &gadget_ct);
 
   NTRUGadgetCT(const NTRUGadgetCT& other);
 
   NTRUGadgetCT& operator=(const NTRUGadgetCT other);
 
-  void init(std::vector<NTRUCT> &gadget_ct);
+  void init(std::vector<std::unique_ptr<NTRUCT>> &gadget_ct);
    
   void mul(VectorCT *out, const VectorCT *ct);
    
     template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(ntru_param, gadget);     
+        ar(ntru_param, gadget, array_eval_a);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(ntru_param, gadget);      
+        ar(ntru_param, gadget, array_eval_a);  
+        set_gadget_decomp_arrays();   
         this->is_init = true;
     } 
   
   private:
   
-  void init_gadget_decomp_tables();
+  //void init_gadget_decomp_tables();
 
   void set_gadget_decomp_arrays();
   

@@ -16,18 +16,9 @@ namespace fhe_deck{
 class FHEContext{
 
     public:
-  
-    //std::shared_ptr<fhe_deck::LWESK> lwe_sk; 
-    //std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;  
-    //std::shared_ptr<LWEPublicKey> encrypt_pk; 
-    //std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
-    //std::shared_ptr<SanitizationKey> sanitization_pk;
+   
 
-    std::unique_ptr<FHEConfiguration> config;
-
-    // Flags to check whether the sk or pk are initialized.
-    //bool is_sk_init = false;
-    //bool is_pk_init = false;
+    std::unique_ptr<FHEConfiguration> config; 
   
     PlaintextEncoding default_encoding; 
   

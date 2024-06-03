@@ -9,6 +9,7 @@ namespace fhe_deck{
 
 
 // DEPRECATED 
+/*
 class Sampler{
  
     //private: 
@@ -52,6 +53,7 @@ class Sampler{
 
         void uniform_array(long *a, int n, long Q); 
 };
+*/
 
 
 class Distribution{

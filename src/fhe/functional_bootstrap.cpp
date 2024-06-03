@@ -40,17 +40,21 @@ std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shar
 LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par, 
         std::shared_ptr<LWEParam> lwe_par_tiny, 
-        BlindRotationPublicKey *blind_rotation_key, 
-        LWEToLWEKeySwitchKey *key_switch_key,  
+        std::shared_ptr<BlindRotationPublicKey> blind_rotation_key, 
+        std::shared_ptr<LWEToLWEKeySwitchKey> key_switch_key,  
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,
         std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder){ 
     this->is_full_domain_bootstrap_function_amortizable = true;
-    this->blind_rotation_key = std::shared_ptr<BlindRotationPublicKey>(blind_rotation_key);
-    this->key_switch_key = std::shared_ptr<LWEToLWEKeySwitchKey>(key_switch_key);
+    this->blind_rotation_key = blind_rotation_key;
+    this->key_switch_key = key_switch_key;
+    this->blind_rotate_output_builder = blind_rotate_output_builder;
     this->accumulator_builder = accumulator_builder;
     this->lwe_par = lwe_par; 
-    this->lwe_par_tiny = lwe_par_tiny;
- 
+    this->lwe_par_tiny = lwe_par_tiny; 
+    init();
+}
+
+void LMPFunctionalBootstrapPublicKey::init(){
     // Initialize BlindRotateOutputs   
     this->br_out = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build()); 
     this->br_temp = std::shared_ptr<BlindRotateOutput>(blind_rotate_output_builder->build()); 

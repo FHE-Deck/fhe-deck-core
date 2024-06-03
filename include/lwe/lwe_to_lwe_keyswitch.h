@@ -36,6 +36,20 @@ class LWEToLWEKeySwitchKey{
 
     void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
 
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(origin, destination, ks_type);  
+      ar(key_content);   
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(origin, destination, ks_type);
+      ar(key_content);     
+    }    
+
 }; 
  
 } /// End of nameespace fhe_deck

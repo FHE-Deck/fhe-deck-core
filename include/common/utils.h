@@ -122,7 +122,7 @@ class Utils{
 
         static void compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell);
   
-        static void gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, Sampler &rand);
+        //static void gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, Sampler &rand);
  
 
         // Some stuff for statistics

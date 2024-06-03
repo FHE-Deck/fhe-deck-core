@@ -149,10 +149,10 @@ void RLWEGadgetCT::init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::ve
                                             gadget->digits);  
   
     this->decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
-    this->array_eval_a = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));                             
-    this->array_eval_b = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));   
-    this->array_eval_a_sk = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));    
-    this->array_eval_b_sk = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
+    this->array_eval_a = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));                             
+    this->array_eval_b = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));   
+    this->array_eval_a_sk = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));    
+    this->array_eval_b_sk = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
  
     for(int i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, &gadget_ct[i]->a);
@@ -330,12 +330,11 @@ void RLWESK::extract_lwe_key(long* lwe_key){
 
 LWESK* RLWESK::extract_lwe_key(){
     std::unique_ptr<long[]> extract_key(new long[param->size]); 
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(param->size, param->coef_modulus));
+    std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
     for(int i = 0; i <  param->size; ++i){ 
         extract_key[i] = -this->sk_poly.coefs[i]; 
-    } 
-    LWESK* key = new LWESK(lwe_param, extract_key.get(), this->noise_stddev, this->key_type); 
-    return key;
+    }  
+    return new LWESK(lwe_param, extract_key.get(), this->noise_stddev, this->key_type);
 }
  
 RLWEGadgetSK::RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWESK> rlwe_sk){ 

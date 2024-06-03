@@ -12,7 +12,7 @@
 
 #include "fft_plan.h"
 #include "hexl/hexl.hpp"  
-   
+#include <cereal/archives/binary.hpp>
 
 namespace fhe_deck{
       
@@ -368,6 +368,21 @@ class Polynomial{
     void inv(Polynomial *out);
 
     void inv(Polynomial *out, std::shared_ptr<PolynomialInversionEngine> inv_engine); 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(coef_modulus, degree);  
+        ar(cereal::binary_data(coefs, sizeof(long) * degree));  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(coef_modulus, degree);   
+        this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
+        ar(cereal::binary_data(coefs, sizeof(long) * degree));  
+    } 
       
 };
    
@@ -418,6 +433,22 @@ class PolynomialArrayCoefForm{
     void neg(PolynomialArrayCoefForm *out);
   
     void mul(PolynomialArrayCoefForm *out, long scalar);
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(coef_modulus, degree, array_size);   
+        ar(cereal::binary_data(poly_array, sizeof(long) * full_size));  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(coef_modulus, degree, array_size);   
+        full_size = degree * array_size;
+        ar(cereal::binary_data(poly_array, sizeof(long) * full_size));  
+        is_init = true;
+    } 
      
 };
 
@@ -475,6 +506,23 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
     void neg(PolynomialArrayEvalForm *out);
 
     void mod_reduce(long modulus); 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(coef_modulus, size, array_size);   
+        ar(cereal::binary_data(eval_long, sizeof(long) * full_size));  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(coef_modulus, size, array_size);   
+        full_size = size * array_size;
+        ar(cereal::binary_data(eval_long, sizeof(long) * full_size));  
+        is_init = true;
+    }    
+
 };
 
 class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
@@ -499,6 +547,23 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
     void neg(PolynomialArrayEvalForm *out);
 
     void mod_reduce(long modulus); 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(coef_modulus, size, array_size);   
+        ar(cereal::binary_data(eval_fftw, sizeof(fftw_complex) * full_size));  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(coef_modulus, size, array_size);   
+        full_size = size * array_size;
+        ar(cereal::binary_data(eval_fftw, sizeof(fftw_complex) * full_size));  
+        is_init = true;
+    }    
+
 };
 
 class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
@@ -524,6 +589,22 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
     void neg(PolynomialArrayEvalForm *out);
 
     void mod_reduce(long modulus); 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+        ar(coef_modulus, size, array_size);   
+        ar(cereal::binary_data(eval_fftwl, sizeof(fftwl_complex) * full_size));  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+        ar(coef_modulus, size, array_size);   
+        full_size = size * array_size;
+        ar(cereal::binary_data(eval_fftwl, sizeof(fftwl_complex) * full_size));  
+        is_init = true;
+    }    
 };
 
 

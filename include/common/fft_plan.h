@@ -16,9 +16,9 @@ class FFTPlan{
     // Ring type is either cyclic or negacyclic
     RingType ring;
     // N is the number of coefficients
-    int N; 
+    uint32_t N; 
     // Plan size is the size of the plan e.g. 2N for (X^N+1) and N for (X^N-1) 
-    int plan_size;
+    uint32_t plan_size;
     double *in;
     fftw_complex *out;
     fftw_plan plan_to_eval_form, plan_to_coef_form;

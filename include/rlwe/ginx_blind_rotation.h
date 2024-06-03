@@ -15,16 +15,26 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     
     // The blind rotation key 
     /// TODO: Perhap we shold use md_span?
-    std::vector<std::unique_ptr<GadgetVectorCT>> bk;
-    // Parameteres of the encoding of the LWE key in the blind rotation. These are paramters about the secret key of lwe_par (and lwe_g_par as lwe_par is a modulus switch of lwe_g_par)
-    KeyDistribution key_d;
-    int sizeof_ext_s;  
+    std::vector<std::unique_ptr<GadgetVectorCT>> bk; 
  
     ~GINXBlindRotationKey();
       
     GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk);
  
     void blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg);
+
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(lwe_par, bk);    
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(lwe_par, bk);   
+    }    
    
     private:  
 

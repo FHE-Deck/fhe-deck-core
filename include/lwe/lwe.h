@@ -80,8 +80,7 @@ class LWECT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param); 
-
+      ar(param);  
       std::vector<long> ct_arr; 
       for(int i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
@@ -176,7 +175,7 @@ class LWESK {
       for(int i = 0; i < param->dim; ++i){
         s_arr.push_back(key[i]);
       }
-      ar(s_arr);
+      ar(s_arr, stddev, key_type);
     }
         
     template <class Archive>
@@ -184,18 +183,20 @@ class LWESK {
     {  
       ar(param);
       std::vector<long> s_arr;
-      ar(s_arr);
+      ar(s_arr, stddev, key_type);
       this->key = new long[param->dim];
       for(int i = 0; i < param->dim; ++i){
         this->key[i] = s_arr[i];
-      } 
+      }  
+      unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
+      error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
     } 
 };
     
 class LWEGadgetCT{
 
   public: 
-  std::shared_ptr<LWESK> lwe; 
+   
   long base;
   int digits;
   int bits_base;  
@@ -208,6 +209,20 @@ class LWEGadgetCT{
   void gadget_mul(LWECT *out_ct, long scalar); 
 
   void gadget_mul_lazy(LWECT *out_ct, long scalar); 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(base, digits, bits_base, lwe_param);   
+      ar(ct_content);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(base, digits, bits_base, lwe_param);
+      ar(ct_content);
+    }  
 };
 
 class LWEGadgetSK{
@@ -235,13 +250,13 @@ class LWEGadgetSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe, base);  
+      ar(lwe, base, digits, bits_base);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe, base);  
+      ar(lwe, base, digits, bits_base);  
     }    
 };
 
@@ -250,12 +265,11 @@ class LWEPublicKey{
 
   public:
  
-    /// TODO: Change this stddev stuff to uniform. 
     double stddev; 
-    Sampler rand_masking;
+    int size;  
+    std::shared_ptr<Distribution> rand_masking;
    
     std::unique_ptr<std::unique_ptr<LWECT>[]> public_key_ptr;
-    int size; 
 
     std::shared_ptr<LWEParam> param;
  
@@ -270,6 +284,22 @@ class LWEPublicKey{
     LWECT* encrypt(long message);
 
     LWECT* ciphertext_of_zero();
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(param, stddev, size);  
+      ar(public_key_ptr);   
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(param, stddev, size);
+      ar(public_key_ptr);    
+      this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
+    }    
+    
 };
 
 }

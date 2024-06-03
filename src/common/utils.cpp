@@ -520,10 +520,7 @@ void Utils::compose(long *out, long **d_ct, int sizeof_poly, int basis, int ell)
     delete[] temp_array;
 }
 
-
 /*
-TODO: Deprecated: its implemented now in the gadget class
-*/
 void Utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, int k, int ell, Sampler &rand){
     int mask = basis-1;
     int shift;  
@@ -550,6 +547,7 @@ void Utils::gaussian_sample(long **out, long* in, int sizeof_poly, int basis, in
     }
     delete[] gaussians; 
 }
+*/
  
 
 

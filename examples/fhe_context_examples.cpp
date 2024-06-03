@@ -106,8 +106,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(&ct4) == 2, "context.decrypt(&(ct4 = ct2))) == 2"); 
     std::cout << "context.decrypt(&(ct4 = ct2))) == 2: OK"   << std::endl;
  
-
-
+ 
     std::vector<Ciphertext> v;
     v.push_back(ct1);
     v.push_back(ct2);
@@ -120,23 +119,18 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     // The outcome should be 3, because (2 * 1 + 1 * 2 + 3) % 4 = 3
     assertm(context.decrypt(&ct4) == 3, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
     std::cout << "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3: OK"   << std::endl; 
- 
-       
-
+  
     auto id = [](long m) -> long {
         return m;
     }; 
- 
   
     HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
- 
-
+  
     ct4 = context.eval_lut(&ct1, lut_identity);
     std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl;
     assertm(context.decrypt(&ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
-
-
+ 
     auto id_plus = [](long m) -> long {
         return (m+1);
     }; 
@@ -493,6 +487,7 @@ void basic_Ciphertext_tests(FHENamedParams param_set){
     
     std::cout << "Encrypt..." << std::endl;
     std::cout << "Testing: lwe_ct c1  = context.encrypt_temp(1);  " << std::endl;
+
     Ciphertext c1  = context.encrypt(1);  
  
     assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
@@ -506,7 +501,7 @@ void basic_Ciphertext_tests(FHENamedParams param_set){
     std::cout << "Testing: lwe_ct& lwe_ct::operator=(const lwe_ct other)" << std::endl;
     c1 = c2;
     assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
-    std::cout << "context.decrypt(&c1) == 1: OK" << std::endl;   
+    std::cout << "context.decrypt(&c1) == 1: OK" << std::endl;  
 }
 
 

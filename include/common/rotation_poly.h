@@ -36,42 +36,11 @@ public:
     void to_amortization_form();
 
     void to_non_amortized_form();
-
-    static void set_polynomial(long* lookup_polynomial, long (*f)(long message), long t, long N, long Q);
- 
+   
     static RotationPoly rot_msb(int t, long N, long Q); 
 
     static RotationPoly rot_one(long N, long Q); 
- 
-    /// TODO: Delete all deprecated methods after porting NTRU
-
-    // Deprecated
-    static long* rot_identity(int t, long N, long Q); 
-
-    // Deprecated
-    static long* rot_uni_poly(int* poly, int poly_size, int t, long N, long Q);
-
-    // Deprecated
-    static long* rot_is_zero_of_poly(int* poly, int poly_size, int t, long N, long Q, int t_out);
-
-    // Deprecated
-    static long* rot_square_and_div_by_4(int t, long N, long Q); 
-
-    // TODO: Delete this stuff. 
-    // NOTE: Remind that this is a special rotation polynomial, and is not going to work correctly with all bootstrappings
-    // Deprecated
-    static long* rot_is_zero(int t, long N, long Q);
-    // Deprecated
-    static long* rot_inv_mod(int t, long N, long Q); 
-    // Deprecated
-    static long* cyclic_rot_identity(int t, long N, long Q); 
-    // Deprecated
-    static long* cyclic_rot_inv_mod(int t, long N, long Q); 
-    // Deprecated
-    static long* cyclic_rot_square_and_div_by_4(int t, long N, long Q); 
-    // Deprecated
-    static long* cyclic_rot_uni_poly(int* poly, int poly_size, int t, long N, long Q);  
-
+   
 };
 
 
