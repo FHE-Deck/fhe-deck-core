@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "plaintext_encoding.h"
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
 namespace fhe_deck{
@@ -19,22 +20,16 @@ class LWEParam{
   int dim;
   // LWE Modulus
   long modulus; 
-  /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
+  /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
   LWEParam() = default;
  
   LWEParam(int dim, long modulus); 
-    
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-      ar(dim, modulus);
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-      ar(dim, modulus);
-    } 
+
+   template<class Archive> 
+   void serialize(Archive & ar) 
+   { 
+     ar(dim, modulus); 
+   }   
 };
 
 class LWECT{
@@ -42,12 +37,11 @@ class LWECT{
   public:
  
     std::shared_ptr<LWEParam> param;
-
-    bool init = false;
  
     long *ct;
+    bool init = false;
 
-    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
+    /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWECT() = default;
 
     ~LWECT();
@@ -85,7 +79,7 @@ class LWECT{
       for(int i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
       }
-      ar(ct_arr) ;
+      ar(ct_arr);
     }
         
     template <class Archive>
@@ -131,11 +125,10 @@ class LWEModSwitcher{
 class LWESK {
  
     public:  
-    std::shared_ptr<LWEParam> param;
-  
-    std::shared_ptr<Distribution> unif_dist;
+
+    std::shared_ptr<LWEParam> param; 
+    std::shared_ptr<Distribution> unif_dist; 
     std::shared_ptr<Distribution> error_dist;
-    std::shared_ptr<Distribution> sk_dist;
     KeyDistribution key_type;
     double stddev;
     // Initialized in the constructors and freed in the destructor.
@@ -144,7 +137,7 @@ class LWESK {
     std::unique_ptr<LongIntegerMultipler> multiplier;
     
     ~LWESK();
-    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
+    /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;
   
     LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type);
@@ -184,13 +177,16 @@ class LWESK {
       ar(param);
       std::vector<long> s_arr;
       ar(s_arr, stddev, key_type);
-      this->key = new long[param->dim];
+      init(); 
       for(int i = 0; i < param->dim; ++i){
         this->key[i] = s_arr[i];
-      }  
-      unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
-      error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
+      }   
     } 
+
+    private:
+    void init();
+    void init_key();
+
 };
     
 class LWEGadgetCT{
@@ -203,6 +199,8 @@ class LWEGadgetCT{
   std::shared_ptr<LWEParam> lwe_param;
    
   std::unique_ptr<std::unique_ptr<LWECT>[]> ct_content;
+
+  LWEGadgetCT() = default;
   
   LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, long base);
   
@@ -214,14 +212,19 @@ class LWEGadgetCT{
     void save( Archive & ar ) const
     { 
       ar(base, digits, bits_base, lwe_param);   
-      ar(ct_content);
+      for(int i = 0; i < digits; ++i){
+        ar(ct_content[i]);
+      }
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(base, digits, bits_base, lwe_param);
-      ar(ct_content);
+      this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]); 
+      for(int i = 0; i < digits; ++i){
+        ar(ct_content[i]);
+      }
     }  
 };
 
@@ -234,7 +237,7 @@ class LWEGadgetSK{
     long base;
     int digits;
     int bits_base;  
-    /// NOTE: Never explicitely used in FHE-Deck, but cereal serialization fails to compile without it.
+    /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWEGadgetSK() = default;
   
     LWEGadgetSK(std::shared_ptr<LWESK> lwe, long base);
@@ -273,6 +276,8 @@ class LWEPublicKey{
 
     std::shared_ptr<LWEParam> param;
  
+    LWEPublicKey() = default;
+
     LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int key_size, double stddev);
 
     LWEPublicKey(const LWEPublicKey &other);
@@ -288,16 +293,21 @@ class LWEPublicKey{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param, stddev, size);  
-      ar(public_key_ptr);   
+      ar(param, stddev, size);     
+      for(int i = 0; i < this->size; ++i){   
+          ar(public_key_ptr[i]);  
+      }   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param, stddev, size);
-      ar(public_key_ptr);    
+      ar(param, stddev, size); 
       this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
+      this->public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
+      for(int i = 0; i < this->size; ++i){   
+          ar(public_key_ptr[i]);  
+      }   
     }    
     
 };

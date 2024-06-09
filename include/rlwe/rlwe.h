@@ -12,8 +12,7 @@
 #include "polynomial.h"
 #include "vector_ciphertext.h"
 #include "plaintext_encoding.h"
-
-
+ 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
  
@@ -48,13 +47,16 @@ class RLWEParam : public VectorCTParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
+      ar(cereal::base_class<VectorCTParam>(this));   
       ar(ring, size, coef_modulus, mod_type, arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(ring, size, coef_modulus, mod_type, arithmetic);   
+      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(ring, size, coef_modulus, mod_type, arithmetic);  
+      init_mul_engine(); 
     } 
  
   private:
@@ -68,8 +70,7 @@ class RLWECT : public VectorCT{
     std::shared_ptr<RLWEParam> param; 
     // Polynomials b, and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial 
     Polynomial a;
-    Polynomial b; 
-
+    Polynomial b;  
     
     ~RLWECT() = default;
 
@@ -106,23 +107,15 @@ class RLWECT : public VectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(param);  
-        for(int i = 0; i < this->param->size; ++i){
-          ar(a.coefs[i]);
-          ar(b.coefs[i]);
-        }  
+        ar(cereal::base_class<VectorCT>(this));   
+        ar(param, a, b); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(param);    
-        a = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
-        b = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
-        for(int i = 0; i < this->param->size; ++i){
-          ar(a.coefs[i]);
-          ar(b.coefs[i]);
-        } 
+        ar(cereal::base_class<VectorCT>(this));   
+        ar(param, a, b); 
     }  
 };
   
@@ -162,14 +155,17 @@ class RLWEGadgetCT : public GadgetVectorCT{
     template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(rlwe_param, gadget, array_eval_a, array_eval_b,array_eval_a_sk, array_eval_b_sk);     
+        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);     
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {   
-        ar(rlwe_param, gadget, array_eval_a, array_eval_b,array_eval_a_sk, array_eval_b_sk);  
+    {    
+        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);  
         this->out_minus = RLWECT(rlwe_param);  
+        this->decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
         init_gadget_decomp_tables();    
         this->is_init = true;  
     } 
@@ -195,8 +191,7 @@ class RLWESK{
     std::unique_ptr<PolynomialEvalForm> sk_poly_eval; 
     bool is_init = false;  
     std::shared_ptr<Distribution> unif_dist;
-    std::shared_ptr<Distribution> error_dist;
-    std::shared_ptr<Distribution> sk_dist;
+    std::shared_ptr<Distribution> error_dist; 
     double noise_stddev;
   
     RLWESK() = default;
@@ -225,26 +220,21 @@ class RLWESK{
     
     template <class Archive>
     void save( Archive & ar ) const
-    {  
+    {       
         ar(param, key_type, sk_poly, noise_stddev);  
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {   
+    {      
       ar(param, key_type, sk_poly, noise_stddev);    
-      this->unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
-      this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
-      if(key_type == uniform){ 
-        sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
-      }else if(key_type == ternary){ 
-          sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
-      }else if(key_type == binary){ 
-          sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
-      }  
-      this->sk_poly_eval = std::unique_ptr<PolynomialEvalForm>(param->mul_engine->init_polynomial_eval_form());  
-      this->sk_poly.to_eval(this->sk_poly_eval.get()); 
+      init(); 
     }  
+
+  private:
+    void init();
+    void key_gen();
+
 };
 
 class RLWEGadgetSK : public GadgetVectorCTSK{
@@ -269,16 +259,24 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
+      ar(cereal::base_class<GadgetVectorCTSK>(this));     
       ar(gadget, rlwe_sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
+      ar(cereal::base_class<GadgetVectorCTSK>(this));     
       ar(gadget, rlwe_sk);   
     } 
 };
  
 }
 
+CEREAL_REGISTER_TYPE(fhe_deck::RLWEParam)
+CEREAL_REGISTER_TYPE(fhe_deck::RLWECT)
+CEREAL_REGISTER_TYPE(fhe_deck::RLWEGadgetCT)
+CEREAL_REGISTER_TYPE(fhe_deck::RLWEGadgetSK)
+ 
+ 
 #endif

@@ -189,12 +189,31 @@ LWESK::~LWESK(){
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
-    this->key = new long[param->dim];  
     this->stddev  = stddev;
-    this->key_type = key_type;
-    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
-    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev)); 
+    this->key_type = key_type; 
+    init();
+    init_key(); 
+}
 
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key, double stddev, KeyDistribution key_type){
+    this->param = lwe_par;  
+    this->stddev  = stddev;
+    this->key_type = key_type;  
+    init(); 
+    for(int i = 0; i < lwe_par->dim; ++i){
+        this->key[i] = key[i];
+    }   
+}
+
+void LWESK::init(){
+    this->key = new long[param->dim]; 
+    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
+    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
+    multiplier = std::unique_ptr<LongIntegerMultipler>(new LongIntegerMultipler(param->modulus)); 
+}
+
+void LWESK::init_key(){
+    std::shared_ptr<Distribution> sk_dist;
     if(this->key_type == binary){  
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
     }else{ 
@@ -202,20 +221,6 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution k
     }
     sk_dist->fill_array(this->key, param->dim); 
     Utils::array_mod_form(this->key, this->key, param->dim, param->modulus);
-    multiplier = std::unique_ptr<LongIntegerMultipler>(new LongIntegerMultipler(param->modulus));
-}
-
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, long* key, double stddev, KeyDistribution key_type){
-    this->param = lwe_par;  
-    this->key = new long[lwe_par->dim]; 
-    this->stddev  = stddev;
-    this->key_type = key_type;
-    unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
-    error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
-    for(int i = 0; i < lwe_par->dim; ++i){
-        this->key[i] = key[i];
-    }   
-    multiplier = std::unique_ptr<LongIntegerMultipler>(new LongIntegerMultipler(param->modulus));
 }
 
 LWESK::LWESK(const LWESK &other){
@@ -304,12 +309,11 @@ void LWEGadgetSK::gadget_encrypt(LWEGadgetCT* gadget_ct, long m){
 LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int size, double stddev){
     this->size = size;
     this->stddev = stddev;
-    this->param = lwe_sk->param;
-    //this->rand_masking = Sampler(0.0, stddev);
+    this->param = lwe_sk->param; 
     this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
     // Initialize the key switching key 
     this->public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
-    for(int i = 0; i < size; ++i){   
+    for(int i = 0; i < this->size; ++i){   
         public_key_ptr[i] = std::unique_ptr<LWECT>(lwe_sk->encrypt(0));
     }   
 }

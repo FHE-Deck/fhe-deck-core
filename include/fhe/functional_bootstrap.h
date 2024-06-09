@@ -8,6 +8,12 @@
 #include "rotation_poly.h"
 #include "ginx_blind_rotation.h"
 #include "lwe_to_lwe_keyswitch.h" 
+
+
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/polymorphic.hpp>
  
 namespace fhe_deck{
   
@@ -29,6 +35,7 @@ class FunctionalBootstrapPublicKey{
     // Generated from lwe_par, lwe_par_tiny, and extract_lwe_par
     LWEModSwitcher ms_from_gadget_to_par; 
  
+    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
     std::shared_ptr<BlindRotateOutput> br_out;
     std::shared_ptr<BlindRotateOutput> br_temp;
     // Indicates whether a full_domain bootstrap supports function amortization. The flag needs to be set in the implementation of this class.
@@ -42,6 +49,19 @@ class FunctionalBootstrapPublicKey{
  
     virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding) = 0;
 
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        /// TODO: Need to change this class in genral. Need to have the Blind rotations output builder. 
+      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);    
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);    
+    }    
+
 
 };
 
@@ -50,7 +70,7 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     public: 
 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
+    //std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
 
     // LWE after modulus switching to N (Is computed from lwe_par)
     std::shared_ptr<LWEParam> lwe_par_tiny;

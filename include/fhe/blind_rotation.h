@@ -67,8 +67,7 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
   
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
 };
- 
-
+  
 
 class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
@@ -181,8 +180,18 @@ class BlindRotationPublicKey{
   
     virtual void blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
 
+    template <class Archive>
+    void save( Archive & ar ) const {
+        ar(lwe_par);    
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) {
+        ar(lwe_par);    
+    } 
+
 };
  
-}// End of namespace fhe_deck
+}/// End of namespace fhe_deck
 
 #endif 

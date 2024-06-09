@@ -6,6 +6,11 @@
 #include "rotation_poly.h"
 #include "blind_rotation.h"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/polymorphic.hpp>
+
 namespace fhe_deck{
 
  
@@ -18,6 +23,8 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     std::vector<std::unique_ptr<GadgetVectorCT>> bk; 
  
     ~GINXBlindRotationKey();
+
+    GINXBlindRotationKey() = default;
       
     GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk);
  
@@ -27,13 +34,15 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe_par, bk);    
+      ar(cereal::base_class<BlindRotationPublicKey>(this));   
+      ar(bk);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe_par, bk);   
+      ar(cereal::base_class<BlindRotationPublicKey>(this));   
+      ar(bk);    
     }    
    
     private:  
@@ -47,8 +56,9 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     /// TODO: Leave this for a ternary blind rotation alg. that gonna be implemented in the future.
     long* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
 };
-
  
-}
+}/// End of namespace fhe_deck
+
+CEREAL_REGISTER_TYPE(fhe_deck::GINXBlindRotationKey)
 
 #endif

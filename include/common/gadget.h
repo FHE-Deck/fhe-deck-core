@@ -9,7 +9,9 @@
 #include <limits>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
-
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/polymorphic.hpp>
 
 namespace fhe_deck{
 
@@ -38,6 +40,11 @@ class Gadget{
 
     void delete_out(long** out);
 
+    template <class Archive>
+    void serialize( Archive & ar ) 
+    { 
+      ar(type, base, digits, bits_base, degree, modulus);   
+    } 
 };
 
 class SignedDecompositionGadget : public Gadget{
@@ -46,11 +53,19 @@ class SignedDecompositionGadget : public Gadget{
 
     GadgetType type = signed_decomposition_gadget;
 
+    SignedDecompositionGadget() = default;
+
     SignedDecompositionGadget(int degree, long Q, long base);
 
     void sample(long** out, long *in);
  
     void decomp(long **d_ct, long* poly);
+
+    template <class Archive>
+    void serialize( Archive & ar ) 
+    { 
+      ar(cereal::base_class<Gadget>(this));   
+    } 
 
 };
 
@@ -148,6 +163,8 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     ~DiscreteGaussianSamplingGadget();
 
+    DiscreteGaussianSamplingGadget() = default;
+
     DiscreteGaussianSamplingGadget(int degree, long Q, long base, double stddev);
 
     void sample(long** out, long *in);
@@ -196,10 +213,38 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     inline long gen_discrete_gauss(float c);
  
     inline int d1_d2_of_karney();
+
+
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(type, base, digits, bits_base, degree, modulus);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(type, base, digits, bits_base, degree, modulus);    
+       setup_type_specific_parameters(); 
+    } 
   
 };
- 
 
+
+  
 }
+
+/* 
+CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget);
+CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget);
+*/
+CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget)
+CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget)
+/*
+CEREAL_REGISTER_POLYMORPHIC_RELATION(fhe_deck::Gadget, fhe_deck::SignedDecompositionGadget)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(fhe_deck::Gadget, fhe_deck::DiscreteGaussianSamplingGadget)
+*/
+
 
 #endif

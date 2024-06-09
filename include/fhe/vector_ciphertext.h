@@ -14,6 +14,12 @@ class VectorCTParam{
     int size; 
     // Initiates a VectorCT object which is not necessarily decryptable. its for allocating space.
     virtual VectorCT* init_ct(std::shared_ptr<VectorCTParam> param) = 0;
+
+    template <class Archive>
+    void save( Archive & ar ) const {}
+        
+    template <class Archive>
+    void load( Archive & ar ) {} 
 };
 
 class VectorCT{
@@ -30,6 +36,12 @@ class VectorCT{
     virtual void sub(VectorCT *out, VectorCT *ct) = 0;
   
     virtual void neg(VectorCT *out) = 0; 
+
+    template <class Archive>
+    void save( Archive & ar ) const {}
+        
+    template <class Archive>
+    void load( Archive & ar ) {} 
 };
  
 class GadgetVectorCT{
@@ -39,6 +51,12 @@ class GadgetVectorCT{
     virtual ~GadgetVectorCT() = default;
 
     virtual void mul(VectorCT *out, const VectorCT *ct) = 0;
+
+    template <class Archive>
+    void save( Archive & ar ) const {}
+        
+    template <class Archive>
+    void load( Archive & ar ) {} 
 };
 
 class GadgetVectorCTSK{
@@ -51,6 +69,12 @@ class GadgetVectorCTSK{
     virtual GadgetVectorCT* gadget_encrypt(long *msg, int size) = 0; 
     /// Encrypts the polynomials coefficients
     virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0;  
+
+    template <class Archive>
+    void save( Archive & ar ) const {}
+        
+    template <class Archive>
+    void load( Archive & ar ) {} 
 };
 
 }

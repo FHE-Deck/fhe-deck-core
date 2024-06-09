@@ -207,7 +207,7 @@ NTRUSK::NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev){
     this->param = param; 
     this->noise_stddev = noise_stddev; 
     this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
-    sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
+    this->sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
     key_gen(); 
 }
  

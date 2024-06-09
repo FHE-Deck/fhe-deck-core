@@ -119,7 +119,7 @@ RLWEParam& RLWEParam::operator=(const RLWEParam other){
     return *this;
 }
 
-void RLWEParam::init_mul_engine(){ 
+void RLWEParam::init_mul_engine(){  
     // Build PolynomialMultiplicationEngine
     PolynomialMultiplicationEngineBuilder mul_engine_builder;
     mul_engine_builder.set_coef_modulus(coef_modulus); 
@@ -148,7 +148,6 @@ void RLWEGadgetCT::init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::ve
                                             rlwe_param->coef_modulus,  
                                             gadget->digits);  
   
-    this->decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
     this->array_eval_a = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));                             
     this->array_eval_b = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));   
     this->array_eval_a_sk = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));    
@@ -215,7 +214,8 @@ void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){
 }
 
   
-void RLWEGadgetCT::init_gadget_decomp_tables(){
+void RLWEGadgetCT::init_gadget_decomp_tables(){ 
+    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
     /// TODO: Actuall both decomposition tables is overkill. We can realize everything with just one, and save on memory.
     deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
     deter_ct_b_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
@@ -233,8 +233,18 @@ RLWESK::RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, doubl
     this->param = param;
     this->key_type = key_type;
     this->noise_stddev = noise_stddev;
+    init();
+    key_gen(); 
+}
+
+void RLWESK::init(){ 
     this->unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
     this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
+}
+
+void RLWESK::key_gen(){
+        this->sk_poly = Polynomial(param->size, param->coef_modulus, param->mul_engine);  
+    std::shared_ptr<Distribution> sk_dist;
     if(key_type == uniform){ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
     }else if(key_type == ternary){ 
@@ -242,7 +252,6 @@ RLWESK::RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, doubl
     }else if(key_type == binary){ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
     }  
-    this->sk_poly = Polynomial(param->size, param->coef_modulus, param->mul_engine);  
     sk_dist->fill_array(this->sk_poly.coefs, param->size);   
     /// TODO: sk_poly_eval isn't actually used yet. Need to include it in the implementation of encrypt! 
     this->sk_poly_eval = std::unique_ptr<PolynomialEvalForm>(param->mul_engine->init_polynomial_eval_form());  

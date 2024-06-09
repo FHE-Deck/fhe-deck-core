@@ -14,6 +14,10 @@
 #include "polynomial.h"
 #include "vector_ciphertext.h"
 #include "gadget.h"
+
+
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
  
 namespace fhe_deck{
 
@@ -46,13 +50,16 @@ class NTRUParam : public VectorCTParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
+      ar(cereal::base_class<VectorCTParam>(this));   
       ar(ring, size, coef_modulus, mod_type, arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(ring, size, coef_modulus, mod_type, arithmetic);   
+      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(ring, size, coef_modulus, mod_type, arithmetic);  
+      init_mul_engine(); 
     } 
  
   private:
@@ -98,13 +105,15 @@ class NTRUCT : public VectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(param, ct_poly);   
+        ar(cereal::base_class<VectorCT>(this));   
+        ar(param, ct_poly); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(param, ct_poly);   
+        ar(cereal::base_class<VectorCT>(this));   
+        ar(param, ct_poly); 
     }  
 };
 
@@ -153,7 +162,7 @@ class NTRUSK{
     NTRUCT* kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
   
     LWESK* extract_lwe_key();
- 
+   
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -164,6 +173,7 @@ class NTRUSK{
     void load( Archive & ar )
     {   
       ar(param, sk, inv_sk, noise_stddev);  
+      this->sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
       this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
     }  
 };
@@ -195,21 +205,25 @@ class NTRUGadgetCT : public GadgetVectorCT{
   void init(std::vector<std::unique_ptr<NTRUCT>> &gadget_ct);
    
   void mul(VectorCT *out, const VectorCT *ct);
-   
-    template <class Archive>
+
+
+
+  template <class Archive>
     void save( Archive & ar ) const
     {  
+        ar(cereal::base_class<GadgetVectorCT>(this));   
         ar(ntru_param, gadget, array_eval_a);     
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {   
-        ar(ntru_param, gadget, array_eval_a);  
-        set_gadget_decomp_arrays();   
-        this->is_init = true;
+    {    
+        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(ntru_param, gadget, array_eval_a);    
+        set_gadget_decomp_arrays();    
+        this->is_init = true;  
     } 
-  
+     
   private:
   
   //void init_gadget_decomp_tables();
@@ -240,20 +254,29 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
     GadgetVectorCT* kdm_gadget_encrypt(Polynomial *msg); 
 
     GadgetVectorCT* kdm_gadget_encrypt(long *msg, int size); 
- 
+   
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(gadget, sk);   
+        ar(cereal::base_class<GadgetVectorCTSK>(this));     
+        ar(gadget, sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(gadget, sk);   
+        ar(cereal::base_class<GadgetVectorCTSK>(this));     
+        ar(gadget, sk);   
     } 
 };
  
 } /// End of namespace fhe_deck
+
+
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUParam)
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUCT)
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetCT)
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetSK)
+
 
 #endif
