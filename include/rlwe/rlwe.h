@@ -164,7 +164,7 @@ class RLWEGadgetCT : public GadgetVectorCT{
     {    
         ar(cereal::base_class<GadgetVectorCT>(this));   
         ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);  
-        this->out_minus = RLWECT(rlwe_param);  
+        //this->out_minus = RLWECT(rlwe_param);  
         this->decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
         init_gadget_decomp_tables();    
         this->is_init = true;  
@@ -172,8 +172,6 @@ class RLWEGadgetCT : public GadgetVectorCT{
   
   private:
 
-  /// @brief Variable needed for multiplication. Its initialized in already in the constructors.
-  RLWECT out_minus;
   /// @brief Temporary variable which stores the evaluation form of a decomposed polynomial. Used in Multiplication, initialized in init.
   std::shared_ptr<PolynomialArrayEvalForm> decomp_poly_array_eval_form;
   

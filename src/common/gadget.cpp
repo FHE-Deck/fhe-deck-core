@@ -7,9 +7,13 @@ SignedDecompositionGadget::SignedDecompositionGadget(int degree, long modulus, l
     this->degree = degree;
     this->modulus = modulus;
     this->base = base;
+    init();
+}
+
+void SignedDecompositionGadget::init(){ 
+    /// TODO: Check if bits_base is a power of two.
     this->bits_base = Utils::power_times(base, 2);  
     this->digits = Utils::power_times(modulus, base);  
-    /// TODO: Check if bits_base is a power of two.
 }
 
 void SignedDecompositionGadget::sample(long** out, long *poly){  
@@ -59,9 +63,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
         delete[] l;
         delete[] h;
         delete[] d;
-        delete[] inv_l;
-        //delete[] rand_sigmas;
-        // Free the temporary tables:
+        delete[] inv_l; 
         delete[] p;
         delete[] c;
         delete[] u; 
@@ -82,8 +84,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
 }
  
 
-DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev){ 
-    this->type = discrete_gaussian_gadget;
+DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev){  
     this->stddev = stddev;
     this->degree = degree;
     this->modulus = modulus;
@@ -95,8 +96,7 @@ DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long 
 void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){ 
         if(this->stddev < base){ 
             throw std::logic_error("Gadget::setup_type_specific_parameters(): stddev < basis!");
-        } 
-        //this->rand = Sampler(0.0, this->stddev); 
+        }  
         if(!Utils::is_power_of(base, 2)){
             std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
         }
@@ -113,14 +113,8 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
         }   
 }
   
-void DiscreteGaussianSamplingGadget::sample(long** out, long *in){ 
-    if(type == signed_decomposition_gadget){
-        signed_decomp(out, in);
-    }else if(type == discrete_gaussian_gadget){   
-        gaussian_sample(out, in); 
-    }else{
-        std::cout << "Not Supported Gadget type." << std::endl;
-    }
+void DiscreteGaussianSamplingGadget::sample(long** out, long *in){   
+    gaussian_sample(out, in);  
 }
    
 long* Gadget::get_gadget_vector(){
@@ -230,8 +224,7 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
     double temp;
 
     for(int k = 0; k < degree; ++k){  
-        // Additional stuff for base decompositon
-        // TODO: Perhaps I can make it faster by merging this into the previous for loop?
+        // Additional stuff for base decompositon 
         long mask = base-1; 
         long shift; 
         // Start base_decomposition(u, in[k]);  

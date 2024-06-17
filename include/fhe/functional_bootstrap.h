@@ -31,13 +31,13 @@ class FunctionalBootstrapPublicKey{
     std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
 
     // Special accumulator for blind rotating just the Delta * 1. Its used for the amortized method given that is it supported.
-    std::shared_ptr<VectorCTAccumulator> acc_one;
+    //std::shared_ptr<VectorCTAccumulator> acc_one;
     // Generated from lwe_par, lwe_par_tiny, and extract_lwe_par
     LWEModSwitcher ms_from_gadget_to_par; 
  
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
-    std::shared_ptr<BlindRotateOutput> br_out;
-    std::shared_ptr<BlindRotateOutput> br_temp;
+    //std::shared_ptr<BlindRotateOutput> br_out;
+    //std::shared_ptr<BlindRotateOutput> br_temp;
     // Indicates whether a full_domain bootstrap supports function amortization. The flag needs to be set in the implementation of this class.
     bool is_full_domain_bootstrap_function_amortizable = false;
    
@@ -59,7 +59,7 @@ class FunctionalBootstrapPublicKey{
     template <class Archive>
     void load( Archive & ar )
     {   
-      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);    
+      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);  
     }    
 
 
@@ -77,7 +77,9 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
     LWEModSwitcher ms_from_gadget_to_tiny_par;
     
     // Special Accumulator for computing the MSB in Full Domain Functional Bootstrapping 
-    std::shared_ptr<VectorCTAccumulator> acc_msb;
+    //std::shared_ptr<VectorCTAccumulator> acc_msb;
+
+    LMPFunctionalBootstrapPublicKey() = default;
      
     LMPFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par, 
@@ -96,13 +98,15 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(blind_rotation_key, key_switch_key, lwe_par, blind_rotate_output_builder, accumulator_builder);  
+        ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));    
+        ar(lwe_par_tiny);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(blind_rotation_key, key_switch_key, lwe_par, blind_rotate_output_builder, accumulator_builder);     
+        ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));      
+        ar(lwe_par_tiny);    
         init();
     } 
 };
@@ -132,5 +136,7 @@ class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPub
 };
 
 }
+
+CEREAL_REGISTER_TYPE(fhe_deck::LMPFunctionalBootstrapPublicKey)
 
 #endif

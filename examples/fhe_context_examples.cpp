@@ -14,6 +14,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     
     context.generate_context(param_set); 
+
     
     std::cout << "Encrypt..." << std::endl;
     Ciphertext c1  = context.encrypt(1);  
@@ -176,7 +177,84 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     //  The default encoding for this is actually full domain.  
     context.set_default_message_encoding_type(partial_domain);
     //context.set_default_plaintext_space(4);
+
+
+    {
+        /// Serialize and Deserialize LWEGadgetSK  
+        std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
+        oarchive_glwe_ct(context.config->secret_key); 
+        os_glwe_ct.close();  
+    }
+    std::shared_ptr<LWESK> secret_key;
+    {
+        std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
+        cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
+        iarchive_glwe_ct(secret_key);   
+        std::remove("fhe_context_test"); 
+    }
+    context.config->secret_key = secret_key;
+    {
+        /// Serialize and Deserialize LWEGadgetSK  
+        std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
+        oarchive_glwe_ct(context.config->eval_key.bootstrap_pk); 
+        os_glwe_ct.close();  
+    }
+    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk;
+    {
+        std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
+        cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
+        iarchive_glwe_ct(bootstrap_pk);   
+        std::remove("fhe_context_test"); 
+    }
+    context.config->eval_key.bootstrap_pk = bootstrap_pk;
+    {
+        std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
+        oarchive_glwe_ct(context.config->eval_key.accumulator_builder); 
+        os_glwe_ct.close();  
+    }
+    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    {
+        std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
+        cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
+        iarchive_glwe_ct(accumulator_builder);   
+        std::remove("fhe_context_test"); 
+    }
+    context.config->eval_key.accumulator_builder = accumulator_builder; 
+
+    {
+        std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
+        oarchive_glwe_ct(context.config->eval_key.encrypt_pk); 
+        os_glwe_ct.close();  
+    }
+    std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    {
+        std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
+        cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
+        iarchive_glwe_ct(encrypt_pk);   
+        std::remove("fhe_context_test"); 
+    }
+    context.config->eval_key.encrypt_pk = encrypt_pk; 
+    {
+        std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
+        oarchive_glwe_ct(context.config->eval_key.sanitization_pk); 
+        os_glwe_ct.close();  
+    }
+    std::shared_ptr<SanitizationKey> sanitization_pk;
+    {
+        std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
+        cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
+        iarchive_glwe_ct(sanitization_pk);   
+        std::remove("fhe_context_test"); 
+    }
+    context.config->eval_key.sanitization_pk = sanitization_pk; 
+
  
+
     Ciphertext c0  = context.encrypt(0);  
     Ciphertext c1  = context.encrypt(1);    
     Ciphertext c2  = context.encrypt(2);  
@@ -916,18 +994,25 @@ void serialization_test(){
     FHEContext first_context; 
     std::cout << "Generate Keys..." << std::endl;
     first_context.generate_context(FHENamedParams::tfhe_11_NTT);
-   
-     
+    
+    std::cout << "Save Secret Key" << std::endl; 
     first_context.save_secret_key("z_sk.cereal"); 
+    std::cout << "Save Public Key" << std::endl;
     first_context.save_public_key("z_pk.cereal");
  
-    FHEContext context;
+    FHEContext context; 
+    std::cout << "Load secret Key..." << std::endl; 
     context.load_secret_key("z_sk.cereal"); 
+    std::cout << "Load Public Key..." << std::endl; 
     context.load_public_key("z_pk.cereal");
-    
+    std::cout << "Delete The Files..." << std::endl; 
+    std::remove("z_sk.cereal"); 
+    std::remove("z_pk.cereal"); 
+
+
     Ciphertext ct0 = context.encrypt_public(1);   
     assert(context.decrypt(&ct0) == 1);
-    std::cout << "Test Encrypt/Decrypt: OK" << std::endl;
+    
 
     auto id = [](long m, long t) -> long {
         return m % t;
@@ -942,14 +1027,18 @@ void serialization_test(){
      
     std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
     os << ct_out; 
+    os.close();
     Ciphertext ct_from_stream = context.load_Ciphertext("z_rlwe_ct.cereal");
     assert(context.decrypt(&ct_from_stream) == 1);
     std::cout << "Test Writa and Save from Stream: OK" << std::endl;
+
+    std::remove("z_ct.cereal"); 
+    std::remove("z_rlwe_ct.cereal"); 
 }
 
 
 int main(){  
-      
+       
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -966,12 +1055,8 @@ int main(){
   
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
  
-    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized); 
+    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized);  
  
-
- /*
-    serialization_test(); 
- */
- 
- 
+    serialization_test();  
+  
 }

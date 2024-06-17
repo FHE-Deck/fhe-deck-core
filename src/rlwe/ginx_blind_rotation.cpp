@@ -2,14 +2,12 @@
 
 using namespace fhe_deck;
   
-
-GINXBlindRotationKey::~GINXBlindRotationKey(){  
-    delete next_acc;  
-}
+ 
 
 GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk){ 
     this->lwe_par = lwe_sk->param;   
-    this->next_acc = gadget_sk->vector_ct_param->init_ct(gadget_sk->vector_ct_param);
+    //this->next_acc = gadget_sk->vector_ct_param->init_ct(gadget_sk->vector_ct_param);
+    this->vector_ct_param = gadget_sk->vector_ct_param;
 
     // The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
     std::shared_ptr<long[]> ext_s;
@@ -18,11 +16,12 @@ GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
 }
   
 void GINXBlindRotationKey::blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){    
+    std::unique_ptr<VectorCT> next_acc(this->vector_ct_param->init_ct(vector_ct_param));
     acc->acc_content->homomorphic_rotate(out, lwe_ct_in->ct[0]);     
     for(int i = 0; i < lwe_par->dim; ++i){    
-        out->homomorphic_rotate(next_acc, lwe_ct_in->ct[i+1]);   
-        next_acc->sub(next_acc, out);      
-        bk[i]->mul(next_acc, next_acc);    
+        out->homomorphic_rotate(next_acc.get(), lwe_ct_in->ct[i+1]);   
+        next_acc->sub(next_acc.get(), out);      
+        bk[i]->mul(next_acc.get(), next_acc.get());    
         next_acc->add(out, out); 
     }   
 }

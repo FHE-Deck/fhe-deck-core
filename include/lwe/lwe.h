@@ -211,20 +211,20 @@ class LWEGadgetCT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(base, digits, bits_base, lwe_param);   
+      ar(base, digits, bits_base, lwe_param);    
       for(int i = 0; i < digits; ++i){
         ar(ct_content[i]);
-      }
+      } 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(base, digits, bits_base, lwe_param);
+      ar(base, digits, bits_base, lwe_param); 
       this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]); 
       for(int i = 0; i < digits; ++i){
         ar(ct_content[i]);
-      }
+      } 
     }  
 };
 

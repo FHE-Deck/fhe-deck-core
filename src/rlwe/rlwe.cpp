@@ -173,9 +173,7 @@ void RLWEGadgetCT::init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::ve
         array_coef.set_polynomial_at(i, &gadget_ct_sk[i]->b);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_b_sk.get(), &array_coef);  
- 
-    this->out_minus = RLWECT(rlwe_param); 
- 
+  
     init_gadget_decomp_tables();   
  
     this->is_init = true;  
@@ -201,9 +199,8 @@ RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other){
 void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     RLWECT* out_ptr = static_cast<RLWECT*>(out);
     const RLWECT* ct_ptr = static_cast<const RLWECT*>(ct);
-    gadget->sample(deter_ct_a_dec, ct_ptr->a.coefs); 
-    /// TODO: Note that I may unintentionally compute twice as many FFT/NTTs her because I use deter_ct_a_dec_poly and deter_ct_b_dec_poly twice. 
-    /// I should get the EvalForm of deter_ct_a_dec_poly and deter_ct_b_dec_poly, and then compute a inner product between them. 
+    gadget->sample(deter_ct_a_dec, ct_ptr->a.coefs);   
+    RLWECT out_minus(rlwe_param);
     rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get()); 
     rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get()); 
 

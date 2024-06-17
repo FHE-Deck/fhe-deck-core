@@ -19,8 +19,7 @@ namespace fhe_deck{
 class Gadget{
 
     public: 
-
-    GadgetType type;
+ 
     // Decomposition Base
     long base;
     // Number of digits after decomposition
@@ -41,32 +40,45 @@ class Gadget{
     void delete_out(long** out);
 
     template <class Archive>
-    void serialize( Archive & ar ) 
-    { 
-      ar(type, base, digits, bits_base, degree, modulus);   
-    } 
+    void save( Archive & ar ) const
+    {  
+      ar(degree, modulus, base);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {    
+        ar(degree, modulus, base);  
+    }  
 };
 
 class SignedDecompositionGadget : public Gadget{
 
     public:
-
-    GadgetType type = signed_decomposition_gadget;
-
+  
     SignedDecompositionGadget() = default;
 
-    SignedDecompositionGadget(int degree, long Q, long base);
+    SignedDecompositionGadget(int degree, long modulus, long base);
 
     void sample(long** out, long *in);
  
     void decomp(long **d_ct, long* poly);
 
-    template <class Archive>
-    void serialize( Archive & ar ) 
-    { 
-      ar(cereal::base_class<Gadget>(this));   
-    } 
+    void init();
 
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+      ar(cereal::base_class<Gadget>(this));   
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {    
+       ar(cereal::base_class<Gadget>(this));   
+        init(); 
+    }  
+  
 };
 
 
@@ -86,15 +98,15 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     // Tables/values precomputed for genralized Gaussian sampling from [EC:GenMic18]. We are use the smae notation as in the paper, except that I use q_decomp instead of q ofor the decomposition of the modulus Q.
     long* q_decomp;
     double sigma;
-    //Sampler rand_sigma;
+    
     double* sigmas;
-    //Sampler* rand_sigmas;
+    
     long r;
     double* l;
     double* h;
     double* d;
     double d_stddev;
-    //Sampler rand_d_stddev;
+    
     // Tail bound parameter
     // For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
     long tail_bound;
@@ -159,15 +171,32 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     double spare;
     bool hasSpare = false;
  
-    GadgetType type = signed_decomposition_gadget;
+ 
 
     ~DiscreteGaussianSamplingGadget();
 
     DiscreteGaussianSamplingGadget() = default;
 
-    DiscreteGaussianSamplingGadget(int degree, long Q, long base, double stddev);
+    DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev);
 
     void sample(long** out, long *in);
+ 
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    { 
+      ar(cereal::base_class<Gadget>(this));   
+      ar(stddev);  
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {  
+      ar(cereal::base_class<Gadget>(this));   
+      ar(stddev);  
+       setup_type_specific_parameters(); 
+    } 
+
   
     private:
 
@@ -213,38 +242,15 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     inline long gen_discrete_gauss(float c);
  
     inline int d1_d2_of_karney();
-
-
-
-    template <class Archive>
-    void save( Archive & ar ) const
-    { 
-      ar(type, base, digits, bits_base, degree, modulus);  
-    }
-        
-    template <class Archive>
-    void load( Archive & ar )
-    {  
-      ar(type, base, digits, bits_base, degree, modulus);    
-       setup_type_specific_parameters(); 
-    } 
+ 
   
 };
-
-
-  
-}
-
-/* 
-CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget);
-CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget);
-*/
+ 
+}/// End namespace fhe_deck
+ 
 CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget)
-CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget)
-/*
-CEREAL_REGISTER_POLYMORPHIC_RELATION(fhe_deck::Gadget, fhe_deck::SignedDecompositionGadget)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(fhe_deck::Gadget, fhe_deck::DiscreteGaussianSamplingGadget)
-*/
+CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget) 
+
 
 
 #endif

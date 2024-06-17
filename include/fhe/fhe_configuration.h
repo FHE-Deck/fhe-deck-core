@@ -19,39 +19,81 @@ enum class FHENamedParams{
 };
 
 
+class PublicEvaluationKey{
+
+    public: 
+         
+    FHENamedParams name;
+
+    bool is_bootstrap_pk_set = false;
+    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk; 
+    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    PlaintextEncoding default_encoding; 
+    
+    bool is_encrypt_pk_set = false;
+    std::shared_ptr<LWEPublicKey> encrypt_pk; 
+    
+    bool is_sanitization_supported = false;
+    std::shared_ptr<SanitizationKey> sanitization_pk;
+
+    PublicEvaluationKey() = default;
+
+    template <class Archive>
+    void save( Archive & ar ) const
+    {   
+        /// NOTE: Only public keys are stored. The secret key needs to be storred separately.
+        ar(name);
+        ar(is_bootstrap_pk_set);
+        if(is_bootstrap_pk_set){
+            ar(bootstrap_pk, accumulator_builder, default_encoding);
+        }
+        ar(is_encrypt_pk_set);
+        if(is_encrypt_pk_set){
+            ar(encrypt_pk);
+        }
+        ar(is_sanitization_supported);
+        if(is_sanitization_supported){
+            ar(sanitization_pk);
+        }   
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        /// NOTE: Only public keys are stored. The secret key needs to be storred separately.
+        ar(name);
+        ar(is_bootstrap_pk_set);
+        if(is_bootstrap_pk_set){
+            ar(bootstrap_pk, accumulator_builder, default_encoding);
+        }
+        ar(is_encrypt_pk_set);
+        if(is_encrypt_pk_set){
+            ar(encrypt_pk);
+        }
+        ar(is_sanitization_supported);
+        if(is_sanitization_supported){
+            ar(sanitization_pk);
+        }   
+    }    
+
+};
+
 class FHEConfiguration{ 
     
     public:   
 
-    FHENamedParams name;
-
-    std::shared_ptr<LWESK> secret_key;
+    
     bool is_secret_key_set = false;
-    std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk; 
-    bool is_bootstrap_pk_set = false;
-    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
-    std::shared_ptr<LWEPublicKey> encrypt_pk; 
-    bool is_encrypt_pk_set = false;
-    std::shared_ptr<SanitizationKey> sanitization_pk;
-    bool is_sanitization_supported = false;
-
-    PlaintextEncoding default_encoding;
-
+    std::shared_ptr<LWESK> secret_key;
+ 
+    PublicEvaluationKey eval_key;
+ 
     FHEConfiguration() = default;
 
     FHEConfiguration(FHENamedParams name);
    
     void generate_keys();
-
-    std::shared_ptr<LWESK> get_secret_key();
-    
-    std::shared_ptr<FunctionalBootstrapPublicKey> get_functional_bootstrap_pk();
-
-    std::shared_ptr<LWEPublicKey> get_encrypt_pk(); 
-
-    std::shared_ptr<AbstractAccumulatorBuilder> get_accumulator_builder(); 
-
-    std::shared_ptr<SanitizationKey> get_sanitization_key();
+ 
  
     void init_tfhe_11_NTT(); 
 
@@ -66,6 +108,10 @@ class FHEConfiguration{
     void init_tfhe_12_NTT_amortized();
 
     void init_ntrunium_12_NTT(); 
+
+
+    
+
  
 };
 

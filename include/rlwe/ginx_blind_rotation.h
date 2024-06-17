@@ -21,8 +21,9 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     // The blind rotation key 
     /// TODO: Perhap we shold use md_span?
     std::vector<std::unique_ptr<GadgetVectorCT>> bk; 
+    std::shared_ptr<VectorCTParam> vector_ct_param;
  
-    ~GINXBlindRotationKey();
+    ~GINXBlindRotationKey() = default;
 
     GINXBlindRotationKey() = default;
       
@@ -35,14 +36,14 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     void save( Archive & ar ) const
     { 
       ar(cereal::base_class<BlindRotationPublicKey>(this));   
-      ar(bk);    
+      ar(bk, vector_ct_param);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(cereal::base_class<BlindRotationPublicKey>(this));   
-      ar(bk);    
+      ar(bk, vector_ct_param);    
     }    
    
     private:  
@@ -50,7 +51,7 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
     void blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<long[]> ext_s);
 
     // Temporary variable used in blind rotate. Initialized in the constructors because initialization may be expensive.
-    VectorCT* next_acc; 
+    //VectorCT* next_acc; 
    
     long* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
     /// TODO: Leave this for a ternary blind rotation alg. that gonna be implemented in the future.

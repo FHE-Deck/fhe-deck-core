@@ -13,11 +13,13 @@ class LWEToLWEKeySwitchKey{
 
   public:
 
-    std::shared_ptr<std::unique_ptr<LWEGadgetCT>[]> key_content;
+    std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]> key_content;
     std::shared_ptr<LWEParam> origin; 
     std::shared_ptr<LWEParam>  destination;
     KeySwitchType ks_type;
    
+    LWEToLWEKeySwitchKey() = default;
+
     LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
  
     LWEToLWEKeySwitchKey(const LWEToLWEKeySwitchKey &other);
@@ -40,14 +42,22 @@ class LWEToLWEKeySwitchKey{
     void save( Archive & ar ) const
     { 
       ar(origin, destination, ks_type);  
-      ar(key_content);   
+      //ar(key_content);   
+      for(int i = 0; i < origin->dim; ++i){      
+        ar(key_content[i]);  
+      }   
+
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(origin, destination, ks_type);
-      ar(key_content);     
+      //ar(key_content);     
+      key_content = std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]>(new std::unique_ptr<LWEGadgetCT>[origin->dim]); 
+      for(int i = 0; i < origin->dim; ++i){      
+        ar(key_content[i]);  
+      }   
     }    
 
 }; 

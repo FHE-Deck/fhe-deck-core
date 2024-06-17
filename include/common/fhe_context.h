@@ -18,11 +18,11 @@ class FHEContext{
     public:
    
 
-    std::unique_ptr<FHEConfiguration> config; 
+    std::shared_ptr<FHEConfiguration> config; 
   
-    PlaintextEncoding default_encoding; 
+    PlaintextEncoding current_encoding; 
   
-    FHEContext() = default; 
+    FHEContext(); 
   
     void generate_context(FHENamedParams name);
  

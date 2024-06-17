@@ -49,6 +49,13 @@ class AbstractAccumulatorBuilder{
     virtual VectorCTAccumulator* get_acc_msb() = 0;
   
     virtual VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) = 0; 
+
+    template <class Archive>
+    void save( Archive & ar ) const { }
+        
+    template <class Archive>
+    void load( Archive & ar ) { } 
+
 };
 
 class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
@@ -56,6 +63,8 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
     public:
 
     std::shared_ptr<RLWEParam> param;
+
+    RLWEAccumulatorBuilder() = default;
 
     RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
 
@@ -66,6 +75,18 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
     VectorCTAccumulator* get_acc_msb();
   
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
+
+    template <class Archive>
+    void save( Archive & ar ) const { 
+        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
+        ar(param);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
+        ar(param);
+    } 
 };
   
 
@@ -74,9 +95,11 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     public:
 
     std::shared_ptr<NTRUParam> param;
-
+    /// TODO: Need to make a public version. 
     std::shared_ptr<NTRUSK> sk;
     bool is_sk_set = false;
+
+    NTRUAccumulatorBuilder() = default;
 
     NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk);
 
@@ -87,6 +110,19 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     VectorCTAccumulator* get_acc_msb();
   
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
+
+    template <class Archive>
+    void save( Archive & ar ) const { 
+        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
+        ar(param, sk);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
+        ar(param, sk);
+        this->is_sk_set = true;
+    } 
 };
   
 /*
@@ -112,6 +148,12 @@ class BlindRotateOutputBuilder{
     public: 
 
     virtual BlindRotateOutput* build() = 0; 
+
+    template <class Archive>
+    void save( Archive & ar ) const { }
+        
+    template <class Archive>
+    void load( Archive & ar ) { } 
 };
 
 class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
@@ -119,10 +161,24 @@ class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
     public: 
   
     std::shared_ptr<RLWEParam> rlwe_param;
+
+    RLWEBlindRotateOutputBuilder() = default;   
   
     RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEParam> param);
   
     BlindRotateOutput* build(); 
+
+    template <class Archive>
+    void save( Archive & ar ) const { 
+        ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
+        ar(rlwe_param);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
+        ar(rlwe_param);
+    } 
 };
 
 
@@ -131,10 +187,24 @@ class NTRUBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
     public: 
    
     std::shared_ptr<NTRUParam> ntru_param;
+
+    NTRUBlindRotateOutputBuilder() = default;
  
     NTRUBlindRotateOutputBuilder(std::shared_ptr<NTRUParam> param);
 
     BlindRotateOutput* build(); 
+
+    template <class Archive>
+    void save( Archive & ar ) const { 
+        ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
+        ar(ntru_param);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
+        ar(ntru_param);
+    } 
 };
 
 class RLWEBlindRotateOutput : public BlindRotateOutput{
@@ -193,5 +263,10 @@ class BlindRotationPublicKey{
 };
  
 }/// End of namespace fhe_deck
+
+CEREAL_REGISTER_TYPE(fhe_deck::RLWEAccumulatorBuilder)
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUAccumulatorBuilder) 
+CEREAL_REGISTER_TYPE(fhe_deck::RLWEBlindRotateOutputBuilder)
+CEREAL_REGISTER_TYPE(fhe_deck::NTRUBlindRotateOutputBuilder)
 
 #endif 
