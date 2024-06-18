@@ -10,8 +10,8 @@ GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
     this->vector_ct_param = gadget_sk->vector_ct_param;
 
     // The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
-    std::shared_ptr<long[]> ext_s;
-    ext_s = std::unique_ptr<long[]>(this->init_binary_extended_lwe_key(lwe_sk));  
+    std::shared_ptr<uint64_t[]> ext_s;
+    ext_s = std::unique_ptr<uint64_t[]>(this->init_binary_extended_lwe_key(lwe_sk));  
     blind_rotation_key_gen(gadget_sk, ext_s);  
 }
   
@@ -26,26 +26,26 @@ void GINXBlindRotationKey::blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::sh
     }   
 }
    
-void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<long[]> ext_s){
-    std::unique_ptr<long[]> msg(new long[1]);
+void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<uint64_t[]> ext_s){
+    std::unique_ptr<uint64_t[]> msg(new uint64_t[1]);
     for(int i = 0; i < lwe_par->dim; ++i){    
-        msg[0] =  ext_s[i]; 
+        msg[0] = ext_s[i]; 
         bk.push_back(std::unique_ptr<GadgetVectorCT>(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1)));
     }      
 }
 
-long* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
+uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         //sizeof_ext_s = lwe_par->dim;
-        long* ext_s = new long[lwe_par->dim];
+        uint64_t* ext_s = new uint64_t[lwe_par->dim];
         for(int i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];
         } 
         return ext_s;
 }
 
-long* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
+uint64_t* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         //sizeof_ext_s = lwe_par->dim;
-        long*  ext_s = new long[lwe_par->dim];
+        uint64_t*  ext_s = new uint64_t[lwe_par->dim];
         for(int i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];
         } 

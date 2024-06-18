@@ -26,7 +26,7 @@ namespace fhe_deck{
 class NTRUParam : public VectorCTParam{
 
   public: 
-    long coef_modulus; 
+    uint64_t coef_modulus; 
 
     RingType ring;
     ModulusType mod_type;   
@@ -37,9 +37,9 @@ class NTRUParam : public VectorCTParam{
  
     NTRUParam() = default; 
        
-    NTRUParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
+    NTRUParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
 
-    NTRUParam(int ring_degree, long coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    NTRUParam(int ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     NTRUParam(NTRUParam &c);
 
@@ -189,7 +189,7 @@ class NTRUGadgetCT : public GadgetVectorCT{
   bool is_init = false;  
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_a;  
    
-  long** deter_ct_a_dec; 
+  int64_t** deter_ct_a_dec; 
   PolynomialArrayCoefForm deter_ct_a_dec_poly; 
    
   ~NTRUGadgetCT();
@@ -249,11 +249,11 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
         
     GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* gadget_encrypt(long *msg, int size); 
+    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int size); 
 
     GadgetVectorCT* kdm_gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* kdm_gadget_encrypt(long *msg, int size); 
+    GadgetVectorCT* kdm_gadget_encrypt(uint64_t *msg, int size); 
    
     template <class Archive>
     void save( Archive & ar ) const

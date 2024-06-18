@@ -22,7 +22,7 @@ namespace fhe_deck{
 class RLWEParam : public VectorCTParam{
 
   public: 
-    long coef_modulus;  
+    uint64_t coef_modulus;  
     RingType ring;
     ModulusType mod_type;   
     PolynomialArithmetic arithmetic = ntl;
@@ -34,9 +34,9 @@ class RLWEParam : public VectorCTParam{
 
     RLWEParam() = default; 
        
-    RLWEParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
+    RLWEParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
 
-    RLWEParam(int ring_degree, long coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    RLWEParam(int ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     RLWEParam(RLWEParam &c);
 
@@ -133,8 +133,8 @@ class RLWEGadgetCT : public GadgetVectorCT{
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_a_sk;
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
    
-  long** deter_ct_a_dec;
-  long** deter_ct_b_dec;  
+  int64_t** deter_ct_a_dec;
+  int64_t** deter_ct_b_dec;  
   PolynomialArrayCoefForm deter_ct_a_dec_poly;
   PolynomialArrayCoefForm deter_ct_b_dec_poly;
    
@@ -252,7 +252,7 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
        
     GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* gadget_encrypt(long *msg, int size); 
+    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int size); 
  
     template <class Archive>
     void save( Archive & ar ) const

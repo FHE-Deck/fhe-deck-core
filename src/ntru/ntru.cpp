@@ -2,7 +2,7 @@
 
 using namespace fhe_deck;
  
-NTRUParam::NTRUParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
+NTRUParam::NTRUParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
     this->size = ring_degree;  
@@ -11,7 +11,7 @@ NTRUParam::NTRUParam(RingType ring, int ring_degree, long coef_modulus, ModulusT
     init_mul_engine();
 }
         
-NTRUParam::NTRUParam(int degree, long ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+NTRUParam::NTRUParam(int degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
@@ -190,14 +190,14 @@ void NTRUGadgetCT::mul(VectorCT *out, const VectorCT *ct){
 /*
 void NTRUGadgetCT::init_gadget_decomp_tables(){
     // Set up also precomputed arrays for gadget decomposition   
-    deter_ct_a_dec = new long*[gadget->digits]; 
+    deter_ct_a_dec = new int64_t*[gadget->digits]; 
 }
 */
 
 void NTRUGadgetCT::set_gadget_decomp_arrays(){   
-    deter_ct_a_dec = new long*[gadget->digits]; 
+    deter_ct_a_dec = new int64_t*[gadget->digits]; 
     deter_ct_a_dec_poly = PolynomialArrayCoefForm(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    // Point the polynomials to the long tables. 
+    // Point the polynomials to the uint64_t tables. 
     for(int i = 0; i < gadget->digits; ++i){ 
         deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree];  
     } 
@@ -326,7 +326,7 @@ NTRUCT* NTRUSK::kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encodi
 }
  
 LWESK* NTRUSK::extract_lwe_key(){
-    std::unique_ptr<long[]> extract_key(new long[param->size]); 
+    std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
     extract_key[0] = Utils::integer_signed_form(this->sk.coefs[0], param->coef_modulus);
     for(int i = 1; i <  param->size; ++i){ 
@@ -354,7 +354,7 @@ NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other){
 GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){     
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
     int digits = gadget->digits;
-    long base = gadget->base;   
+    uint64_t base = gadget->base;   
     // Encryptions of - msg* base**i    
     gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg)));
     for(int i = 1; i < digits; ++i){
@@ -366,9 +366,9 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  
-GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(long *msg, int size){
+GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size){
     if(size > sk->param->size){
-        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(long *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size): size of the message array too big.");
     }
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
@@ -381,7 +381,7 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(long *msg, int size){
 GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial *msg){
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
     int digits = gadget->digits;
-    long base = gadget->base;   
+    uint64_t base = gadget->base;   
     // Encryptions of - msg* base**i    
     gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->kdm_encrypt(msg)));
     for(int i = 1; i < digits; ++i){
@@ -393,9 +393,9 @@ GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial *msg){
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 } 
 
-GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(long *msg, int size){
+GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int size){
     if(size > sk->param->size){
-        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(long *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size): size of the message array too big.");
     }
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();

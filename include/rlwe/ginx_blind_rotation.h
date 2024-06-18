@@ -48,14 +48,14 @@ class GINXBlindRotationKey : public BlindRotationPublicKey{
    
     private:  
 
-    void blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<long[]> ext_s);
+    void blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<uint64_t[]> ext_s);
 
     // Temporary variable used in blind rotate. Initialized in the constructors because initialization may be expensive.
     //VectorCT* next_acc; 
    
-    long* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
+    uint64_t* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
     /// TODO: Leave this for a ternary blind rotation alg. that gonna be implemented in the future.
-    long* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
+    uint64_t* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
 };
  
 }/// End of namespace fhe_deck

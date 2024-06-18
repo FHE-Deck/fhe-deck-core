@@ -92,7 +92,7 @@ void RLWECT::extract_lwe(LWECT *lwe_ct_out){
     } 
 }
   
-RLWEParam::RLWEParam(RingType ring, int ring_degree, long coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
+RLWEParam::RLWEParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
     this->size = ring_degree;  
@@ -101,7 +101,7 @@ RLWEParam::RLWEParam(RingType ring, int ring_degree, long coef_modulus, ModulusT
     init_mul_engine();
 }
         
-RLWEParam::RLWEParam(int degree, long ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+RLWEParam::RLWEParam(int degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
@@ -217,9 +217,9 @@ void RLWEGadgetCT::init_gadget_decomp_tables(){
     deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
     deter_ct_b_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
     // Set up also precomputed arrays for gadget decomposition   
-    deter_ct_a_dec = new long*[gadget->digits];
-    deter_ct_b_dec = new long*[gadget->digits]; 
-    // Point the polynomials to the long tables. 
+    deter_ct_a_dec = new int64_t*[gadget->digits];
+    deter_ct_b_dec = new int64_t*[gadget->digits]; 
+    // Point the polynomials to the int64_t tables. 
     for(int i = 0; i < gadget->digits; ++i){ 
         deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree]; 
         deter_ct_b_dec[i] = &deter_ct_b_dec_poly.poly_array[i * deter_ct_b_dec_poly.degree]; 
@@ -328,14 +328,14 @@ void RLWESK::decrypt(Polynomial *out, RLWECT *ct, PlaintextEncoding encoding){
     } 
 }
 
-void RLWESK::extract_lwe_key(long* lwe_key){  
+void RLWESK::extract_lwe_key(int64_t* lwe_key){  
     for(int i = 0; i <  param->size; ++i){ 
         lwe_key[i] = -this->sk_poly.coefs[i]; 
     } 
 }
 
 LWESK* RLWESK::extract_lwe_key(){
-    std::unique_ptr<long[]> extract_key(new long[param->size]); 
+    std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
     for(int i = 0; i <  param->size; ++i){ 
         extract_key[i] = -this->sk_poly.coefs[i]; 
@@ -363,7 +363,7 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     std::vector<std::unique_ptr<RLWECT>> gadget_ct_sk;    
     Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     int digits = gadget->digits;
-    long base = gadget->base; 
+    uint64_t base = gadget->base; 
     // Multiply msg with sk.s. Result is in msg_x_sk 
     msg->mul(&msg_x_sk, &rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
     msg_x_sk.neg(&msg_x_sk); 
@@ -386,9 +386,9 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
-GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(long *msg, int size){
+GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int size){
     if(size > rlwe_sk->param->size){
-        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(long *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int size): size of the message array too big.");
     }
     Polynomial msg_poly(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     msg_poly.zeroize();
