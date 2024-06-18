@@ -21,23 +21,23 @@ class Gadget{
     public: 
  
     // Decomposition Base
-    long base;
+    int64_t base;
     // Number of digits after decomposition
-    int digits;
+    int32_t digits;
     // number of bits of the base (i.e. smallest k s.t. 2^k >= base) 
-    int bits_base;  
+    int32_t bits_base;  
     // Degree of the polynomial        
-    int degree;
+    int32_t degree;
     // Coefficient Modulus
-    long modulus;
+    int64_t modulus;
 
-    virtual void sample(long** out, long *in) = 0;
+    virtual void sample(int64_t** out, int64_t *in) = 0;
 
-    long* get_gadget_vector();
+    int64_t* get_gadget_vector();
 
-    long** init_out();
+    int64_t** init_out();
 
-    void delete_out(long** out);
+    void delete_out(int64_t** out);
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -58,11 +58,11 @@ class SignedDecompositionGadget : public Gadget{
   
     SignedDecompositionGadget() = default;
 
-    SignedDecompositionGadget(int degree, long modulus, long base);
+    SignedDecompositionGadget(int32_t degree, int64_t modulus, int64_t base);
 
-    void sample(long** out, long *in);
+    void sample(int64_t** out, int64_t *in);
  
-    void decomp(long **d_ct, long* poly);
+    void decomp(int64_t **d_ct, int64_t* poly);
 
     void init();
 
@@ -93,15 +93,15 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     //Sampler rand;
     double stddev;
 
-    int ell_minus_one;
+    int32_t ell_minus_one;
 
     // Tables/values precomputed for genralized Gaussian sampling from [EC:GenMic18]. We are use the smae notation as in the paper, except that I use q_decomp instead of q ofor the decomposition of the modulus Q.
-    long* q_decomp;
+    int64_t* q_decomp;
     double sigma;
     
     double* sigmas;
     
-    long r;
+    int64_t r;
     double* l;
     double* h;
     double* d;
@@ -109,45 +109,45 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     
     // Tail bound parameter
     // For the generalized Gaussian sampler we need to set this tail bound parameters (for now compute without tail bound)
-    long tail_bound;
+    int64_t tail_bound;
     double inv_basis;
     double* inv_l;
-    long two_times_basis_plus_one;  
+    int64_t two_times_basis_plus_one;  
     // Precomputed temp variables for general modulus Gaussian Sampling
-    long* p;
+    int64_t* p;
     double* c;
-    long* u;
-    long* z;
+    int64_t* u;
+    int64_t* z;
     // Stuff for perturb_B
     double* c_pert;
-    long* z_pert;
+    int64_t* z_pert;
 
     bool is_precomputed = false;
  
     // Precomputed temp arrays for determinitic decomp 
     bool is_deter_temp_init = false;
-    long* signed_poly; 
-    long* sign;
+    int64_t* signed_poly; 
+    int64_t* sign;
  
     // Precomputed temp variables for power_of_two Gaussian Sampling   
     bool is_power_of_basis_gaussian_temp_init = false;
-    long* gaussians;
-    long mask; 
-    long shift; 
-    long prev_gauss;
+    int64_t* gaussians;
+    int64_t mask; 
+    int64_t shift; 
+    int64_t prev_gauss;
 
   
     /// xorshift state
-    long xorshift_s;
+    int64_t xorshift_s;
     // The xoshiro256+ state
-    long* xoshiro256_s;
-    long xoshiro256_t;
+    int64_t* xoshiro256_s;
+    int64_t xoshiro256_t;
 
-    unsigned long xoshiro256_result;
-    unsigned long xoshiro_mask = 0x1fffffffffffff;
+    uint64_t xoshiro256_result;
+    uint64_t xoshiro_mask = 0x1fffffffffffff;
 
-    unsigned int xoshiro256_25_result_1;
-    unsigned int xoshiro256_25_result_2;
+    uint32_t xoshiro256_25_result_1;
+    uint32_t  xoshiro256_25_result_2;
    
  
     double u1;
@@ -177,9 +177,9 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     DiscreteGaussianSamplingGadget() = default;
 
-    DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev);
+    DiscreteGaussianSamplingGadget(int32_t degree, int64_t modulus, int64_t base, double stddev);
 
-    void sample(long** out, long *in);
+    void sample(int64_t** out, int64_t *in);
  
 
     template <class Archive>
@@ -202,33 +202,33 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     void setup_type_specific_parameters(); 
 
-    void decomp(long **d_ct, long* poly);
+    void decomp(int64_t **d_ct, int64_t* poly);
 
-    void signed_decomp(long **d_ct, long* poly);
+    void signed_decomp(int64_t **d_ct, int64_t* poly);
 
-    void gaussian_sample(long **out, long* in);
+    void gaussian_sample(int64_t **out, int64_t* in);
   
-    void gaussian_sample_modulus_power_of_base(long **out, long* in);
+    void gaussian_sample_modulus_power_of_base(int64_t **out, int64_t* in);
 
-    void gaussian_sample_general_modulus(long **out, long* in);
+    void gaussian_sample_general_modulus(int64_t **out, int64_t* in);
 
-    void sample_G(long* out, long in);
+    void sample_G(int64_t* out, int64_t in);
 
-    void perturb_B(long* p);
+    void perturb_B(int64_t* p);
 
-    void sample_D(long* out, double* c);
+    void sample_D(int64_t* out, double* c);
 
-    long sample_Zt(double stddev, double center);
+    int64_t sample_Zt(double stddev, double center);
 
     void precompute_constants_for_power_of_base_gaussian_sampling();
 
     void precompute_constants_for_general_modulus_gaussian_sampling();
 
-    void base_decomposition(long* out, long in);
+    void base_decomposition(int64_t* out, int64_t in);
 
     inline void xorshift64();
  
-    int xorshift25();
+    int32_t xorshift25();
 
     inline void xoshiro256p();
     
@@ -239,9 +239,9 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     /*
         Implements the Karney method
     */
-    inline long gen_discrete_gauss(float c);
+    inline int64_t gen_discrete_gauss(float c);
  
-    inline int d1_d2_of_karney();
+    inline int32_t d1_d2_of_karney();
  
   
 };

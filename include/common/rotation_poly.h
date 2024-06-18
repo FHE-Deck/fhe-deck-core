@@ -21,9 +21,9 @@ public:
 
     RotationPoly() = default;
  
-    RotationPoly(long (*f)(long message, long plaintext_space), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
-    RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
+    RotationPoly(int64_t (*f)(int64_t message), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
   
     RotationPoly(const RotationPoly &poly);
 
@@ -37,9 +37,9 @@ public:
 
     void to_non_amortized_form();
    
-    static RotationPoly rot_msb(int t, long N, long Q); 
+    static RotationPoly rot_msb(int32_t t, int64_t N, int64_t Q); 
 
-    static RotationPoly rot_one(long N, long Q); 
+    static RotationPoly rot_one(int64_t N, int64_t Q); 
    
 };
 

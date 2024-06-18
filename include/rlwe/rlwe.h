@@ -1,7 +1,7 @@
 
 #ifndef RLWE_H
 #define RLWE_H
-
+ 
 #include "enums.h"
 #include "sample.h"
 #include "fft_plan.h"
@@ -11,7 +11,7 @@
 #include "utils.h"
 #include "polynomial.h"
 #include "vector_ciphertext.h"
-#include "plaintext_encoding.h"
+#include "plaintext_encoding.h" 
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
@@ -34,9 +34,9 @@ class RLWEParam : public VectorCTParam{
 
     RLWEParam() = default; 
        
-    RLWEParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
+    RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
 
-    RLWEParam(int ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    RLWEParam(int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     RLWEParam(RLWEParam &c);
 
@@ -82,11 +82,11 @@ class RLWECT : public VectorCT{
    
     RLWECT& operator=(RLWECT other);
   
-    void negacyclic_rotate(RLWECT *out, int rot);
+    void negacyclic_rotate(RLWECT *out, int32_t rot);
 
-    void cyclic_rotate(RLWECT *out, int rot);
+    void cyclic_rotate(RLWECT *out, int32_t rot);
 
-    void homomorphic_rotate(VectorCT *out, int rot);
+    void homomorphic_rotate(VectorCT *out, int32_t rot);
 
     void add(VectorCT *out,  VectorCT *ct);
  
@@ -252,7 +252,7 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
        
     GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int size); 
+    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size); 
  
     template <class Archive>
     void save( Archive & ar ) const

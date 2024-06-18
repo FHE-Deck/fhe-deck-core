@@ -499,15 +499,15 @@ main(void)
     ctx.set_default_message_encoding_type(partial_domain);
 
     test_lut3(ctx);
-    for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
+    for (int32_t i = 0; i < 8; ++i) {
+        for (int32_t j = 0; j < 8; ++j) {
             std::cout << "[+] Testing inputs " << i << ", " << j << std::endl;
             std::cout << "Expected: " << std::bitset<5>(i + j) << std::endl;
 
-            int sum = 0;
+            int32_t sum = 0;
             auto ret3 = test_add4_lut3(ctx, i, j);
             std::cout << "Actual (lut3): ";
-            for (int k = 4; k > 0; --k) {
+            for (int32_t k = 4; k > 0; --k) {
                 sum = (sum << 1) | ret3[k];
                 std::cout << ret3[k] << ", ";
             }
@@ -517,7 +517,7 @@ main(void)
             sum = 0;
             auto ret3fa = test_add4_lut3fa(ctx, i, j);
             std::cout << "Actual (lut3fa): ";
-            for (int k = 4; k > 0; --k) {
+            for (int32_t k = 4; k > 0; --k) {
                 sum = (sum << 1) | ret3fa[k];
                 std::cout << ret3fa[k] << ", ";
             }

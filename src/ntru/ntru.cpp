@@ -2,7 +2,7 @@
 
 using namespace fhe_deck;
  
-NTRUParam::NTRUParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
+NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
     this->size = ring_degree;  
@@ -11,7 +11,7 @@ NTRUParam::NTRUParam(RingType ring, int ring_degree, uint64_t coef_modulus, Modu
     init_mul_engine();
 }
         
-NTRUParam::NTRUParam(int degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
@@ -44,22 +44,6 @@ void NTRUParam::init_mul_engine(){
 VectorCT* NTRUParam::init_ct(std::shared_ptr<VectorCTParam> param){
     return new NTRUCT(std::static_pointer_cast<NTRUParam>(param));
 } 
-
-/*
-Polynomial NTRUParam::init_poly(){ 
-    return Polynomial(size, coef_modulus, mul_engine); 
-}
-*/
- 
-/*
-Polynomial NTRUParam::init_zero_poly(){
-    Polynomial out(this->size, coef_modulus, mul_engine);
-    for(int i = 0; i < this->size; ++i){
-        out.coefs[i] = 0;
-    }
-    return out;
-}
-*/
   
 NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param){
     this->param = param; 
@@ -77,17 +61,17 @@ NTRUCT& NTRUCT::operator=(const NTRUCT other){
     return *this;
 }
   
-void NTRUCT::negacyclic_rotate(NTRUCT *out, int rot){  
+void NTRUCT::negacyclic_rotate(NTRUCT *out, int32_t rot){  
     NTRUCT *out_ptr = static_cast<NTRUCT*>(out); 
     ct_poly.negacyclic_rotate(&out_ptr->ct_poly, rot);  
 }
 
-void NTRUCT::cyclic_rotate(NTRUCT *out, int rot){  
+void NTRUCT::cyclic_rotate(NTRUCT *out, int32_t rot){  
     NTRUCT *out_ptr = static_cast<NTRUCT*>(out); 
     ct_poly.cyclic_rotate(&out_ptr->ct_poly, rot); 
 }
 
-void NTRUCT::homomorphic_rotate(VectorCT *out, int rot){ 
+void NTRUCT::homomorphic_rotate(VectorCT *out, int32_t rot){ 
     // zWhat we do here, is realy multiplication with a monomial.
     if(this->param->ring == negacyclic){ 
         negacyclic_rotate(static_cast<NTRUCT*>(out), rot);
@@ -135,7 +119,7 @@ std::string NTRUCT::to_string(){
   
 void NTRUCT::extract_lwe(LWECT *out){
     out->ct[0] = 0; 
-    for(int i = 1; i < out->param->dim+1; ++i){
+    for(int32_t i = 1; i < out->param->dim+1; ++i){
         out->ct[i] = ct_poly.coefs[i-1];
     } 
 }
@@ -154,7 +138,7 @@ void NTRUGadgetCT::init(std::vector<std::unique_ptr<NTRUCT>> &gadget_ct){
 
      this->array_eval_a = std::unique_ptr<PolynomialArrayEvalForm>(ntru_param->mul_engine->init_polynomial_array_eval_form(gadget->digits)); 
 
-    for(int i = 0; i < gadget->digits; ++i){ 
+    for(int32_t i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, &gadget_ct[i]->ct_poly);
     }  
     ntru_param->mul_engine->to_eval(array_eval_a.get(), &array_coef);  
@@ -186,19 +170,12 @@ void NTRUGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     gadget->sample(deter_ct_a_dec, ct_ptr->ct_poly.coefs); 
     ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
 }
-  
-/*
-void NTRUGadgetCT::init_gadget_decomp_tables(){
-    // Set up also precomputed arrays for gadget decomposition   
-    deter_ct_a_dec = new int64_t*[gadget->digits]; 
-}
-*/
-
+    
 void NTRUGadgetCT::set_gadget_decomp_arrays(){   
     deter_ct_a_dec = new int64_t*[gadget->digits]; 
     deter_ct_a_dec_poly = PolynomialArrayCoefForm(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
     // Point the polynomials to the uint64_t tables. 
-    for(int i = 0; i < gadget->digits; ++i){ 
+    for(int32_t i = 0; i < gadget->digits; ++i){ 
         deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree];  
     } 
 }
@@ -212,7 +189,7 @@ NTRUSK::NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev){
 }
  
 void NTRUSK::key_gen(){ 
-    int status = 1;   
+    int32_t status = 1;   
     NTL::ZZ_pX temp_f;
     NTL::ZZ_pX temp_inv_f;
     this->sk = Polynomial(param->size, param->coef_modulus); 
@@ -263,7 +240,7 @@ NTRUCT* NTRUSK::encrypt(Polynomial *m){
 
 NTRUCT* NTRUSK::encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding){ 
     Polynomial m_scaled(param->size, param->coef_modulus); 
-    for(int i = 0; i < param->size; ++i){ 
+    for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(m->coefs[i]);
     }
     return encrypt(&m_scaled); 
@@ -290,7 +267,7 @@ Polynomial* NTRUSK::decrypt(NTRUCT *ct, PlaintextEncoding encoding){
 
 void NTRUSK::decrypt(Polynomial *out, NTRUCT *ct, PlaintextEncoding encoding){   
     this->partial_decrypt(out, ct);  
-    for(int i = 0; i < out->degree; ++i){
+    for(int32_t i = 0; i < out->degree; ++i){
         out->coefs[i] = encoding.decode_message(out->coefs[i]);
     } 
 }
@@ -309,7 +286,7 @@ void NTRUSK::kdm_encrypt(NTRUCT *out, Polynomial* msg){
  
 void NTRUSK::kdm_encode_and_encrypt(NTRUCT *out, Polynomial* msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
-    for(int i = 0; i < param->size; ++i){ 
+    for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(msg->coefs[i]);
     }
     kdm_encrypt(out, &m_scaled);  
@@ -317,7 +294,7 @@ void NTRUSK::kdm_encode_and_encrypt(NTRUCT *out, Polynomial* msg, PlaintextEncod
  
 NTRUCT* NTRUSK::kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
-    for(int i = 0; i < param->size; ++i){ 
+    for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(msg->coefs[i]);
     }
     NTRUCT* out = new NTRUCT(param);
@@ -329,7 +306,7 @@ LWESK* NTRUSK::extract_lwe_key(){
     std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
     extract_key[0] = Utils::integer_signed_form(this->sk.coefs[0], param->coef_modulus);
-    for(int i = 1; i <  param->size; ++i){ 
+    for(int32_t i = 1; i <  param->size; ++i){ 
         extract_key[i] = Utils::integer_signed_form(-this->sk.coefs[param->size - i], param->coef_modulus);
     } 
     LWESK* key = new LWESK(lwe_param, extract_key.get(), this->noise_stddev, ternary); 
@@ -353,11 +330,11 @@ NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other){
   
 GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){     
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
-    int digits = gadget->digits;
+    int32_t digits = gadget->digits;
     uint64_t base = gadget->base;   
     // Encryptions of - msg* base**i    
     gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg)));
-    for(int i = 1; i < digits; ++i){
+    for(int32_t i = 1; i < digits; ++i){
         // Multiply msg by base
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
@@ -366,13 +343,13 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  
-GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size){
+GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
     if(size > sk->param->size){
-        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
-    for(int i = 0; i < size; ++i){
+    for(int32_t i = 0; i < size; ++i){
         msg_poly.coefs[i] = msg[i];
     }
     return gadget_encrypt(&msg_poly);
@@ -380,11 +357,11 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size){
  
 GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial *msg){
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
-    int digits = gadget->digits;
+    int32_t digits = gadget->digits;
     uint64_t base = gadget->base;   
     // Encryptions of - msg* base**i    
     gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->kdm_encrypt(msg)));
-    for(int i = 1; i < digits; ++i){
+    for(int32_t i = 1; i < digits; ++i){
         // Multiply msg by base
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
@@ -393,13 +370,13 @@ GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial *msg){
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 } 
 
-GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int size){
+GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int32_t size){
     if(size > sk->param->size){
-        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
-    for(int i = 0; i < size; ++i){
+    for(int32_t i = 0; i < size; ++i){
         msg_poly.coefs[i] = msg[i];
     }
     return kdm_gadget_encrypt(&msg_poly);

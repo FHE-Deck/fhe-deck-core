@@ -1,7 +1,7 @@
 #include "plaintext_encoding.h"
 using namespace fhe_deck;
  
-PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, long plaintext_space, long ciphertext_modulus){
+PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plaintext_space, int64_t ciphertext_modulus){
     this->type = type;
     this->plaintext_space = plaintext_space;
     this->ciphertext_modulus = ciphertext_modulus;
@@ -19,14 +19,14 @@ PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, long plaintext_
 }
 
 
-long PlaintextEncoding::encode_message(long message){
+int64_t PlaintextEncoding::encode_message(int64_t message){
     double scale = (double)ciphertext_modulus/this->ticks; 
     return round(scale * message);
 }
  
         
-long PlaintextEncoding::decode_message(long phase){ 
-    long message = 0;
+int64_t PlaintextEncoding::decode_message(int64_t phase){ 
+    int64_t message = 0;
     if(type == full_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus;
         message = round(phase * scale) ;

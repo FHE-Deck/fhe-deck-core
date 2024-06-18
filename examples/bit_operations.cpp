@@ -5,7 +5,7 @@
 
 using namespace fhe_deck;
 
-int main(){
+int32_t main(){
     
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
@@ -118,7 +118,7 @@ int main(){
     assertm(context.decrypt(&ct_nand) == 0, "ct_nand(1, 1) == 0"); 
 
     std::cout << "Stress testing..." << std::endl;  
-    for(int i = 0; i < 20; ++i){ 
+    for(int32_t i = 0; i < 20; ++i){ 
         // 0 Nand 0
         ct0 = ct_nand; 
         ct1 = ct_nand; 

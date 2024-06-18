@@ -17,13 +17,13 @@ class LWEParam{
   public:  
 
   // LWE Dimension
-  int dim;
+  int32_t dim;
   // LWE Modulus
-  long modulus; 
+  int64_t modulus; 
   /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
   LWEParam() = default;
  
-  LWEParam(int dim, long modulus); 
+  LWEParam(int32_t dim, int64_t modulus); 
 
    template<class Archive> 
    void serialize(Archive & ar) 
@@ -38,7 +38,7 @@ class LWECT{
  
     std::shared_ptr<LWEParam> param;
  
-    long *ct;
+    int64_t *ct;
     bool init = false;
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
@@ -55,9 +55,9 @@ class LWECT{
 
     LWECT* clone();
 
-    void mul(LWECT *out, long scalar);
+    void mul(LWECT *out, int64_t scalar);
 
-    void mul_lazy(LWECT *out, long scalar); 
+    void mul_lazy(LWECT *out, int64_t scalar); 
 
     void add(LWECT *out, LWECT *in); 
 
@@ -65,9 +65,9 @@ class LWECT{
 
     void add_lazy(LWECT* out, LWECT *in);  
 
-    void add(LWECT* out, long b); 
+    void add(LWECT* out, int64_t b); 
 
-    void sub(LWECT* out, long b);
+    void sub(LWECT* out, int64_t b);
 
     void neg(LWECT* out);
   
@@ -75,8 +75,8 @@ class LWECT{
     void save( Archive & ar ) const
     { 
       ar(param);  
-      std::vector<long> ct_arr; 
-      for(int i = 0; i < param->dim+1; ++i){
+      std::vector<int64_t> ct_arr; 
+      for(int32_t i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
       }
       ar(ct_arr);
@@ -86,10 +86,10 @@ class LWECT{
     void load( Archive & ar )
     {  
       ar(param);
-      std::vector<long> ct_arr;
+      std::vector<int64_t> ct_arr;
       ar(ct_arr);
-      ct = new long[param->dim+1];
-      for(int i = 0; i < param->dim+1; ++i){
+      ct = new int64_t[param->dim+1];
+      for(int32_t i = 0; i < param->dim+1; ++i){
         ct[i] = ct_arr[i];
       }
       this->init = true;
@@ -105,7 +105,7 @@ class LWEModSwitcher{
   bool long_arithmetic = false;
 
   // Some precomputation
-  int ct_size;
+  int32_t ct_size;
   double Q_from;
   double Q_to;
   double temp; 
@@ -132,7 +132,7 @@ class LWESK {
     KeyDistribution key_type;
     double stddev;
     // Initialized in the constructors and freed in the destructor.
-    long *key; 
+    int64_t *key; 
 
     std::unique_ptr<LongIntegerMultipler> multiplier;
     
@@ -142,30 +142,30 @@ class LWESK {
   
     LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type);
   
-    LWESK(std::shared_ptr<LWEParam> lwe_par, long* key, double stddev, KeyDistribution key_type);
+    LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
  
     LWESK(const LWESK &other);
 
     LWESK& operator=(const LWESK other);
  
-    LWECT* encrypt(long m);
+    LWECT* encrypt(int64_t m);
 
-    void encrypt(LWECT* ct, long m); 
+    void encrypt(LWECT* ct, int64_t m); 
     
-    LWECT* encode_and_encrypt(long m, PlaintextEncoding encoding); 
+    LWECT* encode_and_encrypt(int64_t m, PlaintextEncoding encoding); 
     
-    void encode_and_encrypt(LWECT* in, long m, PlaintextEncoding encoding);
+    void encode_and_encrypt(LWECT* in, int64_t m, PlaintextEncoding encoding);
   
-    long partial_decrypt(LWECT *in); 
+    int64_t partial_decrypt(LWECT *in); 
 
-    long decrypt(LWECT *ct, PlaintextEncoding encoding); 
+    int64_t decrypt(LWECT *ct, PlaintextEncoding encoding); 
    
     template <class Archive>
     void save( Archive & ar ) const
     { 
       ar(param);  
-      std::vector<long> s_arr; 
-      for(int i = 0; i < param->dim; ++i){
+      std::vector<int64_t> s_arr; 
+      for(int32_t i = 0; i < param->dim; ++i){
         s_arr.push_back(key[i]);
       }
       ar(s_arr, stddev, key_type);
@@ -175,10 +175,10 @@ class LWESK {
     void load( Archive & ar )
     {  
       ar(param);
-      std::vector<long> s_arr;
+      std::vector<int64_t> s_arr;
       ar(s_arr, stddev, key_type);
       init(); 
-      for(int i = 0; i < param->dim; ++i){
+      for(int32_t i = 0; i < param->dim; ++i){
         this->key[i] = s_arr[i];
       }   
     } 
@@ -193,26 +193,26 @@ class LWEGadgetCT{
 
   public: 
    
-  long base;
-  int digits;
-  int bits_base;  
+  int64_t base;
+  int32_t digits;
+  int32_t bits_base;  
   std::shared_ptr<LWEParam> lwe_param;
    
   std::unique_ptr<std::unique_ptr<LWECT>[]> ct_content;
 
   LWEGadgetCT() = default;
   
-  LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, long base);
+  LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, int64_t base);
   
-  void gadget_mul(LWECT *out_ct, long scalar); 
+  void gadget_mul(LWECT *out_ct, int64_t scalar); 
 
-  void gadget_mul_lazy(LWECT *out_ct, long scalar); 
+  void gadget_mul_lazy(LWECT *out_ct, int64_t scalar); 
 
     template <class Archive>
     void save( Archive & ar ) const
     { 
       ar(base, digits, bits_base, lwe_param);    
-      for(int i = 0; i < digits; ++i){
+      for(int32_t i = 0; i < digits; ++i){
         ar(ct_content[i]);
       } 
     }
@@ -222,7 +222,7 @@ class LWEGadgetCT{
     {  
       ar(base, digits, bits_base, lwe_param); 
       this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]); 
-      for(int i = 0; i < digits; ++i){
+      for(int32_t i = 0; i < digits; ++i){
         ar(ct_content[i]);
       } 
     }  
@@ -234,21 +234,21 @@ class LWEGadgetSK{
   
     std::shared_ptr<LWESK> lwe;
 
-    long base;
-    int digits;
-    int bits_base;  
+    int64_t base;
+    int32_t digits;
+    int32_t bits_base;  
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWEGadgetSK() = default;
   
-    LWEGadgetSK(std::shared_ptr<LWESK> lwe, long base);
+    LWEGadgetSK(std::shared_ptr<LWESK> lwe, int64_t base);
   
     LWEGadgetSK(const LWEGadgetSK& other);
 
     LWEGadgetSK& operator=(const LWEGadgetSK other); 
 
-    LWEGadgetCT* gadget_encrypt(long m); 
+    LWEGadgetCT* gadget_encrypt(int64_t m); 
 
-    void gadget_encrypt(LWEGadgetCT*, long m);
+    void gadget_encrypt(LWEGadgetCT*, int64_t m);
   
     template <class Archive>
     void save( Archive & ar ) const
@@ -269,7 +269,7 @@ class LWEPublicKey{
   public:
  
     double stddev; 
-    int size;  
+    int32_t size;  
     std::shared_ptr<Distribution> rand_masking;
    
     std::unique_ptr<std::unique_ptr<LWECT>[]> public_key_ptr;
@@ -278,15 +278,15 @@ class LWEPublicKey{
  
     LWEPublicKey() = default;
 
-    LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int key_size, double stddev);
+    LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int32_t key_size, double stddev);
 
     LWEPublicKey(const LWEPublicKey &other);
    
     LWEPublicKey& operator=(const LWEPublicKey other);
   
-    void encrypt(LWECT* out, long message);
+    void encrypt(LWECT* out, int64_t message);
   
-    LWECT* encrypt(long message);
+    LWECT* encrypt(int64_t message);
 
     LWECT* ciphertext_of_zero();
 
@@ -294,7 +294,7 @@ class LWEPublicKey{
     void save( Archive & ar ) const
     { 
       ar(param, stddev, size);     
-      for(int i = 0; i < this->size; ++i){   
+      for(int32_t i = 0; i < this->size; ++i){   
           ar(public_key_ptr[i]);  
       }   
     }
@@ -305,7 +305,7 @@ class LWEPublicKey{
       ar(param, stddev, size); 
       this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
       this->public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
-      for(int i = 0; i < this->size; ++i){   
+      for(int32_t i = 0; i < this->size; ++i){   
           ar(public_key_ptr[i]);  
       }   
     }    

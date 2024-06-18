@@ -23,26 +23,26 @@ RLWECT& RLWECT::operator=(const RLWECT other){
     return *this;
 }
   
-void RLWECT::negacyclic_rotate(RLWECT *out, int rot){  
+void RLWECT::negacyclic_rotate(RLWECT *out, int32_t rot){  
     RLWECT *out_ptr = static_cast<RLWECT*>(out); 
     a.negacyclic_rotate(&out_ptr->a, rot);
     b.negacyclic_rotate(&out_ptr->b, rot); 
 }
 
-void RLWECT::cyclic_rotate(RLWECT *out, int rot){  
+void RLWECT::cyclic_rotate(RLWECT *out, int32_t rot){  
     RLWECT *out_ptr = static_cast<RLWECT*>(out); 
     a.cyclic_rotate(&out_ptr->a, rot);
     b.cyclic_rotate(&out_ptr->b, rot); 
 }
 
-void RLWECT::homomorphic_rotate(VectorCT *out, int rot){ 
+void RLWECT::homomorphic_rotate(VectorCT *out, int32_t rot){ 
     // zWhat we do here, is realy multiplication with a monomial.
     if(this->param->ring == negacyclic){ 
         negacyclic_rotate(static_cast<RLWECT*>(out), rot);
     }else if(this->param->ring == cyclic){
         cyclic_rotate(static_cast<RLWECT*>(out), rot);
     }else{
-        throw std::logic_error("RLWECT::homomorphic_rotate(VectorCT *out, int rot): this->param->ring currently not supported.");
+        throw std::logic_error("RLWECT::homomorphic_rotate(VectorCT *out, int32_t rot): this->param->ring currently not supported.");
     }
 }
  
@@ -87,12 +87,12 @@ std::string RLWECT::to_string(){
 void RLWECT::extract_lwe(LWECT *lwe_ct_out){
     lwe_ct_out->ct[0] = this->b.coefs[0];
     lwe_ct_out->ct[1] = this->a.coefs[0];
-    for(int i = 1; i < this->param->size; ++i){
+    for(int32_t i = 1; i < this->param->size; ++i){
         lwe_ct_out->ct[i+1] = -this->a.coefs[this->param->size - i];
     } 
 }
   
-RLWEParam::RLWEParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
+RLWEParam::RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
     this->size = ring_degree;  
@@ -101,7 +101,7 @@ RLWEParam::RLWEParam(RingType ring, int ring_degree, uint64_t coef_modulus, Modu
     init_mul_engine();
 }
         
-RLWEParam::RLWEParam(int degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus;
     this->mod_type = mod_type; 
@@ -153,23 +153,23 @@ void RLWEGadgetCT::init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::ve
     this->array_eval_a_sk = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));    
     this->array_eval_b_sk = std::unique_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
  
-    for(int i = 0; i < gadget->digits; ++i){ 
+    for(int32_t i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, &gadget_ct[i]->a);
     }  
      
     rlwe_param->mul_engine->to_eval(array_eval_a.get(), &array_coef);  
   
-    for(int i = 0; i < gadget->digits; ++i){
+    for(int32_t i = 0; i < gadget->digits; ++i){
         array_coef.set_polynomial_at(i, &gadget_ct[i]->b);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_b.get(), &array_coef); 
   
-    for(int i = 0; i < gadget->digits; ++i){
+    for(int32_t i = 0; i < gadget->digits; ++i){
         array_coef.set_polynomial_at(i, &gadget_ct_sk[i]->a);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_a_sk.get(), &array_coef);  
    
-    for(int i = 0; i < gadget->digits; ++i){
+    for(int32_t i = 0; i < gadget->digits; ++i){
         array_coef.set_polynomial_at(i, &gadget_ct_sk[i]->b);
     } 
     rlwe_param->mul_engine->to_eval(array_eval_b_sk.get(), &array_coef);  
@@ -220,7 +220,7 @@ void RLWEGadgetCT::init_gadget_decomp_tables(){
     deter_ct_a_dec = new int64_t*[gadget->digits];
     deter_ct_b_dec = new int64_t*[gadget->digits]; 
     // Point the polynomials to the int64_t tables. 
-    for(int i = 0; i < gadget->digits; ++i){ 
+    for(int32_t i = 0; i < gadget->digits; ++i){ 
         deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree]; 
         deter_ct_b_dec[i] = &deter_ct_b_dec_poly.poly_array[i * deter_ct_b_dec_poly.degree]; 
     } 
@@ -294,7 +294,7 @@ RLWECT* RLWESK::encrypt(Polynomial *m){
  
 RLWECT* RLWESK::encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
-    for(int i = 0; i < param->size; ++i){ 
+    for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(m->coefs[i]);
     }
     RLWECT* out = encrypt(&m_scaled); 
@@ -323,13 +323,13 @@ Polynomial* RLWESK::decrypt(RLWECT *ct, PlaintextEncoding encoding){
  
 void RLWESK::decrypt(Polynomial *out, RLWECT *ct, PlaintextEncoding encoding){
     this->partial_decrypt(out, ct);  
-    for(int i = 0; i < out->degree; ++i){
+    for(int32_t i = 0; i < out->degree; ++i){
         out->coefs[i] = encoding.decode_message(out->coefs[i]);
     } 
 }
 
 void RLWESK::extract_lwe_key(int64_t* lwe_key){  
-    for(int i = 0; i <  param->size; ++i){ 
+    for(int32_t i = 0; i <  param->size; ++i){ 
         lwe_key[i] = -this->sk_poly.coefs[i]; 
     } 
 }
@@ -337,7 +337,7 @@ void RLWESK::extract_lwe_key(int64_t* lwe_key){
 LWESK* RLWESK::extract_lwe_key(){
     std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
-    for(int i = 0; i <  param->size; ++i){ 
+    for(int32_t i = 0; i <  param->size; ++i){ 
         extract_key[i] = -this->sk_poly.coefs[i]; 
     }  
     return new LWESK(lwe_param, extract_key.get(), this->noise_stddev, this->key_type);
@@ -362,14 +362,14 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     std::vector<std::unique_ptr<RLWECT>> gadget_ct; 
     std::vector<std::unique_ptr<RLWECT>> gadget_ct_sk;    
     Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
-    int digits = gadget->digits;
+    int32_t digits = gadget->digits;
     uint64_t base = gadget->base; 
     // Multiply msg with sk.s. Result is in msg_x_sk 
     msg->mul(&msg_x_sk, &rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
     msg_x_sk.neg(&msg_x_sk); 
     // Encryptions of - msg* base**i    
     gadget_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg)));
-    for(int i = 1; i < digits; ++i){
+    for(int32_t i = 1; i < digits; ++i){
         // Multiply msg by base
         msg->mul(msg, base); 
         // Encrypt msg * base**i   
@@ -377,7 +377,7 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     }  
     // Encryptions of - msg * sk * base**i    
     gadget_ct_sk.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(&msg_x_sk)));
-    for(int i = 1; i < digits; ++i){ 
+    for(int32_t i = 1; i < digits; ++i){ 
         // Multiply msg by base
         msg_x_sk.mul(&msg_x_sk, base); 
         // Encrypt - msg * sk * base**i   
@@ -386,13 +386,13 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
-GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int size){
+GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
     if(size > rlwe_sk->param->size){
-        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int size): size of the message array too big.");
+        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }
     Polynomial msg_poly(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     msg_poly.zeroize();
-    for(int i = 0; i < size; ++i){
+    for(int32_t i = 0; i < size; ++i){
         msg_poly.coefs[i] = msg[i];
     }
     return gadget_encrypt(&msg_poly);

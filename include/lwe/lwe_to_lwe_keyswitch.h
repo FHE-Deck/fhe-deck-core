@@ -34,7 +34,7 @@ class LWEToLWEKeySwitchKey{
 
     void lwe_to_lwe_key_switch(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
 
-    void set_key_switch_type(long base, int digits);
+    void set_key_switch_type(uint64_t base, int32_t digits);
 
     void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest);
 
@@ -43,7 +43,7 @@ class LWEToLWEKeySwitchKey{
     { 
       ar(origin, destination, ks_type);  
       //ar(key_content);   
-      for(int i = 0; i < origin->dim; ++i){      
+      for(int32_t i = 0; i < origin->dim; ++i){      
         ar(key_content[i]);  
       }   
 
@@ -55,7 +55,7 @@ class LWEToLWEKeySwitchKey{
       ar(origin, destination, ks_type);
       //ar(key_content);     
       key_content = std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]>(new std::unique_ptr<LWEGadgetCT>[origin->dim]); 
-      for(int i = 0; i < origin->dim; ++i){      
+      for(int32_t i = 0; i < origin->dim; ++i){      
         ar(key_content[i]);  
       }   
     }    

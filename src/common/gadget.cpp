@@ -3,7 +3,7 @@
 using namespace fhe_deck;
 
  
-SignedDecompositionGadget::SignedDecompositionGadget(int degree, long modulus, long base){
+SignedDecompositionGadget::SignedDecompositionGadget(int32_t degree, int64_t modulus, int64_t base){
     this->degree = degree;
     this->modulus = modulus;
     this->base = base;
@@ -16,26 +16,26 @@ void SignedDecompositionGadget::init(){
     this->digits = Utils::power_times(modulus, base);  
 }
 
-void SignedDecompositionGadget::sample(long** out, long *poly){  
-    long* signed_poly = new long[degree];
+void SignedDecompositionGadget::sample(int64_t** out, int64_t *poly){  
+    int64_t* signed_poly = new int64_t[degree];
     int* sign = new int[degree];
     Utils::array_signed_form(signed_poly, poly, degree, modulus); 
-    long half = modulus/2;
+    int64_t half = modulus/2;
     // Extracting the signs
-    for(int i = 0; i < degree; ++i){  
+    for(int32_t i = 0; i < degree; ++i){  
         if(poly[i] <= half){
             signed_poly[i] = poly[i];
             sign[i] = 1;
         }else{
-            signed_poly[i] = std::abs<long>(poly[i]-modulus);
+            signed_poly[i] = std::abs<int64_t>(poly[i]-modulus);
             sign[i] = -1;
         }
     }
     // Decomposition
     decomp(out, signed_poly);
     // Adding the signs
-    for(int j = 0; j < digits; ++j){
-        for(int i = 0; i < degree; ++i){
+    for(int32_t j = 0; j < digits; ++j){
+        for(int32_t i = 0; i < degree; ++i){
             out[j][i] = out[j][i] * sign[i];
         }
     }
@@ -43,12 +43,12 @@ void SignedDecompositionGadget::sample(long** out, long *poly){
     delete[] sign;
 }
  
-void SignedDecompositionGadget::decomp(long **d_ct, long* poly){
-    long mask = base-1;
-    long shift;
-    for(int i = 0; i < digits; ++i){
+void SignedDecompositionGadget::decomp(int64_t **d_ct, int64_t* poly){
+    int64_t mask = base-1;
+    int64_t shift;
+    for(int32_t i = 0; i < digits; ++i){
         shift = bits_base*i;
-        for(int j=0; j < degree; ++j){
+        for(int32_t j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
             d_ct[i][j] = (poly[j] & mask) >> shift;
         }
@@ -84,7 +84,7 @@ DiscreteGaussianSamplingGadget::~DiscreteGaussianSamplingGadget(){
 }
  
 
-DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int degree, long modulus, long base, double stddev){  
+DiscreteGaussianSamplingGadget::DiscreteGaussianSamplingGadget(int32_t degree, int64_t modulus, int64_t base, double stddev){  
     this->stddev = stddev;
     this->degree = degree;
     this->modulus = modulus;
@@ -113,44 +113,44 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
         }   
 }
   
-void DiscreteGaussianSamplingGadget::sample(long** out, long *in){   
+void DiscreteGaussianSamplingGadget::sample(int64_t** out, int64_t *in){   
     gaussian_sample(out, in);  
 }
    
-long* Gadget::get_gadget_vector(){
-    long* gadget_vector = new long[digits];
-    int powers_of_basis = 1;
-    for(int i = 0; i < digits; ++i){
+int64_t* Gadget::get_gadget_vector(){
+    int64_t* gadget_vector = new int64_t[digits];
+    int32_t powers_of_basis = 1;
+    for(int32_t i = 0; i < digits; ++i){
         gadget_vector[i] = powers_of_basis;
         powers_of_basis *= base;
     }
     return gadget_vector;
 }
  
-long** Gadget::init_out(){
-    long **decomposed = new long*[digits]; 
-    for(int i = 0; i < digits; ++i){  
-        decomposed[i] = new long[degree];
-        for(int j = 0; j < degree; ++j){
+int64_t** Gadget::init_out(){
+    int64_t **decomposed = new int64_t*[digits]; 
+    for(int32_t i = 0; i < digits; ++i){  
+        decomposed[i] = new int64_t[degree];
+        for(int32_t j = 0; j < degree; ++j){
             decomposed[i][j] = 0;
         }
     }   
     return decomposed;
 }
 
-void Gadget::delete_out(long** out){
-    for(int i = 0; i < digits; ++i){  
+void Gadget::delete_out(int64_t** out){
+    for(int32_t i = 0; i < digits; ++i){  
         delete[] out[i]; 
     }  
     delete[] out; 
 } 
  
-void DiscreteGaussianSamplingGadget::decomp(long **d_ct, long* poly){
-    long mask = base-1;
-    long shift;
-    for(int i = 0; i < digits; ++i){
+void DiscreteGaussianSamplingGadget::decomp(int64_t **d_ct, int64_t* poly){
+    int64_t mask = base-1;
+    int64_t shift;
+    for(int32_t i = 0; i < digits; ++i){
         shift = bits_base*i;
-        for(int j=0; j < degree; ++j){
+        for(int32_t j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
             d_ct[i][j] = (poly[j] & mask) >> shift;
         }
@@ -158,11 +158,11 @@ void DiscreteGaussianSamplingGadget::decomp(long **d_ct, long* poly){
     }
 }
  
-void DiscreteGaussianSamplingGadget::signed_decomp(long **d_ct, long* poly){ 
+void DiscreteGaussianSamplingGadget::signed_decomp(int64_t **d_ct, int64_t* poly){ 
     Utils::array_signed_form(signed_poly, poly, degree, modulus); 
-    long half = modulus/2;
+    int64_t half = modulus/2;
     // Extracting the signs
-    for(int i = 0; i < degree; ++i){  
+    for(int32_t i = 0; i < degree; ++i){  
         if(poly[i] <= half){
             signed_poly[i] = poly[i];
             sign[i] = 1;
@@ -174,15 +174,15 @@ void DiscreteGaussianSamplingGadget::signed_decomp(long **d_ct, long* poly){
     // Decomposition
     decomp(d_ct, signed_poly);
     // Adding the signs
-    for(int j = 0; j < digits; ++j){
-        for(int i = 0; i < degree; ++i){
+    for(int32_t j = 0; j < digits; ++j){
+        for(int32_t i = 0; i < degree; ++i){
             d_ct[j][i] = d_ct[j][i] * sign[i];
         }
     } 
 }
 
  
-void DiscreteGaussianSamplingGadget::gaussian_sample(long **out, long* in){ 
+void DiscreteGaussianSamplingGadget::gaussian_sample(int64_t **out, int64_t* in){ 
     if(is_power_of_base_modulus){  
         gaussian_sample_modulus_power_of_base(out, in);
     }else{ 
@@ -192,17 +192,17 @@ void DiscreteGaussianSamplingGadget::gaussian_sample(long **out, long* in){
  
  
 
-void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(long **out, long* in){
+void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(int64_t **out, int64_t* in){
     mask = base-1;  
-    for(long j = 0; j < degree; ++j){
+    for(int64_t j = 0; j < degree; ++j){
         gaussians[j] = 0;
     }  
-    for(long i = 0; i < digits; ++i){
+    for(int64_t i = 0; i < digits; ++i){
         shift = bits_base*i;
-        for(long j=0; j < degree; ++j){
+        for(int64_t j=0; j < degree; ++j){
             prev_gauss = gaussians[j];
             // Here we sample the new gaussian    
-            //gaussians[j] = (long)(gen_gaussian() * sigma) << k;
+            //gaussians[j] = (int64_t)(gen_gaussian() * sigma) << k;
             gaussians[j] = gen_discrete_gauss(0.0f) << bits_base;
             // The jth coefficients of the ith (decomposed) polynomial 
             out[i][j] = (in[j] & mask) >> shift; 
@@ -214,21 +214,21 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(long 
 }
  
 
-void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out, long* in){   
+void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(int64_t **out, int64_t* in){   
   
-    long beta;
+    int64_t beta;
 
-    long integer;
+    int64_t integer;
     double floating=0.0; 
     // Additional stuff for perturb_D
     double temp;
 
-    for(int k = 0; k < degree; ++k){  
+    for(int32_t k = 0; k < degree; ++k){  
         // Additional stuff for base decompositon 
-        long mask = base-1; 
-        long shift; 
+        int64_t mask = base-1; 
+        int64_t shift; 
         // Start base_decomposition(u, in[k]);  
-        for(long i = 0; i < digits; ++i){
+        for(int64_t i = 0; i < digits; ++i){
             shift = this->bits_base*i; 
             u[i] = (in[k] & mask) >> shift; 
             mask = mask << this->bits_base;
@@ -239,43 +239,43 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
         z_pert[0] =  gen_gaussian();
         //beta = 0;
         beta = -(z_pert[0] * h[0]); 
-        for(int i = 1; i < digits; ++i){  
+        for(int32_t i = 1; i < digits; ++i){  
             c_pert[i] = beta * inv_l[i]; 
             integer = c_pert[i];
             floating = c_pert[i] - integer;   
-            z_pert[i] = integer + (long)(gen_gaussian() * sigmas[i]  + floating);  
-            //z_pert[i] = integer + (long)(gen_gaussian_float() * sigmas[i]  + floating); 
+            z_pert[i] = integer + (int64_t)(gen_gaussian() * sigmas[i]  + floating);  
+            //z_pert[i] = integer + (int64_t)(gen_gaussian_float() * sigmas[i]  + floating); 
             beta = -(z_pert[i] * h[i]); 
         }
         z_pert[digits] = 0;
         p[0] = two_times_basis_plus_one * z_pert[0] + base * z_pert[1]; 
-        for(int i = 1; i < digits; ++i){
+        for(int32_t i = 1; i < digits; ++i){
             p[i] = base * (z_pert[i-1] + 2*z_pert[i] + z_pert[i+1]); 
         } 
         // End of perturb_B(p)
  
         // Computing the c values
         c[0] = (u[0] - p[0]) * inv_basis;  
-        for(int i = 1; i < digits; ++i){ 
+        for(int32_t i = 1; i < digits; ++i){ 
             c[i] = (c[i-1] + (double)(u[i] - p[i])) * inv_basis;
         }   
         // Start of sample_D(z, c);  
         temp = -c[ell_minus_one]/d[ell_minus_one]; 
         integer = temp;
         floating = temp - integer;  
-        //z[ell_minus_one] = integer + (long)(gen_gaussian() * sigma + floating);
+        //z[ell_minus_one] = integer + (int64_t)(gen_gaussian() * sigma + floating);
         z[ell_minus_one] = integer + gen_discrete_gauss(floating);
         double out_ell_minus_one = (double)z[ell_minus_one];
-        for(int i = 0; i < ell_minus_one; ++i){ 
+        for(int32_t i = 0; i < ell_minus_one; ++i){ 
             temp =  -(c[i] - out_ell_minus_one * d[i]); 
             integer = temp;
             floating = temp - integer;  
-            //z[i] = integer + (long)(gen_gaussian() * sigma + floating);
+            //z[i] = integer + (int64_t)(gen_gaussian() * sigma + floating);
             z[i] = integer + gen_discrete_gauss(floating);
         } 
         // End of sample_D(z, c);   
         out[0][k] = base * z[0] + q_decomp[0] * out_ell_minus_one + u[0]; 
-        for(int i = 1; i < ell_minus_one; ++i){ 
+        for(int32_t i = 1; i < ell_minus_one; ++i){ 
             out[i][k] = base * z[i] - z[i-1] + q_decomp[i] * out_ell_minus_one + u[i];  
         } 
         out[ell_minus_one][k] =  q_decomp[ell_minus_one] * out_ell_minus_one -  z[digits-2] + u[ell_minus_one];  
@@ -285,20 +285,20 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(long **out,
  
 
 /*
-void DiscreteGaussianSamplingGadget::sample_G(long* out, long in){ 
-    long* p = new long[digits];
+void DiscreteGaussianSamplingGadget::sample_G(int64_t* out, int64_t in){ 
+    int64_t* p = new int64_t[digits];
     double* c = new double[digits];
-    long* u = new long[digits]; 
-    long* z = new long[digits];
+    int64_t* u = new int64_t[digits]; 
+    int64_t* z = new int64_t[digits];
     perturb_B(p);
     base_decomposition(u, in);  
     c[0] = (u[0] - p[0]) * inv_basis;  
-    for(int i = 1; i < digits; ++i){ 
+    for(int32_t i = 1; i < digits; ++i){ 
         c[i] = (c[i-1] + (double)(u[i] - p[i])) * inv_basis;
     }  
     sample_D(z, c);  
     out[0] = base * z[0] + q_decomp[0] * z[digits-1] + u[0]; 
-    for(int i = 1; i < digits-1; ++i){ 
+    for(int32_t i = 1; i < digits-1; ++i){ 
         out[i] = base * z[i] - z[i-1] + q_decomp[i] * z[digits-1] + u[i];  
     } 
     out[digits-1] =  q_decomp[digits-1] * z[digits-1] -  z[digits-2] + u[digits-1];  
@@ -308,22 +308,22 @@ void DiscreteGaussianSamplingGadget::sample_G(long* out, long in){
     delete[] z;
 }
 
-void DiscreteGaussianSamplingGadget::perturb_B(long* p){  
+void DiscreteGaussianSamplingGadget::perturb_B(int64_t* p){  
     double* c = new double[digits];
-    long* z = new long[digits+1];
-    //long* p = new long[ell];
-    long beta = 0;
+    int64_t* z = new int64_t[digits+1];
+    //int64_t* p = new int64_t[ell];
+    int64_t beta = 0;
     double integer;
     double floating;
-    for(int i = 0; i < digits; ++i){  
+    for(int32_t i = 0; i < digits; ++i){  
         c[i] = beta * inv_l[i]; 
         floating = modf(c[i], &integer);
-        z[i] = (long)integer + sample_Zt(sigmas[i], floating); 
+        z[i] = (int64_t)integer + sample_Zt(sigmas[i], floating); 
         beta = -z[i] * h[i]; 
     }
     z[digits] = 0;
     p[0] = two_times_basis_plus_one * z[0] + base * z[1]; 
-    for(int i = 1; i < digits; ++i){
+    for(int32_t i = 1; i < digits; ++i){
         p[i] = base * (z[i-1] + 2*z[i] + z[i+1]); 
     } 
     delete[] c;
@@ -331,23 +331,23 @@ void DiscreteGaussianSamplingGadget::perturb_B(long* p){
     //return p;
 }
 
-void DiscreteGaussianSamplingGadget::sample_D(long* out, double* c){
-    //long* out = new long[ell];
+void DiscreteGaussianSamplingGadget::sample_D(int64_t* out, double* c){
+    //int64_t* out = new int64_t[ell];
     double temp = -c[digits-1]/d[digits-1];
     double integer;
     double floating; 
     floating = modf(temp, &integer);
-    out[digits-1] = (long)integer + sample_Zt(d_stddev, floating);
+    out[digits-1] = (int64_t)integer + sample_Zt(d_stddev, floating);
     double out_ell_minut_one = (double)out[digits-1];
-    for(int i = 0; i < digits-1; ++i){ 
+    for(int32_t i = 0; i < digits-1; ++i){ 
         temp =  c[i] - out_ell_minut_one * d[i]; 
         floating = modf(temp, &integer);
-        out[i] =  (long)integer + sample_Zt(d_stddev, floating);
+        out[i] =  (int64_t)integer + sample_Zt(d_stddev, floating);
     } 
 }
 
 
-long DiscreteGaussianSamplingGadget::sample_Zt(double sigma, double center){
+int64_t DiscreteGaussianSamplingGadget::sample_Zt(double sigma, double center){
     // Implicitely takes as input stddev and tail_bound 
     return rand.gaussian(center, sigma);  
 }
@@ -356,21 +356,21 @@ long DiscreteGaussianSamplingGadget::sample_Zt(double sigma, double center){
 void DiscreteGaussianSamplingGadget::precompute_constants_for_power_of_base_gaussian_sampling(){
     is_power_of_basis_gaussian_temp_init = true;
     mask = base-1;  
-    gaussians = new long[degree];
-    for(long j = 0; j < degree; ++j){
+    gaussians = new int64_t[degree];
+    for(int64_t j = 0; j < degree; ++j){
         gaussians[j] = 0;
     }   
     sigma  = stddev;
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);
-    std::uniform_int_distribution<unsigned long> uniform(0, 0xffffffffffffffff);  
+    std::uniform_int_distribution<uint64_t> uniform(0, 0xffffffffffffffff);  
     xorshift_s = uniform(e);
     hasSpare = false; 
 }
 
 void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_gaussian_sampling(){   
-    q_decomp = new long[digits];
+    q_decomp = new int64_t[digits];
     DiscreteGaussianSamplingGadget::base_decomposition(q_decomp, modulus);  
     sigma = stddev/(double)(base + 1); 
     //rand_sigma = Sampler(0.0, stddev);  
@@ -387,7 +387,7 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_ga
     d[0] = (double)q_decomp[0]/(double)base;
  
 
-    for(int i = 1; i < digits; ++i){
+    for(int32_t i = 1; i < digits; ++i){
         l[i] = sqrt(base + (double)base/(double)(digits-i)); 
         h[i] = sqrt(base - (double)base/(double)(digits-i));
         d[i] = (d[i-1] + (double)q_decomp[i])/(double)base;
@@ -407,13 +407,13 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_ga
 
 
     // Temporary variables:
-    p = new long[digits];
+    p = new int64_t[digits];
     c = new double[digits];
-    u = new long[digits]; 
-    z = new long[digits]; 
+    u = new int64_t[digits]; 
+    z = new int64_t[digits]; 
     // Stuff for perturb_B
     c_pert = new double[digits];
-    z_pert = new long[digits+1];
+    z_pert = new int64_t[digits+1];
 
    
 
@@ -421,8 +421,8 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_ga
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937_64 e(seed);
-    std::uniform_int_distribution<unsigned long> uniform(0, 0xffffffffffffffff);
-    xoshiro256_s = new long[4];
+    std::uniform_int_distribution<uint64_t> uniform(0, 0xffffffffffffffff);
+    xoshiro256_s = new int64_t[4];
     xoshiro256_s[0] = uniform(e);
     xoshiro256_s[1] = uniform(e);
     xoshiro256_s[2] = uniform(e);
@@ -434,10 +434,10 @@ void DiscreteGaussianSamplingGadget::precompute_constants_for_general_modulus_ga
 }
 
 
-void DiscreteGaussianSamplingGadget::base_decomposition(long* out, long in){
-    long mask = base-1;
-    long shift; 
-    for(long i = 0; i < digits; ++i){
+void DiscreteGaussianSamplingGadget::base_decomposition(int64_t* out, int64_t in){
+    int64_t mask = base-1;
+    int64_t shift; 
+    for(int64_t i = 0; i < digits; ++i){
         shift = bits_base*i; 
         out[i] = (in & mask) >> shift; 
         mask = mask << bits_base;
@@ -452,7 +452,7 @@ void DiscreteGaussianSamplingGadget::xorshift64(){
 	xoshiro256_result = xorshift_s & 0x1fffffffffffff;
 }
  
-int DiscreteGaussianSamplingGadget::xorshift25(){ 
+int32_t DiscreteGaussianSamplingGadget::xorshift25(){ 
     if(hasSpare){
         hasSpare = false;
         return xoshiro256_25_result_2;
@@ -563,17 +563,17 @@ float DiscreteGaussianSamplingGadget::gen_gaussian_float(){
     } 
 }  
   
-long DiscreteGaussianSamplingGadget::gen_discrete_gauss(float c){
+int64_t DiscreteGaussianSamplingGadget::gen_discrete_gauss(float c){
 
-    int sigma = this->sigma;
-    int k;
-    int s;
+    int32_t sigma = this->sigma;
+    int32_t k;
+    int32_t s;
     float tmp;
-    int i0; 
+    int32_t i0; 
     float x;
-    int j; 
+    int32_t j; 
     float exp_inp; 
-    unsigned int bias; 
+    uint32_t bias; 
     do{ 
         k = d1_d2_of_karney();   
    
@@ -615,10 +615,10 @@ long DiscreteGaussianSamplingGadget::gen_discrete_gauss(float c){
 }
 
 
-int DiscreteGaussianSamplingGadget::d1_d2_of_karney(){
-    int k ;
+int32_t DiscreteGaussianSamplingGadget::d1_d2_of_karney(){
+    int32_t k ;
     bool reject;   
-    int k_times_k_minus_one;
+    int32_t k_times_k_minus_one;
     do{ 
         k = -1;
         reject = false;
@@ -630,7 +630,7 @@ int DiscreteGaussianSamplingGadget::d1_d2_of_karney(){
             return k;
         }
         k_times_k_minus_one = k * (k - 1); 
-        for(int i = 0; i < k_times_k_minus_one; ++i){ 
+        for(int32_t i = 0; i < k_times_k_minus_one; ++i){ 
             if(xorshift25() >= 20351791){
                 reject = true;
                 break;

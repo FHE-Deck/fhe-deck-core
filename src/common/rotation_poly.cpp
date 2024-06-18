@@ -7,33 +7,33 @@ RotationPoly::~RotationPoly(){
 }
 
 RotationPoly::RotationPoly(const RotationPoly &poly){ 
-    this->coefs = new long[poly.degree];
+    this->coefs = new int64_t[poly.degree];
     this->output_encoding = poly.output_encoding;
     this->coef_modulus = poly.coef_modulus;
     this->degree = poly.degree; 
-    for(int i = 0; i < this->degree; ++i){   
+    for(int32_t i = 0; i < this->degree; ++i){   
         this->coefs[i] = poly.coefs[i]; 
     } 
 }
 
 
 RotationPoly& RotationPoly::operator=(const RotationPoly other){
-    this->coefs = new long[other.degree];
+    this->coefs = new int64_t[other.degree];
     this->output_encoding = other.output_encoding;
     this->coef_modulus = other.coef_modulus;
     this->degree = other.degree; 
-    for(int i = 0; i < this->degree; ++i){   
+    for(int32_t i = 0; i < this->degree; ++i){   
         this->coefs[i] = other.coefs[i]; 
     } 
     return *this;
 }
 
-RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
+RotationPoly::RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
     this->degree = degree; 
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.ciphertext_modulus;
     this->is_amortized_form = is_amortized_form;
-    coefs = new long[degree]; 
+    coefs = new int64_t[degree]; 
     PlaintextEncoding input_encoding; 
     if(output_encoding.type == full_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, degree);
@@ -46,8 +46,8 @@ RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long d
          throw std::logic_error("Non existend encoding type!");
     }
 
-    long arg;
-    int i = degree-1; 
+    int64_t arg;
+    int32_t i = degree-1; 
     while(input_encoding.decode_message(i) == 0){ 
             arg = f(input_encoding.decode_message(i), input_encoding.plaintext_space); 
             coefs[degree-i-1] = output_encoding.encode_message(arg); 
@@ -60,12 +60,12 @@ RotationPoly::RotationPoly(long (*f)(long message, long plaintext_space), long d
     } 
 }
 
-RotationPoly::RotationPoly(long (*f)(long message), long degree, PlaintextEncoding output_encoding, bool is_amortized_form){
+RotationPoly::RotationPoly(int64_t (*f)(int64_t message), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){
     this->degree = degree; 
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.ciphertext_modulus;
     this->is_amortized_form = is_amortized_form;
-    this->coefs = new long[degree];
+    this->coefs = new int64_t[degree];
      
     PlaintextEncoding input_encoding; 
     if(output_encoding.type == full_domain){ 
@@ -76,8 +76,8 @@ RotationPoly::RotationPoly(long (*f)(long message), long degree, PlaintextEncodi
         input_encoding = PlaintextEncoding(signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
     }
  
-    long arg;
-    int i = degree-1;  
+    int64_t arg;
+    int32_t i = degree-1;  
     while(input_encoding.decode_message(i) == 0){  
             arg = f(input_encoding.decode_message(i));  
  
@@ -97,7 +97,7 @@ void RotationPoly::encode(){
         return;
     } 
     PlaintextEncoding input_encoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
-    int i = degree-1; 
+    int32_t i = degree-1; 
     while(input_encoding.decode_message(i) == 0){  
             coefs[degree-i-1] = output_encoding.encode_message(coefs[degree-i-1]); 
             i--;
@@ -113,7 +113,7 @@ void RotationPoly::encode(){
     if(!is_encoded){
         return;
     }
-    for(int i = 0; i < degree; ++i){  
+    for(int32_t i = 0; i < degree; ++i){  
          this->coefs[i] = output_encoding.decode_message(coefs[i]);
     } 
     is_encoded = false;
@@ -144,10 +144,10 @@ void RotationPoly::to_non_amortized_form(){
 /* Note: this doesn't realy compute the sign function. For zero for example it computes 1
     But note that this is actually specific to a particular functional bootstrapipng algorithm. Its not used anywhere else. 
 */
-RotationPoly RotationPoly::rot_msb(int t, long N, long Q){
-    long delta_Q_t = (long)round((double)Q/(double)t); 
-    long* acc = new long[N]; 
-    for(int i = 0; i < N; ++i){
+RotationPoly RotationPoly::rot_msb(int32_t t, int64_t N, int64_t Q){
+    int64_t delta_Q_t = (int64_t)round((double)Q/(double)t); 
+    int64_t* acc = new int64_t[N]; 
+    for(int32_t i = 0; i < N; ++i){
         acc[i] =  Utils::integer_mod_form(delta_Q_t * -1, Q); 
     } 
     RotationPoly out;
@@ -157,9 +157,9 @@ RotationPoly RotationPoly::rot_msb(int t, long N, long Q){
     return out;
 }
 
-RotationPoly RotationPoly::rot_one(long N, long Q){
-    long* acc = new long[N]; 
-    for(int i = 0; i < N; ++i){
+RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){
+    int64_t* acc = new int64_t[N]; 
+    for(int32_t i = 0; i < N; ++i){
         acc[i] =  0;
     }  
     RotationPoly out;

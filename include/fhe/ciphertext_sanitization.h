@@ -37,7 +37,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
 
         std::shared_ptr<LWEPublicKey> masking_pk; 
 
-        int washing_cycles;
+        int32_t washing_cycles;
 
         ~DucasStehleWashingMachine() = default;
 
@@ -47,7 +47,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
             std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk,
-            int washing_cycles);
+            int32_t washing_cycles);
 
         void sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding); 
 

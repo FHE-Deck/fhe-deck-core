@@ -16,17 +16,17 @@ class FHEContext; // Forward declaration
 class LinearHomomorphicCiphertext{
     public:
 
-    virtual void add(LinearHomomorphicCiphertext* out, long b) = 0;
+    virtual void add(LinearHomomorphicCiphertext* out, int64_t b) = 0;
 
     virtual void add(LinearHomomorphicCiphertext* out, LinearHomomorphicCiphertext* in) = 0;
 
-    virtual void sub(LinearHomomorphicCiphertext* out, long b) = 0;
+    virtual void sub(LinearHomomorphicCiphertext* out, int64_t b) = 0;
 
     virtual void sub(LinearHomomorphicCiphertext* out, LinearHomomorphicCiphertext* in) = 0;
 
     virtual void neg(LinearHomomorphicCiphertext* out) = 0;
 
-    virtual void mul(LinearHomomorphicCiphertext* out, long b) = 0;
+    virtual void mul(LinearHomomorphicCiphertext* out, int64_t b) = 0;
 
     virtual LinearHomomorphicCiphertext* clone() = 0;
 };
@@ -72,27 +72,27 @@ class Ciphertext{
 
         void sub(Ciphertext* ct) ;
 
-        void mul(long b);
+        void mul(int64_t b);
   
-        Ciphertext operator+(long b);
+        Ciphertext operator+(int64_t b);
 
         Ciphertext operator+(Ciphertext ct);
 
-        Ciphertext operator-(long b);
+        Ciphertext operator-(int64_t b);
 
         Ciphertext operator-(Ciphertext ct);
 
         Ciphertext operator-();
     
-        Ciphertext operator*(long b); 
+        Ciphertext operator*(int64_t b); 
 };
  
 } /// End of namesapce fhe_deck
   
-fhe_deck::Ciphertext operator+(long b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator+(int64_t b, fhe_deck::Ciphertext ct);
 
-fhe_deck::Ciphertext operator-(long b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator-(int64_t b, fhe_deck::Ciphertext ct);
 
-fhe_deck::Ciphertext operator*(long b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator*(int64_t b, fhe_deck::Ciphertext ct);
 
 #endif

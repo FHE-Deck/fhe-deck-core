@@ -18,7 +18,7 @@ GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
 void GINXBlindRotationKey::blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){    
     std::unique_ptr<VectorCT> next_acc(this->vector_ct_param->init_ct(vector_ct_param));
     acc->acc_content->homomorphic_rotate(out, lwe_ct_in->ct[0]);     
-    for(int i = 0; i < lwe_par->dim; ++i){    
+    for(int32_t i = 0; i < lwe_par->dim; ++i){    
         out->homomorphic_rotate(next_acc.get(), lwe_ct_in->ct[i+1]);   
         next_acc->sub(next_acc.get(), out);      
         bk[i]->mul(next_acc.get(), next_acc.get());    
@@ -28,7 +28,7 @@ void GINXBlindRotationKey::blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::sh
    
 void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<uint64_t[]> ext_s){
     std::unique_ptr<uint64_t[]> msg(new uint64_t[1]);
-    for(int i = 0; i < lwe_par->dim; ++i){    
+    for(int32_t i = 0; i < lwe_par->dim; ++i){    
         msg[0] = ext_s[i]; 
         bk.push_back(std::unique_ptr<GadgetVectorCT>(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1)));
     }      
@@ -37,7 +37,7 @@ void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCT
 uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         //sizeof_ext_s = lwe_par->dim;
         uint64_t* ext_s = new uint64_t[lwe_par->dim];
-        for(int i = 0; i < lwe_par->dim; ++i){
+        for(int32_t i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];
         } 
         return ext_s;
@@ -46,7 +46,7 @@ uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWE
 uint64_t* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
         //sizeof_ext_s = lwe_par->dim;
         uint64_t*  ext_s = new uint64_t[lwe_par->dim];
-        for(int i = 0; i < lwe_par->dim; ++i){
+        for(int32_t i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];
         } 
         return ext_s;

@@ -36,15 +36,15 @@ void FHEConfiguration::generate_keys(){
 void FHEConfiguration::init_tfhe_11_NTT(){ 
     /// =================== Parameter Definition for the Functional Bootstrapping Algorithm 
     // 2**11
-    int degree = 2048; 
+    int32_t degree = 2048; 
     // 2**48 - 16383 % 2*(2**11) = 1 (NTT Friendly), Base-4096 decomposition of 281474976694273: [1, 4092, 4095, 4095], L_2 norm: 7091.016499769268
-    long coef_modulus = 281474976694273;
+    int64_t coef_modulus = 281474976694273;
     double rlwe_stddev = 3.2; 
     // 2**8
-    long gadget_decomp_base = 256;  
+    int64_t gadget_decomp_base = 256;  
     // stddev_simul approx  2**(17.78)
     double stddev_simul = 225812;  
-    int masking_size = 8192;
+    int32_t masking_size = 8192;
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary; 
@@ -56,9 +56,9 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     std::shared_ptr<Gadget> rand_gadget(new DiscreteGaussianSamplingGadget(degree, coef_modulus, gadget_decomp_base, stddev_simul)); 
     
     // 2**9 + 400
-    int lwe_dim = 912;
+    int32_t lwe_dim = 912;
     // 2**7
-    int lwe_ks_decomp_base = 128;
+    int32_t lwe_ks_decomp_base = 128;
     // 2**(26) 
     double lwe_stddev = 67108864;
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(lwe_dim, coef_modulus));
@@ -126,17 +126,17 @@ void FHEConfiguration::init_tfhe_11_NTT(){
 
 void FHEConfiguration::init_tfhe_11_NTT_flood(){ 
     // 2**11
-    int degree = 2048;
+    int32_t degree = 2048;
     // 2**36 - 12287 % 2*(2**11) = 1 (NTT friendly prime)
-    //long Q = 68719464449;
+    //int64_t Q = 68719464449;
     // 2**48 - 16383 % 2*(2**11) = 1 (NTT Friendly), Base-4096 decomposition of 281474976694273: [1, 4092, 4095, 4095], L_2 norm: 7091.016499769268
-    long coef_modulus = 281474976694273;
+    int64_t coef_modulus = 281474976694273;
     double rlwe_stddev = 3.2;
     // 2**4 -> 2**12
-    long gadget_decomp_base = 256; 
+    int64_t gadget_decomp_base = 256; 
     // Set to dummy 1 (here we tests noise flooding which will perform similarly to deter)
     double stddev_simul = 225812;  
-    int masking_size = 8192;
+    int32_t masking_size = 8192;
     // stddev_simul approx  2**(12.37)
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary;
@@ -149,8 +149,8 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
      
     // 2**9 + 400
-    int lwe_dim = 912;
-    int lwe_ks_decomp_base = 128;
+    int32_t lwe_dim = 912;
+    int32_t lwe_ks_decomp_base = 128;
     // 2**(26)
     double lwe_stddev = 67108864; 
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
@@ -213,14 +213,14 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
 // Power of two parameter set
 void FHEConfiguration::init_tfhe_11_B(){ 
     // 2**11
-    int degree = 2048;
+    int32_t degree = 2048;
     // 2**36
-    long coef_modulus = 68719476736;
+    int64_t coef_modulus = 68719476736;
     double rlwe_stddev = 3.2;
     // 2**4
-    long gadget_decomp_base = 16; 
+    int64_t gadget_decomp_base = 16; 
     double stddev_simul = 505;
-    int masking_size = 3370;
+    int32_t masking_size = 3370;
     double stddev_masking = 4010391;
     KeyDistribution rlwe_key_type = ternary;
  
@@ -232,8 +232,8 @@ void FHEConfiguration::init_tfhe_11_B(){
    //sk_arithmetic = double_fft;
 
     // 2**9 + 430
-    int lwe_dim = 912;
-    int lwe_ks_decomp_base = 128;
+    int32_t lwe_dim = 912;
+    int32_t lwe_ks_decomp_base = 128;
     // 2**(14)
     double lwe_stddev = 16384;  
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
@@ -290,14 +290,14 @@ void FHEConfiguration::init_tfhe_11_B(){
  
 void FHEConfiguration::init_tfhe_11_flood(){ 
     // 2**11
-    int degree = 2048;
+    int32_t degree = 2048;
     // 2**36
-    long coef_modulus = 68719476736;
+    int64_t coef_modulus = 68719476736;
     double rlwe_stddev = 3.2;
     // 2**4
-    long gadget_decomp_base = 16; 
+    int64_t gadget_decomp_base = 16; 
     double stddev_simul = 505;
-    int masking_size = 3370;
+    int32_t masking_size = 3370;
     double stddev_masking = 4010391;
     KeyDistribution rlwe_key_type = ternary;
 
@@ -309,8 +309,8 @@ void FHEConfiguration::init_tfhe_11_flood(){
 
     /// Parameters for the LWE to LWE Key Switching Key
     // 2**9 + 430
-    int lwe_dim = 912;
-    int lwe_ks_decomp_base = 128;
+    int32_t lwe_dim = 912;
+    int32_t lwe_ks_decomp_base = 128;
     // 2**(14) 
     double lwe_stddev = 16384;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
@@ -366,18 +366,18 @@ void FHEConfiguration::init_tfhe_11_flood(){
 
 void FHEConfiguration::init_tfhe_11_NTT_amortized(){ 
     // 2**11
-    int degree = 2048; 
+    int32_t degree = 2048; 
     // (2**51 - 45055) % 2*(2**11) = 1 and prime (NTT Friendly),   
-    long coef_modulus = 2251799813640193;  
+    int64_t coef_modulus = 2251799813640193;  
 
     double rlwe_stddev = 3.2; 
     KeyDistribution rlwe_key_type = ternary;
     // 2**9
-    long gadget_decomp_base = 512;  
+    int64_t gadget_decomp_base = 512;  
     // stddev_simul approx  2**(19.28)
     double stddev_simul = 638072;  
 
-    int masking_size = 8050;
+    int32_t masking_size = 8050;
     // stddev_simul approx  2**(11.22)
     double stddev_masking = 8192;
 
@@ -388,9 +388,9 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt;
  
-    int lwe_dim = 950;
+    int32_t lwe_dim = 950;
     // 2**9
-    int lwe_ks_decomp_base = 512;
+    int32_t lwe_ks_decomp_base = 512;
     // 2**(23) 
     double lwe_stddev = 262144;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
@@ -447,24 +447,24 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
 
 void FHEConfiguration::init_tfhe_12_NTT_amortized(){  
     // 2**12
-    int degree = 4096; 
+    int32_t degree = 4096; 
     // (2**51 - 131071) % 2*(2**12) = 1 and prime (NTT Friendly),   
-    //long Q = 2251799813554177;
+    //int64_t Q = 2251799813554177;
     // 52-bit modulus
-    //long Q = 4503599627149313;
+    //int64_t Q = 4503599627149313;
     // 53-bit modulus
-    //long Q = 9007199254429697;
+    //int64_t Q = 9007199254429697;
     // 54-bit modulus
-    long coef_modulus =  18014398509309953;
+    int64_t coef_modulus =  18014398509309953;
   
     double rlwe_stddev = 3.2; 
     KeyDistribution rlwe_key_type = ternary;
     // 2**8
-    long gadget_decomp_base = 256;  
+    int64_t gadget_decomp_base = 256;  
     // stddev_simul approx  2**(19.28)
     double stddev_simul = 638072;   
     // 2**13
-    int masking_size = 14936;
+    int32_t masking_size = 14936;
     // stddev_simul approx  2**(14)
     double stddev_masking = 16384;
 
@@ -475,9 +475,9 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
     //sk_arithmetic = hexl_ntt; 
 
-    int lwe_dim = 950;
+    int32_t lwe_dim = 950;
     // 2**9
-    int lwe_ks_decomp_base = 512; 
+    int32_t lwe_ks_decomp_base = 512; 
     // 2**(23) 
     double lwe_stddev = 262144;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
@@ -537,15 +537,15 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     /// =================== Parameter Definition for the Functional Bootstrapping Algorithm
 
     // 2**11
-    int degree = 4096; 
+    int32_t degree = 4096; 
     // 2**45 - 204799 % 2*(2**12) = 1 (NTT Friendly) 
-    long coef_modulus = 35184371884033;
+    int64_t coef_modulus = 35184371884033;
     double ntru_stddev = 1/4.0; 
     // 2**15
-    long gadget_decomp_base = 32768;  
+    int64_t gadget_decomp_base = 32768;  
     // stddev_simul approx  2**(17.78)
     double stddev_simul = 225812;  
-    int masking_size = 8192;
+    int32_t masking_size = 8192;
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192; 
     std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
@@ -556,9 +556,9 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     //sk_arithmetic = hexl_ntt;
 
     // 2**9 + 400
-    int lwe_dim = 750;
+    int32_t lwe_dim = 750;
     // 2**7
-    int lwe_ks_decomp_base = 2;
+    int32_t lwe_ks_decomp_base = 2;
     // 2**(26) 
     double lwe_stddev = 16384;
     std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));

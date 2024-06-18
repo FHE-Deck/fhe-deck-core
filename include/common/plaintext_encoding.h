@@ -12,17 +12,17 @@ class PlaintextEncoding{
 public:
 
     PlaintextEncodingType type = full_domain;
-    long plaintext_space = 0;
-    long ciphertext_modulus = 0;
-    long ticks = 0;
+    int64_t plaintext_space = 0;
+    int64_t ciphertext_modulus = 0;
+    int64_t ticks = 0;
 
     PlaintextEncoding() = default;
 
-    PlaintextEncoding(PlaintextEncodingType type, long plaintext_space, long ciphertext_moduluse);
+    PlaintextEncoding(PlaintextEncodingType type, int64_t plaintext_space, int64_t ciphertext_moduluse);
     
-    long encode_message(long message);
+    int64_t encode_message(int64_t message);
 
-    long decode_message(long phase);
+    int64_t decode_message(int64_t phase);
 
     template <class Archive>
     void save( Archive & ar ) const

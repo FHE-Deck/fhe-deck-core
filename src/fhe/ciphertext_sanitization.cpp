@@ -6,7 +6,7 @@ DucasStehleWashingMachine::DucasStehleWashingMachine(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
             std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk,
-            int washing_cycles){
+            int32_t washing_cycles){
 
     this->fun_bootstrap_pk = fun_bootstrap_pk;
     this->accumulator_builder = accumulator_builder;
@@ -15,12 +15,12 @@ DucasStehleWashingMachine::DucasStehleWashingMachine(
 }
 
 void DucasStehleWashingMachine::sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding){
-    auto fun_identity = [](long m) -> long {
+    auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
     std::shared_ptr<VectorCTAccumulator> acc(accumulator_builder->prepare_accumulator(fun_identity, encoding));
     LWECT ct_of_zero(masking_pk->param);
-    for(int i = 0; i < washing_cycles; ++i){
+    for(int32_t i = 0; i < washing_cycles; ++i){
         masking_pk->encrypt(&ct_of_zero, 0);
         ct_in->add(ct_out, &ct_of_zero);
         /// TODO: Flood with noice
@@ -49,7 +49,7 @@ KluczniakRandomizedBootstrapping::KluczniakRandomizedBootstrapping(
 }
 
 void KluczniakRandomizedBootstrapping::sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding){
-    auto fun_identity = [](long m) -> long {
+    auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
     std::shared_ptr<VectorCTAccumulator> acc(accumulator_builder->prepare_accumulator(fun_identity, encoding)); 

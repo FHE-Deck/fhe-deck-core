@@ -12,7 +12,7 @@ void FHEContext::generate_context(FHENamedParams name){
     current_encoding = config->eval_key.default_encoding;  
 }
 
-Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type){  
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type){  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -21,7 +21,7 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type){
     return FHEContext::encrypt(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt(long message, long plaintext_space){
+Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -30,7 +30,7 @@ Ciphertext FHEContext::encrypt(long message, long plaintext_space){
     return FHEContext::encrypt(message, encoding);
 }
  
-Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type, long plaintext_space){
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int64_t plaintext_space){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -40,7 +40,7 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncodingType type, long pl
     return FHEContext::encrypt(message, encoding);
 }
  
-Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){  
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncoding encoding){  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }        
@@ -48,14 +48,14 @@ Ciphertext FHEContext::encrypt(long message, PlaintextEncoding encoding){
     return Ciphertext(c, encoding, this); 
 }
 
-Ciphertext FHEContext::encrypt(long message){
+Ciphertext FHEContext::encrypt(int64_t message){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key!");
     }
     return FHEContext::encrypt(message, current_encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(long message, PlaintextEncodingType type){  
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type){  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -64,7 +64,7 @@ Ciphertext FHEContext::encrypt_public(long message, PlaintextEncodingType type){
     return FHEContext::encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(long message, long plaintext_space){
+Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -73,7 +73,7 @@ Ciphertext FHEContext::encrypt_public(long message, long plaintext_space){
     return FHEContext::encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(long message, PlaintextEncodingType type, long plaintext_space){
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type, int64_t plaintext_space){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -83,7 +83,7 @@ Ciphertext FHEContext::encrypt_public(long message, PlaintextEncodingType type, 
     return FHEContext::encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(long message, PlaintextEncoding encoding){  
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncoding encoding){  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
@@ -91,14 +91,14 @@ Ciphertext FHEContext::encrypt_public(long message, PlaintextEncoding encoding){
     return Ciphertext(c, encoding, this);
 }
 
-Ciphertext FHEContext::encrypt_public(long message){
+Ciphertext FHEContext::encrypt_public(int64_t message){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
     return FHEContext::encrypt_public(message, current_encoding);
 }
 
-long FHEContext::decrypt(Ciphertext *c_in){
+int64_t FHEContext::decrypt(Ciphertext *c_in){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }  
@@ -109,15 +109,15 @@ PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
     return current_encoding;
 }
 
-void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, long plaintext_space){
+void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space){
     this->current_encoding = PlaintextEncoding(type, plaintext_space, current_encoding.ciphertext_modulus); 
 }
  
-long  FHEContext::get_default_plaintext_space(){
+int64_t  FHEContext::get_default_plaintext_space(){
     return current_encoding.plaintext_space;
 }
 
-void FHEContext::set_default_plaintext_space(long plaintext_space){
+void FHEContext::set_default_plaintext_space(int64_t plaintext_space){
     this->current_encoding = PlaintextEncoding(current_encoding.type, plaintext_space, current_encoding.ciphertext_modulus);  
 }
 
@@ -129,7 +129,7 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
     this->current_encoding = PlaintextEncoding(type, current_encoding.plaintext_space, current_encoding.ciphertext_modulus);  
 }
  
-HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
+HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding){
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -137,14 +137,14 @@ HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plai
     return out; 
 }
 
-HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message, long plaintext_space)){
+HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space)){
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
 }
 
-HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message), PlaintextEncoding encoding){ 
+HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message), PlaintextEncoding encoding){ 
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -152,7 +152,7 @@ HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message), Plaintex
 }
  
 
-HomomorphicAccumulator FHEContext::genrate_lut(long (*f)(long message)){   
+HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message)){   
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
 }
   
@@ -215,22 +215,22 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext *ct_in, std::v
     return out_vec;
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space), PlaintextEncoding encoding){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding){
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut);
 }
  
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message, long plaintext_space)){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space)){
     HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message), PlaintextEncoding encoding){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding){
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, long (*f)(long message)){
+Ciphertext FHEContext::eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message)){
     HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut);
 }
@@ -244,9 +244,9 @@ Ciphertext FHEContext::sanitize(Ciphertext *ct){
     return Ciphertext(ct_out, ct->encoding, this); 
 }
 
-Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext> ct_vec, std::vector<long> scalars, long scalar){    
+Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext> ct_vec, std::vector<int64_t> scalars, int64_t scalar){    
     Ciphertext ct_out =  ct_vec[0] * scalars[0]; 
-    for(int i = 1; i < ct_vec.size(); ++i){ 
+    for(int32_t i = 1; i < ct_vec.size(); ++i){ 
             ct_out = ct_out + (ct_vec[i] * scalars[i]); 
     }
     ct_out = ct_out + scalar;

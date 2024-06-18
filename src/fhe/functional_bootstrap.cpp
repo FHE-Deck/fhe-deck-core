@@ -80,7 +80,7 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
         modulus_reduction_event = true;
     }
     // Copy  
-    for(int i = 1; i < lwe_par_tiny->dim+1; ++i){
+    for(int32_t i = 1; i < lwe_par_tiny->dim+1; ++i){
         lwe_c.ct[i] = lwe_c_N.ct[i];
     }    
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
@@ -96,13 +96,13 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
     /// TODO: Do it through the LWECT class.... Unless the moduli don't fit..
     //lwe_c.add(&lwe_c, &lwe_c_N);
-    for(int i = 0; i < this->lwe_par->dim+1; ++i){
+    for(int32_t i = 0; i < this->lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;
     }   
     if(modulus_reduction_event){ 
-        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (long)round((double)(3 * lwe_par->modulus)/4), lwe_par->modulus);
+        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)(3 * lwe_par->modulus)/4), lwe_par->modulus);
     }else{
-        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (long)round((double)lwe_par->modulus/4), lwe_par->modulus);
+        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)lwe_par->modulus/4), lwe_par->modulus);
     }  
     // 3) Blind rotate 
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
@@ -128,7 +128,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
         modulus_reduction_event = true;
     }
     // Copy  
-    for(int i = 1; i < lwe_par_tiny->dim+1; ++i){
+    for(int32_t i = 1; i < lwe_par_tiny->dim+1; ++i){
         lwe_c.ct[i] = lwe_c_N.ct[i];
     }    
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!) 
@@ -141,13 +141,13 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
     ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c);
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N)  
-    for(int i = 0; i < lwe_par->dim+1; ++i){
+    for(int32_t i = 0; i < lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;
     }  
     if(modulus_reduction_event){ 
-        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (long)round((double)(3 * lwe_par->modulus)/4), lwe_par->modulus);
+        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)(3 * lwe_par->modulus)/4), lwe_par->modulus);
     }else{
-        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (long)round((double)lwe_par->modulus/4), lwe_par->modulus);
+        lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)lwe_par->modulus/4), lwe_par->modulus);
     }  
     // 3) Blind rotate  
     //acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding));

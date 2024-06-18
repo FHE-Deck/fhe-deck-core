@@ -7,21 +7,21 @@
 
 using namespace fhe_deck;
 
-int main(){
+int32_t main(){
 
     FHEContext ctx; 
     std::cout << "Generate Keys..." << std::endl;
     ctx.generate_context(FHENamedParams::tfhe_11_NTT_amortized);  
     
-    auto first_bit = [](long m) -> long {
+    auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
     };  
   
-    auto second_bit = [](long m) -> long {
+    auto second_bit = [](int64_t m) -> int64_t {
         return (m % 4)/2;
     };  
 
-    auto third_bit = [](long m) -> long {
+    auto third_bit = [](int64_t m) -> int64_t {
         return (m % 8)/4; 
     };  
 
@@ -30,19 +30,19 @@ int main(){
     bit_decomp_luts.push_back(ctx.genrate_lut(second_bit));
     bit_decomp_luts.push_back(ctx.genrate_lut(third_bit));
 
-    std::vector<long> comp = {1, 2, 4}; 
+    std::vector<int64_t> comp = {1, 2, 4}; 
 
     Ciphertext ct, ct2;
     Ciphertext temp, temp_0, temp_1, temp_2;
     std::vector<Ciphertext> out_cts;
-    int test_num = 10;
-    int repetition_num = 5;
-    int msg;
-    long dec;
-    for(int i = 0; i < test_num; ++i){
+    int32_t test_num = 10;
+    int32_t repetition_num = 5;
+    int32_t msg;
+    int64_t dec;
+    for(int32_t i = 0; i < test_num; ++i){
         msg = i % 8;
         ct = ctx.encrypt_public(msg);
-        for(int j = 0; j < repetition_num; ++j){  
+        for(int32_t j = 0; j < repetition_num; ++j){  
             out_cts = ctx.eval_lut_amortized(&ct, bit_decomp_luts);   
             ct2 = ctx.eval_affine_function(out_cts, comp, 0);  
             dec = ctx.decrypt(&ct2);

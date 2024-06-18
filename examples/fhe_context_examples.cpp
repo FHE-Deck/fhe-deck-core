@@ -112,16 +112,16 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     v.push_back(ct1);
     v.push_back(ct2);
 
-    std::vector<long> scalars;
+    std::vector<int64_t> scalars;
     scalars.push_back(2);
     scalars.push_back(1);
-    long scalar = 3;
+    int64_t scalar = 3;
     ct4 = context.eval_affine_function(v, scalars, scalar);  
     // The outcome should be 3, because (2 * 1 + 1 * 2 + 3) % 4 = 3
     assertm(context.decrypt(&ct4) == 3, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
     std::cout << "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3: OK"   << std::endl; 
   
-    auto id = [](long m) -> long {
+    auto id = [](int64_t m) -> int64_t {
         return m;
     }; 
   
@@ -132,7 +132,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(&ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
  
-    auto id_plus = [](long m) -> long {
+    auto id_plus = [](int64_t m) -> int64_t {
         return (m+1);
     }; 
 
@@ -149,7 +149,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(&ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0: OK"  << std::endl;
 
-    auto fun_msb = [](long m, long t = 5) -> long {
+    auto fun_msb = [](int64_t m, int64_t t = 5) -> int64_t {
         if(m < t/2){
             return 0;
         }else{
@@ -270,7 +270,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     std::cout << "Decrypt(c3) == 3: OK" << std::endl; 
  
 
-    auto fun_ham = [](long m) -> long {
+    auto fun_ham = [](int64_t m) -> int64_t {
         switch(m){
             case 0: 
                 return 0;
@@ -314,7 +314,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
 
 
 
-    auto fun_nand = [](long m) -> long {
+    auto fun_nand = [](int64_t m) -> int64_t {
         switch(m){
             case 0: 
                 return 1;
@@ -379,7 +379,7 @@ void demo(){
     Ciphertext c1  = context.encrypt(1);    
     Ciphertext ct = c0 - c1;
 
-    auto fun_relu = [](long m) -> long {
+    auto fun_relu = [](int64_t m) -> int64_t {
         if(m >= 0){
             return m; 
         }else{
@@ -464,7 +464,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
 
   
  
-    auto fun_identity = [](long m) -> long {
+    auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };    
    
@@ -509,7 +509,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
 
  
 
-    auto fun_relu = [](long m) -> long {
+    auto fun_relu = [](int64_t m) -> int64_t {
         if(m >= 0){
             return m; 
         }else{
@@ -592,7 +592,7 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
     
-    auto id = [](long m) -> long {
+    auto id = [](int64_t m) -> int64_t {
         return m;
     }; 
   
@@ -625,15 +625,15 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
  
 
-    auto first_bit = [](long m) -> long {
+    auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
     };  
   
-    auto second_bit = [](long m) -> long {
+    auto second_bit = [](int64_t m) -> int64_t {
         return (m % 4)/2;
     };  
 
-    auto third_bit = [](long m) -> long {
+    auto third_bit = [](int64_t m) -> int64_t {
         return (m % 8)/4; 
     };  
 
@@ -714,15 +714,15 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     context.generate_context(param_set);
     context.set_default_message_encoding_type(partial_domain); 
   
-    auto first_bit = [](long m) -> long {
+    auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
     };  
   
-    auto second_bit = [](long m) -> long {
+    auto second_bit = [](int64_t m) -> int64_t {
         return (m % 4)/2;
     };  
 
-    auto third_bit = [](long m) -> long {
+    auto third_bit = [](int64_t m) -> int64_t {
         return (m % 8)/4; 
     };  
 
@@ -811,19 +811,19 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(param_set); 
   
-    auto first_bit = [](long m) -> long {
+    auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
     };  
   
-    auto second_bit = [](long m) -> long {
+    auto second_bit = [](int64_t m) -> int64_t {
         return (m % 4)/2;
     };  
 
-    auto third_bit = [](long m) -> long {
+    auto third_bit = [](int64_t m) -> int64_t {
         return (m % 8)/4; 
     };  
 
-    auto fourth_bit = [](long m) -> long {
+    auto fourth_bit = [](int64_t m) -> int64_t {
         return (m % 16)/8; 
     };  
 
@@ -1014,7 +1014,7 @@ void serialization_test(){
     assert(context.decrypt(&ct0) == 1);
     
 
-    auto id = [](long m, long t) -> long {
+    auto id = [](int64_t m, int64_t t) -> int64_t {
         return m % t;
     }; 
       

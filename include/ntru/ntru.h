@@ -37,9 +37,9 @@ class NTRUParam : public VectorCTParam{
  
     NTRUParam() = default; 
        
-    NTRUParam(RingType ring, int ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
+    NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic);
 
-    NTRUParam(int ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    NTRUParam(int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     NTRUParam(NTRUParam &c);
 
@@ -80,11 +80,11 @@ class NTRUCT : public VectorCT{
    
     NTRUCT& operator=(NTRUCT other);
   
-    void negacyclic_rotate(NTRUCT *out, int rot);
+    void negacyclic_rotate(NTRUCT *out, int32_t rot);
 
-    void cyclic_rotate(NTRUCT *out, int rot);
+    void cyclic_rotate(NTRUCT *out, int32_t rot);
 
-    void homomorphic_rotate(VectorCT *out, int rot);
+    void homomorphic_rotate(VectorCT *out, int32_t rot);
 
     void add(VectorCT *out,  VectorCT *ct);
  
@@ -249,11 +249,11 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
         
     GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int size); 
+    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size); 
 
     GadgetVectorCT* kdm_gadget_encrypt(Polynomial *msg); 
 
-    GadgetVectorCT* kdm_gadget_encrypt(uint64_t *msg, int size); 
+    GadgetVectorCT* kdm_gadget_encrypt(uint64_t *msg, int32_t size); 
    
     template <class Archive>
     void save( Archive & ar ) const

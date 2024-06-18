@@ -42,9 +42,9 @@ class AbstractAccumulatorBuilder{
 
     public:
     
-    virtual VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding) = 0;
+    virtual VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding) = 0;
 
-    virtual VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding) = 0;
+    virtual VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding) = 0;
 
     virtual VectorCTAccumulator* get_acc_msb() = 0;
   
@@ -68,9 +68,9 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
 
-    VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding);
+    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
 
-    VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding); 
+    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
     VectorCTAccumulator* get_acc_msb();
   
@@ -103,9 +103,9 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk);
 
-    VectorCTAccumulator* prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding);
+    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
 
-    VectorCTAccumulator* prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding); 
+    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
     VectorCTAccumulator* get_acc_msb();
   

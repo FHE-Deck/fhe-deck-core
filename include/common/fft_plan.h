@@ -33,9 +33,9 @@ class FFTPlan{
  
     FFTPlan() = default;
 
-    FFTPlan(RingType ring, int N);
+    FFTPlan(RingType ring, int32_t N);
 
-    FFTPlan(RingType ring, int N, bool long_arithmetic);
+    FFTPlan(RingType ring, int32_t N, bool long_arithmetic);
 
     FFTPlan(const FFTPlan& other);
 
@@ -47,17 +47,17 @@ class FFTPlan{
 
     fftwl_complex* init_fft_poly_l();
  
-    void to_eval_form(fftw_complex* eval_form, long *poly); 
+    void to_eval_form(fftw_complex* eval_form, int64_t *poly); 
 
-    void to_eval_form(fftw_complex* eval_form, int *poly);
+    void to_eval_form(fftw_complex* eval_form, int32_t *poly);
    
     // TODO: Delete
-    void to_eval_form_scale(fftw_complex* eval_form, long *poly);
+    void to_eval_form_scale(fftw_complex* eval_form, int64_t *poly);
 
     // It divides the coefficients by (plan_size * additional_scale) before computing the FFT
-    void to_eval_form_scale(fftw_complex* eval_form, long *poly, double additional_scale);
+    void to_eval_form_scale(fftw_complex* eval_form, int64_t *poly, double additional_scale);
  
-    void to_coef_form(long *coef_form, fftw_complex* eval_form);
+    void to_coef_form(int64_t *coef_form, fftw_complex* eval_form);
 
     void to_coef_form(double *coef_form, fftw_complex* eval_form);
  
@@ -70,20 +70,20 @@ class FFTPlan{
 
 
     // Note that we still only support operations on polynomials with 64-bit coefs max. 
-    void to_eval_form_l(fftwl_complex* eval_form, long *poly); 
+    void to_eval_form_l(fftwl_complex* eval_form, int64_t *poly); 
 
-    void to_eval_form_l(fftwl_complex* eval_form, int *poly);
+    void to_eval_form_l(fftwl_complex* eval_form, int32_t *poly);
    
-    void to_eval_form_scale_l(fftwl_complex* eval_form, long *poly);
+    void to_eval_form_scale_l(fftwl_complex* eval_form, int64_t *poly);
 
      // It divides the coefficients by (plan_size * additional_scale) before computing the FFT
-    void to_eval_form_scale_l(fftwl_complex* eval_form, long *poly, double additional_scale);
+    void to_eval_form_scale_l(fftwl_complex* eval_form, int64_t *poly, double additional_scale);
  
     // To coefficient form where we return a 64-bit long makes only sense if the output polynomial is in 64-bits.
     // However, without modular reduction we cannot guarantee that the outcome (for example for multiplication of two polynomails) will not lie outside 64-bits
     //void to_coef_form(long *coef_form, fftw_complex* eval_form);
 
-    void to_coef_form_l(long *coef_form, fftwl_complex* eval_form);
+    void to_coef_form_l(int64_t *coef_form, fftwl_complex* eval_form);
  
     void add_eval_form_l(fftwl_complex *sum, fftwl_complex* in_1, fftwl_complex* in_2);
 

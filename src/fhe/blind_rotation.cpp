@@ -37,7 +37,7 @@ RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param)
     this->param = param;
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding){ 
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding){ 
     RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
@@ -45,7 +45,7 @@ VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long 
     return new VectorCTAccumulator(acc_ptr, poly);
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding){
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding){
     RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);  
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
@@ -77,25 +77,25 @@ NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
     this->is_sk_set = true;
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding){  
+VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding){  
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
         sk->kdm_encrypt(acc.get(), &poly);
         return new VectorCTAccumulator(acc, poly);
     }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding): sk must be set.");
+        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message, long plaintext_space), PlaintextEncoding output_encoding){
+VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding){
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(param)); 
         sk->kdm_encrypt(acc.get(), &poly);
         return new VectorCTAccumulator(acc, poly);
     }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding): sk must be set.");
+        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
 
@@ -106,7 +106,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_msb(){
         sk->kdm_encrypt(acc.get(), &poly); 
         return new VectorCTAccumulator(acc, poly, false);
     }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding): sk must be set.");
+        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
 
@@ -118,7 +118,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_one(PlaintextEncoding outpu
         sk->kdm_encrypt(acc.get(), &poly);
         return new VectorCTAccumulator(acc, poly, false);
     }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(long (*f)(long message), PlaintextEncoding output_encoding): sk must be set.");
+        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
 

@@ -78,7 +78,7 @@ void Ciphertext::sub(Ciphertext* ct){
 }
  
 
-void Ciphertext::mul(long b){
+void Ciphertext::mul(int64_t b){
     if(is_lwe_ct){ 
         this->lwe_c->mul(this->lwe_c.get(), b);
     }else{
@@ -86,7 +86,7 @@ void Ciphertext::mul(long b){
     }
 } 
       
-Ciphertext Ciphertext::operator+(long b){
+Ciphertext Ciphertext::operator+(int64_t b){
     if(is_lwe_ct){ 
         std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
         lwe_c->add(c.get(), this->encoding.encode_message(b)); 
@@ -108,7 +108,7 @@ Ciphertext Ciphertext::operator+(Ciphertext ct){
 }
 
 
-Ciphertext Ciphertext::operator-(long b){
+Ciphertext Ciphertext::operator-(int64_t b){
     if(is_lwe_ct){ 
         std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
         lwe_c->sub(c.get(), this->encoding.encode_message(b));
@@ -141,7 +141,7 @@ Ciphertext Ciphertext::operator-(){
 }
     
 
-Ciphertext Ciphertext::operator*(long b){
+Ciphertext Ciphertext::operator*(int64_t b){
     if(is_lwe_ct){ 
         std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
         lwe_c->mul(c.get(), b);
@@ -151,16 +151,16 @@ Ciphertext Ciphertext::operator*(long b){
     }
 }
  
-Ciphertext operator+(long b, Ciphertext ct){
+Ciphertext operator+(int64_t b, Ciphertext ct){
     return ct.operator+(b); 
 }
 
-Ciphertext operator-(long b, Ciphertext ct){
+Ciphertext operator-(int64_t b, Ciphertext ct){
     Ciphertext out = -ct;
     return out + b;
 }
 
-Ciphertext operator*(long b, Ciphertext ct){ 
+Ciphertext operator*(int64_t b, Ciphertext ct){ 
     return ct.operator*(b); 
 }
  
