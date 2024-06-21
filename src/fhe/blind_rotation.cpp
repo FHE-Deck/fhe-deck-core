@@ -126,12 +126,21 @@ RLWEBlindRotateOutputBuilder::RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEP
     this->rlwe_param = param;
 }
 
+LWEParam* RLWEBlindRotateOutputBuilder::build_extract_lwe_param(){
+    return new LWEParam(rlwe_param->size, rlwe_param->coef_modulus);  
+}
+
 BlindRotateOutput* RLWEBlindRotateOutputBuilder::build(){
     return new RLWEBlindRotateOutput(rlwe_param); 
 }
   
 NTRUBlindRotateOutputBuilder::NTRUBlindRotateOutputBuilder(std::shared_ptr<NTRUParam> param){
     this->ntru_param = param;
+}
+
+
+LWEParam* NTRUBlindRotateOutputBuilder::build_extract_lwe_param(){
+    return new LWEParam(ntru_param->size, ntru_param->coef_modulus);  
 }
 
 BlindRotateOutput* NTRUBlindRotateOutputBuilder::build(){

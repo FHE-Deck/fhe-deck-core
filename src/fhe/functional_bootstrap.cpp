@@ -4,24 +4,25 @@ using namespace fhe_deck;
    
 void FunctionalBootstrapPublicKey::bootstrap(LWECT *lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT *lwe_ct_in){      
     // 1) Key switch to \ZZ_Q^{n+1}    
-    LWECT lwe_c(ms_from_gadget_to_par.from); 
+    LWECT lwe_c(ms_from_keyswitch_to_par.from); 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_in);   
     // 2) Mod switch to \ZZ_2N^{n+1}  
-    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c); 
+    ms_from_keyswitch_to_par.switch_modulus(&lwe_c, &lwe_c); 
     // 3) Blind rotate    
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
     // 4) Sample Extract    
     br_out->extract_lwe(lwe_ct_out);   
+    ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
 }
  
 std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding){   
     // 1) Key switch to \ZZ_Q^{n+1}  
-    LWECT lwe_c(ms_from_gadget_to_par.from); 
+    LWECT lwe_c(ms_from_keyswitch_to_par.from); 
     this->key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_in);  
     // 2) Mod switch to \ZZ_2N^{n+1}  
     //this->ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct); 
-    this->ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c); 
+    this->ms_from_keyswitch_to_par.switch_modulus(&lwe_c, &lwe_c); 
     // 3) Blind rotate      
     //this->acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding)); 
     std::shared_ptr<VectorCTAccumulator> acc_one(accumulator_builder->get_acc_one(encoding)); 
@@ -34,6 +35,7 @@ std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shar
     for(std::shared_ptr<VectorCTAccumulator> i:  acc_in_vec){      
         br_out->post_rotation(br_temp, i);   
         br_temp->extract_lwe(&lwe_ct_out); 
+        ms_from_extract_to_intermediate.switch_modulus(&lwe_ct_out, &lwe_ct_out);
         out_vec.push_back(lwe_ct_out); 
     }  
     return out_vec;
@@ -57,16 +59,20 @@ LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
 }
 
 void LMPFunctionalBootstrapPublicKey::init(){ 
+
+    std::shared_ptr<LWEParam> lwe_par_extract(this->blind_rotate_output_builder->build_extract_lwe_param());
+    std::shared_ptr<LWEParam> lwe_par_intermediate = std::make_shared<LWEParam>(lwe_par_extract->dim, this->key_switch_key->destination->modulus); 
+    this->ms_from_extract_to_intermediate = LWEModSwitcher(lwe_par_extract, lwe_par_intermediate);  
     // Mod Switch from Extracted Q to 2 * N 
-    this->ms_from_gadget_to_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par);
+    this->ms_from_keyswitch_to_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par);
     // Mod Switch from Extracted Q to N 
     this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par_tiny);
 }
   
 void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT *lwe_ct_in, PlaintextEncoding &encoding){    
     // 1) Key switch to \ZZ_Q^{n+1}   
-    LWECT lwe_c_N(ms_from_gadget_to_par.from); 
-    LWECT lwe_c(ms_from_gadget_to_par.from); 
+    LWECT lwe_c_N(ms_from_keyswitch_to_par.from); 
+    LWECT lwe_c(ms_from_keyswitch_to_par.from); 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);  
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
     ms_from_gadget_to_tiny_par.switch_modulus(&lwe_c_N, &lwe_c_N); 
@@ -89,10 +95,11 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);   
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(lwe_ct_out);
+    ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
     // And again: 
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c, lwe_ct_out); 
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
-    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c); 
+    ms_from_keyswitch_to_par.switch_modulus(&lwe_c, &lwe_c); 
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N) 
     /// TODO: Do it through the LWECT class.... Unless the moduli don't fit..
     //lwe_c.add(&lwe_c, &lwe_c_N);
@@ -108,12 +115,13 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_in);
     // 4) Sample Extract   
     br_out->extract_lwe(lwe_ct_out); 
+    ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
 } 
 
 std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT *lwe_ct_in, PlaintextEncoding &encoding){   
     // 1) Key switch to \ZZ_Q^{n+1} 
-    LWECT lwe_c_N(ms_from_gadget_to_par.from);
-    LWECT lwe_c(ms_from_gadget_to_par.from);
+    LWECT lwe_c_N(ms_from_keyswitch_to_par.from);
+    LWECT lwe_c(ms_from_keyswitch_to_par.from);
     LWECT lwe_ct_out(key_switch_key->origin);
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
@@ -137,9 +145,10 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(&lwe_ct_out);
+    ms_from_extract_to_intermediate.switch_modulus(&lwe_ct_out, &lwe_ct_out);
     key_switch_key->lwe_to_lwe_key_switch(&lwe_c_N, lwe_ct_in);
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N! 
-    ms_from_gadget_to_par.switch_modulus(&lwe_c, &lwe_c);
+    ms_from_keyswitch_to_par.switch_modulus(&lwe_c, &lwe_c);
     // Add lwe_c + lwe_c_N (this should eliminate the msb in lwe_c_N)  
     for(int32_t i = 0; i < lwe_par->dim+1; ++i){
         lwe_c.ct[i] = (lwe_c.ct[i] + lwe_c_N.ct[i]) % lwe_par->modulus;
@@ -158,6 +167,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     for(std::shared_ptr<VectorCTAccumulator> i:  acc_in_vec){    
         br_out->post_rotation(br_temp, i);   
         br_temp->extract_lwe(&lwe_ct_out); 
+        ms_from_extract_to_intermediate.switch_modulus(&lwe_ct_out, &lwe_ct_out);
         out_vec.push_back(lwe_ct_out);  
     }  
     return out_vec;

@@ -29,11 +29,9 @@ class FunctionalBootstrapPublicKey{
     std::shared_ptr<LWEParam> lwe_par;  
     // Needed to build a special accumulators, like acc_one that is used in the amortized bootstrapping.
     std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
-
-    // Special accumulator for blind rotating just the Delta * 1. Its used for the amortized method given that is it supported.
-    //std::shared_ptr<VectorCTAccumulator> acc_one;
-    // Generated from lwe_par, lwe_par_tiny, and extract_lwe_par
-    LWEModSwitcher ms_from_gadget_to_par; 
+ 
+    LWEModSwitcher ms_from_extract_to_intermediate; 
+    LWEModSwitcher ms_from_keyswitch_to_par; 
  
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
     //std::shared_ptr<BlindRotateOutput> br_out;

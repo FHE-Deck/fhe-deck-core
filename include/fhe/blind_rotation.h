@@ -147,6 +147,8 @@ class BlindRotateOutputBuilder{
 
     public: 
 
+    virtual LWEParam* build_extract_lwe_param() = 0;
+
     virtual BlindRotateOutput* build() = 0; 
 
     template <class Archive>
@@ -166,6 +168,8 @@ class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
   
     RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEParam> param);
   
+    LWEParam* build_extract_lwe_param();
+
     BlindRotateOutput* build(); 
 
     template <class Archive>
@@ -191,6 +195,8 @@ class NTRUBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
     NTRUBlindRotateOutputBuilder() = default;
  
     NTRUBlindRotateOutputBuilder(std::shared_ptr<NTRUParam> param);
+
+    LWEParam* build_extract_lwe_param();
 
     BlindRotateOutput* build(); 
 
