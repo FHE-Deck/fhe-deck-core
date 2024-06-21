@@ -10,6 +10,7 @@
 #include "hexl/hexl.hpp"
 #include "utils.h"
 #include "polynomial.h"
+#include "polynomial_multiplication_engine_builder.h"
 #include "vector_ciphertext.h"
 #include "plaintext_encoding.h" 
  

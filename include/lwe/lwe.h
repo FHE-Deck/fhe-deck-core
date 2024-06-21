@@ -6,6 +6,8 @@
 #include <iostream> 
 #include "utils.h"
 #include "plaintext_encoding.h"
+#include "polynomial_multiplication_engine_builder.h"
+
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>

@@ -29,6 +29,8 @@ class PolynomialArrayCoefForm;
 class PolynomialArrayEvalForm;
 
 
+
+
 class PolynomialMultiplicationEngine{
 
     public: 
@@ -56,138 +58,7 @@ class PolynomialMultiplicationEngine{
     virtual void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2) = 0;
  
     virtual void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2) = 0;
-
-    /// TODO: I need a Multisum that Has two outputs - Polynomial *out, and Polynomial PolynomialArrayEvalForm of the first PolynomialArrayCoefForm
-    /// TODO: Then I need another multisum that takes a Gadget.
-};
-
-
-
-
-class PolynomialMultiplicationEngineBuilder{
-
-    public:
-    int64_t coef_modulus;
-    int64_t degree;
-    RingType ring;
-    PolynomialArithmetic arithmetic;
-    ModulusType mod_type;
-
-    bool is_init = false;
-
-    PolynomialMultiplicationEngineBuilder() = default;
-
-    void set_coef_modulus(int64_t coef_modulus);
-
-    void set_degree(int64_t degree);
-
-    void set_ring_type(RingType ring);
-
-    void set_polynomial_arithmetic(PolynomialArithmetic arithmetic);
-
-    void set_modulus_type(ModulusType mod_type);
-
-    std::shared_ptr<PolynomialMultiplicationEngine> build(); 
-};
-
-
-
-class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
-
-    public:
-
-    intel::hexl::NTT ntt; 
-    int32_t degree;
-    int64_t coef_modulus;
-
-    IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus);
-
-    PolynomialEvalForm* init_polynomial_eval_form(); 
-
-    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size);
  
-    void to_eval(PolynomialEvalForm *out, Polynomial *in); 
-
-    void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
-
-    void to_coef(Polynomial *out, PolynomialEvalForm *in);
-
-    void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
- 
-    void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
-    
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
-
-    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-};
-
-
-class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
-
-    public:
- 
-    FFTPlan engine; 
-
-    int32_t degree;
-    int64_t coef_modulus;
-
-    FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
-    
-    PolynomialEvalForm* init_polynomial_eval_form(); 
-
-    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size);
-
-    void to_eval(PolynomialEvalForm *out, Polynomial *in);
-    
-    void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
-
-    void to_coef(Polynomial *out, PolynomialEvalForm *in);
- 
-    void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
-  
-    void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
- 
-    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-};
-
-
-class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
-
-    public:
- 
-    FFTPlan engine; 
-
-    int32_t degree;
-    int64_t coef_modulus;
-
-    FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
-  
-    PolynomialEvalForm* init_polynomial_eval_form();
-
-    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size);
- 
-    void to_eval(PolynomialEvalForm *out, Polynomial *in);
- 
-    void to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in);
-
-    void to_coef(Polynomial *out, PolynomialEvalForm *in);
-  
-    void to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in);
-  
-    void mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2);
- 
-    void multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-
-    void multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2);
-
-    void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
-
 };
  
  
@@ -556,7 +427,7 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
 
     PolynomialArrayEvalFormFFTWComplex() = default;
 
-    PolynomialArrayEvalFormFFTWComplex(FFTWNegacyclicEngine* mul_engine, int32_t array_size);
+    PolynomialArrayEvalFormFFTWComplex(int32_t size, int32_t array_size);
   
     // NOTE: There is no modulus reduction here
     void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
@@ -600,7 +471,7 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
 
     PolynomialArrayEvalFormFFTWLongComplex() = default;
  
-    PolynomialArrayEvalFormFFTWLongComplex(FFTWLongNegacyclicEngine* mul_engine, int32_t array_size);
+    PolynomialArrayEvalFormFFTWLongComplex(int32_t size, int32_t array_size);
   
     // NOTE: There is no modulus reduction here
     void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
