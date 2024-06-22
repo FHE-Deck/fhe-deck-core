@@ -12,7 +12,7 @@ FFTWNegacyclicEngine::FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus)
 }
 
 PolynomialEvalForm* FFTWNegacyclicEngine::init_polynomial_eval_form(){
-    return new PolynomialEvalFormFFTWComplex(engine.init_fft_poly(), engine.plan_size, coef_modulus);
+    return new PolynomialEvalFormFFTWComplex(engine.init_fft_poly(), engine.plan_size);
 }
 
 PolynomialArrayEvalForm* FFTWNegacyclicEngine::init_polynomial_array_eval_form(int32_t array_size){
@@ -97,17 +97,15 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in
 }
 
 
-void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2){   
+void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in_1, PolynomialArrayEvalForm *in_2){    
     PolynomialArrayEvalFormFFTWComplex* in_1_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_1);
     PolynomialArrayEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(in_2);
     fftw_complex* in_1_temp = in_1_cast->eval_fftw;
     fftw_complex* in_2_temp = in_2_cast->eval_fftw;
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
-    
-    //engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
-    engine.mul_eval_form(fft_multisum_eval_new, in_1_temp, in_2_temp);  
- 
+     
+    engine.mul_eval_form(fft_multisum_eval_new, in_1_temp, in_2_temp);   
     for(int32_t i = 1; i < in_2_cast->array_size; ++i){
         in_1_temp = &in_1_cast->eval_fftw[i * in_1_cast->size];
         in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
@@ -115,8 +113,9 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in
         engine.mul_eval_form(fft_prod_new, in_1_temp, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     } 
-    engine.to_coef_form(out->coefs, fft_multisum_eval_new);
-    Utils::array_mod_form(out->coefs, out->coefs, out->degree, in_1->coef_modulus); 
+    
+    engine.to_coef_form(out->coefs, fft_multisum_eval_new); 
+    Utils::array_mod_form(out->coefs, out->coefs, out->degree, out->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -144,7 +143,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEva
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     } 
     engine.to_coef_form(out_multisum->coefs, fft_multisum_eval_new);
-    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, in_1->coef_modulus); 
+    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, out_multisum->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -158,9 +157,9 @@ FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_
     engine = FFTPlan(negacyclic, degree, true);  
     this->type = long_double_fft;
 }
- 
+  
 PolynomialEvalForm* FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
-    return new PolynomialEvalFormFFTWLongComplex(engine.init_fft_poly_l(), engine.plan_size, coef_modulus);
+    return new PolynomialEvalFormFFTWLongComplex(engine.init_fft_poly_l(), engine.plan_size);
 }
 
 PolynomialArrayEvalForm* FFTWLongNegacyclicEngine::init_polynomial_array_eval_form(int32_t size){
@@ -231,7 +230,7 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm
         engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
     engine.to_coef_form_l(out->coefs, fft_multisum_eval_new);
-    Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, in_1->coef_modulus); 
+    Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, out->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new;  
 }
@@ -254,7 +253,7 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm
         engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
     engine.to_coef_form_l(out->coefs, fft_multisum_eval_new);
-    Utils::array_mod_form(out->coefs, out->coefs, out->degree, in_1->coef_modulus); 
+    Utils::array_mod_form(out->coefs, out->coefs, out->degree, out->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new;  
 }
@@ -281,7 +280,7 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArra
         engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }
     engine.to_coef_form_l(out_multisum->coefs, fft_multisum_eval_new);
-    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, in_1->coef_modulus); 
+    Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, out_multisum->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new;  
 }

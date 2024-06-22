@@ -66,10 +66,7 @@ void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm *out){
         out_cast->eval_long[i] = -this->eval_long[i];
     } 
 }
- 
-void PolynomialEvalFormLongInteger::mod_reduce(int64_t Q){
-    Utils::array_mod_form(this->eval_long, this->eval_long, size, Q);  
-} 
+  
 
 PolynomialEvalFormFFTWComplex::~PolynomialEvalFormFFTWComplex(){
     if(is_init){
@@ -77,9 +74,8 @@ PolynomialEvalFormFFTWComplex::~PolynomialEvalFormFFTWComplex(){
     }
 }
  
-PolynomialEvalFormFFTWComplex::PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size, int64_t coef_modulus){
-    this->eval_fftw = eval_fftw;
-    this->coef_modulus = coef_modulus;
+PolynomialEvalFormFFTWComplex::PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size){
+    this->eval_fftw = eval_fftw; 
     this->is_init = true; 
     this->size = size; 
 }
@@ -124,9 +120,7 @@ void PolynomialEvalFormFFTWComplex::neg(PolynomialEvalForm *out){
         out_cast->eval_fftw[i][1] = -this->eval_fftw[i][1];
     } 
 }
-
-void PolynomialEvalFormFFTWComplex::mod_reduce(int64_t Q){ 
-}
+ 
 
 PolynomialEvalFormFFTWLongComplex::~PolynomialEvalFormFFTWLongComplex(){
     if(is_init){
@@ -134,9 +128,8 @@ PolynomialEvalFormFFTWLongComplex::~PolynomialEvalFormFFTWLongComplex(){
     }
 }
   
-PolynomialEvalFormFFTWLongComplex::PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size, int64_t coef_modulus){
-    this->eval_fftwl = eval_fftwl;
-    this->coef_modulus = coef_modulus;
+PolynomialEvalFormFFTWLongComplex::PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size){
+    this->eval_fftwl = eval_fftwl; 
     this->is_init = true; 
     this->size = size; 
 }
@@ -181,10 +174,7 @@ void PolynomialEvalFormFFTWLongComplex::neg(PolynomialEvalForm *out){
             out_cast->eval_fftwl[i][1] = -this->eval_fftwl[i][1];
         } 
 }
- 
-void PolynomialEvalFormFFTWLongComplex::mod_reduce(int64_t Q){
-}
- 
+  
 Polynomial::~Polynomial(){ 
     if(this->is_init){
         delete[] coefs; 
@@ -527,10 +517,8 @@ PolynomialArrayEvalFormFFTWComplex::~PolynomialArrayEvalFormFFTWComplex(){
 }   
 
 PolynomialArrayEvalFormFFTWComplex::PolynomialArrayEvalFormFFTWComplex(int32_t size, int32_t array_size){ 
-    this->array_size = array_size;
-    //this->size = mul_engine->engine.plan_size; 
-    this->size = size;
-    //this->coef_modulus = mul_engine->coef_modulus;
+    this->array_size = array_size; 
+    this->size = size; 
     this->full_size = this->size * array_size; 
     this->eval_fftw = new fftw_complex[full_size];   
     this->is_init = true;
@@ -572,8 +560,10 @@ void PolynomialArrayEvalFormFFTWComplex::neg(PolynomialArrayEvalForm *out){
         } 
 }
 
+/*
 void PolynomialArrayEvalFormFFTWComplex::mod_reduce(int64_t modulus){ 
 }
+*/
 
 
 PolynomialArrayEvalFormFFTWLongComplex::~PolynomialArrayEvalFormFFTWLongComplex(){
@@ -583,10 +573,8 @@ PolynomialArrayEvalFormFFTWLongComplex::~PolynomialArrayEvalFormFFTWLongComplex(
 }
 
 PolynomialArrayEvalFormFFTWLongComplex::PolynomialArrayEvalFormFFTWLongComplex(int32_t size, int32_t array_size){ 
-    this->array_size = array_size;
-    //this->size = mul_engine->engine.plan_size;
-    this->size = size;
-    //this->coef_modulus = mul_engine->coef_modulus;
+    this->array_size = array_size; 
+    this->size = size; 
     this->full_size = this->size * array_size; 
     this->eval_fftwl = new fftwl_complex[full_size];  
     this->is_init = true;
@@ -625,6 +613,4 @@ void PolynomialArrayEvalFormFFTWLongComplex::neg(PolynomialArrayEvalForm *out){
         out_cast->eval_fftwl[i][1] = -this->eval_fftwl[i][1];
     } 
 }
-
-void PolynomialArrayEvalFormFFTWLongComplex::mod_reduce(int64_t modulus){
-}
+ 

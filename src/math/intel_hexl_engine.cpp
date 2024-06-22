@@ -62,7 +62,7 @@ void IntelHexlNTTEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, 
     intel::hexl::EltwiseMultMod((uint64_t*) out_cast->eval_long, 
                 (uint64_t*) in_1_cast->eval_long, 
                 (uint64_t*) in_2_cast->eval_long, 
-                out->size, out->coef_modulus, 1); 
+                out_cast->size, out_cast->coef_modulus, 1); 
 }
  
 void IntelHexlNTTEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2){   

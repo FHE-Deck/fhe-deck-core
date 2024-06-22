@@ -3,9 +3,7 @@
 using namespace fhe_deck;
 
 RLWECT::RLWECT(std::shared_ptr<RLWEParam> param){
-    this->param = param; 
-    /// TODO: Is this more readable/faster/better than just using a smart pointer for a and b? Or just standard build? 
-    // With smart pointer its a little shit
+    this->param = param;   
     this->a = Polynomial(param->size, param->coef_modulus, param->mul_engine); 
     this->b = Polynomial(param->size, param->coef_modulus, param->mul_engine);   
 }
@@ -130,13 +128,11 @@ void RLWEParam::init_mul_engine(){
     this->mul_engine = mul_engine_builder.build(); 
     this->is_mul_engine_init = true;
 }
-
-
+ 
 VectorCT* RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){ 
     return new RLWECT(std::static_pointer_cast<RLWEParam>(param));
 }
-
-  
+ 
 RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk){
     this->rlwe_param = rlwe_param;
     this->gadget = gadget;
@@ -196,23 +192,22 @@ RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other){
     return *this;
 }
   
-void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){
+void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){ 
     RLWECT* out_ptr = static_cast<RLWECT*>(out);
     const RLWECT* ct_ptr = static_cast<const RLWECT*>(ct);
     gadget->sample(deter_ct_a_dec, ct_ptr->a.coefs);   
-    RLWECT out_minus(rlwe_param);
-    rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get()); 
-    rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get()); 
+    RLWECT out_minus(rlwe_param); 
+    rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get());  
+    rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get());  
 
-    gadget->sample(deter_ct_b_dec, ct_ptr->b.coefs);   
-    rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_b_dec_poly, array_eval_b.get()); 
-    rlwe_param->mul_engine->multisum(&out_ptr->a, decomp_poly_array_eval_form.get(), array_eval_a.get());
-    out->add(out, &out_minus); 
+    gadget->sample(deter_ct_b_dec, ct_ptr->b.coefs);    
+    rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_b_dec_poly, array_eval_b.get());  
+    rlwe_param->mul_engine->multisum(&out_ptr->a, decomp_poly_array_eval_form.get(), array_eval_a.get()); 
+    out->add(out, &out_minus);  
 }
-
-  
+ 
 void RLWEGadgetCT::init_gadget_decomp_tables(){ 
-    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
+    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits)); 
     /// TODO: Actuall both decomposition tables is overkill. We can realize everything with just one, and save on memory.
     deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
     deter_ct_b_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 

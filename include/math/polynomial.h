@@ -27,9 +27,7 @@ class PolynomialEvalForm;
 // Forward declarations of PolynomialArrayCoefForm and PolynomialArrayEvalForm classes, as these classes refer to each other.
 class PolynomialArrayCoefForm;
 class PolynomialArrayEvalForm;
-
-
-
+ 
 
 class PolynomialMultiplicationEngine{
 
@@ -66,26 +64,20 @@ class PolynomialEvalForm{
 
     public:
  
-    int32_t size;
-    int64_t coef_modulus;
+    int32_t size; 
  
     virtual ~PolynomialEvalForm() = default;
 
     virtual void zeroize() = 0;
-
-    /// TODO: The thing with this modulus reduction is weird and not necessarily true. In NTT there is modulus reduction.
-
-    /// NOTE: There is no modulus reduction here
+  
     virtual void add(PolynomialEvalForm *out, PolynomialEvalForm *other) = 0;
-    /// NOTE: There is no modulus reduction here
+    
     virtual void sub(PolynomialEvalForm *out, PolynomialEvalForm *other) = 0;
-    /// NOTE: There is no modulus reduction here
+    
     virtual void mul(PolynomialEvalForm *out, int64_t scalar) = 0; 
-    /// NOTE: There is no modulus reduction here
+    
     virtual void neg(PolynomialEvalForm *out) = 0; 
-
-    /// TODO: Annother issue with this mod_reduce is its inconsistent, with the style as it should have on output.
-    virtual void mod_reduce(int64_t Q) = 0;
+ 
 };
 
 class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
@@ -94,6 +86,7 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
   
     int64_t* eval_long; 
     bool is_init = false;
+    int64_t coef_modulus;
 
     ~PolynomialEvalFormLongInteger();
 
@@ -108,8 +101,7 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
     void mul(PolynomialEvalForm *out, int64_t scalar);
 
     void neg(PolynomialEvalForm *out);
-
-    void mod_reduce(int64_t Q); 
+ 
 };
 
 class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
@@ -121,7 +113,7 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
 
     ~PolynomialEvalFormFFTWComplex();	
 
-    PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size, int64_t coef_modulus);
+    PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size);
 
     void zeroize();
 
@@ -132,8 +124,7 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
     void mul(PolynomialEvalForm *out, int64_t scalar);
 
     void neg(PolynomialEvalForm *out);
-
-    void mod_reduce(int64_t Q); 
+ 
 };
 
 class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
@@ -145,7 +136,7 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
 
     ~PolynomialEvalFormFFTWLongComplex();	
 
-    PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size, int64_t coef_modulus);
+    PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size);
 
     void zeroize();
 
@@ -156,8 +147,7 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
     void mul(PolynomialEvalForm *out, int64_t scalar);
 
     void neg(PolynomialEvalForm *out);
-
-    void mod_reduce(int64_t Q); 
+ 
 };
 
 class PolynomialInversionEngine{
@@ -177,10 +167,10 @@ class Polynomial{
     int64_t* coefs;
     bool is_init = false;
 
-    // Coefficient Modulus Q
+    // Coefficient Modulus  
     int64_t coef_modulus;
     int32_t coef_modulus_bit_size;
-    // Degree
+    // Degree of the polynomial
     int32_t degree;
 
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
@@ -338,33 +328,27 @@ class PolynomialArrayEvalForm{
 
     // full_size = size * array_size
     int32_t full_size;
-
-    int64_t coef_modulus;
     
     virtual ~PolynomialArrayEvalForm() = default; 
   
-    // NOTE: There is no modulus reduction here
     virtual void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other) = 0;
-    // NOTE: There is no modulus reduction here
+    
     virtual void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other) = 0;
-    // NOTE: There is no modulus reduction here
+    
     virtual void mul(PolynomialArrayEvalForm *out, int64_t scalar) = 0;
- 
-    // NOTE: There is no modulus reduction here
-    virtual void neg(PolynomialArrayEvalForm *out) = 0;
-
-    virtual void mod_reduce(int64_t modulus) = 0;   
+  
+    virtual void neg(PolynomialArrayEvalForm *out) = 0; 
    
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(coef_modulus, size, array_size);  
+        ar(size, array_size);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(coef_modulus, size, array_size);   
+        ar(size, array_size);   
         full_size = size * array_size;
     }    
 
@@ -379,19 +363,20 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
 
     bool is_init = false; 
 
+    int64_t coef_modulus;
+
     ~PolynomialArrayEvalFormLong();
 
     PolynomialArrayEvalFormLong() = default;
  
     PolynomialArrayEvalFormLong(int32_t array_size, int64_t degree, int64_t coef_modulus);
   
-    // NOTE: There is no modulus reduction here
     void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void mul(PolynomialArrayEvalForm *out, int64_t scalar); 
-    // NOTE: There is no modulus reduction here
+    
     void neg(PolynomialArrayEvalForm *out);
 
     void mod_reduce(int64_t modulus); 
@@ -399,7 +384,8 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(cereal::base_class<PolynomialArrayEvalForm>(this));     
+        ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
+        ar(coef_modulus); 
         ar(cereal::binary_data(eval_long, sizeof(int64_t) * full_size));  
     }
         
@@ -407,6 +393,7 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
     void load( Archive & ar )
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));  
+        ar(coef_modulus); 
         full_size = size * array_size;
         this->eval_long = new int64_t[full_size];
         ar(cereal::binary_data(eval_long, sizeof(int64_t) * full_size));  
@@ -429,17 +416,14 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
 
     PolynomialArrayEvalFormFFTWComplex(int32_t size, int32_t array_size);
   
-    // NOTE: There is no modulus reduction here
     void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void mul(PolynomialArrayEvalForm *out, int64_t scalar); 
-    // NOTE: There is no modulus reduction here
+    
     void neg(PolynomialArrayEvalForm *out);
-
-    void mod_reduce(int64_t modulus); 
-
+  
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -473,18 +457,15 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
  
     PolynomialArrayEvalFormFFTWLongComplex(int32_t size, int32_t array_size);
   
-    // NOTE: There is no modulus reduction here
+  
     void add(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void sub(PolynomialArrayEvalForm *out, PolynomialArrayEvalForm *other);
-    // NOTE: There is no modulus reduction here
+    
     void mul(PolynomialArrayEvalForm *out, int64_t scalar);
- 
-    // NOTE: There is no modulus reduction here
+  
     void neg(PolynomialArrayEvalForm *out);
-
-    void mod_reduce(int64_t modulus); 
-
+  
     template <class Archive>
     void save( Archive & ar ) const
     { 

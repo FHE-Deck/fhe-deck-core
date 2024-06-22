@@ -1047,7 +1047,7 @@ int main(){
  
     test_for_signed_limied_short_int(FHENamedParams::tfhe_11_NTT);
  
-    //test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_B);
+    test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_B);
 
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     

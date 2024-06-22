@@ -11,8 +11,7 @@ VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, 
         this->rot_poly_amortized.to_amortization_form();
     }
 }
-
-
+ 
 VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, bool amortization){
     this->acc_content = acc_content;
     this->amortization = amortization; 
