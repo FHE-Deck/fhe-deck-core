@@ -135,12 +135,14 @@ LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<L
 }
   
 void LWEModSwitcher::switch_modulus(LWECT *out_ct, LWECT *in_ct){  
-    if(long_arithmetic){
+    if(long_arithmetic){ 
+        long double long_temp; 
         for(int32_t i = 0; i < ct_size; ++i){
             long_temp = long_Q_to * (long double)in_ct->ct[i];
             out_ct->ct[i] = (int64_t)roundl(long_temp/long_Q_from); 
         } 
-    }else{ 
+    }else{  
+        double temp; 
         for(int32_t i = 0; i < ct_size; ++i){
             // Compute multiplicaiton on integers, and then convert to double
             temp = to->modulus * in_ct->ct[i];
@@ -238,15 +240,15 @@ LWECT* LWESK::encrypt(int64_t m){
     return out;
 }
  
-void LWESK::encrypt(LWECT *in, int64_t m){     
-    in->ct[0] = error_dist->next() + m; 
+void LWESK::encrypt(LWECT *out, int64_t m){     
+    out->ct[0] = error_dist->next() + m; 
     for(int32_t i=1; i < param->dim+1; ++i){      
-        /// TODO: I should assume the ct and key are in modular form. Then doing it here is not necessary.
-        in->ct[i] = Utils::integer_mod_form(unif_dist->next(), param->modulus); 
+        /// TODO: I should assume the out and key are in modular form. Then doing it here is not necessary.
+        out->ct[i] = Utils::integer_mod_form(unif_dist->next(), param->modulus); 
         int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);
-        int64_t c = Utils::integer_mod_form(in->ct[i], param->modulus);
-        in->ct[0] -= multiplier->mul(k,  c); 
-        in->ct[0] = Utils::integer_mod_form(in->ct[0], param->modulus); 
+        int64_t c = Utils::integer_mod_form(out->ct[i], param->modulus);
+        out->ct[0] -= multiplier->mul(k,  c); 
+        out->ct[0] = Utils::integer_mod_form(out->ct[0], param->modulus); 
     }   
 }
   
