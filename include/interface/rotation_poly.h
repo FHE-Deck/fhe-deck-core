@@ -16,6 +16,7 @@ public:
     PlaintextEncoding output_encoding;
     bool is_encoded = true; 
     bool is_amortized_form = false;
+    bool is_init = false;
 
     ~RotationPoly();
 

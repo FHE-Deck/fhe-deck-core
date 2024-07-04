@@ -38,6 +38,27 @@ class HomomorphicAccumulator{
     }
 };
 
+ /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
+class FunctionalAccumulator : public VectorCTAccumulator {
+
+    public:
+        using BootFunction = std::function<long(long,long)>;
+
+        Polynomial poly_msb_0;
+        Polynomial poly_msb_1;
+
+        BootFunction func;
+        long (*func_ptr)(long message, long plaintext_space);
+
+        // debug
+        Polynomial sk;
+
+        FunctionalAccumulator(const BootFunction& boot_F, long dim, long coef_modulus, PlaintextEncoding encoding);
+
+        FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim, long coef_modulus, PlaintextEncoding encoding); 
+};
+
+
 class AbstractAccumulatorBuilder{
 
     public:

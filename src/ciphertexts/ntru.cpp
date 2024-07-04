@@ -2,19 +2,19 @@
 
 using namespace fhe_deck;
  
-NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
+NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus;
-    this->mod_type = mod_type; 
+    //this->mod_type = mod_type; 
     this->size = ring_degree;  
     this->ring = ring;  
     this->arithmetic = arithmetic;   
     init_mul_engine();
 }
         
-NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus;
-    this->mod_type = mod_type; 
+    //this->mod_type = mod_type; 
     this->mul_engine = mul_engine; 
     this->arithmetic = mul_engine->type;
     this->is_mul_engine_init = true;
@@ -36,7 +36,7 @@ void NTRUParam::init_mul_engine(){
     mul_engine_builder.set_degree(size);
     mul_engine_builder.set_polynomial_arithmetic(arithmetic);
     mul_engine_builder.set_ring_type(ring);
-    mul_engine_builder.set_modulus_type(mod_type);
+    //mul_engine_builder.set_modulus_type(mod_type);
     this->mul_engine = mul_engine_builder.build(); 
     this->is_mul_engine_init = true;
 }

@@ -5,8 +5,7 @@
 #include "polynomial.h"
 
 namespace fhe_deck{
-  
-
+   
 class PolynomialMultiplicationEngineBuilder{
 
     public:

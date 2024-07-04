@@ -5,8 +5,7 @@ using namespace fhe_deck;
  
 
 GINXBlindRotationKey::GINXBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk){ 
-    this->lwe_par = lwe_sk->param;   
-    //this->next_acc = gadget_sk->vector_ct_param->init_ct(gadget_sk->vector_ct_param);
+    this->lwe_par = lwe_sk->param;    
     this->vector_ct_param = gadget_sk->vector_ct_param;
 
     // The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
@@ -34,8 +33,7 @@ void GINXBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCT
     }      
 }
 
-uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
-        //sizeof_ext_s = lwe_par->dim;
+uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){ 
         uint64_t* ext_s = new uint64_t[lwe_par->dim];
         for(int32_t i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];
@@ -43,8 +41,7 @@ uint64_t* GINXBlindRotationKey::init_binary_extended_lwe_key(std::shared_ptr<LWE
         return ext_s;
 }
 
-uint64_t* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){
-        //sizeof_ext_s = lwe_par->dim;
+uint64_t* GINXBlindRotationKey::init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk){ 
         uint64_t*  ext_s = new uint64_t[lwe_par->dim];
         for(int32_t i = 0; i < lwe_par->dim; ++i){
             ext_s[i] = lwe_sk->key[i];

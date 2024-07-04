@@ -287,8 +287,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
                 return 0;
         }
     }; 
-    
-    
+     
     std::cout << "genrate_lut" << std::endl;
     HomomorphicAccumulator lut_fun_ham = context.genrate_lut(fun_ham); 
 

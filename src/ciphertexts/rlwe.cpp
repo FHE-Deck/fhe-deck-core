@@ -76,6 +76,11 @@ void RLWECT::mul(RLWECT *out, Polynomial *x){
     this->a.mul(&out->a, x, param->mul_engine);
     this->b.mul(&out->b, x, param->mul_engine); 
 }
+
+void RLWECT::mul(RLWECT *out, int64_t x){ 
+    this->a.mul(&out->a, x);
+    this->b.mul(&out->b, x); 
+}
  
 std::string RLWECT::to_string(){
     std::string out = "[" + Utils::to_string(b.coefs, param->size) + ", " + Utils::to_string(a.coefs, param->size) + "]";
@@ -89,23 +94,28 @@ void RLWECT::extract_lwe(LWECT *lwe_ct_out){
         lwe_ct_out->ct[i+1] = -this->a.coefs[this->param->size - i];
     } 
 }
+
+void RLWECT::extract_lwe(LWECT *lwe_ct_out, uint32_t position){ 
+    RLWECT tmp(*this);
+    tmp.negacyclic_rotate(&tmp, (a.degree - position) % a.degree);
+    tmp.neg(&tmp); 
+    tmp.extract_lwe(lwe_ct_out);
+}
+
   
-RLWEParam::RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, ModulusType mod_type, PolynomialArithmetic arithmetic){
-    this->coef_modulus = coef_modulus;
-    this->mod_type = mod_type; 
+RLWEParam::RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus,  PolynomialArithmetic arithmetic){
+    this->coef_modulus = coef_modulus; 
     this->size = ring_degree;  
     this->ring = ring;  
     this->arithmetic = arithmetic;   
     init_mul_engine();
 }
         
-RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree, ModulusType mod_type, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree,  std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
-    this->coef_modulus = coef_modulus;
-    this->mod_type = mod_type; 
+    this->coef_modulus = coef_modulus; 
     this->mul_engine = mul_engine; 
-    this->arithmetic = mul_engine->type;
-    this->is_mul_engine_init = true;
+    this->arithmetic = mul_engine->type; 
 }
  
 RLWEParam::RLWEParam(RLWEParam &other){ 
@@ -124,9 +134,9 @@ void RLWEParam::init_mul_engine(){
     mul_engine_builder.set_degree(size);
     mul_engine_builder.set_polynomial_arithmetic(arithmetic);
     mul_engine_builder.set_ring_type(ring);
-    mul_engine_builder.set_modulus_type(mod_type);
+    //mul_engine_builder.set_modulus_type(mod_type);
     this->mul_engine = mul_engine_builder.build(); 
-    this->is_mul_engine_init = true;
+    //this->is_mul_engine_init = true;
 }
  
 VectorCT* RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){ 

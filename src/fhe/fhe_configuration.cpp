@@ -3,8 +3,7 @@
 using namespace fhe_deck;
 
 /*
-=========================================================== TFHEKeyGenerator (Named Parameters) =================================================
-
+=========================================================== TFHEKeyGenerator (Named Parameters) ================================================= 
 */
 
 FHEConfiguration::FHEConfiguration(FHENamedParams name){
@@ -26,6 +25,8 @@ void FHEConfiguration::generate_keys(){
         init_tfhe_12_NTT_amortized();
     }else if(eval_key.name == FHENamedParams::ntrunium_12_NTT){
         init_ntrunium_12_NTT();
+    }else if (eval_key.name == FHENamedParams::tfhe_11_KS) {
+        init_tfhe_11_KS();
     }
     else{ 
         throw std::runtime_error("TFHEKeyGenerator::TFHEKeyGenerator: Parameter set note supported! Perhaps the chosen parameter set requires additional dependencies to be compiled?"); 
@@ -48,7 +49,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary; 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -141,7 +142,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -224,7 +225,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     double stddev_masking = 4010391;
     KeyDistribution rlwe_key_type = ternary;
  
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, double_fft));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, double_fft));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -301,7 +302,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     double stddev_masking = 4010391;
     KeyDistribution rlwe_key_type = ternary;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, double_fft));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, double_fft));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -381,7 +382,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     // stddev_simul approx  2**(11.22)
     double stddev_masking = 8192;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
@@ -468,7 +469,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     // stddev_simul approx  2**(14)
     double stddev_masking = 16384;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, any, hexl_ntt)); 
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt)); 
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
@@ -548,7 +549,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     int32_t masking_size = 8192;
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192; 
-    std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, any, hexl_ntt));
+    std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, hexl_ntt));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
@@ -612,3 +613,91 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     eval_key.is_sanitization_supported = true;
 } 
  
+
+
+
+void FHEConfiguration::init_tfhe_11_KS() {
+    // 2**11
+    int degree = 2048;
+    // 2**36
+    //long coef_modulus = 1l << 28;
+    long coef_modulus = 2251799813640193;
+    double rlwe_stddev = 3.19;
+    // 2**4
+    long gadget_decomp_base = 1 << 17;
+    int masking_size = 3370;
+    double stddev_masking = 0;
+    KeyDistribution rlwe_key_type = ternary;
+
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
+    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
+    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
+    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget));
+    //sk_arithmetic = double_fft;
+
+    // 2**9 + 430
+    int lwe_dim = 900;
+    int lwe_ks_decomp_base = 1<<2;
+    // 2**(14)
+    double lwe_stddev = 1 << 12;
+    std::shared_ptr<LWEParam> lwe_param = std::make_shared<LWEParam>(lwe_dim, coef_modulus);
+    //std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::make_shared<LWEGadgetParam>(lwe_param, lwe_ks_decomp_base);
+    //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base);
+
+    eval_key.default_encoding = PlaintextEncoding(full_domain, 32, coef_modulus);
+
+    /// =================== Generate Secret keys
+
+    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
+    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary));
+
+    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base));
+    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation.
+    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
+    // lwe_sk after modulus switching to 2*N (for negacyclic ring).
+    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2));
+    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
+    // This key is the main decryption key for the scheme.
+    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
+    //std::cout << this->secret_key->key[0] << " " << rlwe->sk_poly.coefs[0] << std::endl;
+
+ 
+    /// =================== Generate Public Keys
+
+    long rlwe_base = 1 << 4;
+    std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
+    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
+
+
+    // Key Switching Key Gen
+    auto *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk);
+    auto *rlwe_ksk = new LWEToRLWEKeySwitchKey(this->secret_key, rlwe_gadget_sk_rksk);
+    // Masking Key Gen
+    //this->encrypt_public_key = std::make_shared<LWEPublicKey>(secret_key, masking_size, stddev_masking);
+    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
+    // The blind rotation key
+    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, g_lwe);
+    // Init Accumulator builder
+    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    // Build the public key
+    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
+    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
+    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(rlwe_param);
+    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new KluczniakSchildFunctionalBootstrapPublicKey(
+            lwe_param_rot,
+            lwe_param_tiny,
+            blind_rotation_key,
+            ks_public_key,
+            rlwe_ksk,
+            blind_rotate_output_builder,
+            eval_key.accumulator_builder));
+
+    this->is_secret_key_set = true;
+    eval_key.is_encrypt_pk_set = true;
+    eval_key.is_bootstrap_pk_set = true;
+    eval_key.is_sanitization_supported = true;
+}
+
+

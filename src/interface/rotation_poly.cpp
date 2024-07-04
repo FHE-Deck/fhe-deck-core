@@ -3,7 +3,9 @@
 using namespace fhe_deck;
 
 RotationPoly::~RotationPoly(){
-    delete[] this->coefs;
+    if(is_init){ 
+        delete[] this->coefs;
+    }
 }
 
 RotationPoly::RotationPoly(const RotationPoly &poly){ 
@@ -14,17 +16,21 @@ RotationPoly::RotationPoly(const RotationPoly &poly){
     for(int32_t i = 0; i < this->degree; ++i){   
         this->coefs[i] = poly.coefs[i]; 
     } 
+    this->is_init = true;
 }
 
 
 RotationPoly& RotationPoly::operator=(const RotationPoly other){
-    this->coefs = new int64_t[other.degree];
+    if(!this->is_init){  
+        this->coefs = new int64_t[other.degree];
+    }
     this->output_encoding = other.output_encoding;
     this->coef_modulus = other.coef_modulus;
     this->degree = other.degree; 
     for(int32_t i = 0; i < this->degree; ++i){   
         this->coefs[i] = other.coefs[i]; 
     } 
+    this->is_init = true;
     return *this;
 }
 
@@ -58,6 +64,7 @@ RotationPoly::RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space
         coefs[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
+    this->is_init = true;
 }
 
 RotationPoly::RotationPoly(int64_t (*f)(int64_t message), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){
@@ -90,6 +97,7 @@ RotationPoly::RotationPoly(int64_t (*f)(int64_t message), int64_t degree, Plaint
         coefs[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
+    this->is_init = true;
 }
   
 void RotationPoly::encode(){
@@ -154,6 +162,7 @@ RotationPoly RotationPoly::rot_msb(int32_t t, int64_t N, int64_t Q){
     out.degree = N;
     out.coef_modulus = Q;
     out.coefs = acc;
+    out.is_init = true;
     return out;
 }
 
@@ -166,6 +175,7 @@ RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){
     out.degree = N; 
     out.coef_modulus = Q;
     out.coefs = acc;
+    out.is_init = true;
     return out;
 }
  

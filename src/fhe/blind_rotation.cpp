@@ -32,12 +32,90 @@ VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator ot
     return *this;
 }
   
+
+ // Added by leo 
+ /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
+ FunctionalAccumulator::FunctionalAccumulator(const BootFunction& boot_F, long dim,
+                                              long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
+         nullptr /* DANGER */, false) {
+    // TODO: for now we assume that this accumulator is only used for FDFB-2
+
+    func = boot_F;
+    func_ptr = nullptr;
+
+    Polynomial a(dim, coef_modulus);
+    Polynomial b(dim, coef_modulus);
+    Polynomial fake_poly(2 * dim, coef_modulus);
+    auto t = encoding.plaintext_space;
+    auto t2 = t / 2;
+
+    auto skip = dim / t2;
+
+
+    a.zeroize();
+    b.zeroize();
+    fake_poly.zeroize();
+    for(long i = 0; i < t; i++) {
+        auto x_i = (i) % t;
+        auto f_i = boot_F(x_i, t);
+        auto idx = (t - (i+1)) % t;
+
+        fake_poly.coefs[idx * skip] = f_i;
+    }
+    Utils::array_mod_form(b.coefs, fake_poly.coefs + dim, dim, coef_modulus);
+    Utils::array_mod_form(a.coefs, fake_poly.coefs , dim, coef_modulus);
+
+    a.neg(&a);
+    b.neg(&b);
+
+    poly_msb_0 = a;
+    poly_msb_1 = b; 
+}
+ 
+ /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
+FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim,
+                                             long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
+        nullptr, false) {
+    // TODO: for now we assume that this accumulator is only used for FDFB-2
+
+    func_ptr = f; 
+    Polynomial a(dim, coef_modulus);
+    Polynomial b(dim, coef_modulus);
+    Polynomial fake_poly(2 * dim, coef_modulus);
+    auto t = encoding.plaintext_space;
+    auto t2 = t / 2;
+
+    auto skip = dim / t2;
+
+
+    a.zeroize();
+    b.zeroize();
+    fake_poly.zeroize();
+    for(long i = 0; i < t; i++) {
+        auto x_i = (i) % t;
+        auto f_i = func_ptr(x_i, t);
+        auto idx = (t - (i+1)) % t;
+
+        fake_poly.coefs[idx * skip] = f_i;
+    }
+    Utils::array_mod_form(b.coefs, fake_poly.coefs + dim, dim, coef_modulus);
+    Utils::array_mod_form(a.coefs, fake_poly.coefs , dim, coef_modulus);
+
+    a.neg(&a);
+    b.neg(&b);
+
+    poly_msb_0 = a;
+    poly_msb_1 = b; 
+}
+
+
+
 RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
     this->param = param;
 }
 
 VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding){ 
-    RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
+    RotationPoly poly(f, this->param->size, output_encoding);   
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
     acc_ptr->b = poly;  
@@ -45,7 +123,7 @@ VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(in
 }
 
 VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);  
+    RotationPoly poly(f, this->param->size, output_encoding);  
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
     acc_ptr->b = poly;  

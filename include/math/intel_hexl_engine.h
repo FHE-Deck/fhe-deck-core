@@ -1,7 +1,7 @@
 #ifndef INTEL_HEXL_ENGINE_H
 #define INTEL_HEXL_ENGINE_H
 
- #include "polynomial.h"   
+#include "polynomial.h"   
 
 namespace fhe_deck{
    
@@ -35,8 +35,7 @@ class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
 
     void multisum(Polynomial *out_multisum, PolynomialArrayEvalForm *out_in_1_eval, PolynomialArrayCoefForm *in_1, PolynomialArrayEvalForm *in_2);
 };
-
-
+ 
 }
 
 #endif
