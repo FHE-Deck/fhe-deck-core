@@ -9,6 +9,9 @@
 
 namespace fhe_deck{
 
+/**
+ * @brief This class is a wrapper around the FFTW library. It is used to compute the FFT of a polynomial in the ring Z[X]/(X^N+1) or Z[X]/(X^N-1)
+ */
 class FFTPlan{
 
     public:

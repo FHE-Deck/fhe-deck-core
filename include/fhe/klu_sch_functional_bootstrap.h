@@ -4,8 +4,10 @@
 #include "functional_bootstrap.h"
 
 namespace fhe_deck{
-
-// Here comes the implementation of the Kluczniak Schild Functional Bootstrapping from an upcomming paper. 
+ 
+/** 
+ * Here comes the implementation of the Kluczniak Schild Functional Bootstrapping from an upcomming paper. 
+ */
 class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     public:  

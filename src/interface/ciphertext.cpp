@@ -46,20 +46,7 @@ Ciphertext& Ciphertext::operator=(const Ciphertext other){
     }  
     return *this;
 }
-
-
-Ciphertext::Ciphertext(Ciphertext &other){
-    this->encoding = other.encoding;
-    if(other.is_lwe_ct){
-        this->lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone());
-        this->is_lwe_ct = true;
-        this->is_init = true; 
-        this->context = other.context;
-    }else{
-        throw std::logic_error("Ciphertext type not supported!");
-    }
-}
-
+ 
 void Ciphertext::add(Ciphertext* ct){
     if(is_lwe_ct){ 
         this->lwe_c->add(this->lwe_c.get(), ct->lwe_c.get());

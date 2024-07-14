@@ -6,6 +6,9 @@
 
 namespace fhe_deck{
    
+/**
+ * @brief This class is used to build a PolynomialMultiplicationEngine object.  
+ */
 class PolynomialMultiplicationEngineBuilder{
 
     public:

@@ -5,6 +5,9 @@
 
 namespace fhe_deck{
    
+/**
+ * @brief Implementation of PolynomialMultiplicationEngine using Intel Hexl NTT. Its evaluation from is PolynomialEvalFormLongInteger
+ */
 class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
 
     public:

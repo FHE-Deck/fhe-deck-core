@@ -5,15 +5,15 @@
 
 namespace fhe_deck{
  
-
  
-
+/**
+ * @brief Implementation of PolynomialMultiplicationEngine using Intel Hexl NTT. Its evaluation from is PolynomialEvalFormFFTWComplex
+ */
 class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     public:
  
-    FFTPlan engine; 
-
+    FFTPlan engine;  
     int32_t degree;
     int64_t coef_modulus;
 

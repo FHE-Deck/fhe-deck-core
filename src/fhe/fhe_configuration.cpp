@@ -85,9 +85,9 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
      
     // The blind rotation key  (run procedure depending on Enum Configuration)
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
 
-    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new GINXBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe));  
+    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new CGGIBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe));  
     // Key Switching Key Gen
     std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk)); 
     // Build the public key  
@@ -186,9 +186,9 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe)); 
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe)); 
     
-    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new GINXBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe)); 
+    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new CGGIBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe)); 
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
@@ -267,7 +267,7 @@ void FHEConfiguration::init_tfhe_11_B(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
@@ -344,7 +344,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
@@ -424,7 +424,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
@@ -511,7 +511,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key 
@@ -594,7 +594,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key   
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new GINXBlindRotationKey(ntru_gadget_sk, lwe_gadget_sk->lwe));   
+    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(ntru_gadget_sk, lwe_gadget_sk->lwe));   
     // Build the public key 
     // TODO: This modulus switching looks increadibly ugly
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, ntru_param->size * 2)); 
@@ -678,7 +678,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     //this->encrypt_public_key = std::make_shared<LWEPublicKey>(secret_key, masking_size, stddev_masking);
     //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
     // The blind rotation key
-    BlindRotationPublicKey *blind_rotation_key = new GINXBlindRotationKey(rlwe_gadget_sk, g_lwe);
+    BlindRotationPublicKey *blind_rotation_key = new CGGIBlindRotationKey(rlwe_gadget_sk, g_lwe);
     // Init Accumulator builder
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key
