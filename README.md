@@ -13,7 +13,7 @@ Compilation
 With Ubuntu 20.4:
 
 ```
-sudo apt-get install  build-essential
+sudo apt-get install build-essential
 sudo apt-get install libntl-dev
 sudo apt-get install libfftw3-dev
 sudo apt-get install fftw-dev
@@ -27,9 +27,11 @@ cmake -S . -B build
 cmake --build build
 ```
 
-Check example:
+Check examples and tests:
 ```
 build/examples/fhe_context_examples
+build/examples/example_ks_bootstrap
+build/examples/example_ks_bootstrap_amort
 ```
 
 

@@ -1,14 +1,14 @@
-#ifndef KLU_SCH_FUNCTIONAL_BOOTSTRAP_H
-#define KLU_SCH_FUNCTIONAL_BOOTSTRAP_H
+#ifndef KS_FUNCTIONAL_BOOTSTRAP_H
+#define KS_FUNCTIONAL_BOOTSTRAP_H
 
 #include "functional_bootstrap.h"
 
 namespace fhe_deck{
  
 /** 
- * Here comes the implementation of the Kluczniak Schild Functional Bootstrapping from an upcomming paper. 
+ * @brief The new functional bootstrapping key.
  */
-class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
+class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     public:  
 
@@ -17,7 +17,7 @@ class KluczniakSchildFunctionalBootstrapPublicKey: public FunctionalBootstrapPub
 
     std::shared_ptr<LWEToRLWEKeySwitchKey> rlwe_ksk;
      
-    KluczniakSchildFunctionalBootstrapPublicKey(
+    KSFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par, 
         std::shared_ptr<LWEParam> lwe_par_tiny, 
         BlindRotationPublicKey *blind_rotation_key, 

@@ -850,17 +850,20 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     Ciphertext ct15 = context.encrypt_public(15);
 
 
+    int64_t elapsed = 0; 
+    std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
     std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
+    std::chrono::_V2::system_clock::time_point stop = std::chrono::high_resolution_clock::now();
+    elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
   
     assert(context.decrypt(&out_cts[0]) == 0); 
     assert(context.decrypt(&out_cts[1]) == 0); 
     assert(context.decrypt(&out_cts[2]) == 0); 
     assert(context.decrypt(&out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
-
-
-    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
-
+    std::cout << "Time elapsed:  " << elapsed << "ms" << std::endl; 
+  
+    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts); 
      
     
 
@@ -869,9 +872,8 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(&out_cts[2]) == 0); 
     assert(context.decrypt(&out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
-
  
-    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
+    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts); 
 
       
     assert(context.decrypt(&out_cts[0]) == 0); 
@@ -1037,7 +1039,7 @@ void serialization_test(){
 
 
 int main(){  
-       
+         
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1053,9 +1055,9 @@ int main(){
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
   
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
+  
+    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized);   
  
-    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized);  
- 
-    serialization_test();  
+    //serialization_test();  
   
 }

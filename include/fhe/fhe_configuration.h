@@ -7,7 +7,7 @@
 #include "ciphertext_sanitization.h"
 #include "functional_bootstrap.h"
 #include "lmp_functional_bootstrap.h"
-#include "klu_sch_functional_bootstrap.h"
+#include "ks_functional_bootstrap.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
@@ -16,7 +16,7 @@
 namespace fhe_deck{
   
 enum class FHENamedParams{ 
-    tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized, ntrunium_12_NTT, tfhe_11_KS
+    tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized, lmp_12_NTT_amortized, ntrunium_12_NTT, tfhe_11_KS, tfhe_11_KS_amortized
 };
 
 
@@ -108,9 +108,13 @@ class FHEConfiguration{
 
     void init_tfhe_12_NTT_amortized();
 
+    void init_lmp_12_NTT_amortized();
+
     void init_ntrunium_12_NTT(); 
 
     void init_tfhe_11_KS();
+
+    void init_tfhe_11_KS_amortized();
 
     
 
