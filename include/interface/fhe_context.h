@@ -26,7 +26,7 @@ class FHEContext{
     PlaintextEncoding current_encoding; 
 
     /// @brief The default constructor.
-    //FHEContext(); 
+    FHEContext(); 
   
     /// @brief Generates the FHE context given the named parameters.
     /// @param name The named parameters.

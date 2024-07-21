@@ -1058,6 +1058,6 @@ int main(){
   
     amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized);   
  
-    //serialization_test();  
+    serialization_test();  
   
 }

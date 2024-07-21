@@ -1,12 +1,10 @@
 #include "fhe_context.h"
 
 using namespace fhe_deck;
-
-/*
+ 
 FHEContext::FHEContext(){
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration());
-}
-*/
+} 
   
 void FHEContext::generate_context(FHENamedParams name){    
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration(name));
