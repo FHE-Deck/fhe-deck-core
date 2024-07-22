@@ -219,13 +219,9 @@ class RLWEGadgetCT : public GadgetVectorCT{
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
    
   /// @brief Pointers to the continuous memory storing the gadget decomposed polynomials deter_ct_a_dec_poly.
-  int64_t** deter_ct_a_dec;
-  /// @brief Pointers to the continuous memory storing the gadget decomposed polynomials deter_ct_b_dec_poly.
-  int64_t** deter_ct_b_dec;  
+  int64_t** deter_ct_a_dec;  
   /// @brief The array of polynomials that are the result of gadget decomposition. 
-  PolynomialArrayCoefForm deter_ct_a_dec_poly;
-  /// @brief The array of polynomials that are the result of gadget decomposition. 
-  PolynomialArrayCoefForm deter_ct_b_dec_poly;
+  PolynomialArrayCoefForm deter_ct_a_dec_poly; 
    
   /// @brief Frees deter_ct_a_dec and  deter_ct_b_dec
   ~RLWEGadgetCT();

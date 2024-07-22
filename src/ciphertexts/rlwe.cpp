@@ -133,10 +133,8 @@ void RLWEParam::init_mul_engine(){
     mul_engine_builder.set_coef_modulus(coef_modulus); 
     mul_engine_builder.set_degree(size);
     mul_engine_builder.set_polynomial_arithmetic(arithmetic);
-    mul_engine_builder.set_ring_type(ring);
-    //mul_engine_builder.set_modulus_type(mod_type);
-    this->mul_engine = mul_engine_builder.build(); 
-    //this->is_mul_engine_init = true;
+    mul_engine_builder.set_ring_type(ring); 
+    this->mul_engine = mul_engine_builder.build();  
 }
  
 VectorCT* RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){ 
@@ -190,7 +188,7 @@ RLWEGadgetCT::~RLWEGadgetCT(){
         return;
     }       
     delete[] deter_ct_a_dec;
-    delete[] deter_ct_b_dec;   
+    //delete[] deter_ct_b_dec;   
 }
  
 RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other){    
@@ -210,24 +208,20 @@ void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get());  
     rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get());  
 
-    gadget->sample(deter_ct_b_dec, ct_ptr->b.coefs);    
-    rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_b_dec_poly, array_eval_b.get());  
+    gadget->sample(deter_ct_a_dec, ct_ptr->b.coefs);    
+    rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b.get());  
     rlwe_param->mul_engine->multisum(&out_ptr->a, decomp_poly_array_eval_form.get(), array_eval_a.get()); 
     out->add(out, &out_minus);  
 }
  
 void RLWEGadgetCT::init_gadget_decomp_tables(){ 
-    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits)); 
-    /// TODO: Actuall both decomposition tables is overkill. We can realize everything with just one, and save on memory.
-    deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
-    deter_ct_b_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
+    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
+    deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
     // Set up also precomputed arrays for gadget decomposition   
-    deter_ct_a_dec = new int64_t*[gadget->digits];
-    deter_ct_b_dec = new int64_t*[gadget->digits]; 
+    deter_ct_a_dec = new int64_t*[gadget->digits]; 
     // Point the polynomials to the int64_t tables. 
     for(int32_t i = 0; i < gadget->digits; ++i){ 
-        deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree]; 
-        deter_ct_b_dec[i] = &deter_ct_b_dec_poly.poly_array[i * deter_ct_b_dec_poly.degree]; 
+        deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree];  
     } 
 } 
  
