@@ -34,7 +34,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
     if(!is_init){
         throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): No polynomial arithmetic type set!");
     }
-    if(arithmetic == hexl_ntt){
+    if(arithmetic == ntt64){
         return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(degree, coef_modulus));
     }
     if(arithmetic == double_fft){ 

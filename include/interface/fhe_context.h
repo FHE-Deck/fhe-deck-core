@@ -97,77 +97,163 @@ class FHEContext{
     int64_t decrypt(Ciphertext *ct);
 
     // Getters and setter for default plaintext encoding (requires either secret kor public key)
+
+    /// @brief Get the currently used default plaintext encoding
+    /// @return Returns the default plaintext encoding.
     PlaintextEncoding get_default_plaintext_encoding();
 
+    /// @brief Sets the default plaintext encoding
+    /// @param type The enum type of the encoding
+    /// @param plaintext_space The sizez of the plaintext space
     void set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space);
   
-    // Return the plaintext space for FDFB or for native TFHE (minus one bit)
+    /// @brief Returns the curently set default plaintext space
+    /// @return The default plaintext space
     int64_t get_default_plaintext_space();
 
-    // Set a custom plaintext space
+    /// @brief Set the default plaintext space
+    /// @param plaintext_space The size of the plaintext space
     void set_default_plaintext_space(int64_t plaintext_space);
-
-    // Return the currently set default message encoding
+  
+    /// @brief Get the currently used default message encoding
+    /// @return The default message encoding
     PlaintextEncodingType get_default_message_encoding();
 
-    // Set the message encoding
+    /// @brief Set the default message encoding
+    /// @param type The enum type of the encoding
     void set_default_message_encoding_type(PlaintextEncodingType type);
 
     // Take a pointer to a function  (requires public key) 
+
+    /// @brief Generates a homomoprhic Accumulator that embedds the function f
+    /// @param f The function to be embedded
+    /// @param encoding The encoding of the plaintext space
+    /// @return The homomorphic accumulator
     HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
 
+    /// @brief Generates a homomoprhic Accumulator that embedds the function f
+    /// @param f The function to be embedded 
+    /// @return The homomorphic accumulator
+    /// @note The the fuction uses the default plaintext encoding
     HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space));
   
+    /// @brief Generates a homomoprhic Accumulator that embedds the function f
+    /// @param f The function to be embedded
+    /// @param encoding The encoding of the plaintext space
+    /// @return The homomorphic accumulator
     HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message), PlaintextEncoding encoding);
 
+    /// @brief Generates a homomoprhic Accumulator that embedds the function f
+    /// @param f The function to be embedded 
+    /// @return The homomorphic accumulator
+    /// @note The the fuction uses the default plaintext encoding
     HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message));
 
-    // Run functional bootstrapping (requires public key)
+    /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param lut The homomorphic accumulator
+    /// @return The bootstrapped ciphertext
     Ciphertext eval_lut(Ciphertext *ct_in, HomomorphicAccumulator lut);
    
-    // Generate rotation_poly and run LUT
+    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param encoding The plaintext encoding (if different from the default one)
+    /// @return The bootstrapped ciphertext
     Ciphertext eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
   
+    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped. 
+    /// @return The bootstrapped ciphertext
     Ciphertext eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space));
   
+    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param encoding The plaintext encoding (if different from the default one)
+    /// @return The bootstrapped ciphertext
     Ciphertext eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding);
   
+    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped. 
+    /// @return The bootstrapped ciphertext
     Ciphertext eval_lut(Ciphertext *ct_in, int64_t (*f)(int64_t message));
 
+    /// @brief Sanitize the input ciphertext.  
+    /// @param ct_in The input ciphertext to be sanitized.
+    /// @return A new sanitized ciphertext, which is inpedendent of the input ciphertext, but which encodes the same message.
     Ciphertext sanitize(Ciphertext *ct_in);
   
+    /// @brief Evaluates the set of homomorphic accumulators on the input ciphertext. This function bootstraps the input ciphertext. 
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param luts The vector of homomorphic accumulators
+    /// @return A vector of ciphertexts correspondng to the accumulator evaluations
     std::vector<Ciphertext> eval_lut_amortized(Ciphertext *ct_in, std::vector<HomomorphicAccumulator> luts);
-  
-    // Evaluates scalar + Sum_i(scalars[i] * ct_vec[i]) 
+   
+    /// @brief Evaluates scalar + Sum_i(scalars[i] * ct_vec[i])
+    /// @param ct_vec In input ciphertexts
+    /// @param scalars The vector of scalars
+    /// @param scalar The scalar that is added to the inner product
+    /// @return A new ciphertext encrypting the result of the computation. 
     Ciphertext eval_affine_function(std::vector<Ciphertext> ct_vec, std::vector<int64_t> scalars, int64_t scalar);
     
+    /// @brief Serialize the secret key to the output file stream
+    /// @param os The output file stream
     void send_secret_key(std::ofstream &os);
 
+    /// @brief Reads the secret key from the input file stream
+    /// @param is The input file stream
     void read_secret_key(std::ifstream &is);
  
+    /// @brief Store the secret key to the file
+    /// @param file_name The name of the file
     void save_secret_key(std::string file_name);
 
+    /// @brief Load the secret key from the file
+    /// @param file_name The name of the file
     void load_secret_key(std::string file_name);
     
+    /// @brief Serialize the public key to the output file stream
+    /// @param os The output file stream
     void send_public_key(std::ofstream &os);
 
+    /// @brief Reads the public key from the input file stream
+    /// @param is The input file stream
     void read_public_key(std::ifstream &is);
  
+    /// @brief Store the public key to the file
+    /// @param file_name The name of the file
     void save_public_key(std::string file_name);
 
+    /// @brief Reads the public key from the file
+    /// @param file_name The name of the file
     void load_public_key(std::string file_name);
 
+    /// @brief Serialize the ciphertext to the output file stream
+    /// @param os The output file stream
+    /// @param ct The input ciphertext
     void send_Ciphertext(std::ostream &os, Ciphertext &ct);
 
+    /// @brief Read the ciphertext from the input file stream. The ciphertext points to this context.
+    /// @param is The input file stream
+    /// @return A new ciphertext object
     Ciphertext read_Ciphertext(std::ifstream &is);
  
+    /// @brief Same the ciphertext to the file
+    /// @param file_name The name of the file
+    /// @param ct The input ciphertext
     void save_Ciphertext(std::string file_name, Ciphertext &ct);
 
+    /// @brief Load a ciphertext from a file. The ciphertext points to this context.
+    /// @param file_name The name of the file
+    /// @return A new ciphertext object
     Ciphertext load_Ciphertext(std::string file_name); 
 };
   
 } /// End of namespace fhe_deck
  
+/// @brief Overload the << operator for the Ciphertext class. Sents the ciphertext to the output stream.
+/// @param out The output stream
+/// @param c The input ciphertext
+/// @return Reference to the output stream, after the ciphertext has been sent.
 std::ostream& operator<<(std::ostream &out, const fhe_deck::Ciphertext &c);
 
 #endif

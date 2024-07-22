@@ -90,7 +90,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     ms_from_gadget_to_tiny_par.switch_modulus(&lwe_c_N, &lwe_c_N);
     // Shifting to have the ``payload'' withing (0, N) 
     // - otherwise for message 0, we could have negative noise and the phase could be also in (N, 2N) 
-    lwe_c.ct[0] = lwe_c_N.ct[0] + round((double)lwe_par_tiny->modulus/(2 * encoding.ticks)); 
+    lwe_c.ct[0] = lwe_c_N.ct[0] + round((double)lwe_par_tiny->modulus/(2 * encoding.plaintext_space)); 
     // In case modulus reduction happens here, we need to flip the extracted MSB
     bool modulus_reduction_event = false;
     if(lwe_c.ct[0] >= lwe_par_tiny->modulus){  

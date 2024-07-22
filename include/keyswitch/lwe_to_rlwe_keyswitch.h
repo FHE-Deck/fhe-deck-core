@@ -13,10 +13,14 @@ namespace fhe_deck{
     class LWEToRLWEKeySwitchKey{
 
     public:
-
+        /// @brief The content of the key switching key (all its ciphertexts)
+        /// @todo This should be an extended ciphertext (like a GSW) handled in a separate class. 
         std::vector<std::vector<std::unique_ptr<RLWECT>>> key_content;
-        std::shared_ptr<LWEParam> origin;
+        /// @brief LWE Parameter from which we do the switching.
+        //std::shared_ptr<LWEParam> origin;
+        /// @brief Gadget parameters (for something...)
         std::shared_ptr<Gadget>  destination;
+        /// @brief The gadget used to decompose the destination ciphertext.
         std::shared_ptr<RLWEParam> destination_param;
         SignedDecompositionGadget gadget;
         KeySwitchType ks_type; 

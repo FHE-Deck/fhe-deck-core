@@ -3,7 +3,7 @@
 using namespace fhe_deck;
 
 LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) {
-    origin = sk_origin->param;
+    //origin = sk_origin->param;
     destination = sk_dest->gadget;
     destination_param = sk_dest->rlwe_sk->param;
     degree_inv = Utils::mod_inv(destination->degree, destination->modulus); 

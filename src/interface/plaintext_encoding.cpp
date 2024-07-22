@@ -25,23 +25,23 @@ int64_t PlaintextEncoding::encode_message(int64_t message){
 }
  
         
-int64_t PlaintextEncoding::decode_message(int64_t phase){ 
+int64_t PlaintextEncoding::decode_message(int64_t encoded_message){ 
     int64_t message = 0;
     if(type == full_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus;
-        message = round(phase * scale) ;
+        message = round(encoded_message * scale) ;
         message %= plaintext_space;
     }else if(type ==  partial_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus; 
-        message = round(phase * scale) ;   
+        message = round(encoded_message * scale) ;   
         message %= plaintext_space;  
     }else if(type == signed_limied_short_int){   
         double scale = this->ticks/(double)ciphertext_modulus; 
-        message = round(phase * scale);  
+        message = round(encoded_message * scale);  
         message = Utils::integer_signed_form(message, this->ticks); 
     }else if(type == signed_limied_short_int_bl){ 
         double scale = this->ticks/(double)ciphertext_modulus;
-        message = round(phase * scale);   
+        message = round(encoded_message * scale);   
         if(message == 0){
             return 0;
         }

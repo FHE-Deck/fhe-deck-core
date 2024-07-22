@@ -152,15 +152,15 @@ void RotationPoly::to_non_amortized_form(){
 /* Note: this doesn't realy compute the sign function. For zero for example it computes 1
     But note that this is actually specific to a particular functional bootstrapipng algorithm. Its not used anywhere else. 
 */
-RotationPoly RotationPoly::rot_msb(int32_t t, int64_t N, int64_t Q){
-    int64_t delta_Q_t = (int64_t)round((double)Q/(double)t); 
-    int64_t* acc = new int64_t[N]; 
-    for(int32_t i = 0; i < N; ++i){
-        acc[i] =  Utils::integer_mod_form(delta_Q_t * -1, Q); 
+RotationPoly RotationPoly::rot_msb(int32_t plaintext_space, int64_t degree, int64_t ciphertext_modulus){
+    int64_t delta_Q_t = (int64_t)round((double)ciphertext_modulus/(double)plaintext_space); 
+    int64_t* acc = new int64_t[degree]; 
+    for(int32_t i = 0; i < degree; ++i){
+        acc[i] =  Utils::integer_mod_form(delta_Q_t * -1, ciphertext_modulus); 
     } 
     RotationPoly out;
-    out.degree = N;
-    out.coef_modulus = Q;
+    out.degree = degree;
+    out.coef_modulus = ciphertext_modulus;
     out.coefs = acc;
     out.is_init = true;
     return out;

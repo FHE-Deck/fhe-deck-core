@@ -120,12 +120,26 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
 
+    /// @brief Computes a VectorCTAccumulator that embeds the function f.
+    /// @param f The funciton f.
+    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
 
+    /// @brief Computes a VectorCTAccumulator that embeds the function f.
+    /// @param f The funciton f.
+    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
+    /// @brief Return a Accumulator that computes the most significant bit of the message.
+    /// @return The accumulator.
+    /// @todo Note that this funciton sets the messsage space to 4. This is very specific to lmp bootstrap. But I need to use this also for other bootstraps. 
     VectorCTAccumulator* get_acc_msb();
   
+    /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
+    /// @param output_encoding The encoding used to encode the first position to 1.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
 
     template <class Archive>
@@ -161,12 +175,26 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
 
     NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk);
 
+    /// @brief Computes a VectorCTAccumulator that embeds the function f.
+    /// @param f The funciton f.
+    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
 
+    /// @brief Computes a VectorCTAccumulator that embeds the function f.
+    /// @param f The funciton f.
+    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
+    /// @brief Return a Accumulator that computes the most significant bit of the message.
+    /// @return The accumulator.
+    /// @todo Note that this funciton sets the messsage space to 4. This is very specific to lmp bootstrap. But I need to use this also for other bootstraps. 
     VectorCTAccumulator* get_acc_msb();
   
+    /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
+    /// @param output_encoding The encoding used to encode the first position to 1.
+    /// @return Pointer to the new vector CTAccumulator object.
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
 
     template <class Archive>

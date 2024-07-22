@@ -8,7 +8,7 @@ IntelHexlNTTEngine::IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;
     this->ntt = intel::hexl::NTT(degree, coef_modulus);
-    this->type = hexl_ntt;
+    this->type = ntt64;
 }
   
 void IntelHexlNTTEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){

@@ -53,7 +53,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary; 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -146,7 +146,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     double stddev_masking = 8192;
     KeyDistribution rlwe_key_type = ternary;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
@@ -386,7 +386,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     // stddev_simul approx  2**(11.22)
     double stddev_masking = 8192;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
@@ -473,7 +473,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     // stddev_simul approx  2**(14)
     double stddev_masking = 16384;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt)); 
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
     
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
@@ -557,7 +557,7 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
     // stddev_simul approx  2**(14)
     double stddev_masking = 16384;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt)); 
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base)); 
      
     int32_t lwe_dim = 900;
@@ -631,7 +631,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     int32_t masking_size = 8192;
     // stddev_simul approx  2**(12.37) 
     double stddev_masking = 8192; 
-    std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
@@ -711,7 +711,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     double stddev_masking = 0;
     KeyDistribution rlwe_key_type = ternary;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
@@ -798,7 +798,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     double stddev_masking = 0;
     KeyDistribution rlwe_key_type = ternary;
 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, hexl_ntt));
+    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
     //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
     //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
     std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));

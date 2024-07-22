@@ -10,7 +10,7 @@ enum ModulusType {any, power_of_two};
 
 enum KeyDistribution {binary, ternary, uniform};
 
-enum PolynomialArithmetic {ntl, double_fft, long_double_fft, hexl_ntt};
+enum PolynomialArithmetic {ntl, double_fft, long_double_fft, ntt64};
 
 enum PolynomialInversionEngineType {ntl_inv};
  
