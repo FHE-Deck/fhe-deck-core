@@ -12,7 +12,7 @@
 
 #include "lwe.h"
 #include "polynomial.h"
-#include "vector_ciphertext.h"
+#include "polynomial_ciphertext.h"
 #include "gadget.h"
 
 
@@ -25,7 +25,7 @@ namespace fhe_deck{
 /**
  * @brief NTRUParam class is used to store the parameters of the NTRU encryption scheme.
  */
-class NTRUParam : public VectorCTParam{
+class NTRUParam : public PolynomialCTParam{
 
   public: 
     /// @brief The coefficiant modulus.
@@ -68,14 +68,14 @@ class NTRUParam : public VectorCTParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(cereal::base_class<PolynomialCTParam>(this));   
       ar(ring, size, coef_modulus, arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(cereal::base_class<PolynomialCTParam>(this));   
       ar(ring, size, coef_modulus, arithmetic);  
       init_mul_engine(); 
     } 
@@ -84,7 +84,7 @@ class NTRUParam : public VectorCTParam{
     void init_mul_engine(); 
 };
  
-class NTRUCT : public VectorCT{
+class NTRUCT : public PolynomialCT{
 
     public:
   
@@ -159,14 +159,14 @@ class NTRUCT : public VectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(cereal::base_class<VectorCT>(this));   
+        ar(cereal::base_class<PolynomialCT>(this));   
         ar(param, ct_poly); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(cereal::base_class<VectorCT>(this));   
+        ar(cereal::base_class<PolynomialCT>(this));   
         ar(param, ct_poly); 
     }  
 };
@@ -288,7 +288,7 @@ class NTRUSK{
  * @brief NTRUGadgetCT class implements the extended NTRU ciphertext of the form NTRU(base^i m), that can be multiplied with NTRUCT.
 
  */
-class NTRUGadgetCT : public GadgetVectorCT{ 
+class NTRUGadgetCT : public GadgetPolynomialCT{ 
 
   public:
   
@@ -333,14 +333,14 @@ class NTRUGadgetCT : public GadgetVectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
         ar(ntru_param, gadget, array_eval_a);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {    
-        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
         ar(ntru_param, gadget, array_eval_a);    
         set_gadget_decomp_arrays();    
         this->is_init = true;  
@@ -355,7 +355,7 @@ class NTRUGadgetCT : public GadgetVectorCT{
 /**
  * @brief NTRUGadgetSK class implements encryption methods to produce NTRUGadgetCT
  */
-class NTRUGadgetSK : public GadgetVectorCTSK{
+class NTRUGadgetSK : public GadgetPolynomialCTSK{
 
     public:
     /// @brief The decomposition gadget.
@@ -400,14 +400,14 @@ class NTRUGadgetSK : public GadgetVectorCTSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(cereal::base_class<GadgetVectorCTSK>(this));     
+        ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
         ar(gadget, sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(cereal::base_class<GadgetVectorCTSK>(this));     
+        ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
         ar(gadget, sk);   
     } 
 };

@@ -11,7 +11,7 @@
 #include "utils.h"
 #include "polynomial.h"
 #include "polynomial_multiplication_engine_builder.h"
-#include "vector_ciphertext.h"
+#include "polynomial_ciphertext.h"
 #include "plaintext_encoding.h" 
  
 #include <cereal/archives/binary.hpp>
@@ -22,7 +22,7 @@ namespace fhe_deck{
 /**
  * @brief RLWEParam class is used to store the parameters of the RLWE encryption scheme.
  */
-class RLWEParam : public VectorCTParam{
+class RLWEParam : public PolynomialCTParam{
 
   public: 
     /// @brief The coefficient modulus
@@ -64,14 +64,14 @@ class RLWEParam : public VectorCTParam{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(cereal::base_class<PolynomialCTParam>(this));   
       ar(ring, size, coef_modulus, arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(cereal::base_class<VectorCTParam>(this));   
+      ar(cereal::base_class<PolynomialCTParam>(this));   
       ar(ring, size, coef_modulus, arithmetic);  
       init_mul_engine(); 
     } 
@@ -86,7 +86,7 @@ class RLWEParam : public VectorCTParam{
  * @brief The RLWE ciphertext class. 
  * Consists of polynomials b and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial. 
  */
-class RLWECT : public VectorCT{
+class RLWECT : public PolynomialCT{
 
   public:
   
@@ -183,14 +183,14 @@ class RLWECT : public VectorCT{
   template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(cereal::base_class<VectorCT>(this));   
+        ar(cereal::base_class<PolynomialCT>(this));   
         ar(param, a, b); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(cereal::base_class<VectorCT>(this));   
+        ar(cereal::base_class<PolynomialCT>(this));   
         ar(param, a, b); 
     }  
 };
@@ -199,7 +199,7 @@ class RLWECT : public VectorCT{
 /**
  * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message) and RLWECT(- base^i * message * secret key).
  */
-class RLWEGadgetCT : public GadgetVectorCT{ 
+class RLWEGadgetCT : public GadgetPolynomialCT{ 
 
   public:
   
@@ -251,14 +251,14 @@ class RLWEGadgetCT : public GadgetVectorCT{
     template <class Archive>
     void save( Archive & ar ) const
     {  
-        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
         ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {    
-        ar(cereal::base_class<GadgetVectorCT>(this));   
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
         ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);  
         //this->out_minus = RLWECT(rlwe_param);  
         this->decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
@@ -377,7 +377,7 @@ class RLWESK{
 /**
  * @brief The RLWE gadget secret key class. 
  */
-class RLWEGadgetSK : public GadgetVectorCTSK{
+class RLWEGadgetSK : public GadgetPolynomialCTSK{
 
     public:
   
@@ -417,14 +417,14 @@ class RLWEGadgetSK : public GadgetVectorCTSK{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(cereal::base_class<GadgetVectorCTSK>(this));     
+      ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
       ar(gadget, rlwe_sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(cereal::base_class<GadgetVectorCTSK>(this));     
+      ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
       ar(gadget, rlwe_sk);   
     } 
 };
