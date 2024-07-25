@@ -288,7 +288,7 @@ class NTRUSK{
  * @brief NTRUGadgetCT class implements the extended NTRU ciphertext of the form NTRU(base^i m), that can be multiplied with NTRUCT.
 
  */
-class NTRUGadgetCT : public GadgetPolynomialCT{ 
+class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{ 
 
   public:
   
@@ -329,6 +329,8 @@ class NTRUGadgetCT : public GadgetPolynomialCT{
   /// @param out The output ciphertext.
   /// @param ct The input ciphertext.
   void mul(VectorCT *out, const VectorCT *ct);
+
+  void mul(VectorCT *out, const Polynomial *scalar);
 
   template <class Archive>
     void save( Archive & ar ) const

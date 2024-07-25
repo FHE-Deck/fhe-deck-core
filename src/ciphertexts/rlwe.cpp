@@ -140,6 +140,12 @@ void RLWEParam::init_mul_engine(){
 VectorCT* RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){ 
     return new RLWECT(std::static_pointer_cast<RLWEParam>(param));
 }
+
+
+
+
+
+
  
 RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<RLWECT>> &gadget_ct, std::vector<std::unique_ptr<RLWECT>> &gadget_ct_sk){
     this->rlwe_param = rlwe_param;
@@ -187,8 +193,7 @@ RLWEGadgetCT::~RLWEGadgetCT(){
     if(is_init == false){
         return;
     }       
-    delete[] deter_ct_a_dec;
-    //delete[] deter_ct_b_dec;   
+    delete[] poly_decomp;  
 }
  
 RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other){    
@@ -203,25 +208,25 @@ RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other){
 void RLWEGadgetCT::mul(VectorCT *out, const VectorCT *ct){ 
     RLWECT* out_ptr = static_cast<RLWECT*>(out);
     const RLWECT* ct_ptr = static_cast<const RLWECT*>(ct);
-    gadget->sample(deter_ct_a_dec, ct_ptr->a.coefs);   
+    gadget->sample(poly_decomp, ct_ptr->a.coefs);   
     RLWECT out_minus(rlwe_param); 
-    rlwe_param->mul_engine->multisum(&out_minus.b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b_sk.get());  
-    rlwe_param->mul_engine->multisum(&out_minus.a, decomp_poly_array_eval_form.get(), array_eval_a_sk.get());  
+    rlwe_param->mul_engine->multisum(&out_minus.b, poly_decomp_eval_form.get(), &poly_decomp_coef_form, array_eval_b_sk.get());  
+    rlwe_param->mul_engine->multisum(&out_minus.a, poly_decomp_eval_form.get(), array_eval_a_sk.get());  
 
-    gadget->sample(deter_ct_a_dec, ct_ptr->b.coefs);    
-    rlwe_param->mul_engine->multisum(&out_ptr->b, decomp_poly_array_eval_form.get(), &deter_ct_a_dec_poly, array_eval_b.get());  
-    rlwe_param->mul_engine->multisum(&out_ptr->a, decomp_poly_array_eval_form.get(), array_eval_a.get()); 
+    gadget->sample(poly_decomp, ct_ptr->b.coefs);    
+    rlwe_param->mul_engine->multisum(&out_ptr->b, poly_decomp_eval_form.get(), &poly_decomp_coef_form, array_eval_b.get());  
+    rlwe_param->mul_engine->multisum(&out_ptr->a, poly_decomp_eval_form.get(), array_eval_a.get()); 
     out->add(out, &out_minus);  
 }
  
 void RLWEGadgetCT::init_gadget_decomp_tables(){ 
-    decomp_poly_array_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
-    deter_ct_a_dec_poly = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
+    poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
+    poly_decomp_coef_form = PolynomialArrayCoefForm(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits); 
     // Set up also precomputed arrays for gadget decomposition   
-    deter_ct_a_dec = new int64_t*[gadget->digits]; 
+    poly_decomp = new int64_t*[gadget->digits]; 
     // Point the polynomials to the int64_t tables. 
     for(int32_t i = 0; i < gadget->digits; ++i){ 
-        deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree];  
+        poly_decomp[i] = &poly_decomp_coef_form.poly_array[i * poly_decomp_coef_form.degree];  
     } 
 } 
  
@@ -356,32 +361,29 @@ RLWEGadgetSK& RLWEGadgetSK::operator=(const RLWEGadgetSK other){
 RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other){ 
     throw std::runtime_error("RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other): Don't copy the secret key!");  
 }
+
+std::vector<std::unique_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial *msg){
+    std::vector<std::unique_ptr<RLWECT>> ext_ct; 
+    std::shared_ptr<Polynomial> msg_cpy(msg->clone()); 
+    // Encryptions of - msg* base**i    
+    ext_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg_cpy.get())));
+    for(int32_t i = 1; i < gadget->digits; ++i){
+        // Multiply msg by base
+        msg_cpy->mul(msg_cpy.get(), gadget->base); 
+        // Encrypt msg * base**i   
+        ext_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg_cpy.get()))); 
+    }  
+    return ext_ct;
+}
   
-GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){     
-    std::vector<std::unique_ptr<RLWECT>> gadget_ct; 
-    std::vector<std::unique_ptr<RLWECT>> gadget_ct_sk;    
-    Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
-    int32_t digits = gadget->digits;
-    uint64_t base = gadget->base; 
+GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Polynomial *msg){      
+    std::vector<std::unique_ptr<RLWECT>> gadget_ct = ext_enc(msg); 
+    // Encryptions of - msg * sk * base**i    
+    Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus);  
     // Multiply msg with sk.s. Result is in msg_x_sk 
     msg->mul(&msg_x_sk, &rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
     msg_x_sk.neg(&msg_x_sk); 
-    // Encryptions of - msg* base**i    
-    gadget_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg)));
-    for(int32_t i = 1; i < digits; ++i){
-        // Multiply msg by base
-        msg->mul(msg, base); 
-        // Encrypt msg * base**i   
-        gadget_ct.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(msg))); 
-    }  
-    // Encryptions of - msg * sk * base**i    
-    gadget_ct_sk.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(&msg_x_sk)));
-    for(int32_t i = 1; i < digits; ++i){ 
-        // Multiply msg by base
-        msg_x_sk.mul(&msg_x_sk, base); 
-        // Encrypt - msg * sk * base**i   
-        gadget_ct_sk.push_back(std::unique_ptr<RLWECT>(rlwe_sk->encrypt(&msg_x_sk)));  
-    }     
+    std::vector<std::unique_ptr<RLWECT>> gadget_ct_sk = ext_enc(&msg_x_sk);   
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
@@ -396,3 +398,4 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
     }
     return gadget_encrypt(&msg_poly);
 }
+

@@ -263,22 +263,25 @@ void Polynomial::zeroize(){
     }
 }
 
-Polynomial Polynomial::clone(){
+ 
+Polynomial* Polynomial::clone(){
     if(!is_init){
-        return Polynomial(degree, coef_modulus);
+        throw std::logic_error("Polynomial::clone: Polynomial is not initialized!");
     }
-    Polynomial out;
+    Polynomial* out;
     if(is_mul_engine_set && is_inv_engine_set){
-        out = Polynomial(degree, coef_modulus, mul_engine, inv_engine);
+        out = new Polynomial(degree, coef_modulus, mul_engine, inv_engine);
     }else if(is_mul_engine_set){
-        out = Polynomial(degree, coef_modulus, mul_engine);
+        out = new Polynomial(degree, coef_modulus, mul_engine);
     }else if(is_inv_engine_set){
-        out = Polynomial(degree, coef_modulus, inv_engine);
+        out = new Polynomial(degree, coef_modulus, inv_engine);
+    }else{
+        out = new Polynomial(degree, coef_modulus);
     }
-    Utils::cp(out.coefs, coefs, degree);
-    out.is_init = true;
+    Utils::cp(out->coefs, coefs, degree);
+    out->is_init = true;
     return out;
-}
+} 
  
 void Polynomial::add(Polynomial *out, Polynomial *other){
     if(this->degree != other->degree){

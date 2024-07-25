@@ -170,6 +170,12 @@ void NTRUGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     gadget->sample(deter_ct_a_dec, ct_ptr->ct_poly.coefs); 
     ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
 }
+
+void NTRUGadgetCT::mul(VectorCT *out, const Polynomial *scalar){
+    NTRUCT* out_ptr = static_cast<NTRUCT*>(out); 
+    gadget->sample(deter_ct_a_dec, scalar->coefs); 
+    ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
+}
     
 void NTRUGadgetCT::set_gadget_decomp_arrays(){   
     deter_ct_a_dec = new int64_t*[gadget->digits]; 

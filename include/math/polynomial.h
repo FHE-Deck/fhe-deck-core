@@ -339,7 +339,7 @@ class Polynomial{
 
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial
-    Polynomial clone();
+    Polynomial* clone();
 
     /// @brief Cyclically rotates the coeefficients of this polynomial by rotation
     /// @param out The output polynomial

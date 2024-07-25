@@ -32,8 +32,7 @@ class PolynomialCTParam : public VectorCTParam {
     } 
 };
 
-
-
+ 
 
 /**
  * @brief Interface for vector ciphertexts. Intended to be used for homomorphic operations on vectors. Example implementations include RLWE and and NTRU.
@@ -89,7 +88,7 @@ class ExtendedPolynomialCT{
     /// @brief Multiplies this with ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void mul(VectorCT *out, const VectorCT *ct) = 0;
+    virtual void mul(VectorCT *out, const Polynomial *scalar) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {}
