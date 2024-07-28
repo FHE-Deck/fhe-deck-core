@@ -93,9 +93,12 @@ class GadgetVectorCT{
 class GadgetVectorCTSK{
 
     public: 
-
+ 
     /// @brief The parameters of the VactorCT scheme
     std::shared_ptr<VectorCTParam> vector_ct_param;
+
+    /// @brief Destructor
+    virtual ~GadgetVectorCTSK() = default;
 
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
