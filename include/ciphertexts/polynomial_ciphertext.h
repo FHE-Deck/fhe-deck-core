@@ -13,13 +13,7 @@ namespace fhe_deck{
  */
 class PolynomialCTParam : public VectorCTParam {
     public:
-
-    /// @brief The size of the vector
-    //int32_t size; 
-
-    /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space.
-    /// @param param The parameters of the VectorCT object. It may be weird to take the parameter, as we reference the same object in our applicaitons. The reason its written like this is because we need a shared pointer to be passed to the ciphertexts. 
-    //virtual VectorCT* init_ct(std::shared_ptr<VectorCTParam> param) = 0;
+ 
 
     template <class Archive>
     void save( Archive & ar ) const {
@@ -109,6 +103,17 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
 
     /// @brief Destructor
     virtual ~GadgetPolynomialCTSK() = default;
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @return Creates a new object that stores the resulting ciphertext.
+    virtual ExtendedPolynomialCT* extended_encrypt(Polynomial *msg) = 0; 
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @param size the size of the msg array (should be smaller than the ring size)
+    /// @return Creates a new object that stores the resulting ciphertext.
+    virtual ExtendedPolynomialCT* extended_encrypt(uint64_t *msg, int32_t size) = 0; 
   
     template <class Archive>
     void save( Archive & ar ) const {

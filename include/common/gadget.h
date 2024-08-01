@@ -4,6 +4,7 @@
 
 #include "utils.h" 
 #include "sample.h"
+#include "vector.h"
 
 #include <complex>
 #include <limits>
@@ -33,9 +34,12 @@ class Gadget{
 
     virtual void sample(int64_t** out, int64_t *in) = 0;
 
+    virtual void sample(VectorArray* out, int64_t *in) = 0;
+
     int64_t* get_gadget_vector();
 
     int64_t** init_out();
+  
 
     void delete_out(int64_t** out);
 
@@ -61,6 +65,8 @@ class SignedDecompositionGadget : public Gadget{
     SignedDecompositionGadget(int32_t degree, int64_t modulus, int64_t base);
 
     void sample(int64_t** out, int64_t *in);
+
+    void sample(VectorArray* out, int64_t *in);
  
     void decomp(int64_t **d_ct, int64_t* poly);
 
@@ -181,6 +187,7 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     void sample(int64_t** out, int64_t *in);
  
+    void sample(VectorArray* out, int64_t *in);
 
     template <class Archive>
     void save( Archive & ar ) const

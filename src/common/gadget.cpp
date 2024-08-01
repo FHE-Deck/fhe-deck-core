@@ -18,7 +18,7 @@ void SignedDecompositionGadget::init(){
 
 void SignedDecompositionGadget::sample(int64_t** out, int64_t *poly){  
     int64_t* signed_poly = new int64_t[degree];
-    int* sign = new int[degree];
+    int64_t* sign = new int64_t[degree];
     Utils::array_signed_form(signed_poly, poly, degree, modulus); 
     int64_t half = modulus/2;
     // Extracting the signs
@@ -35,12 +35,17 @@ void SignedDecompositionGadget::sample(int64_t** out, int64_t *poly){
     decomp(out, signed_poly);
     // Adding the signs
     for(int32_t j = 0; j < digits; ++j){
-        for(int32_t i = 0; i < degree; ++i){
+        for(int32_t i = 0; i < degree; ++i){ 
             out[j][i] = out[j][i] * sign[i];
         }
+        Utils::array_mod_form(out[j], out[j], degree, modulus);
     }
     delete[] signed_poly;
     delete[] sign;
+}
+
+void SignedDecompositionGadget::sample(VectorArray* out, int64_t *in){
+    sample(out->vec_array_2d, in);
 }
  
 void SignedDecompositionGadget::decomp(int64_t **d_ct, int64_t* poly){
@@ -116,6 +121,11 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
 void DiscreteGaussianSamplingGadget::sample(int64_t** out, int64_t *in){   
     gaussian_sample(out, in);  
 }
+
+
+void DiscreteGaussianSamplingGadget::sample(VectorArray* out, int64_t *in){
+    gaussian_sample(out->vec_array_2d, in);
+}
    
 int64_t* Gadget::get_gadget_vector(){
     int64_t* gadget_vector = new int64_t[digits];
@@ -188,10 +198,12 @@ void DiscreteGaussianSamplingGadget::gaussian_sample(int64_t **out, int64_t* in)
     }else{ 
         gaussian_sample_general_modulus(out, in);
     }
+    for(int32_t j = 0; j < digits; ++j){ 
+        Utils::array_mod_form(out[j], out[j], degree, modulus);
+    }
 }
  
- 
-
+  
 void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(int64_t **out, int64_t* in){
     mask = base-1;  
     for(int64_t j = 0; j < degree; ++j){

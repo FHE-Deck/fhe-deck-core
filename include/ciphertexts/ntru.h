@@ -300,11 +300,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   bool is_init = false;  
   /// @brief The array evaluation form holding the decomposition of the ciphertext.
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_a;  
-  /// @brief Array pointing to memory locations of the decomposition of the ciphertext.
-  int64_t** deter_ct_a_dec; 
-  /// @brief Array holding the decomposition of the ciphertext.
-  PolynomialArrayCoefForm deter_ct_a_dec_poly; 
-   
+ 
   /// @brief Free deter_ct_a_dec memory.
   ~NTRUGadgetCT();
 
@@ -343,15 +339,10 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(ntru_param, gadget, array_eval_a);    
-        set_gadget_decomp_arrays();    
+        ar(ntru_param, gadget, array_eval_a);     
         this->is_init = true;  
     } 
-     
-  private:
-    
-  void set_gadget_decomp_arrays();
-  
+       
 };
    
 /**
@@ -380,7 +371,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
-    GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
+    GadgetVectorCT* gadget_encrypt(Vector *msg); 
 
     /// @brief Encrypts the input message array msg, and returns the result.
     /// @param msg The input message array.
@@ -398,6 +389,17 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
     GadgetVectorCT* kdm_gadget_encrypt(uint64_t *msg, int32_t size); 
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @return Creates a new object that stores the resulting ciphertext.
+    ExtendedPolynomialCT* extended_encrypt(Polynomial *msg); 
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @param size the size of the msg array (should be smaller than the ring size)
+    /// @return Creates a new object that stores the resulting ciphertext.
+    ExtendedPolynomialCT* extended_encrypt(uint64_t *msg, int32_t size); 
    
     template <class Archive>
     void save( Archive & ar ) const
@@ -412,6 +414,10 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
         ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
         ar(gadget, sk);   
     } 
+
+    private:
+ 
+    std::vector<std::unique_ptr<NTRUCT>> ext_enc(Polynomial *msg);
 };
  
 } /// End of namespace fhe_deck

@@ -196,6 +196,68 @@ class RLWECT : public PolynomialCT{
 };
   
 
+
+/**
+ * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message) and RLWECT(- base^i * message * secret key).
+ */
+class ExtendedRLWECT : public ExtendedPolynomialCT{ 
+
+  public:
+  
+  /// @brief  The parameters of the RLWE encryption scheme.
+  std::shared_ptr<RLWEParam> rlwe_param;
+  /// @brief The gadget decomposition object.
+  std::shared_ptr<Gadget> gadget;
+
+  bool is_init = false;  
+  /// @brief Evaluation forms of the polynomials a from the RLWECT(base^i * message) ciphertexts.
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_a;
+  /// @brief Evaluation forms of the polynomials b from the RLWECT(base^i * message) ciphertexts.
+  std::unique_ptr<PolynomialArrayEvalForm> array_eval_b; 
+   
+   
+  /// @brief Frees deter_ct_a_dec and  deter_ct_b_dec
+  ~ExtendedRLWECT();
+  /// @brief Default constructor
+  ExtendedRLWECT() = default;
+  /// @brief Constructs the object. 
+  /// @param rlwe_param The parameters of the RLWE encryption scheme.
+  /// @param gadget The gadget decomposition object. 
+  /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
+  /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
+  ExtendedRLWECT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::unique_ptr<RLWECT>> &gadget_ct);
+  
+  /// @brief Function that initializes deter_ct_a_dec_poly, deter_ct_b_dec_poly, and the pointer tables deter_ct_a_dec and deter_ct_b_dec.
+  /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
+  /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
+  void init(std::vector<std::unique_ptr<RLWECT>> &gadget_ct);
+   
+  /// @brief Multiplication of this by ct, and store the result in out.
+  /// @param out The result of the multiplication.
+  /// @param ct The input ciphertext. 
+  void mul(VectorCT *out, const Polynomial *scalar);
+   
+    template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b);     
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {    
+        ar(cereal::base_class<GadgetPolynomialCT>(this));   
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b);   
+        //this->poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
+        //init_gadget_decomp_tables();    
+        this->is_init = true;  
+    }  
+  
+};
+
+
+
   
 /**
  * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message) and RLWECT(- base^i * message * secret key).
@@ -218,11 +280,7 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_a_sk;
   /// @brief Evaluation forms of the polynomials b from the RLWECT(- base^i * message * secret key) ciphertexts. 
   std::unique_ptr<PolynomialArrayEvalForm> array_eval_b_sk;
-   
-  
-   
-  /// @brief Frees deter_ct_a_dec and  deter_ct_b_dec
-  ~RLWEGadgetCT();
+     
   /// @brief Default constructor
   RLWEGadgetCT() = default;
   /// @brief Constructs the object. 
@@ -257,25 +315,10 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);  
-        //this->out_minus = RLWECT(rlwe_param);  
-        this->poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
-        init_gadget_decomp_tables();    
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);   
         this->is_init = true;  
     } 
-  
-  private:
- 
-  /// @brief Pointers to the continuous memory storing the gadget decomposed polynomials deter_ct_a_dec_poly.
-  int64_t** poly_decomp;  
-  /// @brief The array of polynomials that are the result of gadget decomposition. 
-  PolynomialArrayCoefForm poly_decomp_coef_form; 
-
-  /// @brief Temporary variable which stores the evaluation form of a decomposed polynomial. Used in Multiplication, initialized in init.
-  std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form;
-  
-  void init_gadget_decomp_tables();
-  
+    
 };
   
 /**
@@ -409,7 +452,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    GadgetVectorCT* gadget_encrypt(Polynomial *msg); 
+    GadgetVectorCT* gadget_encrypt(Vector *msg); 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
@@ -417,6 +460,16 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @return Creates a new object that stores the resulting ciphertext.
     GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size); 
 
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @return Creates a new object that stores the resulting ciphertext.
+    ExtendedPolynomialCT* extended_encrypt(Polynomial *msg); 
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @param size the size of the msg array (should be smaller than the ring size)
+    /// @return Creates a new object that stores the resulting ciphertext.
+    ExtendedPolynomialCT* extended_encrypt(uint64_t *msg, int32_t size); 
 
  
     template <class Archive>

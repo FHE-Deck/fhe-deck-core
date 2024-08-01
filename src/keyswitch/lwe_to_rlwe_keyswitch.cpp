@@ -23,10 +23,8 @@ LWEToRLWEKeySwitchKey& LWEToRLWEKeySwitchKey::operator=(const LWEToRLWEKeySwitch
     return *this;
 }
 
-void
-LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
- 
-    //Polynomial sk_auto = sk_dest->rlwe_sk->sk_poly;
+void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
+  
     Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.degree, sk_dest->rlwe_sk->sk_poly.coef_modulus); 
     for(int i = 2; i <= destination->degree; i *= 2) {
         eval_auto_poly(&sk_auto, &sk_dest->rlwe_sk->sk_poly, i+1);

@@ -4,11 +4,11 @@
 #include <memory> 
 #include "enums.h"
 #include "utils.h"  
+#include "vector.h"
 
-
-#include <NTL/ZZX.h>
-#include <NTL/ZZ_pX.h>
-#include <NTL/ZZ_p.h>
+//#include <NTL/ZZX.h>
+//#include <NTL/ZZ_pX.h>
+//#include <NTL/ZZ_p.h>
 
 #include "fft_plan.h"
 #include "hexl/hexl.hpp"  
@@ -256,14 +256,14 @@ class PolynomialInversionEngine{
 /**
  * @brief The Polynomials class. Holds an array of int64_t coefficients. Implement basic operations on polynomials modulo a coefficient modulus.
  */
-class Polynomial{
+class Polynomial: public Vector{
 
     public:
 
-    /// @brief The coefficients of the polynomial
-    int64_t* coefs;
+    /// @brief The coefficients of the polynomial (points to the vec array in the Vector class)
+    int64_t* coefs; 
     /// @brief Indicates if the polynomial has been initialized
-    bool is_init = false;
+    //bool is_init = false;
 
     /// @brief The coefficient modulus
     int64_t coef_modulus;
@@ -279,10 +279,7 @@ class Polynomial{
     std::shared_ptr<PolynomialInversionEngine> inv_engine;
     /// @brief Indicates if the polynomial inversion engine has been set
     bool is_inv_engine_set = false;
-
-    /// @brief Frees coefs.
-    ~Polynomial();
-
+  
     /// @brief Default constructor
     Polynomial() = default;
 
@@ -290,36 +287,25 @@ class Polynomial{
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
     Polynomial(int32_t degree, int64_t coef_modulus);
-  
-    /// @brief Constructs the polynomial, and allocates memory for the coefs array.
-    /// @param degree The degree of the polynomial (size of the coefs array)
-    /// @param coef_modulus The coefficient modulus
-    /// @param mul_engine The polynomial multiplication engine
-    Polynomial(int32_t degree, int64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
 
     /// @brief Constructs the polynomial, and allocates memory for the coefs array.
+    /// @param coefs The coefs array which is goin gto be copied.
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
-    /// @param inv_engine The polynomial inversion engine
-    Polynomial(int32_t degree, int64_t coef_modulus, std::shared_ptr<PolynomialInversionEngine> inv_engine);
-
-    /// @brief Constructs the polynomial, and allocates memory for the coefs array.
-    /// @param degree The degree of the polynomial (size of the coefs array)
-    /// @param coef_modulus The coefficient modulus
-    /// @param mul_engine The polynomial multiplication engine
-    /// @param inv_engine The polynomial inversion engine
-    Polynomial(int32_t degree, int64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine, std::shared_ptr<PolynomialInversionEngine> inv_engine);
-
+    Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
+   
     /// @brief Called by the constructors to initialize the polynomial
     /// @param degree The degree of the polynomial
     /// @param coef_modulus The coefficient modulus
-    void init(int32_t degree, int64_t coef_modulus);
+    //void init(int32_t degree, int64_t coef_modulus);
+
+    void init_from_vec();
   
     /// @brief Copy constructor
     /// @param other The polynomail to copy
     Polynomial(const Polynomial &other);
 
-    /// @brief THis is the copy assignment operator
+    /// @brief This is the copy assignment operator
     /// @param other The polynomial to copy
     /// @return Return a reference to the copied polynomial
     Polynomial& operator=(const Polynomial other);
@@ -330,9 +316,13 @@ class Polynomial{
     /// @brief Sets the polynomial inversion engine
     void set_inversion_engine(std::shared_ptr<PolynomialInversionEngine> inv_engine);
  
-    /// @brief Converts the polynomial to evaluation form. requires to have a polynomial multiplication engine set.
+    /// @brief Converts the polynomial to evaluation form. Requires to have a polynomial multiplication engine set.
     /// @param out The output polynomial in evaluation form
     void to_eval(PolynomialEvalForm *out);
+
+    /// @brief Converts the polynomial to evaluation form. Requires to have a polynomial multiplication engine set.
+    /// @param out The output polynomial in evaluation form
+    void to_eval(PolynomialEvalForm *out, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     /// @brief Zero all coefficients of the polynomial
     void zeroize();
@@ -350,39 +340,7 @@ class Polynomial{
     /// @param out The output polynomial
     /// @param rotation The rotation size
     void negacyclic_rotate(Polynomial *out, int64_t rotation);
-
-    /// @brief Adds other to this polynomial and stores the output in out.
-    /// @param out The output polynomial
-    /// @param other The input polynomial
-    /// @note Verifies whether the degree and modulus of the polynomials match
-    void add(Polynomial *out, Polynomial *other);
-
-    /// @brief Adds other to this polynomial and stores the output in out.
-    /// @param out The output polynomial
-    /// @param other The input polynomial
-    /// @note Doesn't verify the input polynomial
-    void add_coef(Polynomial *out, Polynomial *other);
-
-    /// @brief Subtracts other from this polynomial and stores the output in out.
-    /// @param out The output polynomial
-    /// @param other The input polynomial
-    /// @note Verifies whether the degree and modulus of the polynomials match
-    void sub(Polynomial *out, Polynomial *other);
-
-    /// @brief Subtracts other from this polynomial and stores the output in out.
-    /// @param out The output polynomial
-    /// @param other The input polynomial
-    /// @note Doesn't verify the input polynomial
-    void sub_coef(Polynomial *out, Polynomial *other);
-
-    /// @brief Negates the coefficients of this polynomial and stores the output in out. (calls new_coef)
-    /// @param out The output polynomial
-    void neg(Polynomial *out);
-
-    /// @brief Negates the coefficients of this polynomial and stores the output in out.
-    /// @param out The output polynomial
-    void neg_coef(Polynomial *out);
-
+  
     /// @brief Multiplies this polynomial by scalar and stores the output in out.
     /// @param out The output polynomial
     /// @param scalar The input scalar
@@ -411,38 +369,34 @@ class Polynomial{
     template <class Archive>
     void save( Archive & ar ) const
     { 
+        ar(cereal::base_class<Vector>(this));  
         ar(coef_modulus, degree);   
-        ar(cereal::binary_data(coefs, sizeof(int64_t) * degree));  
+        ar(cereal::binary_data(coefs, sizeof(int64_t) * degree)); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
+        ar(cereal::base_class<Vector>(this));  
         ar(coef_modulus, degree); 
         init(degree, coef_modulus);   
         ar(cereal::binary_data(coefs, sizeof(int64_t) * degree));   
+        init_from_vec();
     }  
 };
    
-class PolynomialArrayCoefForm{
+class PolynomialArrayCoefForm : public VectorArray{
 
     public:
  
     /// @brief The array of polynomials. 
     /// @note This is a pointer to a 1d array of coefficients, that stores a 1d array of polynomials. The array will be initialized as new int64_t[size * degree].
-    int64_t* poly_array;
-    /// @brief Indicates if the poly_array has been initialized
-    bool is_init = false;
+    int64_t* poly_array; 
   
     /// @brief Coefficient Modulus Q
     int64_t coef_modulus;
     /// @brief Degree of the polynomials
-    int32_t degree;
-    /// @brief Size of the array
-    int32_t array_size;
-
-    /// @brief full_size = degree * array_size. Initialized in the constructors. 
-    int32_t full_size;
+    int32_t degree; 
  
     /// @brief The polynomial multiplication engine (optional)
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
@@ -450,7 +404,7 @@ class PolynomialArrayCoefForm{
     bool is_mul_engine_set = false;
     
     /// @brief Default destructor. Frees poly_array.
-    ~PolynomialArrayCoefForm();
+    //~PolynomialArrayCoefForm();
 
     /// @brief Default constructor
     PolynomialArrayCoefForm() = default;
@@ -472,7 +426,9 @@ class PolynomialArrayCoefForm{
     /// @param degree The degree of the polynomials
     /// @param coef_modulus The coefficient modulus
     /// @param array_size The size of the array
-    void init(int32_t degree, int64_t coef_modulus, int32_t array_size);
+    //void init(int32_t degree, int64_t coef_modulus, int32_t array_size);
+
+    void init_from_vector();
  
     /// @brief Copy constructor
     /// @param other The polynomial array to copy
@@ -492,6 +448,7 @@ class PolynomialArrayCoefForm{
     /// @param poly The input polynomial
     void set_polynomial_at(int32_t i, Polynomial *poly); 
  
+ /*
     /// @brief Coordinate wise addition of polynomials arrays
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
@@ -509,20 +466,24 @@ class PolynomialArrayCoefForm{
     /// @brief Coordinate wise scalar mmultiplication of polynomials in thie arrays
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
-    void mul(PolynomialArrayCoefForm *out, int64_t scalar);
+    void mul(PolynomialArrayCoefForm *out, int64_t scalar); 
+ */
 
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(coef_modulus, degree, array_size);   
+        //ar(coef_modulus, degree, array_size);  
+        ar(cereal::base_class<VectorArray>(this));   
         ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(coef_modulus, degree, array_size);   
-        full_size = degree * array_size;
+        ar(cereal::base_class<VectorArray>(this));  
+        //ar(coef_modulus, degree, array_size);   
+        //full_size = degree * array_size;
+        init_from_vector();
         ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
         is_init = true;
     } 
@@ -725,7 +686,7 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
 
 }/// End of namespace fhe_deck
 
-/// NOTE: The following lines are used to register the classes for serialization using the Cereal library.
+/// NOTE: The following lines are used to register the classes for serialization using the Cereal library.  
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormLong)
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormFFTWComplex)
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormFFTWLongComplex)

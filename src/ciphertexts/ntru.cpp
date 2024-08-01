@@ -47,7 +47,8 @@ VectorCT* NTRUParam::init_ct(std::shared_ptr<VectorCTParam> param){
   
 NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param){
     this->param = param; 
-    this->ct_poly = Polynomial(param->size, param->coef_modulus, param->mul_engine);  
+    this->ct_poly = Polynomial(param->size, param->coef_modulus);  
+    this->ct_poly.set_multiplication_engine(param->mul_engine);
 }
  
 NTRUCT::NTRUCT(const NTRUCT &other){ 
@@ -144,7 +145,7 @@ void NTRUGadgetCT::init(std::vector<std::unique_ptr<NTRUCT>> &gadget_ct){
     ntru_param->mul_engine->to_eval(array_eval_a.get(), &array_coef);  
     
     //init_gadget_decomp_tables();  
-    set_gadget_decomp_arrays();
+    //set_gadget_decomp_arrays();
     this->is_init = true; 
 }
 
@@ -152,7 +153,7 @@ NTRUGadgetCT::~NTRUGadgetCT(){
     if(is_init == false){
         return;
     }       
-    delete[] deter_ct_a_dec;
+    //delete[] deter_ct_a_dec;
 }
  
 NTRUGadgetCT::NTRUGadgetCT(const NTRUGadgetCT& other){    
@@ -166,24 +167,17 @@ NTRUGadgetCT& NTRUGadgetCT::operator=(NTRUGadgetCT other){
   
 void NTRUGadgetCT::mul(VectorCT *out, const VectorCT *ct){
     NTRUCT* out_ptr = static_cast<NTRUCT*>(out);
-    const NTRUCT* ct_ptr = static_cast<const NTRUCT*>(ct);
-    gadget->sample(deter_ct_a_dec, ct_ptr->ct_poly.coefs); 
+    const NTRUCT* ct_ptr = static_cast<const NTRUCT*>(ct); 
+    PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
+    gadget->sample(&deter_ct_a_dec_poly, ct_ptr->ct_poly.coefs);
     ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
 }
 
 void NTRUGadgetCT::mul(VectorCT *out, const Polynomial *scalar){
-    NTRUCT* out_ptr = static_cast<NTRUCT*>(out); 
-    gadget->sample(deter_ct_a_dec, scalar->coefs); 
+    NTRUCT* out_ptr = static_cast<NTRUCT*>(out);  
+    PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
+    gadget->sample(&deter_ct_a_dec_poly, scalar->coefs);
     ntru_param->mul_engine->multisum(&out_ptr->ct_poly, &deter_ct_a_dec_poly, array_eval_a.get());
-}
-    
-void NTRUGadgetCT::set_gadget_decomp_arrays(){   
-    deter_ct_a_dec = new int64_t*[gadget->digits]; 
-    deter_ct_a_dec_poly = PolynomialArrayCoefForm(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    // Point the polynomials to the uint64_t tables. 
-    for(int32_t i = 0; i < gadget->digits; ++i){ 
-        deter_ct_a_dec[i] = &deter_ct_a_dec_poly.poly_array[i * deter_ct_a_dec_poly.degree];  
-    } 
 }
  
 NTRUSK::NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev){ 
@@ -229,9 +223,9 @@ void NTRUSK::encrypt(NTRUCT *out, Polynomial *m){
         throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m is not initialized!");
     }  
     /// NOTE: We compute inv_sk * g + e + msg
-    Polynomial g = Polynomial(param->size, param->coef_modulus, param->mul_engine);
+    Polynomial g = Polynomial(param->size, param->coef_modulus);
     sk_dist->fill_array(g.coefs, g.degree);
-    Polynomial e = Polynomial(param->size, param->coef_modulus, param->mul_engine);
+    Polynomial e = Polynomial(param->size, param->coef_modulus);
     error_dist->fill_array(e.coefs, e.degree); 
     inv_sk.mul(&out->ct_poly, &g, param->mul_engine);
     out->ct_poly.add(&out->ct_poly, &e);
@@ -334,18 +328,9 @@ NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other){
     throw std::runtime_error("NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other): Don't copy the secret key!");  
 }
   
-GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Polynomial *msg){     
-    std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
-    int32_t digits = gadget->digits;
-    uint64_t base = gadget->base;   
-    // Encryptions of - msg* base**i    
-    gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg)));
-    for(int32_t i = 1; i < digits; ++i){
-        // Multiply msg by base
-        msg->mul(msg, base); 
-        // Encrypt msg * base**i   
-        gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg))); 
-    }    
+GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Vector *msg){     
+    Polynomial msg_poly(msg->vec, sk->param->size, sk->param->coef_modulus);
+    std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(&msg_poly);   
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  
@@ -362,17 +347,7 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
 }
  
 GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial *msg){
-    std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
-    int32_t digits = gadget->digits;
-    uint64_t base = gadget->base;   
-    // Encryptions of - msg* base**i    
-    gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->kdm_encrypt(msg)));
-    for(int32_t i = 1; i < digits; ++i){
-        // Multiply msg by base
-        msg->mul(msg, base); 
-        // Encrypt msg * base**i   
-        gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->kdm_encrypt(msg))); 
-    }   
+    std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 } 
 
@@ -387,5 +362,36 @@ GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int32_t size){
     }
     return kdm_gadget_encrypt(&msg_poly);
 } 
-
  
+
+ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(Polynomial *msg){      
+    std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
+    return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
+}
+ 
+ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(uint64_t *msg, int32_t size){
+    if(size > sk->param->size){
+        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
+    }
+    Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
+    msg_poly.zeroize();
+    for(int32_t i = 0; i < size; ++i){
+        msg_poly.coefs[i] = msg[i];
+    }
+    return extended_encrypt(&msg_poly);
+}
+
+
+std::vector<std::unique_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(Polynomial *msg){
+    std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
+    std::shared_ptr<Polynomial> msg_cpy(msg->clone());  
+    // Encryptions of - msg* base**i    
+    gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg)));
+    for(int32_t i = 1; i < gadget->digits; ++i){
+        // Multiply msg by base
+        msg_cpy->mul(msg_cpy.get(), gadget->base); 
+        // Encrypt msg * base**i   
+        gadget_ct.push_back(std::unique_ptr<NTRUCT>(sk->encrypt(msg_cpy.get()))); 
+    }    
+    return gadget_ct;
+}

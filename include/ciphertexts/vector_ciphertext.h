@@ -106,11 +106,17 @@ class GadgetVectorCTSK{
     /// @return Creates a new ciphertext
     virtual GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size) = 0; 
     
-    /// @brief Encrypts the msg coeffficient vector and returns the ciphertext
+    /// @brief Encrypts the msg coefficient vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0;  
+    //virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0;  
+
+    /// @brief Encrypts the msg vector and returns the ciphertext
+    /// @param msg The message to encrypt
+    /// @param size The size of the message
+    /// @return Creates a new ciphertext
+    virtual GadgetVectorCT* gadget_encrypt(Vector *msg) = 0;  
 
     template <class Archive>
     void save( Archive & ar ) const {}

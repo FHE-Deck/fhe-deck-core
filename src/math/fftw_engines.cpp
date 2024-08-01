@@ -79,6 +79,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
     
+    Utils::array_signed_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
     engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
@@ -86,6 +87,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in
         in_1_temp = &in_1->poly_array[i * in_1->degree];
         in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
         
+        Utils::array_signed_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
         engine.to_eval_form(fft_prod_new, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, fft_prod_new, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
@@ -104,7 +106,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in
     fftw_complex* in_2_temp = in_2_cast->eval_fftw;
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
-     
+      
     engine.mul_eval_form(fft_multisum_eval_new, in_1_temp, in_2_temp);   
     for(int32_t i = 1; i < in_2_cast->array_size; ++i){
         in_1_temp = &in_1_cast->eval_fftw[i * in_1_cast->size];
@@ -130,6 +132,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEva
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast->size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast->size]; 
     
+    Utils::array_signed_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
     engine.to_eval_form(out_eval, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, out_eval, in_2_temp);  
  
@@ -138,6 +141,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEva
         out_eval = &out_in_1_eval_cast->eval_fftw[i * out_in_1_eval_cast->size];
         in_2_temp = &in_2_cast->eval_fftw[i * in_2_cast->size];
         
+        Utils::array_signed_form(in_1_temp, in_1_temp, in_1->degree, in_1->coef_modulus); 
         engine.to_eval_form(out_eval, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, out_eval, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
