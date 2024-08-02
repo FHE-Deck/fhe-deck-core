@@ -1,6 +1,12 @@
  
 #ifndef UTILS_H
 #define UTILS_H
+ 
+
+/**
+ * @file utils.h
+ */
+
 
 // TODO: NTL is only needed for testing. Multiplication engine is handled in polynomial.h, so Need to get rid of it here. 
 #include <NTL/ZZX.h>

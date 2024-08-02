@@ -2,6 +2,12 @@
 #ifndef FHE_CONFIGURATION_H
 #define FHE_CONFIGURATION_H
  
+
+/**
+ * @file fhe_configuration.h
+ */
+
+
 #include "lwe.h"
 #include "rlwe.h" 
 #include "ciphertext_sanitization.h"

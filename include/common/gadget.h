@@ -2,6 +2,13 @@
 #ifndef GADGET_H
 #define GADGET_H
 
+
+
+/**
+ * @file gadget.h
+ */
+
+
 #include "utils.h" 
 #include "sample.h"
 #include "vector.h"

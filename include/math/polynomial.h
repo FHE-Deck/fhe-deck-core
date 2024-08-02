@@ -1,6 +1,10 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
+/**
+ * @file polynomial.h
+ */
+
 #include <memory> 
 #include "enums.h"
 #include "utils.h"  

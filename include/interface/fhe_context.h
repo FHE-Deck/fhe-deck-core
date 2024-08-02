@@ -1,6 +1,12 @@
 #ifndef FHE_CONTEXT_H
 #define FHE_CONTEXT_H
 
+
+/**
+ * @file fhe_context.h
+ */
+
+
 #include "ciphertext.h" 
 #include "fhe_configuration.h"
 #include "enums.h" 

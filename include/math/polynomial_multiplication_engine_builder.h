@@ -1,6 +1,9 @@
 #ifndef POLYNOMIAL_MULTIPLICATION_ENGINE_BUILDER_H
 #define POLYNOMIAL_MULTIPLICATION_ENGINE_BUILDER_H
  
+/**
+ * @file polynomial_multiplication_engine_builder.h
+ */
 
 #include "polynomial.h"
 

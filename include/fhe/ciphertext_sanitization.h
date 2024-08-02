@@ -1,6 +1,12 @@
 #ifndef CIPHERTEXT_SANITIZATION_H
 #define CIPHERTEXT_SANITIZATION_H
 
+
+/**
+ * @file ciphertext_sanitization.h
+ */
+
+
 #include "lwe.h"
 #include "functional_bootstrap.h"
  

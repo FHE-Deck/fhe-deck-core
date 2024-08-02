@@ -1,6 +1,10 @@
 #ifndef VECTOR_H
 #define VECTOR_H
  
+/**
+ * @file vector.h
+ */
+
 #include <memory> 
 #include <cinttypes>
 

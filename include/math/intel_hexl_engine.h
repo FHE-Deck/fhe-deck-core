@@ -1,6 +1,10 @@
 #ifndef INTEL_HEXL_ENGINE_H
 #define INTEL_HEXL_ENGINE_H
 
+/**
+ * @file intel_hexl_engine.h
+ */
+
 #include "polynomial.h"   
 
 namespace fhe_deck{

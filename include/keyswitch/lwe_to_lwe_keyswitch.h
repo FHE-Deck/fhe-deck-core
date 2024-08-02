@@ -2,6 +2,10 @@
 #ifndef LWE_TO_LWE_KEYSWITCH_H
 #define LWE_TO_LWE_KEYSWITCH_H
 
+/**
+ * @file lwe_to_lwe_keyswitch.h
+ */
+
 #include "lwe.h"  
  
 #include <cereal/archives/binary.hpp>

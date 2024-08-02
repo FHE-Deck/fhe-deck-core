@@ -1,6 +1,10 @@
 #ifndef PLAINTEXT_ENCODING_H
 #define PLAINTEXT_ENCODING_H
  
+/**
+ * @file plaintext_encoding.h
+ */
+
 #include <iostream>
 #include "enums.h"  
 #include "utils.h"

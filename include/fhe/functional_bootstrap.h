@@ -2,6 +2,12 @@
 #ifndef FUNCTIONAL_BOOTSTRAP_H
 #define FUNCTIONAL_BOOTSTRAP_H
  
+
+/**
+ * @file functional_bootstrap.h
+ */
+
+
 #include "ciphertext.h"
 #include "lwe.h"
 #include "rlwe.h" 

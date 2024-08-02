@@ -1,6 +1,12 @@
 #ifndef KS_FUNCTIONAL_BOOTSTRAP_H
 #define KS_FUNCTIONAL_BOOTSTRAP_H
 
+
+/**
+ * @file ks_functional_bootstrap.h
+ */
+
+
 #include "functional_bootstrap.h"
 
 namespace fhe_deck{

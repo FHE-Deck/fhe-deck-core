@@ -2,6 +2,10 @@
 #ifndef LWE_H
 #define LWE_H
 
+/**
+ * @file lwe.h
+ */
+
 #include <random>
 #include <iostream> 
 #include "utils.h"
@@ -12,10 +16,12 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
-namespace fhe_deck{
 
-/**
- * @brief LWE Parameters. 
+namespace fhe_deck{
+ 
+
+/** 
+ * @brief LWE Parameters.  
  */  
 class LWEParam{
 
@@ -41,8 +47,8 @@ class LWEParam{
    }   
 };
 
-/**
- * @brief LWE Ciphertext. Stores the ciphertext vector, and implements all public operations on the ciphertext.
+/** 
+ * @brief LWE Ciphertext. Stores the ciphertext vector, and implements all public operations on the ciphertext. 
  */
 class LWECT{
  
@@ -457,7 +463,8 @@ class LWEPublicKey{
     }    
     
 };
+ 
 
-}
+}/// End of namespace fhe_deck
 
 #endif

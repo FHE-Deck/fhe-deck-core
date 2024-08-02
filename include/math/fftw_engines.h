@@ -1,6 +1,10 @@
 #ifndef FFTW_ENGINES_H
 #define FFTW_ENGINES_H
 
+/**
+ * @file fftw_engines.h
+ */
+
 #include "polynomial.h"
 
 namespace fhe_deck{

@@ -1,6 +1,10 @@
 #ifndef LWE_TO_RLWE_KEYSWITCH_H
 #define LWE_TO_RLWE_KEYSWITCH_H
 
+/**
+ * @file lwe_to_rlwe_keyswitch.h
+ */
+
 #include "lwe.h"
 #include "rlwe.h"
 

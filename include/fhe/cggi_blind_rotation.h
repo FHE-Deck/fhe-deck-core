@@ -1,6 +1,12 @@
 #ifndef GINX_BLIND_ROTATION_H
 #define GINX_BLIND_ROTATION_H
 
+
+/**
+ * @file cggi_blind_rotation.h
+ */
+
+
 #include "lwe.h" 
 #include "rotation_poly.h"
 #include "blind_rotation.h"

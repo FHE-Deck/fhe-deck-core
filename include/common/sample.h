@@ -2,6 +2,13 @@
 #ifndef SAMPLE_H
 #define SAMPLE_H
 
+
+
+/**
+ * @file sample.h
+ */
+
+
 #include <random>
 
 

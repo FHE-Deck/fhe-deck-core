@@ -2,6 +2,12 @@
 #ifndef LMP_FUNCTIONAL_BOOTSTRAP_H
 #define LMP_FUNCTIONAL_BOOTSTRAP_H
 
+
+/**
+ * @file lmp_functional_bootstrap.h
+ */
+
+
 #include "functional_bootstrap.h"
 
 namespace fhe_deck{

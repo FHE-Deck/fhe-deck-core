@@ -2,6 +2,12 @@
 #ifndef VECTOR_CIPHERTEXT_H
 #define VECTOR_CIPHERTEXT_H
 
+
+/**
+ * @file vector_ciphertext.h
+ */
+
+
 #include <memory>
 
 namespace fhe_deck{

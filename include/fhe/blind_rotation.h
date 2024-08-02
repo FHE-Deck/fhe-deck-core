@@ -1,6 +1,12 @@
 #ifndef BLIND_ROTATION_H
 #define BLIND_ROTATION_H
 
+
+/**
+ * @file blind_rotation.h
+ */
+
+
 #include "lwe.h"
 #include "rlwe.h" 
 #include "ntru.h" 

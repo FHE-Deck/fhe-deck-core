@@ -2,6 +2,11 @@
 #define ENUMS_H
 
 
+/**
+ * @file enums.h
+ */
+
+
 namespace fhe_deck{
 
 enum RingType {cyclic, negacyclic};

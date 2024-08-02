@@ -1,6 +1,12 @@
 
 #ifndef RLWE_H
 #define RLWE_H
+
+
+/**
+ * @file rlwe.h
+ */
+
  
 #include "enums.h"
 #include "sample.h"

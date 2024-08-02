@@ -1,6 +1,12 @@
 #ifndef CIPHERTEXT_H
 #define CIPHERTEXT_H
 
+
+/**
+ * @file ciphertext.h
+ */
+
+
 #include <iostream>
 #include "lwe.h"
 #include "enums.h"  

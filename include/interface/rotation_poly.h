@@ -1,6 +1,10 @@
 #ifndef ROTATION_POLY_H
 #define ROTATION_POLY_H
 
+/**
+ * @file rotation_poly.h
+ */
+
 #include "utils.h"
 #include "plaintext_encoding.h"
 #include "polynomial.h"

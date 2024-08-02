@@ -2,6 +2,12 @@
 #ifndef NTRU_H
 #define NTRU_H
 
+
+/**
+ * @file ntru.h
+ */
+
+
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>
