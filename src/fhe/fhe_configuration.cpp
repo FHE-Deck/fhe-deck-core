@@ -751,8 +751,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     long rlwe_base = 1 << 4;
     std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
     std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
-
-
+ 
     // Key Switching Key Gen
     auto *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk);
     auto *rlwe_ksk = new LWEToRLWEKeySwitchKey(this->secret_key, rlwe_gadget_sk_rksk);

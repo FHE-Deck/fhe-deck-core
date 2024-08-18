@@ -204,7 +204,7 @@ class RLWECT : public PolynomialCT{
 
 
 /**
- * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message) and RLWECT(- base^i * message * secret key).
+ * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message).
  */
 class ExtendedRLWECT : public ExtendedPolynomialCT{ 
 

@@ -20,17 +20,16 @@ void Vector::init(int32_t size, int64_t modulus){
     is_init = true;
 }
 
-void Vector::add(Vector *out, Vector *other){
+void Vector::add(Vector *out, const Vector *other) const{
     for(int32_t i = 0; i < size; ++i){
         out->vec[i] = vec[i] + other->vec[i];
-        out->vec[i] %= this->modulus;
+        out->vec[i] %= this->modulus; 
     }
 }
   
-void Vector::sub(Vector *out, Vector *other){ 
+void Vector::sub(Vector *out, const Vector *other) const{ 
     for(int32_t i = 0; i < size; ++i){
-        out->vec[i] = this->vec[i] - other->vec[i];    
-        Utils::integer_mod_form(out->vec[i], this->modulus);
+        out->vec[i] =  Utils::integer_mod_form(this->vec[i] - other->vec[i], this->modulus);      
     } 
 }
   
@@ -69,16 +68,16 @@ void VectorArray::init_two_dim_array(){
 }
 
 
-void VectorArray::add(VectorArray *out, VectorArray *other){
+void VectorArray::add(VectorArray *out, const VectorArray *other){
     for(int32_t i = 0; i < full_size; ++i){
         out->vec_array[i] = vec_array[i] + other->vec_array[i];
         out->vec_array[i] %= this->modulus;
     }
 }
   
-void VectorArray::sub(VectorArray *out, VectorArray *other){
+void VectorArray::sub(VectorArray *out, const VectorArray *other){
     for(int32_t i = 0; i < full_size; ++i){
-        out->vec_array[i] = Utils::integer_mod_form(this->vec_array[i] - other->vec_array[i], this->modulus);    
+        out->vec_array[i] = Utils::integer_mod_form(this->vec_array[i] - other->vec_array[i], this->modulus);     
     } 
 }
   

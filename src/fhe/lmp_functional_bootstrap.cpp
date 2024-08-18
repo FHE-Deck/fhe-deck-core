@@ -53,7 +53,8 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT *lwe_ct_out, s
     }    
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
-    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_msb());   
+    PlaintextEncoding msb_mask_pt_encoding(full_domain, 4, encoding.ciphertext_modulus);
+    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_sgn(msb_mask_pt_encoding));   
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);   
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(lwe_ct_out);
@@ -103,7 +104,8 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     }    
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!) 
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build());   
-    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_msb());   
+    PlaintextEncoding msb_mask_pt_encoding(full_domain, 4, encoding.ciphertext_modulus);
+    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_sgn(msb_mask_pt_encoding));   
     blind_rotation_key->blind_rotate(br_out->accumulator, &lwe_c, acc_msb);
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(&lwe_ct_out);

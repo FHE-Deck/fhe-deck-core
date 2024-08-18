@@ -100,8 +100,7 @@ class FHEConfiguration{
     FHEConfiguration(FHENamedParams name);
    
     void generate_keys();
- 
- 
+  
     void init_tfhe_11_NTT(); 
 
     void init_tfhe_11_NTT_flood();
@@ -122,9 +121,7 @@ class FHEConfiguration{
 
     void init_tfhe_11_KS_amortized();
 
-    
-
- 
+     
 };
 
 }

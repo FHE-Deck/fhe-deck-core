@@ -1,6 +1,49 @@
 cmake_minimum_required(VERSION 3.13)
-
+ 
 project(fhe_deck)
+ 
+option(USE_FOO "Use FOO" ON)
+
+set(third_party "${PROJECT_SOURCE_DIR}/build/third_party/")
+
+include(ExternalProject)  
+ExternalProject_Add(
+    intel_hexl
+    GIT_REPOSITORY https://github.com/intel/hexl.git 
+	GIT_TAG development
+    PREFIX ${PROJECT_SOURCE_DIR}/external/intel_hexl
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/intel_hexl 
+)  
+ 
+include_directories(${third_party}/intel_hexl/include)
+link_directories(${third_party}/intel_hexl/lib) 
+
+include(ExternalProject) 
+set(FFTW fftw_lib)
+ExternalProject_Add(
+    fftw_lib
+    URL https://www.fftw.org/fftw-3.3.10.tar.gz 
+	URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
+    PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTW}
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftw3 -DENABLE_LONG_DOUBLE=ON 
+)
+
+include_directories(${third_party}/fftw3/include)
+link_directories(${third_party}/fftw3/lib) 
+  
+
+include(ExternalProject)  
+ExternalProject_Add(
+    cereal_lib
+    GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+	GIT_TAG v1.3.2
+    PREFIX ${PROJECT_SOURCE_DIR}/external/cereal_lib
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/cereal  -DSKIP_PERFORMANCE_COMPARISON=ON -DBUILD_TESTS=OFF
+)
+
+include_directories(${third_party}/cereal/include)
+link_directories(${third_party}/cereal/lib) 
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops")
@@ -37,9 +80,12 @@ add_library(fhe_deck STATIC
 	${INC_KEYSWITCH} ${SRC_KEYSWITCH}
 	${INC_INTERFACE} ${SRC_INTERFACE}
 	${INC_COMMON} ${SRC_COMMON} 
-	${INC_FHE} ${SRC_FHE})
-target_link_libraries(fhe_deck PRIVATE ntl fftw3 fftw3l hexl)
+	${INC_FHE} ${SRC_FHE}
+)
+   
+target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftw3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
 
 add_subdirectory(examples) 
 
-#add_subdirectory(tests) 
+ 
+add_subdirectory(tests) 

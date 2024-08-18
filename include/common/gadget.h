@@ -39,6 +39,7 @@ class Gadget{
     // Coefficient Modulus
     int64_t modulus;
 
+    /// @deprecated
     virtual void sample(int64_t** out, int64_t *in) = 0;
 
     virtual void sample(VectorArray* out, int64_t *in) = 0;

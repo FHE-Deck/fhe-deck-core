@@ -194,16 +194,7 @@ Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus){
     this->init_from_vec();
     Utils::cp(this->coefs, coefs, degree);
 }
-
-/*
-void Polynomial::init(int32_t degree, int64_t coef_modulus){
-    this->degree = degree;
-    this->coef_modulus = coef_modulus;
-    this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
-    this->coefs = new int64_t[degree];
-    this->is_init = true;
-}
-*/
+ 
 
 void Polynomial::init_from_vec(){
     this->degree = size;
@@ -293,25 +284,9 @@ void Polynomial::mul(Polynomial *out, int64_t scalar){
     if(this->coef_modulus != out->coef_modulus){
         throw std::logic_error("Polynomial::mul(Polynomial *out, int64_t scalar): Coefficient moduli of polynomials don't match!");
     } 
-    int32_t scalar_bit_size = Utils::number_of_bits(scalar);
-    if((scalar_bit_size + this->coef_modulus_bit_size) < 64){
-        for(int32_t j=0; j < this->degree; ++j){ 
-            out->coefs[j] = (this->coefs[j] * scalar) % this->coef_modulus;  
-        }
-    }else{
-        /// TODO: The case where the scalar is bigger is handled by LongIntegerMultipler class in util.h. Use it here.
-         // Note that we need to handle the case scalar is bigger. 
-        int32_t free_bits = 63 - this->coef_modulus_bit_size;
-        int64_t div = Utils::pow(free_bits, 2); 
-        for(int32_t j=0; j < this->degree; ++j){  
-            int64_t temp_scalar = scalar;
-            while(temp_scalar > div){ 
-                /// TODO: Make bit shift with free_bits instead of difision
-                temp_scalar /= div; 
-                out->coefs[j] = (this->coefs[j] * div) % this->coef_modulus;  
-            }  
-            out->coefs[j] = (this->coefs[j] * temp_scalar) % this->coef_modulus;   
-        } 
+    
+    for(int32_t j=0; j < this->degree; ++j){ 
+        out->coefs[j] = (int64_t)((__int128_t(coefs[j]) * __int128_t(scalar)) % __int128_t(coef_modulus)); 
     } 
 }
 

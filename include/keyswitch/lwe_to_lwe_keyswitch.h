@@ -56,6 +56,7 @@ class LWEToLWEKeySwitchKey{
     /// @brief Key switching with full modulus reduction at each step
     /// @param lwe_ct_out The output ciphertext
     /// @param lwe_ct_in The input ciphertext
+    /// @note The function changes only the ct field of lwe_ct_out. In particular, it doesn't sent the parameters field, so you must make sure lwe_ct_out has the right parameters and is already initialized.
     void lwe_to_lwe_key_switch(LWECT *lwe_ct_out, LWECT *lwe_ct_in);
  
     template <class Archive>

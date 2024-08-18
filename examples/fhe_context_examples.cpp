@@ -1,6 +1,5 @@
 #include <iostream>
-#include "fhe_context.h"
- 
+#include "fhe_context.h" 
 #include <cassert>
 #define assertm(exp, msg) assert(((void)msg, exp))
  
@@ -1039,6 +1038,13 @@ void serialization_test(){
 
 
 int main(){  
+
+    #ifdef FOO
+    std::cout << "Foo is defined" << std::endl;
+    #endif
+    #ifndef FOO
+    std::cout << "Foo is not defined" << std::endl;
+    #endif
          
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  

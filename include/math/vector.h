@@ -45,12 +45,12 @@ class Vector{
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 
-    void add(Vector *out, Vector *other);
+    void add(Vector *out, const Vector *other) const;
   
     /// @brief Subtracts other from this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 
-    void sub(Vector *out, Vector *other);
+    void sub(Vector *out, const Vector *other) const;
   
     /// @brief Negates the coefficients of this vector and stores the output in out. 
     /// @param out The output vector
@@ -108,12 +108,12 @@ class VectorArray{
     /// @brief Coordinate wise addition of vector arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void add(VectorArray *out, VectorArray *other);
+    void add(VectorArray *out, const VectorArray *other);
   
     /// @brief Coordinate wise subtraction of vectors arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void sub(VectorArray *out, VectorArray *other);
+    void sub(VectorArray *out, const VectorArray *other);
   
     /// @brief Coordinate negation of vectors in this arrays
     /// @param out The resulting vector array 

@@ -80,9 +80,9 @@ class NTRUParam : public PolynomialCTParam{
         
     template <class Archive>
     void load( Archive & ar )
-    {  
+    {   
       ar(cereal::base_class<PolynomialCTParam>(this));   
-      ar(ring, size, coef_modulus, arithmetic);  
+      ar(ring, size, coef_modulus, arithmetic);   
       init_mul_engine(); 
     } 
  
@@ -282,10 +282,10 @@ class NTRUSK{
         
     template <class Archive>
     void load( Archive & ar )
-    {   
-      ar(param, sk, inv_sk, noise_stddev);  
+    {    
+      ar(param, sk, inv_sk, noise_stddev);   
       this->sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
-      this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
+      this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev)); 
     }  
 };
 

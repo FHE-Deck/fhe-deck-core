@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include "vector.h"  
 #include "enums.h"  
 #include "utils.h"
 
@@ -42,6 +43,17 @@ public:
     /// @return The decoded message. 
     int64_t decode_message(int64_t encoded_message);
 
+
+    /// @brief Encode a message.
+    /// @param message The message to be encoded.
+    /// @return The encoded message.
+    void encode_message(Vector* out, Vector* message);
+
+    /// @brief Decode a message.
+    /// @param phase The encoded message. 
+    /// @return The decoded message. 
+    void decode_message(Vector* out, Vector* encoded_message);
+
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -63,7 +75,7 @@ public:
         }  
     } 
 
-    private: 
+    //private: 
     
     /// @brief Number of ticks used for encoding and decoding plaintext messages. It depents on the encoding type.
     int64_t ticks = 0;

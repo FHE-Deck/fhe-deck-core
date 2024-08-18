@@ -67,6 +67,10 @@ class FFTPlan{
     void to_coef_form(int64_t *coef_form, fftw_complex* eval_form);
 
     void to_coef_form(double *coef_form, fftw_complex* eval_form);
+
+    void to_coef_form_scale(int64_t *coef_form, fftw_complex* eval_form, double scale);
+
+    void to_coef_form_scale(double *coef_form, fftw_complex* eval_form, double scale);
  
     void add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex* in_2);
 

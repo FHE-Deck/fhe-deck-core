@@ -68,12 +68,19 @@ public:
     /// @brief Converts the polynomial to non-amortized form.
     void to_non_amortized_form();
    
-    /// @brief Constructs a specific rotation polynomial, that is used in various bootstrapping procedures.
+    /// @brief Constructs a specific rotation polynomial, that compute the sign of the intput and is used in various bootstrapping procedures.
     /// @param t The pleintext space.
     /// @param degree The degree of the polynomial.
     /// @param ciphertext_modulus The modulus of the ciphertext.
     /// @return The rotation polynomial.
     /// @details It sets all coefficients to -1, so that if a bootstrapped message is positive the constant term of the rotated poly is 1. If the bootstrapped message is negative the constant term of the rotated poly is -1.
+    static RotationPoly rot_sgn(int32_t plaintext_space, int64_t degree, int64_t ciphertext_modulus); 
+
+    /// @brief Constructs a specific rotation polynomial, that computes -1/2 for a positive number and 1/2 for a negative. After bootstraping if we add 1/2, we get the msb. It is used in various bootstrapping procedures.
+    /// @param t The pleintext space.
+    /// @param degree The degree of the polynomial.
+    /// @param ciphertext_modulus The modulus of the ciphertext.
+    /// @return The rotation polynomial. 
     static RotationPoly rot_msb(int32_t plaintext_space, int64_t degree, int64_t ciphertext_modulus); 
 
     /// @brief Constructs a specific rotation polynomial, that is used in various bootstrapping procedures.

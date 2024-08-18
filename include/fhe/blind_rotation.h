@@ -98,7 +98,12 @@ class AbstractAccumulatorBuilder{
     /// @brief This is a special function, that returns a accumulator which after blind rotation will return the most significant bit of the message. 
     /// @return Returns a new object of VectorCTAccumulator.
     /// NOTE: The most signifficant bit is computed by rotating a polynomial over a negacyclic polynomial ring. This accumulator is used by LMPFunctionalBootstrapPublicKey 
-    virtual VectorCTAccumulator* get_acc_msb() = 0;
+    virtual VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) = 0;
+
+    /// @brief This is a special function, that returns a accumulator which after blind rotation will return the most significant bit of the message. 
+    /// @return Returns a new object of VectorCTAccumulator.
+    /// NOTE: The most signifficant bit is computed by rotating a polynomial over a negacyclic polynomial ring. This accumulator is used by LMPFunctionalBootstrapPublicKey 
+    virtual VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) = 0;
   
     /// @brief This is a special function, that returns an VectorCTAccumulator that has in its first position "1", and other positions are "0".
     /// @return Returns a new object of VectorCTAccumulator.
@@ -139,9 +144,10 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
     /// @brief Return a Accumulator that computes the most significant bit of the message.
-    /// @return The accumulator.
-    /// @todo Note that this funciton sets the messsage space to 4. This is very specific to lmp bootstrap. But I need to use this also for other bootstraps. 
-    VectorCTAccumulator* get_acc_msb();
+    /// @return The accumulator. 
+    VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding);
+  
+    VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding);
   
     /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
     /// @param output_encoding The encoding used to encode the first position to 1.
@@ -194,9 +200,10 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
   
     /// @brief Return a Accumulator that computes the most significant bit of the message.
-    /// @return The accumulator.
-    /// @todo Note that this funciton sets the messsage space to 4. This is very specific to lmp bootstrap. But I need to use this also for other bootstraps. 
-    VectorCTAccumulator* get_acc_msb();
+    /// @return The accumulator. 
+    VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding);
+
+    VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding);
   
     /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
     /// @param output_encoding The encoding used to encode the first position to 1.

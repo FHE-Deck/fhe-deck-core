@@ -68,7 +68,7 @@ class VectorCTParam{
     void save( Archive & ar ) const {}
         
     template <class Archive>
-    void load( Archive & ar ) {} 
+    void load( Archive & ar ) { } 
 };
 
 /**

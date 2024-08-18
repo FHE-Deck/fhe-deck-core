@@ -18,7 +18,7 @@ LWEToLWEKeySwitchKey& LWEToLWEKeySwitchKey::operator=(const LWEToLWEKeySwitchKey
     return *this;
 }
  
-void LWEToLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){  
+void LWEToLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){   
     key_content = std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]>(new std::unique_ptr<LWEGadgetCT>[origin->dim]); 
     for(int32_t i = 0; i < origin->dim; ++i){      
         key_content[i] = std::unique_ptr<LWEGadgetCT>(sk_dest->gadget_encrypt(sk_origin->key[i]));  

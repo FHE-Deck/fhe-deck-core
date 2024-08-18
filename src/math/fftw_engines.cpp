@@ -21,32 +21,40 @@ PolynomialArrayEvalForm* FFTWNegacyclicEngine::init_polynomial_array_eval_form(i
   
 void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm *out, Polynomial *in){
     PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
-    engine.to_eval_form(out_cast->eval_fftw, in->coefs); 
+    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in->degree, in->coef_modulus);
+    Utils::array_signed_form(input->coefs, in->coefs, in->degree, in->coef_modulus); 
+    engine.to_eval_form(out_cast->eval_fftw, input->coefs); 
+    out_cast->scale = 1.0;
 }
  
 void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArrayCoefForm *in){ 
     PolynomialArrayEvalFormFFTWComplex* out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex*>(out);
     int64_t *in_poly;
     fftw_complex *out_poly;
+    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in->degree, in->coef_modulus);
     for (int32_t i = 0; i < in->array_size; ++i)
     {  
         in_poly = &in->poly_array[i * in->degree];
+        Utils::array_signed_form(input->coefs, in_poly, in->degree, in->coef_modulus);
         out_poly = &out_cast->eval_fftw[i * out_cast->size];  
-        engine.to_eval_form_scale(out_poly, in_poly, 2.0);  
+        //engine.to_eval_form_scale(out_poly, in_poly, 2.0);  
+        engine.to_eval_form(out_poly, in_poly);  
     } 
+    out_cast->scale = 1.0;
 }
 
 void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){ 
     PolynomialEvalFormFFTWComplex* in_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in);
-    engine.to_coef_form(out->coefs, in_cast->eval_fftw);
+    engine.to_coef_form_scale(out->coefs, in_cast->eval_fftw, in_cast->scale);
     // Divide by the scale (polynomial size times two.)
     // NOTE: For FHE its nice to scale one of the polynomials in the key
     // That is this rescaling could be precomputed. But here the Engine and later Polynomial class are oblivious to that.
     // Maybe we can add precomputation in the future - now its not a bootleneck anyway.
-    double scale = (double)(engine.plan_size * 2);
-    for(int32_t i = 0; i < degree; ++i){   
-        out->coefs[i] = round((double)out->coefs[i] / scale); 
-    } 
+    //double scale = (double)(engine.plan_size * 2.0);
+    //for(int32_t i = 0; i < degree; ++i){   
+    //    out->coefs[i] = round((double)out->coefs[i] / scale); 
+    //} 
+    Utils::array_mod_form(out->coefs, out->coefs, out->degree, out->coef_modulus);
 }
   
 void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArrayEvalForm *in){
@@ -57,7 +65,13 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArray
     {
         in_poly = &in_cast->eval_fftw[i * in_cast->size];
         out_poly = &out->poly_array[i * out->degree];
-        engine.to_coef_form(out_poly, in_poly); 
+        engine.to_coef_form_scale(out_poly, in_poly, in_cast->scale); 
+
+        //double scale = (double)(engine.plan_size * 2.0);
+        //for(int32_t j = 0; j < degree; ++j){   
+        //    out_poly[j] = round((double)out_poly[j] / scale); 
+        //} 
+        Utils::array_mod_form(out_poly, out_poly, out->degree, out->coef_modulus);
     }
 }
 
@@ -65,10 +79,11 @@ void FFTWNegacyclicEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1
     PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
     PolynomialEvalFormFFTWComplex* in_1_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_1);
     PolynomialEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_2);
-    // Remind that one of the polynomials must be scaled by the plan_size times two. 
+    /// NOTE: Remind that one of the polynomials must be scaled by the plan_size times two. 
     engine.mul_eval_form(out_cast->eval_fftw, 
             in_1_cast->eval_fftw, 
             in_2_cast->eval_fftw);  
+    out_cast->scale = 2.0 * (in_1_cast->scale * in_2_cast->scale);
 }
 
 
@@ -91,8 +106,9 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayCoefForm *in
         engine.to_eval_form(fft_prod_new, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, fft_prod_new, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
-    } 
-    engine.to_coef_form(out->coefs, fft_multisum_eval_new);
+    }  
+    double scale = in_2_cast->scale * 2.0;
+    engine.to_coef_form_scale(out->coefs, fft_multisum_eval_new, scale);
     Utils::array_mod_form(out->coefs, out->coefs, in_1->degree, in_1->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
@@ -115,8 +131,8 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out, PolynomialArrayEvalForm *in
         engine.mul_eval_form(fft_prod_new, in_1_temp, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     } 
-    
-    engine.to_coef_form(out->coefs, fft_multisum_eval_new); 
+    double scale = in_1_cast->scale * in_2_cast->scale * 2.0;
+    engine.to_coef_form_scale(out->coefs, fft_multisum_eval_new, scale); 
     Utils::array_mod_form(out->coefs, out->coefs, out->degree, out->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
@@ -146,7 +162,9 @@ void FFTWNegacyclicEngine::multisum(Polynomial *out_multisum, PolynomialArrayEva
         engine.mul_eval_form(fft_prod_new, out_eval, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     } 
-    engine.to_coef_form(out_multisum->coefs, fft_multisum_eval_new);
+    double scale =  in_2_cast->scale * 2.0;
+    out_in_1_eval_cast->scale = 1.0;
+    engine.to_coef_form_scale(out_multisum->coefs, fft_multisum_eval_new, scale);
     Utils::array_mod_form(out_multisum->coefs, out_multisum->coefs, in_1->degree, out_multisum->coef_modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 

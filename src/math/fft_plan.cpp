@@ -126,8 +126,7 @@ void FFTPlan::to_eval_form(fftw_complex* eval_form, int32_t *poly){
     } 
 }
     
- 
-// TODO: This one seems not to be used
+  
 void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, int64_t *poly){ 
     // DONE: Scale should be precomputed in the constructor
     // DONE: For cyclic scale is plan_size, for negacyclic its plan_size * 2 (I think)
@@ -204,6 +203,42 @@ void FFTPlan::to_coef_form(double *coef_form, fftw_complex* eval_form){
         coef_form[i] = in[i];
     }
 } 
+
+void FFTPlan::to_coef_form_scale(int64_t *coef_form, fftw_complex* eval_form, double additional_scale){
+    double scale = (double)(plan_size * additional_scale);
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form);  
+    int32_t copy;
+    if(ring == cyclic){
+        copy = plan_size;
+    }else if(ring == negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = (int64_t)round(in[i]/scale);
+    }
+}
+
+void FFTPlan::to_coef_form_scale(double *coef_form, fftw_complex* eval_form, double additional_scale){
+    double scale = (double)(plan_size * additional_scale);
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form); 
+    int32_t copy;
+    if(ring == cyclic){
+        copy = plan_size;
+    }else if(ring == negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = in[i]/scale;
+    }
+}
  
 void FFTPlan::add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex* in_2){
     // Add the vectors (Note that its complex multiplication)

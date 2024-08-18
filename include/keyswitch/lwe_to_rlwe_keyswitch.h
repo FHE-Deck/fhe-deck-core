@@ -17,19 +17,11 @@ namespace fhe_deck{
     class LWEToRLWEKeySwitchKey{
 
     public:
-        /// @brief The content of the key switching key (all its ciphertexts)
-        /// @todo This should be an extended ciphertext (like a GSW) handled in a separate class. 
-        std::vector<std::vector<std::unique_ptr<RLWECT>>> key_content;
-        /// @brief LWE Parameter from which we do the switching.
-        //std::shared_ptr<LWEParam> origin;
-        /// @brief Gadget parameters (for something...)
-        std::shared_ptr<Gadget>  destination;
-        /// @brief The gadget used to decompose the destination ciphertext.
-        std::shared_ptr<RLWEParam> destination_param;
-        SignedDecompositionGadget gadget;
-        KeySwitchType ks_type; 
-        bool use_automorphism = true;
-
+        /// @brief The content of the key switching key (all its ciphertexts) 
+        std::vector<std::unique_ptr<ExtendedPolynomialCT>> ext_key_content;
+        /// @brief The parameters of the destination RLWE ciphertext.
+        std::shared_ptr<RLWEParam> dest_param;
+          
         LWEToRLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest);
 
         LWEToRLWEKeySwitchKey(const LWEToRLWEKeySwitchKey &other);
@@ -45,11 +37,14 @@ namespace fhe_deck{
         void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest);
 
         private:
-        /// Values precomputed in the constructor.
+        /// @brief inverse of the ring degree
         int64_t degree_inv;
+        /// @brief bit size of the ring degree
         int64_t bits_degree;
-        uint32_t mask2;
-        uint32_t mask;
+        /// @brief mask for modulus reduction by dest_param->size * 2 
+        uint32_t mask_mod_degree_times_two;
+        /// @brief mask for modulus reduction by dest_param->size
+        uint32_t mask_mod_degree;
 
     };
 

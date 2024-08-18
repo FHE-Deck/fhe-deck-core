@@ -9,10 +9,7 @@
 #include "enums.h"
 #include "utils.h"  
 #include "vector.h"
-
-//#include <NTL/ZZX.h>
-//#include <NTL/ZZ_pX.h>
-//#include <NTL/ZZ_p.h>
+ 
 
 #include "fft_plan.h"
 #include "hexl/hexl.hpp"  
@@ -185,6 +182,8 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
     fftw_complex* eval_fftw;
     /// @brief Indicates if eval_fftw has been initialized
     bool is_init = false;
+    /// @brief Indicates current scale, that is used in to_coef
+    double scale = 1.0;
 
     /// @brief Default destructor
     ~PolynomialEvalFormFFTWComplex();	
@@ -293,7 +292,7 @@ class Polynomial: public Vector{
     Polynomial(int32_t degree, int64_t coef_modulus);
 
     /// @brief Constructs the polynomial, and allocates memory for the coefs array.
-    /// @param coefs The coefs array which is goin gto be copied.
+    /// @param coefs The coefs array which is going to be copied.
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
     Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
@@ -373,19 +372,14 @@ class Polynomial: public Vector{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(cereal::base_class<Vector>(this));  
-        ar(coef_modulus, degree);   
-        ar(cereal::binary_data(coefs, sizeof(int64_t) * degree)); 
+        ar(cereal::base_class<Vector>(this));   
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {  
-        ar(cereal::base_class<Vector>(this));  
-        ar(coef_modulus, degree); 
-        init(degree, coef_modulus);   
-        ar(cereal::binary_data(coefs, sizeof(int64_t) * degree));   
-        init_from_vec();
+    {   
+        ar(cereal::base_class<Vector>(this));     
+        init_from_vec(); 
     }  
 };
    
@@ -451,28 +445,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     /// @param i The index of the polynomial in the array
     /// @param poly The input polynomial
     void set_polynomial_at(int32_t i, Polynomial *poly); 
- 
- /*
-    /// @brief Coordinate wise addition of polynomials arrays
-    /// @param out The resulting polynomial array
-    /// @param other The input polynomial array
-    void add(PolynomialArrayCoefForm *out, PolynomialArrayCoefForm *other);
-  
-    /// @brief Coordinate wise subtraction of polynomials arrays
-    /// @param out The resulting polynomial array
-    /// @param other The input polynomial array
-    void sub(PolynomialArrayCoefForm *out, PolynomialArrayCoefForm *other);
-  
-    /// @brief Coordinate negation of polynomials in this arrays
-    /// @param out The resulting polynomial array 
-    void neg(PolynomialArrayCoefForm *out);
-  
-    /// @brief Coordinate wise scalar mmultiplication of polynomials in thie arrays
-    /// @param out The resulting polynomial array
-    /// @param other The input polynomial array
-    void mul(PolynomialArrayCoefForm *out, int64_t scalar); 
- */
-
+   
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -484,6 +457,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     template <class Archive>
     void load( Archive & ar )
     {  
+        std::cout << "In Polynomial void load( Archive & ar )" << std::endl;
         ar(cereal::base_class<VectorArray>(this));  
         //ar(coef_modulus, degree, array_size);   
         //full_size = degree * array_size;
@@ -608,6 +582,8 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
     fftw_complex* eval_fftw; 
 
     bool is_init = false; 
+
+    double scale = 1.0;
  
     ~PolynomialArrayEvalFormFFTWComplex();
 
@@ -690,7 +666,7 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
 
 }/// End of namespace fhe_deck
 
-/// NOTE: The following lines are used to register the classes for serialization using the Cereal library.  
+/// NOTE: The following lines are used to register the classes for serialization using the Cereal library.   
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormLong)
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormFFTWComplex)
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormFFTWLongComplex)

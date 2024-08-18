@@ -60,14 +60,14 @@ void LWECT::add_lazy(LWECT* out, LWECT *in){
   
 void LWECT::add(LWECT* out, int64_t b){ 
     out->ct[0] = (this->ct[0] + b) % this->param->modulus;
-    for(int32_t i = 1; i < param->dim+1; ++i){
+    for(int32_t i = 1; i <= param->dim; ++i){
         out->ct[i] = this->ct[i];
     } 
 }
   
 void LWECT::sub(LWECT* out, int64_t b){
     out->ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
-    for(int32_t i = 1; i < param->dim+1; ++i){
+    for(int32_t i = 1; i <= param->dim; ++i){
         out->ct[i] = this->ct[i];
     } 
 }
@@ -204,7 +204,7 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, Key
     init(); 
     for(int32_t i = 0; i < lwe_par->dim; ++i){
         this->key[i] = key[i];
-    }   
+    }    
 }
 
 void LWESK::init(){
@@ -241,13 +241,11 @@ LWECT* LWESK::encrypt(int64_t m){
 }
  
 void LWESK::encrypt(LWECT *out, int64_t m){     
-    out->ct[0] = error_dist->next() + m; 
-    for(int32_t i=1; i < param->dim+1; ++i){      
-        /// TODO: I should assume the out and key are in modular form. Then doing it here is not necessary.
-        out->ct[i] = Utils::integer_mod_form(unif_dist->next(), param->modulus); 
-        int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);
-        int64_t c = Utils::integer_mod_form(out->ct[i], param->modulus);
-        out->ct[0] -= multiplier->mul(k,  c); 
+    out->ct[0] = Utils::integer_mod_form(error_dist->next() + m, param->modulus); 
+    for(int32_t i=1; i < param->dim+1; ++i){       
+        out->ct[i] = unif_dist->next(); 
+        int64_t k = key[i-1]; 
+        out->ct[0] -= multiplier->mul(k,  out->ct[i]); 
         out->ct[0] = Utils::integer_mod_form(out->ct[0], param->modulus); 
     }   
 }
@@ -262,7 +260,8 @@ void LWESK::encode_and_encrypt(LWECT* in, int64_t m, PlaintextEncoding encoding)
     encrypt(in, encoding.encode_message(m)); 
 } 
  
-int64_t LWESK::partial_decrypt(LWECT *in){
+int64_t LWESK::partial_decrypt(LWECT *in){ 
+    Utils::array_mod_form(key, key, param->dim, param->modulus); 
     int64_t phase  = in->ct[0]; 
     for(int32_t i = 1; i < param->dim+1; ++i){ 
         int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);  
@@ -300,11 +299,12 @@ LWEGadgetCT* LWEGadgetSK::gadget_encrypt(int64_t m){
 }
 
 void LWEGadgetSK::gadget_encrypt(LWEGadgetCT* gadget_ct, int64_t m){
-    int64_t temp_base = 1;    
-    gadget_ct->ct_content[0] = std::unique_ptr<LWECT>(lwe->encrypt(m)); 
+    int64_t temp_base = 1;     
+    int64_t message = m;  
+    gadget_ct->ct_content[0] = std::unique_ptr<LWECT>(lwe->encrypt(message)); 
     for(int32_t i = 1; i < this->digits; ++i){
-        temp_base *= this->base;    
-        gadget_ct->ct_content[i] = std::unique_ptr<LWECT>(lwe->encrypt(m * temp_base));
+        temp_base *= this->base;      
+        gadget_ct->ct_content[i] = std::unique_ptr<LWECT>(lwe->encrypt(lwe->multiplier->mul(temp_base, message))); 
     } 
 } 
 

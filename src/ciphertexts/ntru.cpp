@@ -195,11 +195,11 @@ void NTRUSK::key_gen(){
     this->sk = Polynomial(param->size, param->coef_modulus); 
     do{  
         sk_dist->fill_array(this->sk.coefs, param->size);   
+        Utils::array_mod_form(this->sk.coefs, this->sk.coefs, param->size, param->coef_modulus);
         Utils::set_polynomial_from_array(temp_f, this->sk.coefs, param->size, param->coef_modulus);
         status = NTL::InvModStatus(temp_inv_f, temp_f, Utils::get_ring_poly(negacyclic, param->size, param->coef_modulus));  
     }while(status == 1); 
-    this->inv_sk = Polynomial(param->size, param->coef_modulus); 
-    Utils::set_array_from_polynomial(this->sk.coefs, param->size, temp_f); 
+    this->inv_sk = Polynomial(param->size, param->coef_modulus);  
     Utils::set_array_from_polynomial(this->inv_sk.coefs, param->size, temp_inv_f);     
 }  
   
@@ -304,10 +304,10 @@ NTRUCT* NTRUSK::kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encodi
  
 LWESK* NTRUSK::extract_lwe_key(){
     std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
-    std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus));
-    extract_key[0] = Utils::integer_signed_form(this->sk.coefs[0], param->coef_modulus);
-    for(int32_t i = 1; i <  param->size; ++i){ 
-        extract_key[i] = Utils::integer_signed_form(-this->sk.coefs[param->size - i], param->coef_modulus);
+    std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus)); 
+    extract_key[0] = Utils::integer_mod_form(this->sk.coefs[0], param->coef_modulus);
+    for(int32_t i = 1; i <  param->size; ++i){   
+        extract_key[i] = param->coef_modulus-this->sk.coefs[param->size - i];
     } 
     LWESK* key = new LWESK(lwe_param, extract_key.get(), this->noise_stddev, ternary); 
     return key;
