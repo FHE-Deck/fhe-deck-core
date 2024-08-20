@@ -58,8 +58,7 @@ VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator ot
 
  
 }
- 
- /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
+  
 FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim,
                                              long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
         nullptr, false) {
@@ -81,40 +80,9 @@ FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaint
     }
     Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
     Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus); 
-
-/*
-    func_ptr = f; 
-    Polynomial a(dim, coef_modulus);
-    Polynomial b(dim, coef_modulus);
-    Polynomial fake_poly(2 * dim, coef_modulus);
-    auto t = encoding.plaintext_space;
-    auto t2 = t / 2;
-
-    auto skip = dim / t2;
-
-
-    a.zeroize();
-    b.zeroize();
-    fake_poly.zeroize();
-    for(long i = 0; i < t; i++) {
-        auto x_i = (i) % t;
-        auto f_i = func_ptr(x_i, t);
-        auto idx = (t - (i+1)) % t;
-
-        fake_poly.coefs[idx * skip] = f_i;
-    }
-    Utils::array_mod_form(b.coefs, fake_poly.coefs + dim, dim, coef_modulus);
-    Utils::array_mod_form(a.coefs, fake_poly.coefs , dim, coef_modulus);
-
-    a.neg(&a);
-    b.neg(&b);
-
-    poly_msb_0 = a;
-    poly_msb_1 = b; 
-*/
+ 
 }
-
-
+ 
 
 RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
     this->param = param;

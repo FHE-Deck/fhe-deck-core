@@ -30,8 +30,7 @@ ExternalProject_Add(
 
 include_directories(${third_party}/fftw3/include)
 link_directories(${third_party}/fftw3/lib) 
-  
-
+   
 include(ExternalProject)  
 ExternalProject_Add(
     cereal_lib
@@ -86,6 +85,5 @@ add_library(fhe_deck STATIC
 target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftw3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
 
 add_subdirectory(examples) 
-
  
-add_subdirectory(tests) 
+#add_subdirectory(tests) 

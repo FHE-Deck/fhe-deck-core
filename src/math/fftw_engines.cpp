@@ -45,15 +45,7 @@ void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm *out, PolynomialArray
 
 void FFTWNegacyclicEngine::to_coef(Polynomial *out, PolynomialEvalForm *in){ 
     PolynomialEvalFormFFTWComplex* in_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in);
-    engine.to_coef_form_scale(out->coefs, in_cast->eval_fftw, in_cast->scale);
-    // Divide by the scale (polynomial size times two.)
-    // NOTE: For FHE its nice to scale one of the polynomials in the key
-    // That is this rescaling could be precomputed. But here the Engine and later Polynomial class are oblivious to that.
-    // Maybe we can add precomputation in the future - now its not a bootleneck anyway.
-    //double scale = (double)(engine.plan_size * 2.0);
-    //for(int32_t i = 0; i < degree; ++i){   
-    //    out->coefs[i] = round((double)out->coefs[i] / scale); 
-    //} 
+    engine.to_coef_form_scale(out->coefs, in_cast->eval_fftw, in_cast->scale); 
     Utils::array_mod_form(out->coefs, out->coefs, out->degree, out->coef_modulus);
 }
   
@@ -65,12 +57,7 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArray
     {
         in_poly = &in_cast->eval_fftw[i * in_cast->size];
         out_poly = &out->poly_array[i * out->degree];
-        engine.to_coef_form_scale(out_poly, in_poly, in_cast->scale); 
-
-        //double scale = (double)(engine.plan_size * 2.0);
-        //for(int32_t j = 0; j < degree; ++j){   
-        //    out_poly[j] = round((double)out_poly[j] / scale); 
-        //} 
+        engine.to_coef_form_scale(out_poly, in_poly, in_cast->scale);  
         Utils::array_mod_form(out_poly, out_poly, out->degree, out->coef_modulus);
     }
 }
@@ -78,8 +65,7 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm *out, PolynomialArray
 void FFTWNegacyclicEngine::mul(PolynomialEvalForm *out, PolynomialEvalForm *in_1, PolynomialEvalForm *in_2){
     PolynomialEvalFormFFTWComplex* out_cast = static_cast<PolynomialEvalFormFFTWComplex*>(out);
     PolynomialEvalFormFFTWComplex* in_1_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_1);
-    PolynomialEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_2);
-    /// NOTE: Remind that one of the polynomials must be scaled by the plan_size times two. 
+    PolynomialEvalFormFFTWComplex* in_2_cast = static_cast<PolynomialEvalFormFFTWComplex*>(in_2); 
     engine.mul_eval_form(out_cast->eval_fftw, 
             in_1_cast->eval_fftw, 
             in_2_cast->eval_fftw);  
