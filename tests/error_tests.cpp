@@ -1032,7 +1032,7 @@ void power_of_two_gadget_ntru_times_kdm_ntru_test(int test_num){
 
 
 */
-
+ 
 int main(){
 
     plain_lwe_test(5000);
