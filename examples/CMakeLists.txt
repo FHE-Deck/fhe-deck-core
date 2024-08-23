@@ -1,6 +1,12 @@
 file(GLOB EXAMPLES *.cpp)
-foreach(EXAMPLE_SRC ${EXAMPLES})
+ 
+foreach(EXAMPLE_SRC ${EXAMPLES}) 
+
+	if(USE_FOO)
+		add_compile_definitions(FOO)
+	endif()
 	get_filename_component(EXAMPLE_NAME ${EXAMPLE_SRC} NAME_WE)
 	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC})
 	target_link_libraries(${EXAMPLE_NAME} PRIVATE fhe_deck)
+
 endforeach()
