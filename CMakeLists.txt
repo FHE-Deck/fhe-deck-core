@@ -25,11 +25,26 @@ ExternalProject_Add(
     URL https://www.fftw.org/fftw-3.3.10.tar.gz 
 	URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
     PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTW}
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftw3 -DENABLE_LONG_DOUBLE=ON 
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftw3 
 )
 
 include_directories(${third_party}/fftw3/include)
 link_directories(${third_party}/fftw3/lib) 
+
+include(ExternalProject) 
+set(FFTWL fftwl_lib)
+ExternalProject_Add(
+    fftwl_lib
+    URL https://www.fftw.org/fftw-3.3.10.tar.gz 
+	URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
+    PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTWL}
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftwl3 -DENABLE_LONG_DOUBLE=ON 
+)
+
+include_directories(${third_party}/fftwl3/include)
+link_directories(${third_party}/fftwl3/lib) 
+
+
    
 include(ExternalProject)  
 ExternalProject_Add(
@@ -82,7 +97,7 @@ add_library(fhe_deck STATIC
 	${INC_FHE} ${SRC_FHE}
 )
    
-target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftw3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
+target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
 
 add_subdirectory(examples) 
  

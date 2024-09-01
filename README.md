@@ -14,13 +14,9 @@ With Ubuntu 20.4:
 
 ```
 sudo apt-get install build-essential
-sudo apt-get install libntl-dev
-sudo apt-get install libfftw3-dev
-sudo apt-get install fftw-dev
-sudo apt-get install libcereal-dev
+sudo apt-get install libntl-dev 
 ```
-
-Then install Intel Hexl from [link](https://github.com/intel/hexl).
+ 
 Finally run:
 ```
 cmake -S . -B build
@@ -29,9 +25,7 @@ cmake --build build
 
 Check examples and tests:
 ```
-build/examples/fhe_context_examples
-build/examples/example_ks_bootstrap
-build/examples/example_ks_bootstrap_amort
+build/examples/fhe_context_examples 
 ```
 
 
@@ -39,7 +33,7 @@ Usage
 -----------
 
 More detailed description is under development.
-But the test file "fhe_context_test.cpp" contains examples of the high level interface.
+But the test file "build/examples/fhe_context_examples .cpp" contains examples of the high level interface.
 
 
 References
