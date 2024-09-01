@@ -2,6 +2,7 @@ build/
 .vscode 
 CMakeFiles/
 external/
+tests/
 Makefile
 compile_commands.json
 cmake_install.cmake
