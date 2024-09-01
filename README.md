@@ -33,7 +33,11 @@ Usage
 -----------
 
 More detailed description is under development.
-But the test file "build/examples/fhe_context_examples .cpp" contains examples of the high level interface.
+But the files 
+- examples/fhe_context_examples.cpp
+- examples/amortized_bit_operations.cpp 
+- examples/bit_operations.cpp 
+contains examples of the high level interface.
 
 
 References
