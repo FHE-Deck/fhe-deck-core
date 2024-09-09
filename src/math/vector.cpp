@@ -42,6 +42,7 @@ void Vector::neg(Vector *out){
 VectorArray::~VectorArray(){
     if(is_init){ 
         delete[] vec_array; 
+        delete[] vec_array_2d; 
     }
 }
  
