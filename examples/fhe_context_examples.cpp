@@ -22,28 +22,28 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     Ciphertext c2  = context.encrypt(2);  
 
     std::cout << "Decrypt..." << std::endl;
-    assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
+    assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
     std::cout << "Decrypt(c1) == 1: OK" << std::endl; 
     
-    assertm(context.decrypt(&c2) == 2, "Decrypt(c2) == 2");
+    assertm(context.decrypt(c2) == 2, "Decrypt(c2) == 2");
     std::cout << "Decrypt(c2) == 2: OK" << std::endl; 
  
      
     Ciphertext c3 = context.encrypt(0);
-    c3.add(&c1); 
+    c3.add(c1); 
     
-    assertm(context.decrypt(&c3) == 1, "Decrypt(c3+c1) == 1");
+    assertm(context.decrypt(c3) == 1, "Decrypt(c3+c1) == 1");
     std::cout << "Decrypt(c3+c1): OK" << std::endl;
-    c3.add(&c2); 
-    assertm(context.decrypt(&c3) == 3, "Decrypt(c3+c1+c2) == 3");
+    c3.add(c2); 
+    assertm(context.decrypt(c3) == 3, "Decrypt(c3+c1+c2) == 3");
     std::cout << "Decrypt(c3+c1+c2): OK" << std::endl;
-    c3.add(&c2); 
-    assertm(context.decrypt(&c3) == 1, "Decrypt(c3+c1+c2+c2) == 1");
+    c3.add(c2); 
+    assertm(context.decrypt(c3) == 1, "Decrypt(c3+c1+c2+c2) == 1");
     std::cout << "Decrypt(c3+c1+c2+c2) OK" << std::endl;
 
 
     c3.mul(3); 
-    assertm(context.decrypt(&c3) == 3, "Decrypt((c3+c1+c2+c2) * 3) == 3");
+    assertm(context.decrypt(c3) == 3, "Decrypt((c3+c1+c2+c2) * 3) == 3");
     std::cout << "Decrypt((c3+c1+c2+c2) * 3): OK"  << std::endl; 
  
     std::cout << "Copying to LWE ct objects" << std::endl;
@@ -51,59 +51,59 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
  
 
     Ciphertext ct2 = c2;
-    assertm(context.decrypt(&ct1) == 1, "context.decrypt(&ct1) == 1");
+    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1");
     std::cout << "context.decrypt(&ct1) == 1: OK"  << std::endl;
 
-    assertm(context.decrypt(&ct2) == 2, "context.decrypt(&ct2) == 2");
+    assertm(context.decrypt(ct2) == 2, "context.decrypt(&ct2) == 2");
     std::cout << "context.decrypt(&ct2) == 2: OK"  << std::endl;
     Ciphertext ct3 = ct1 + 1;  
-    assertm(context.decrypt(&ct3) == 2, "context.decrypt(&(ct1 + 1)) == 2");
+    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(ct1 + 1)) == 2");
     std::cout << "context.decrypt(&(ct1 + 1)) == 2: OK"  << std::endl;
 
     ct3 = 1 + ct1;  
-    assertm(context.decrypt(&ct3) == 2, "context.decrypt(&(1+ ct1)) == 2");
+    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(1+ ct1)) == 2");
     std::cout << "context.decrypt(&(1+ ct1)) == 2: OK"  << std::endl;
 
     ct3 = ct1 - 2; 
-    assertm(context.decrypt(&ct3) == 3, "context.decrypt(&(ct1 - 2)) == 3");
+    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct1 - 2)) == 3");
     std::cout << "context.decrypt(&(ct1 - 2)) == 3: OK"  << std::endl;
 
     ct3 = 2 - ct1; 
-    assertm(context.decrypt(&ct3) == 1, "context.decrypt(&(2 - ct1)) == 1");
+    assertm(context.decrypt(ct3) == 1, "context.decrypt(&(2 - ct1)) == 1");
     std::cout << "context.decrypt(&(2 - ct1)) == 1: OK"  << std::endl;
  
     ct3 = ct1 * 2; 
-    assertm(context.decrypt(&ct3) == 2, "context.decrypt(&(ct1 * 2)) == 2");
+    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(ct1 * 2)) == 2");
     std::cout << "context.decrypt(&(ct1 * 2)) == 2: "  << std::endl;
 
     ct3 = 2 * ct1; 
-    assertm(context.decrypt(&ct3) == 2, "context.decrypt(&(2 * ct1)) == 2");
+    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(2 * ct1)) == 2");
     std::cout << "context.decrypt(&(2 * ct1)) == 2: OK"   << std::endl;
 
     ct3 = ct1 + ct2; 
-    assertm(context.decrypt(&ct3) == 3, "context.decrypt(&(ct1 + ct2)) == 3");
+    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct1 + ct2)) == 3");
     std::cout << "context.decrypt(&(ct1 + ct2)) == 3: OK"  << std::endl;
 
     ct3 = ct2 - ct1; 
-    assertm(context.decrypt(&ct3) == 1, "context.decrypt(&(ct2 - ct1)) == 1");
+    assertm(context.decrypt(ct3) == 1, "context.decrypt(&(ct2 - ct1)) == 1");
     std::cout << "context.decrypt(&(ct2 - ct1)) == 1: OK"   << std::endl;
 
-    assertm(context.decrypt(&ct1) == 1, "context.decrypt(&ct1) == 1"); 
+    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1"); 
     std::cout << "context.decrypt(&ct1) == 1: OK" << std::endl;
     ct3 = - ct1; 
-    assertm(context.decrypt(&ct3) == 3, "context.decrypt(&(ct3 = - ct1))) == 3"); 
+    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct3 = - ct1))) == 3"); 
     std::cout << "context.decrypt(&(ct3 = - ct1))) == 3: OK" << std::endl;
-    assertm(context.decrypt(&ct1) == 1, "context.decrypt(&ct1) == 1"); 
+    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1"); 
     std::cout << "context.decrypt(&ct1) == 1: OK" << std::endl;
      
     Ciphertext ct4 = ct1;
-    assertm(context.decrypt(&ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
+    assertm(context.decrypt(ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
     std::cout << "context.decrypt(&(ct4 = ct1))) == 1: OK"   << std::endl;
     ct4 = ct1;
-    assertm(context.decrypt(&ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
+    assertm(context.decrypt(ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
     std::cout << "context.decrypt(&(ct4 = ct1))) == 1: OK"   << std::endl; 
     ct4 = ct2;
-    assertm(context.decrypt(&ct4) == 2, "context.decrypt(&(ct4 = ct2))) == 2"); 
+    assertm(context.decrypt(ct4) == 2, "context.decrypt(&(ct4 = ct2))) == 2"); 
     std::cout << "context.decrypt(&(ct4 = ct2))) == 2: OK"   << std::endl;
  
  
@@ -117,7 +117,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     int64_t scalar = 3;
     ct4 = context.eval_affine_function(v, scalars, scalar);  
     // The outcome should be 3, because (2 * 1 + 1 * 2 + 3) % 4 = 3
-    assertm(context.decrypt(&ct4) == 3, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
+    assertm(context.decrypt(ct4) == 3, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
     std::cout << "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3: OK"   << std::endl; 
   
     auto id = [](int64_t m) -> int64_t {
@@ -126,9 +126,9 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
   
     HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
   
-    ct4 = context.eval_lut(&ct1, lut_identity);
-    std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl;
-    assertm(context.decrypt(&ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
+    ct4 = context.eval_lut(ct1, lut_identity);
+    std::cout << "context.decrypt(&ct4): " << context.decrypt(ct4) << std::endl;
+    assertm(context.decrypt(ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
  
     auto id_plus = [](int64_t m) -> int64_t {
@@ -136,16 +136,16 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     }; 
 
     HomomorphicAccumulator lut_id_plus = context.genrate_lut(id_plus); 
-    ct4 = context.eval_lut(&ct1, lut_id_plus);
-    assertm(context.decrypt(&ct4) == 2, "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2"); 
+    ct4 = context.eval_lut(ct1, lut_id_plus);
+    assertm(context.decrypt(ct4) == 2, "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2: OK"  << std::endl;
  
-    ct4 = context.eval_lut(&ct4, lut_id_plus);
-    assertm(context.decrypt(&ct4) == 3, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3"); 
+    ct4 = context.eval_lut(ct4, lut_id_plus);
+    assertm(context.decrypt(ct4) == 3, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3: OK"  << std::endl;
 
-    ct4 = context.eval_lut(&ct4, lut_id_plus);
-    assertm(context.decrypt(&ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
+    ct4 = context.eval_lut(ct4, lut_id_plus);
+    assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0: OK"  << std::endl;
 
     auto fun_msb = [](int64_t m, int64_t t = 5) -> int64_t {
@@ -156,9 +156,9 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         } 
     }; 
     HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb); 
-    ct4 = context.eval_lut(&ct1, lut_fun_msb);
+    ct4 = context.eval_lut(ct1, lut_fun_msb);
 
-    assertm(context.decrypt(&ct4) == 0, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
+    assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0: OK"  << std::endl;
    
     std::cout << "Done. See you....." << std::endl;
@@ -259,13 +259,13 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     Ciphertext c2  = context.encrypt(2);  
     Ciphertext c3  = context.encrypt(3);  
    
-    assertm(context.decrypt(&c0) == 0, "Decrypt(c0) == 0");
+    assertm(context.decrypt(c0) == 0, "Decrypt(c0) == 0");
     std::cout << "Decrypt(c0) == 0: OK" << std::endl; 
-    assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
+    assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
     std::cout << "Decrypt(c1) == 1: OK" << std::endl; 
-    assertm(context.decrypt(&c2) == 2, "Decrypt(c2) == 2");
+    assertm(context.decrypt(c2) == 2, "Decrypt(c2) == 2");
     std::cout << "Decrypt(c2) == 2: OK" << std::endl; 
-    assertm(context.decrypt(&c3) == 3, "Decrypt(c3) == 3");
+    assertm(context.decrypt(c3) == 3, "Decrypt(c3) == 3");
     std::cout << "Decrypt(c3) == 3: OK" << std::endl; 
  
 
@@ -292,22 +292,22 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
 
      
     Ciphertext ct4;
-    ct4 = context.eval_lut(&c0, lut_fun_ham);
-    std::cout << "context.decrypt(&ct4): " << context.decrypt(&ct4) << std::endl; 
-    assertm(context.decrypt(&ct4) == 0, "context.eval_lut(c0, lut_fun_ham) == 0");
+    ct4 = context.eval_lut(c0, lut_fun_ham);
+    std::cout << "context.decrypt(&ct4): " << context.decrypt(ct4) << std::endl; 
+    assertm(context.decrypt(ct4) == 0, "context.eval_lut(c0, lut_fun_ham) == 0");
     std::cout << "context.eval_lut(c0, lut_fun_ham) == 0: OK" << std::endl;  
  
 
-    ct4 = context.eval_lut(&c1, lut_fun_ham);
-    assertm(context.decrypt(&ct4) == 1, "context.eval_lut(c1, lut_fun_ham) == 1");
+    ct4 = context.eval_lut(c1, lut_fun_ham);
+    assertm(context.decrypt(ct4) == 1, "context.eval_lut(c1, lut_fun_ham) == 1");
     std::cout << "context.eval_lut(c1, lut_fun_ham) == 1: OK" << std::endl;  
 
-    ct4 = context.eval_lut(&c2, lut_fun_ham);
-    assertm(context.decrypt(&ct4) == 1, "context.eval_lut(c2, lut_fun_ham) == 1");
+    ct4 = context.eval_lut(c2, lut_fun_ham);
+    assertm(context.decrypt(ct4) == 1, "context.eval_lut(c2, lut_fun_ham) == 1");
     std::cout << "context.eval_lut(c2, lut_fun_ham) == 1: OK" << std::endl;  
 
-    ct4 = context.eval_lut(&c3, lut_fun_ham);
-    assertm(context.decrypt(&ct4) == 2, "context.eval_lut(c3, lut_fun_ham) == 2");
+    ct4 = context.eval_lut(c3, lut_fun_ham);
+    assertm(context.decrypt(ct4) == 2, "context.eval_lut(c3, lut_fun_ham) == 2");
     std::cout << "context.eval_lut(c3, lut_fun_ham) == 2: OK" << std::endl;  
 
 
@@ -334,34 +334,34 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     Ciphertext ct0 = context.encrypt(1);  
     Ciphertext ct1 = context.encrypt(0);   
     Ciphertext combined = ct0 + (ct1 * 2);  
-    Ciphertext ct_nand = context.eval_lut(&combined, lut_fun_nand);
-    assertm(context.decrypt(&ct_nand) == 1, "ct_nand(0, 0) == 1"); 
+    Ciphertext ct_nand = context.eval_lut(combined, lut_fun_nand);
+    assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1"); 
 
 
     ct0 = context.encrypt(1);  
     ct1 = context.encrypt(0);  
     combined = ct0 + (ct1 * 2); 
-    ct_nand = context.eval_lut(&combined, lut_fun_nand);
-    assertm(context.decrypt(&ct_nand) == 1, "ct_nand(0, 1) == 1");
+    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1");
     std::cout << "ct_nand(0, 1) = 1: OK"  << std::endl; 
 
     ct0 = context.encrypt(0);  
     ct1 = context.encrypt(1);  
     combined = ct0 + (ct1 * 2); 
-    ct_nand = context.eval_lut(&combined, lut_fun_nand);
-    assertm(context.decrypt(&ct_nand) == 1, "ct_nand(1, 0) == 1");
+    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    assertm(context.decrypt(ct_nand) == 1, "ct_nand(1, 0) == 1");
     std::cout << "ct_nand(1, 0) = 1: OK"   << std::endl; 
 
 
     ct0 = context.encrypt(1);  
     ct1 = context.encrypt(1);  
     combined = ct0 + (ct1 * 2); 
-    ct_nand = context.eval_lut(&combined, lut_fun_nand);
-    assertm(context.decrypt(&ct_nand) == 0, "ct_nand(1, 1) == 0");
+    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0");
     std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl; 
 
-    Ciphertext sanitized = context.sanitize(&ct_nand);
-    assertm(context.decrypt(&sanitized) == 0, "sanitised == 0");
+    Ciphertext sanitized = context.sanitize(ct_nand);
+    assertm(context.decrypt(sanitized) == 0, "sanitised == 0");
     std::cout << "sanitized = ct_nand = 0: OK"   << std::endl; 
 }
 
@@ -384,8 +384,8 @@ void demo(){
             return 0;
         }
     };  
-    Ciphertext ct_out = context.eval_lut(&ct, fun_relu); 
-    std::cout << "decrypt(&ct_out): "  << context.decrypt(&ct_out) << std::endl;
+    Ciphertext ct_out = context.eval_lut(ct, fun_relu); 
+    std::cout << "decrypt(&ct_out): "  << context.decrypt(ct_out) << std::endl;
 
     std::ofstream os("ct_out.cereal", std::ios::binary);
     os << ct_out; 
@@ -417,47 +417,47 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
    
     Ciphertext mct4 = context.encrypt(-4); 
 
-    assertm(context.decrypt(&ct0) == 0, "context.decrypt(&ct0) == 0");
+    assertm(context.decrypt(ct0) == 0, "context.decrypt(&ct0) == 0");
     std::cout << "context.decrypt(&ct0) == 0: OK"   << std::endl;
-    assertm(context.decrypt(&ct1) == 1, "context.decrypt(&ct1) == 1");
+    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1");
     std::cout << "context.decrypt(&ct1) == 1: OK"   << std::endl;
-    assertm(context.decrypt(&ct2) == 2, "context.decrypt(&ct2) == 2");
+    assertm(context.decrypt(ct2) == 2, "context.decrypt(&ct2) == 2");
     std::cout << "context.decrypt(&ct2) == 2: OK"   << std::endl;
-    assertm(context.decrypt(&ct3) == 3, "context.decrypt(&ct3) == 3");
+    assertm(context.decrypt(ct3) == 3, "context.decrypt(&ct3) == 3");
     std::cout << "context.decrypt(&ct3) == 3: OK"   << std::endl;
     
-    assertm(context.decrypt(&mct1) == -1, "context.decrypt(&mct1) == -1");
+    assertm(context.decrypt(mct1) == -1, "context.decrypt(&mct1) == -1");
     std::cout << "context.decrypt(&mct1) == -1: OK"   << std::endl;
-    assertm(context.decrypt(&mct2) == -2, "context.decrypt(&mct1) == -2");
+    assertm(context.decrypt(mct2) == -2, "context.decrypt(&mct1) == -2");
     std::cout << "context.decrypt(&mct2) == -2: OK"   << std::endl;
-    assertm(context.decrypt(&mct3) == -3, "context.decrypt(&mct1) == -3");
+    assertm(context.decrypt(mct3) == -3, "context.decrypt(&mct1) == -3");
     std::cout << "context.decrypt(&mct3) == -3: OK"   << std::endl;
 
  
-    std::cout << "Decrypt(ct4): " << context.decrypt(&ct4) << std::endl; 
+    std::cout << "Decrypt(ct4): " << context.decrypt(ct4) << std::endl; 
  
-    std::cout << "Decrypt(mct4): " << context.decrypt(&mct4) << std::endl;
+    std::cout << "Decrypt(mct4): " << context.decrypt(mct4) << std::endl;
  
     Ciphertext ct_add = ct1 + mct1;
-    assertm(context.decrypt(&ct_add) == 0, "context.decrypt(&ct1 + mct1) == 0");
+    assertm(context.decrypt(ct_add) == 0, "context.decrypt(&ct1 + mct1) == 0");
     std::cout << "Decrypt(ct_add = ct1 + mct1): OK"  << std::endl; 
     ct_add = ct2 + mct2;
-    assertm(context.decrypt(&ct_add) == 0, "context.decrypt(&ct_add) == 0");
+    assertm(context.decrypt(ct_add) == 0, "context.decrypt(&ct_add) == 0");
     std::cout << "Decrypt(ct_add = ct2 + mct2): OK"   << std::endl;  
     ct_add = ct3 + mct3;
-    assertm(context.decrypt(&ct_add) == 0, "context.decrypt(&ct_add) == 0");
+    assertm(context.decrypt(ct_add) == 0, "context.decrypt(&ct_add) == 0");
     std::cout << "Decrypt(ct_add = ct3 + mct3): OK"  << std::endl; 
     ct_add = ct1 + mct2;
-    assertm(context.decrypt(&ct_add) == -1, "context.decrypt(&ct_add) == -1");
+    assertm(context.decrypt(ct_add) == -1, "context.decrypt(&ct_add) == -1");
     std::cout << "Decrypt(ct_add = ct1 + mct2): OK"  << std::endl; 
     ct_add = ct2 + mct3;
-    assertm(context.decrypt(&ct_add) == -1, "context.decrypt(&ct_add) == -1");
+    assertm(context.decrypt(ct_add) == -1, "context.decrypt(&ct_add) == -1");
     std::cout << "Decrypt(ct_add = ct2 + mct3): OK"  << std::endl; 
     ct_add = ct1 + mct3;
-    assertm(context.decrypt(&ct_add) == -2, "context.decrypt(&ct_add) == -1");
+    assertm(context.decrypt(ct_add) == -2, "context.decrypt(&ct_add) == -1");
     std::cout << "Decrypt(ct_add = ct1 + mct3): OK"  << std::endl; 
     ct_add = ct3 + mct1;
-    assertm(context.decrypt(&ct_add) == 2, "context.decrypt(&ct_add) == 2");
+    assertm(context.decrypt(ct_add) == 2, "context.decrypt(&ct_add) == 2");
     std::cout << "Decrypt(ct_add = ct3 + mct1): OK"  << std::endl; 
 
   
@@ -469,40 +469,40 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     HomomorphicAccumulator lut_fun_identity = context.genrate_lut(fun_identity);  
  
    
-    Ciphertext ct_id = context.eval_lut(&mct1, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == -1, "context.eval_lut(&mct1, lut_fun_identity) == -1");
+    Ciphertext ct_id = context.eval_lut(mct1, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == -1, "context.eval_lut(&mct1, lut_fun_identity) == -1");
     std::cout << "context.eval_lut(&mct1, lut_fun_identity) == -1: OK"  << std::endl; 
 
-    ct_id = context.eval_lut(&mct2, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == -2, "context.eval_lut(&mct2, lut_fun_identity) == -2");
+    ct_id = context.eval_lut(mct2, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == -2, "context.eval_lut(&mct2, lut_fun_identity) == -2");
     std::cout << "context.eval_lut(&mct2, lut_fun_identity) == -2: OK"  << std::endl;  
 
-    ct_id = context.eval_lut(&mct3, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == -3, "context.eval_lut(&mct3, lut_fun_identity) == -3");
+    ct_id = context.eval_lut(mct3, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == -3, "context.eval_lut(&mct3, lut_fun_identity) == -3");
     std::cout << "context.eval_lut(&mct3, lut_fun_identity) == -3: OK"  << std::endl;  
 
-    ct_id = context.eval_lut(&ct0, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == 0, "context.eval_lut(&ct0, lut_fun_identity) == 0");
+    ct_id = context.eval_lut(ct0, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == 0, "context.eval_lut(&ct0, lut_fun_identity) == 0");
     std::cout << "context.eval_lut(&ct0, lut_fun_identity) == 0: OK"  << std::endl;  
 
-    ct_id = context.eval_lut(&ct1, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == 1, "context.eval_lut(&ct1, lut_fun_identity) == 1");
+    ct_id = context.eval_lut(ct1, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == 1, "context.eval_lut(&ct1, lut_fun_identity) == 1");
     std::cout << "context.eval_lut(&ct1, lut_fun_identity) == 1: OK"  << std::endl;  
 
-    ct_id = context.eval_lut(&ct2, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == 2, "context.eval_lut(&ct2, lut_fun_identity) == 2");
+    ct_id = context.eval_lut(ct2, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == 2, "context.eval_lut(&ct2, lut_fun_identity) == 2");
     std::cout << "context.eval_lut(&ct2, lut_fun_identity) == 2: OK"  << std::endl;  
 
 
-    ct_id = context.eval_lut(&ct3, lut_fun_identity); 
-    ct_id = context.eval_lut(&ct_id, lut_fun_identity);
-    assertm(context.decrypt(&ct_id) == 3, "context.eval_lut(&ct3, lut_fun_identity) == 3");
+    ct_id = context.eval_lut(ct3, lut_fun_identity); 
+    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    assertm(context.decrypt(ct_id) == 3, "context.eval_lut(&ct3, lut_fun_identity) == 3");
     std::cout << "context.eval_lut(&ct3, lut_fun_identity) == 3: OK"  << std::endl;  
 
  
@@ -516,38 +516,38 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     };  
  
 
-    Ciphertext ct_relu = context.eval_lut(&ct2, fun_relu);  
-    assertm(context.decrypt(&ct_relu) == 2, "context.eval_lut(&ct2, fun_relu) == 2");
+    Ciphertext ct_relu = context.eval_lut(ct2, fun_relu);  
+    assertm(context.decrypt(ct_relu) == 2, "context.eval_lut(&ct2, fun_relu) == 2");
     std::cout << "context.eval_lut(&ct2, fun_relu) == 2: OK" << std::endl; 
 
 
-    ct_relu = context.eval_lut(&mct3, fun_relu);  
-    assertm(context.decrypt(&ct_relu) == 0, "context.eval_lut(&mct3, fun_relu) == 0");
+    ct_relu = context.eval_lut(mct3, fun_relu);  
+    assertm(context.decrypt(ct_relu) == 0, "context.eval_lut(&mct3, fun_relu) == 0");
     std::cout << "context.eval_lut(&mct0, fun_relu) == 0: OK" << std::endl; 
    
-    ct_relu = context.eval_lut(&ct1, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 1, "context.eval_lut(&ct1, fun_relu) == 1");
+    ct_relu = context.eval_lut(ct1, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 1, "context.eval_lut(&ct1, fun_relu) == 1");
     std::cout << "context.eval_lut(&ct1, fun_relu) == 1: OK" << std::endl; 
 
-    ct_relu = context.eval_lut(&ct2, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 2, "context.eval_lut(&ct2, fun_relu) == 2");
+    ct_relu = context.eval_lut(ct2, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 2, "context.eval_lut(&ct2, fun_relu) == 2");
     std::cout << "context.eval_lut(&ct2, fun_relu) == 2: OK" << std::endl; 
 
-    ct_relu = context.eval_lut(&ct3, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 3, "context.eval_lut(&ct3, fun_relu) == 3");
+    ct_relu = context.eval_lut(ct3, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 3, "context.eval_lut(&ct3, fun_relu) == 3");
     std::cout << "context.eval_lut(&ct3, fun_relu) == 3: OK" << std::endl; 
     
-    ct_relu = context.eval_lut(&mct1, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 0, "context.eval_lut(&mct1, fun_relu) == 0");
+    ct_relu = context.eval_lut(mct1, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 0, "context.eval_lut(&mct1, fun_relu) == 0");
     std::cout << "context.eval_lut(&mct1, fun_relu) == 0: OK" << std::endl; 
 
 
-    ct_relu = context.eval_lut(&mct2, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 0, "context.eval_lut(&mct2, fun_relu) == 0");
+    ct_relu = context.eval_lut(mct2, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 0, "context.eval_lut(&mct2, fun_relu) == 0");
     std::cout << "context.eval_lut(&mct2, fun_relu) == 0: OK" << std::endl; 
 
-    ct_relu = context.eval_lut(&mct3, fun_relu); 
-    assertm(context.decrypt(&ct_relu) == 0, "context.eval_lut(&mct3, fun_relu) == 0");
+    ct_relu = context.eval_lut(mct3, fun_relu); 
+    assertm(context.decrypt(ct_relu) == 0, "context.eval_lut(&mct3, fun_relu) == 0");
     std::cout << "context.eval_lut(&mct3, fun_relu) == 0: OK" << std::endl; 
    
 }
@@ -566,17 +566,17 @@ void basic_Ciphertext_tests(FHENamedParams param_set){
 
     Ciphertext c1  = context.encrypt(1);  
  
-    assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
+    assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
     std::cout << "context.decrypt(&c1) == 1: OK" << std::endl; 
       
     std::cout << "Testing: lwe_ct::lwe_ct(lwe_ct &c)" << std::endl;
     Ciphertext c2  = c1;   
-    assertm(context.decrypt(&c2) == 1, "Decrypt(c2) == 1");
+    assertm(context.decrypt(c2) == 1, "Decrypt(c2) == 1");
     std::cout << "context.decrypt(&c2) == 1: OK" << std::endl; 
  
     std::cout << "Testing: lwe_ct& lwe_ct::operator=(const lwe_ct other)" << std::endl;
     c1 = c2;
-    assertm(context.decrypt(&c1) == 1, "Decrypt(c1) == 1");
+    assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
     std::cout << "context.decrypt(&c1) == 1: OK" << std::endl;  
 }
 
@@ -602,24 +602,24 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
  
     Ciphertext ct1 = context.encrypt_public(1); 
 
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct1, luts);
+    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct1, luts);
 
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    assertm(context.decrypt(&out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    assertm(context.decrypt(out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1: OK"  << std::endl;
 
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    assertm(context.decrypt(&out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    assertm(context.decrypt(out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
  
-    out_cts = context.eval_lut_amortized(&ct1, luts);
+    out_cts = context.eval_lut_amortized(ct1, luts);
 
-    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(&out_cts[0]) << std::endl;
-    assertm(context.decrypt(&out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
+    std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    assertm(context.decrypt(out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1: OK"  << std::endl;
 
-    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(&out_cts[1]) << std::endl;
-    assertm(context.decrypt(&out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
+    std::cout << "context.decrypt(&out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    assertm(context.decrypt(out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
  
 
@@ -649,55 +649,55 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     Ciphertext ct7 = context.encrypt_public(7);
 
 
-    out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct3, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct4, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct5, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct6, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct7, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 7: OK" << std::endl;
 
 }
@@ -739,63 +739,63 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     Ciphertext ct7 = context.encrypt_public(7);
 
 
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
+    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
  
 
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts);
+    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts);
  
 
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
 
  
-    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts);
+    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts);
 
       
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct3, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
+    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct4, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct5, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct6, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct7, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
+    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 7: OK" << std::endl;
 
 }
@@ -851,136 +851,136 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
 
     int64_t elapsed = 0; 
     std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(&ct0, bit_decomp_luts);
+    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
     std::chrono::_V2::system_clock::time_point stop = std::chrono::high_resolution_clock::now();
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
   
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
     std::cout << "Time elapsed:  " << elapsed << "ms" << std::endl; 
   
-    out_cts = context.eval_lut_amortized(&ct1, bit_decomp_luts); 
+    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts); 
      
     
 
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
  
-    out_cts = context.eval_lut_amortized(&ct2, bit_decomp_luts); 
+    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts); 
 
       
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct3, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(&ct4, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct5, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct6, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct7, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 0); 
+    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 7: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct8, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct8, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 8: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct9, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct9, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 9: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct10, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct10, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 10: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct11, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 0); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct11, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 0); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 11: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct12, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct12, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 12: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct13, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 0); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct13, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 0); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 13: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct14, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 0); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct14, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 0); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 14: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(&ct15, bit_decomp_luts);
-    assert(context.decrypt(&out_cts[0]) == 1); 
-    assert(context.decrypt(&out_cts[1]) == 1); 
-    assert(context.decrypt(&out_cts[2]) == 1); 
-    assert(context.decrypt(&out_cts[3]) == 1); 
+    out_cts = context.eval_lut_amortized(ct15, bit_decomp_luts);
+    assert(context.decrypt(out_cts[0]) == 1); 
+    assert(context.decrypt(out_cts[1]) == 1); 
+    assert(context.decrypt(out_cts[2]) == 1); 
+    assert(context.decrypt(out_cts[3]) == 1); 
     std::cout << "Test Bin Decomp 15: OK" << std::endl;
 
 }
@@ -1011,25 +1011,25 @@ void serialization_test(){
 
 
     Ciphertext ct0 = context.encrypt_public(1);   
-    assert(context.decrypt(&ct0) == 1);
+    assert(context.decrypt(ct0) == 1);
     
 
     auto id = [](int64_t m, int64_t t) -> int64_t {
         return m % t;
     }; 
       
-    ct0 = context.eval_lut(&ct0, id);  
+    ct0 = context.eval_lut(ct0, id);  
  
     context.save_Ciphertext("z_ct.cereal", ct0);  
     Ciphertext ct_out = context.load_Ciphertext("z_ct.cereal"); 
-    assert(context.decrypt(&ct_out) == 1);
+    assert(context.decrypt(ct_out) == 1);
     std::cout << "Test Eval-Lut/Save and Load Ciphertext: OK" << std::endl;
      
     std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
     os << ct_out; 
     os.close();
     Ciphertext ct_from_stream = context.load_Ciphertext("z_rlwe_ct.cereal");
-    assert(context.decrypt(&ct_from_stream) == 1);
+    assert(context.decrypt(ct_from_stream) == 1);
     std::cout << "Test Writa and Save from Stream: OK" << std::endl;
 
     std::remove("z_ct.cereal"); 

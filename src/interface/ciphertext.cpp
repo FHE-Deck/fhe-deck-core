@@ -47,25 +47,25 @@ Ciphertext& Ciphertext::operator=(const Ciphertext other){
     return *this;
 }
  
-void Ciphertext::add(Ciphertext* ct){
+void Ciphertext::add(const Ciphertext& ct){
     if(is_lwe_ct){ 
-        this->lwe_c->add(this->lwe_c.get(), ct->lwe_c.get());
+        this->lwe_c->add(this->lwe_c.get(), ct.lwe_c.get());
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
 }
  
 
-void Ciphertext::sub(Ciphertext* ct){
+void Ciphertext::sub(const Ciphertext& ct){
     if(is_lwe_ct){ 
-        this->lwe_c->sub(this->lwe_c.get(), ct->lwe_c.get());
+        this->lwe_c->sub(this->lwe_c.get(), ct.lwe_c.get());
     }else{
         throw std::logic_error("Ciphertext type not supported!");
     }
 }
  
 
-void Ciphertext::mul(int64_t b){
+void Ciphertext::mul(const int64_t b){
     if(is_lwe_ct){ 
         this->lwe_c->mul(this->lwe_c.get(), b);
     }else{

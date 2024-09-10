@@ -43,31 +43,31 @@ int32_t main(){
         msg = i % 8;
         ct = ctx.encrypt_public(msg);
         for(int32_t j = 0; j < repetition_num; ++j){  
-            out_cts = ctx.eval_lut_amortized(&ct, bit_decomp_luts);   
+            out_cts = ctx.eval_lut_amortized(ct, bit_decomp_luts);   
             ct2 = ctx.eval_affine_function(out_cts, comp, 0);  
-            dec = ctx.decrypt(&ct2);
+            dec = ctx.decrypt(ct2);
             if(dec != msg){
                 std::cout << "Fail after " << i  << ", " << j << " tests!" << std::endl;
                 std::cout << "Expected: " << msg << std::endl;
                 std::cout << "Decrypted: " << dec << std::endl;  
-                std::cout << "Separate Bits: " << ctx.decrypt(&out_cts[0]) << " " << ctx.decrypt(&out_cts[1]) << " " << ctx.decrypt(&out_cts[2]) << std::endl;
+                std::cout << "Separate Bits: " << ctx.decrypt(out_cts[0]) << " " << ctx.decrypt(out_cts[1]) << " " << ctx.decrypt(out_cts[2]) << std::endl;
                 temp_0 = out_cts[0] * comp[0];
-                std::cout << "temp_0: " << ctx.decrypt(&temp_0) << std::endl;
+                std::cout << "temp_0: " << ctx.decrypt(temp_0) << std::endl;
                 temp_1 = out_cts[1] * comp[1];
-                std::cout << "temp_1: " << ctx.decrypt(&temp_1) << std::endl;
+                std::cout << "temp_1: " << ctx.decrypt(temp_1) << std::endl;
                 temp_2 = out_cts[2] * comp[2];
-                std::cout << "temp_2: " << ctx.decrypt(&temp_2) << std::endl; 
+                std::cout << "temp_2: " << ctx.decrypt(temp_2) << std::endl; 
                 temp = temp_0 + temp_1 + temp_2; 
-                std::cout << "temp: " << ctx.decrypt(&temp) << std::endl; 
+                std::cout << "temp: " << ctx.decrypt(temp) << std::endl; 
  
-                temp_0 = ctx.eval_lut(&ct, bit_decomp_luts[0]);
-                std::cout << "eval_lut with bit_decomp_luts[0]: " << ctx.decrypt(&temp_0) << std::endl; 
-                temp_1 = ctx.eval_lut(&ct, bit_decomp_luts[1]);
-                std::cout << "eval_lut with bit_decomp_luts[1]: " << ctx.decrypt(&temp_1) << std::endl; 
-                temp_2 = ctx.eval_lut(&ct, bit_decomp_luts[2]);
-                std::cout << "eval_lut with bit_decomp_luts[2]: " << ctx.decrypt(&temp_2) << std::endl; 
+                temp_0 = ctx.eval_lut(ct, bit_decomp_luts[0]);
+                std::cout << "eval_lut with bit_decomp_luts[0]: " << ctx.decrypt(temp_0) << std::endl; 
+                temp_1 = ctx.eval_lut(ct, bit_decomp_luts[1]);
+                std::cout << "eval_lut with bit_decomp_luts[1]: " << ctx.decrypt(temp_1) << std::endl; 
+                temp_2 = ctx.eval_lut(ct, bit_decomp_luts[2]);
+                std::cout << "eval_lut with bit_decomp_luts[2]: " << ctx.decrypt(temp_2) << std::endl; 
                 temp = temp_0 + temp_1 + temp_2; 
-                std::cout << "temp: " << ctx.decrypt(&temp) << std::endl; 
+                std::cout << "temp: " << ctx.decrypt(temp) << std::endl; 
                 return 0;
             } 
             ct = ct2;

@@ -50,7 +50,7 @@ class Ciphertext{
  
         /// @brief The copy constructor.
         /// @param c The input ciphertext to be copied. 
-        Ciphertext(const Ciphertext &c);
+        Ciphertext(const Ciphertext& c);
   
         /// @brief The assignment operator.
         /// @param other The object to be copied. 
@@ -59,15 +59,15 @@ class Ciphertext{
  
         /// @brief Adds a ciphertext to this ciphertext. 
         /// @param ct The input ciphertext
-        void add(Ciphertext* ct);
+        void add(const Ciphertext& ct);
 
         /// @brief Subtracts ct, from this ciphertext. 
         /// @param ct The input ciphertext
-        void sub(Ciphertext* ct) ;
+        void sub(const Ciphertext& ct) ;
 
         /// @brief Multiplies this ciphertext by a scalar.
         /// @param b The input scalar
-        void mul(int64_t b);
+        void mul(const int64_t b);
   
         /// @brief Adds a scalar to this ciphertext.
         Ciphertext operator+(int64_t b);
