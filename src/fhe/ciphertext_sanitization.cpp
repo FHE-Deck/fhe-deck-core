@@ -14,15 +14,15 @@ DucasStehleWashingMachine::DucasStehleWashingMachine(
     this->washing_cycles = washing_cycles;
 }
 
-void DucasStehleWashingMachine::sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding){
+void DucasStehleWashingMachine::sanitize(LWECT& ct_out, LWECT& ct_in, PlaintextEncoding encoding){
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
     std::shared_ptr<VectorCTAccumulator> acc(accumulator_builder->prepare_accumulator(fun_identity, encoding));
     LWECT ct_of_zero(masking_pk->param);
     for(int32_t i = 0; i < washing_cycles; ++i){
-        masking_pk->encrypt(&ct_of_zero, 0);
-        ct_in->add(ct_out, &ct_of_zero);
+        masking_pk->encrypt(ct_of_zero, 0);
+        ct_in.add(ct_out, ct_of_zero);
         /// TODO: Flood with noice
         /// TODO: This part should be in the FunctionalBootstrap public key - change it also in fhe_context examples
         /// NOTE: Similar as for KluczniakRandomizedBootstrapping, I'm executing blind rotation twice, where one time is actually enough.
@@ -31,9 +31,9 @@ void DucasStehleWashingMachine::sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextE
         }else if(encoding.type == partial_domain){  
             fun_bootstrap_pk->bootstrap(ct_out,  acc, ct_out); 
         }else if(encoding.type == signed_limied_short_int){    
-            LWECT c_in_copy(ct_out->param);
-            ct_out->add(&c_in_copy, encoding.encode_message(encoding.plaintext_space));
-            fun_bootstrap_pk->bootstrap(ct_out, acc, &c_in_copy);   
+            LWECT c_in_copy(ct_out.param);
+            ct_out.add(c_in_copy, encoding.encode_message(encoding.plaintext_space));
+            fun_bootstrap_pk->bootstrap(ct_out, acc, c_in_copy);   
         } 
     } 
 }
@@ -48,7 +48,7 @@ KluczniakRandomizedBootstrapping::KluczniakRandomizedBootstrapping(
     this->masking_pk = masking_pk; 
 }
 
-void KluczniakRandomizedBootstrapping::sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding){
+void KluczniakRandomizedBootstrapping::sanitize(LWECT& ct_out, LWECT& ct_in, PlaintextEncoding encoding){
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
@@ -61,13 +61,13 @@ void KluczniakRandomizedBootstrapping::sanitize(LWECT *ct_out, LWECT *ct_in, Pla
     }else if(encoding.type == partial_domain){  
         fun_bootstrap_pk->bootstrap(ct_out,  acc, ct_in); 
     }else if(encoding.type == signed_limied_short_int){    
-        LWECT c_in_copy(ct_in->param);
-        ct_in->add(&c_in_copy, encoding.encode_message(encoding.plaintext_space));
-        fun_bootstrap_pk->bootstrap(ct_out, acc, &c_in_copy);   
+        LWECT c_in_copy(ct_in.param);
+        ct_in.add(c_in_copy, encoding.encode_message(encoding.plaintext_space));
+        fun_bootstrap_pk->bootstrap(ct_out, acc, c_in_copy);   
     } 
     LWECT ct_of_zero(masking_pk->param);
-    masking_pk->encrypt(&ct_of_zero, 0);
-    ct_out->add(ct_out, &ct_of_zero); 
+    masking_pk->encrypt(ct_of_zero, 0);
+    ct_out.add(ct_out, ct_of_zero); 
 }
 
 

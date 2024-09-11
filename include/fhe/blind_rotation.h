@@ -240,7 +240,7 @@ class BlindRotateOutput{
    
     /// @brief Extracts a LWE ciphertext from the accumulator.
     /// @param out The output LWE ciphertext.
-    virtual void extract_lwe(LWECT* out) = 0;
+    virtual void extract_lwe(LWECT& out) = 0;
 
     /// @brief Performs post rotation. For multi-value bootstrapping this is the step where the accumulator is updated. Its called post rotation, because we usually use it after a blind rotation. 
     /// @param bl_out Output of the post rotation. 
@@ -342,7 +342,7 @@ class RLWEBlindRotateOutput : public BlindRotateOutput{
     
     RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param);
 
-    void extract_lwe(LWECT* out);
+    void extract_lwe(LWECT& out);
 
     void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
 };
@@ -361,7 +361,7 @@ class NTRUBlindRotateOutput : public BlindRotateOutput{
     
     NTRUBlindRotateOutput(std::shared_ptr<NTRUParam> param);
   
-    void extract_lwe(LWECT* out);
+    void extract_lwe(LWECT& out);
 
     void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
 };
@@ -384,7 +384,7 @@ class BlindRotationPublicKey{
     /// @param out Output accumulator which is a VectorCT (held usually by a BlindRotationOutput object)
     /// @param lwe_ct_in The input LWE ciphertext that we are going decrypt.
     /// @param acc_msg A VectorCTAccumulator specifying the function that the blind rotation should compute, on the decrypted plaintext.  
-    virtual void blind_rotate(VectorCT* out, LWECT* lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
+    virtual void blind_rotate(VectorCT& out, LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {

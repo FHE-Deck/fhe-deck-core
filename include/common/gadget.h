@@ -42,7 +42,7 @@ class Gadget{
     /// @deprecated
     virtual void sample(int64_t** out, int64_t *in) = 0;
 
-    virtual void sample(VectorArray* out, int64_t *in) = 0;
+    virtual void sample(VectorArray& out, int64_t *in) = 0;
 
     int64_t* get_gadget_vector();
 
@@ -74,7 +74,7 @@ class SignedDecompositionGadget : public Gadget{
 
     void sample(int64_t** out, int64_t *in);
 
-    void sample(VectorArray* out, int64_t *in);
+    void sample(VectorArray& out, int64_t *in);
  
     void decomp(int64_t **d_ct, int64_t* poly);
 
@@ -195,7 +195,7 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     void sample(int64_t** out, int64_t *in);
  
-    void sample(VectorArray* out, int64_t *in);
+    void sample(VectorArray& out, int64_t *in);
 
     template <class Archive>
     void save( Archive & ar ) const

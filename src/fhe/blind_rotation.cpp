@@ -140,7 +140,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(in
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
-        sk->kdm_encrypt(acc.get(), &poly);
+        sk->kdm_encrypt(*acc.get(), poly);
         return new VectorCTAccumulator(acc, poly);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
@@ -151,7 +151,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(in
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(param)); 
-        sk->kdm_encrypt(acc.get(), &poly);
+        sk->kdm_encrypt(*acc.get(), poly);
         return new VectorCTAccumulator(acc, poly);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
@@ -162,7 +162,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_sgn(PlaintextEncoding outpu
     RotationPoly poly = RotationPoly::rot_sgn(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);   
     if(is_sk_set){   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param));  
-        sk->kdm_encrypt(acc.get(), &poly); 
+        sk->kdm_encrypt(*acc.get(), poly); 
         return new VectorCTAccumulator(acc, poly, false);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
@@ -173,7 +173,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_msb(PlaintextEncoding outpu
     RotationPoly poly = RotationPoly::rot_msb(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);   
     if(is_sk_set){   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param));  
-        sk->kdm_encrypt(acc.get(), &poly); 
+        sk->kdm_encrypt(*acc.get(), poly); 
         return new VectorCTAccumulator(acc, poly, false);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
@@ -185,7 +185,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_one(PlaintextEncoding outpu
     poly.coefs[1] = output_encoding.encode_message(1); 
     if(is_sk_set){  
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
-        sk->kdm_encrypt(acc.get(), &poly);
+        sk->kdm_encrypt(*acc.get(), poly);
         return new VectorCTAccumulator(acc, poly, false);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
@@ -226,13 +226,13 @@ RLWEBlindRotateOutput::RLWEBlindRotateOutput(std::shared_ptr<RLWEParam> param){
     this->accumulator_ptr = static_cast<RLWECT*>(accumulator);
 }
   
-void RLWEBlindRotateOutput::extract_lwe(LWECT* out){ 
+void RLWEBlindRotateOutput::extract_lwe(LWECT& out){ 
     accumulator_ptr->extract_lwe(out);
 }
 
 void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
     std::shared_ptr<RLWEBlindRotateOutput> out_ptr = std::static_pointer_cast<RLWEBlindRotateOutput>(bl_out); 
-    this->accumulator_ptr->mul(out_ptr->accumulator_ptr, &acc->rot_poly_amortized);
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc->rot_poly_amortized);
 }
 
 NTRUBlindRotateOutput::~NTRUBlindRotateOutput(){ 
@@ -244,13 +244,13 @@ NTRUBlindRotateOutput::NTRUBlindRotateOutput(std::shared_ptr<NTRUParam> param){
     this->accumulator_ptr = static_cast<NTRUCT*>(accumulator);
 }
   
-void NTRUBlindRotateOutput::extract_lwe(LWECT* out){ 
+void NTRUBlindRotateOutput::extract_lwe(LWECT& out){ 
     accumulator_ptr->extract_lwe(out);
 }
 
 void NTRUBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
     std::shared_ptr<NTRUBlindRotateOutput> out_ptr = std::static_pointer_cast<NTRUBlindRotateOutput>(bl_out); 
-    this->accumulator_ptr->mul(out_ptr->accumulator_ptr, &acc->rot_poly_amortized);
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc->rot_poly_amortized);
 }
 
  

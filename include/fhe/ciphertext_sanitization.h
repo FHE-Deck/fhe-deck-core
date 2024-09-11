@@ -25,7 +25,7 @@ class SanitizationKey{
     /// @param ct_out Output LWE ciphertext
     /// @param ct_in Input LWE ciphertext
     /// @param encoding Plaintext encoding. 
-    virtual void sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding) = 0;
+    virtual void sanitize(LWECT &ct_out, LWECT &ct_in, PlaintextEncoding encoding) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -73,7 +73,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
         /// @param ct_out The output ciphertext
         /// @param ct_in The input ciphertext
         /// @param encoding The plaintext encoding
-        void sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding); 
+        void sanitize(LWECT &ct_out, LWECT &ct_in, PlaintextEncoding encoding); 
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -121,7 +121,7 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
         /// @param ct_out The output ciphertext
         /// @param ct_in The input ciphertext
         /// @param encoding The plaintext encoding used for the messages. 
-        void sanitize(LWECT *ct_out, LWECT *ct_in, PlaintextEncoding encoding); 
+        void sanitize(LWECT &ct_out, LWECT &ct_in, PlaintextEncoding encoding); 
 
     template <class Archive>
     void save( Archive & ar ) const

@@ -45,16 +45,16 @@ class Vector{
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 
-    void add(Vector *out, const Vector *other) const;
+    void add(Vector &out, const Vector &other) const;
   
     /// @brief Subtracts other from this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 
-    void sub(Vector *out, const Vector *other) const;
+    void sub(Vector &out, const Vector &other) const;
   
     /// @brief Negates the coefficients of this vector and stores the output in out. 
     /// @param out The output vector
-    void neg(Vector *out);
+    void neg(Vector &out);
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -108,21 +108,21 @@ class VectorArray{
     /// @brief Coordinate wise addition of vector arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void add(VectorArray *out, const VectorArray *other);
+    void add(VectorArray &out, const VectorArray &other);
   
     /// @brief Coordinate wise subtraction of vectors arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void sub(VectorArray *out, const VectorArray *other);
+    void sub(VectorArray &out, const VectorArray &other);
   
     /// @brief Coordinate negation of vectors in this arrays
     /// @param out The resulting vector array 
-    void neg(VectorArray *out);
+    void neg(VectorArray &out);
   
     /// @brief Coordinate wise scalar multiplication of polynomials in thie arrays
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
-    void mul(VectorArray *out, int64_t scalar);
+    void mul(VectorArray &out, int64_t scalar);
 
 
     template <class Archive>

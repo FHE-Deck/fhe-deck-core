@@ -102,7 +102,7 @@ int64_t FHEContext::decrypt(Ciphertext& c_in){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }  
-    return config->secret_key->decrypt(c_in.lwe_c.get(), c_in.encoding);
+    return config->secret_key->decrypt(*c_in.lwe_c.get(), c_in.encoding);
 }
  
 PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
@@ -162,13 +162,13 @@ Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, HomomorphicAccumulator lut){
     }  
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
     if(ct_in.encoding.type == full_domain){    
-        config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out.get(), lut.accumulator, ct_in.lwe_c.get(), ct_in.encoding);
+        config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out.get(), lut.accumulator, *ct_in.lwe_c.get(), ct_in.encoding);
     }else if(ct_in.encoding.type == partial_domain){  
-        config->eval_key.bootstrap_pk->bootstrap(ct_out.get(),  lut.accumulator, ct_in.lwe_c.get()); 
+        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(),  lut.accumulator, *ct_in.lwe_c.get()); 
     }else if(ct_in.encoding.type == signed_limied_short_int){    
         LWECT c_in_copy(ct_in.lwe_c->param);
-        ct_in.lwe_c->add(&c_in_copy, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
-        config->eval_key.bootstrap_pk->bootstrap(ct_out.get(), lut.accumulator, &c_in_copy);   
+        ct_in.lwe_c->add(c_in_copy, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
+        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(), lut.accumulator, c_in_copy);   
     } 
     else{
         throw std::logic_error("Non existend encoding type!");
@@ -191,18 +191,18 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext& ct_in, std::v
         // Amortization is not supported so lets run sequentially.
         for(std::shared_ptr<VectorCTAccumulator> acc: accumulator_vec){
             LWECT ct_out(ct_in.lwe_c->param);  
-            config->eval_key.bootstrap_pk->full_domain_bootstrap(&ct_out, acc, ct_in.lwe_c.get(), ct_in.encoding);
+            config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out, acc, *ct_in.lwe_c.get(), ct_in.encoding);
             out_vec_lwe.push_back(ct_out);
         }
     // Otherwise we run the amortized procedures. 
     }else if(ct_in.encoding.type == full_domain){ 
-        out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, ct_in.lwe_c.get(), ct_in.encoding);
+        out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, *ct_in.lwe_c.get(), ct_in.encoding);
     }else if(ct_in.encoding.type == partial_domain){ 
-        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, ct_in.lwe_c.get(), ct_in.encoding);
+        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, *ct_in.lwe_c.get(), ct_in.encoding);
     }else if(ct_in.encoding.type == signed_limied_short_int){  
         LWECT ct_cast(ct_in.lwe_c->param);
-        ct_in.lwe_c->add(&ct_cast, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
-        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, &ct_cast, ct_in.encoding); 
+        ct_in.lwe_c->add(ct_cast, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
+        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, ct_cast, ct_in.encoding); 
     } 
     else{
         throw std::logic_error("Non existend encoding type!");
@@ -240,7 +240,7 @@ Ciphertext FHEContext::sanitize(Ciphertext& ct){
         throw std::logic_error("Sanitization is not supported, or sanitization key is not loaded!");
     }
     std::shared_ptr<LWECT> ct_out(new LWECT(ct.lwe_c->param));  
-    config->eval_key.sanitization_pk->sanitize(ct_out.get(), ct.lwe_c.get(), ct.encoding);
+    config->eval_key.sanitization_pk->sanitize(*ct_out.get(), *ct.lwe_c.get(), ct.encoding);
     return Ciphertext(ct_out, ct.encoding, this); 
 }
 

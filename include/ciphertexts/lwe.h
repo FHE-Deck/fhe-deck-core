@@ -87,37 +87,37 @@ class LWECT{
     /// @brief Multiplies this ciphertext by a scalar, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param scalar The input scalar.
-    void mul(LWECT *out, int64_t scalar);
+    void mul(LWECT &out, int64_t scalar);
 
     /// @brief The same as mul, but the multiplication is done wihtout modulus reduction.
-    void mul_lazy(LWECT *out, int64_t scalar); 
+    void mul_lazy(LWECT &out, int64_t scalar); 
 
     /// @brief Add in to this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param in The input ciphertext.
-    void add(LWECT *out, LWECT *in); 
+    void add(LWECT &out, LWECT &in); 
 
     /// @brief Subtract in from this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param in The input ciphertext.
-    void sub(LWECT *out, LWECT *in); 
+    void sub(LWECT &out, LWECT &in); 
 
     /// @brief Same void add(LWECT *out, LWECT *in) as add but without modulus reduction.
-    void add_lazy(LWECT* out, LWECT *in);  
+    void add_lazy(LWECT &out, LWECT &in);  
 
     /// @brief Add the scalar b to this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param b The input scalar.
-    void add(LWECT* out, int64_t b); 
+    void add(LWECT &out, int64_t b); 
 
     /// @brief Subtract b from this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param b The input scalar.
-    void sub(LWECT* out, int64_t b);
+    void sub(LWECT& out, int64_t b);
 
     /// @brief Negate this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
-    void neg(LWECT* out);
+    void neg(LWECT& out);
   
     template <class Archive>
     void save( Archive & ar ) const
@@ -180,7 +180,7 @@ class LWEModSwitcher{
   /// @param out_ct The output ciphertext.
   /// @param in_ct The input ciphertext.
   /// @note The function changes only the ct field of out_ct. In particular, it doesn't sent the parameters field, so you must make sure out_ct has the right parameters and is already initialized.
-  void switch_modulus(LWECT *out_ct, LWECT *in_ct);
+  void switch_modulus(LWECT &out_ct, LWECT& in_ct);
 };
  
 /**
@@ -236,7 +236,7 @@ class LWESK {
     /// @brief Encryption a message m, and stores the result in out
     /// @param out pointer to the output ciphertext. It is assumed it is already initialized with the right parameters.  
     /// @param m The input message. Should be an integer in the ciphertext modulus range.
-    void encrypt(LWECT* out, int64_t m); 
+    void encrypt(LWECT& out, int64_t m); 
     
     /// @brief Encodes and encrypts a message m, and returns a pointer to a new LWECT object.
     /// @param m The input message.
@@ -248,18 +248,18 @@ class LWESK {
     /// @param m The input message.
     /// @param encoding The plaintext encoding specification. It is used to encode the message m, before encrypting it. 
     /// @param out Stores the resulting ciphertext, that encrypts encoding.encode(m). It is assumed out is already initialized. 
-    void encode_and_encrypt(LWECT* out, int64_t m, PlaintextEncoding encoding);
+    void encode_and_encrypt(LWECT& out, int64_t m, PlaintextEncoding encoding);
   
     /// @brief Partially decrypts a ciphertext. That is, this function computes the inner product of the secret key and the ciphertext, and returns the result.
     /// @param out The in ciphertext. 
     /// @return Returns result of the inner produict. 
-    int64_t partial_decrypt(LWECT *in); 
+    int64_t partial_decrypt(LWECT& in); 
 
     /// @brief Decrypts the input ciphertext. 
     /// @param in The input ciphertext.
     /// @param encoding The plaintext encoding specification, that is used to decode the message after decryption.
     /// @return Returns the decrypted message.
-    int64_t decrypt(LWECT *in, PlaintextEncoding encoding); 
+    int64_t decrypt(LWECT& in, PlaintextEncoding encoding); 
    
     template <class Archive>
     void save( Archive & ar ) const
@@ -321,12 +321,12 @@ class LWEGadgetCT{
   /// @brief Multiplication of this object by a scalar.
   /// @param out_ct The LWECT that stores the result.
   /// @param scalar The input scalar.
-  void gadget_mul(LWECT *out_ct, int64_t scalar); 
+  void gadget_mul(LWECT& out_ct, int64_t scalar); 
 
   /// @brief Multiplication of this object by a scalar without modulus reduction.
   /// @param out_ct The LWECT that stores the result.
   /// @param scalar The input scalar.
-  void gadget_mul_lazy(LWECT *out_ct, int64_t scalar); 
+  void gadget_mul_lazy(LWECT& out_ct, int64_t scalar); 
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -384,7 +384,7 @@ class LWEGadgetSK{
     /// @brief Encrypts a message m, and and stores the result in the out.
     /// @param out The output ciphertext
     /// @param m The message m
-    void gadget_encrypt(LWEGadgetCT* out, int64_t m);
+    void gadget_encrypt(LWEGadgetCT& out, int64_t m);
   
     template <class Archive>
     void save( Archive & ar ) const
@@ -431,7 +431,7 @@ class LWEPublicKey{
     /// @brief Encrypts the message, and stores the result in out.
     /// @param out The output ciphertexts.
     /// @param message The input message.
-    void encrypt(LWECT* out, int64_t message);
+    void encrypt(LWECT& out, int64_t message);
   
     /// @brief Encrypts the message and output a pointer to a newly created ciphertexts.
     /// @param message The input message.

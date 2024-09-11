@@ -28,21 +28,21 @@ class VectorCT{
     /// @brief Rotates the plaintext within the ciphertext without affecting its decryptability. ote that this isn't necessarily a cyclic rotation. It's up to the implementation how the rotation is done.
     /// @param out The output ciphertext
     /// @param rot The amount of rotation
-    virtual void homomorphic_rotate(VectorCT *out, int32_t rot) = 0;
+    virtual void homomorphic_rotate(VectorCT &out, int32_t rot) = 0;
 
     /// @brief Adds this ciphertext and ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The ciphertext to add
-    virtual void add(VectorCT *out,  VectorCT *ct) = 0;
+    virtual void add(VectorCT &out,  VectorCT &ct) = 0;
     
     /// @brief Subtracts ct from this ciphertext, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void sub(VectorCT *out, VectorCT *ct) = 0;
+    virtual void sub(VectorCT &out, VectorCT &ct) = 0;
   
     /// @brief Negates this ciphertext and stores the result in out.
     /// @param out The output ciphertext
-    virtual void neg(VectorCT *out) = 0; 
+    virtual void neg(VectorCT &out) = 0; 
 
     template <class Archive>
     void save( Archive & ar ) const {}
@@ -84,7 +84,7 @@ class GadgetVectorCT{
     /// @brief Multiplies this with ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void mul(VectorCT *out, const VectorCT *ct) = 0;
+    virtual void mul(VectorCT &out, const VectorCT &ct) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {}
@@ -111,18 +111,12 @@ class GadgetVectorCTSK{
     /// @param size The size of the message
     /// @return Creates a new ciphertext
     virtual GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size) = 0; 
-    
-    /// @brief Encrypts the msg coefficient vector and returns the ciphertext
-    /// @param msg The message to encrypt
-    /// @param size The size of the message
-    /// @return Creates a new ciphertext
-    //virtual GadgetVectorCT* gadget_encrypt(Polynomial *msg) = 0;  
-
+      
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(Vector *msg) = 0;  
+    virtual GadgetVectorCT* gadget_encrypt(Vector &msg) = 0;  
 
     template <class Archive>
     void save( Archive & ar ) const {}

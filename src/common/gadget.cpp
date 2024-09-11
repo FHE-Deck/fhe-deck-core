@@ -44,8 +44,8 @@ void SignedDecompositionGadget::sample(int64_t** out, int64_t *poly){
     delete[] sign;
 }
 
-void SignedDecompositionGadget::sample(VectorArray* out, int64_t *in){
-    sample(out->vec_array_2d, in);
+void SignedDecompositionGadget::sample(VectorArray& out, int64_t *in){
+    sample(out.vec_array_2d, in);
 }
  
 void SignedDecompositionGadget::decomp(int64_t **d_ct, int64_t* poly){
@@ -123,8 +123,8 @@ void DiscreteGaussianSamplingGadget::sample(int64_t** out, int64_t *in){
 }
 
 
-void DiscreteGaussianSamplingGadget::sample(VectorArray* out, int64_t *in){
-    gaussian_sample(out->vec_array_2d, in);
+void DiscreteGaussianSamplingGadget::sample(VectorArray& out, int64_t *in){
+    gaussian_sample(out.vec_array_2d, in);
 }
    
 int64_t* Gadget::get_gadget_vector(){

@@ -69,7 +69,7 @@ class ExtendedPolynomialCT{
     /// @brief Multiplies this with ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void mul(VectorCT *out, const Polynomial *scalar) = 0;
+    virtual void mul(VectorCT &out, const Polynomial &scalar) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {}
@@ -113,7 +113,7 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual ExtendedPolynomialCT* extended_encrypt(Polynomial *msg) = 0; 
+    virtual ExtendedPolynomialCT* extended_encrypt(Polynomial &msg) = 0; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.

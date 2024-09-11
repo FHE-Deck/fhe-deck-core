@@ -60,14 +60,14 @@ int64_t PlaintextEncoding::decode_message(int64_t encoded_message){
 } 
 
  
-void PlaintextEncoding::encode_message(Vector* out, Vector* message){ 
-    for(int32_t i = 0; i < message->size; ++i){
-        out->vec[i] = encode_message(message->vec[i]);
+void PlaintextEncoding::encode_message(Vector& out, Vector& message){ 
+    for(int32_t i = 0; i < message.size; ++i){
+        out.vec[i] = encode_message(message.vec[i]);
     }
 }
  
-void PlaintextEncoding::decode_message(Vector* out, Vector* encoded_message){
-    for(int32_t i = 0; i < encoded_message->size; ++i){
-        out->vec[i] = decode_message(encoded_message->vec[i]);
+void PlaintextEncoding::decode_message(Vector& out, Vector& encoded_message){
+    for(int32_t i = 0; i < encoded_message.size; ++i){
+        out.vec[i] = decode_message(encoded_message.vec[i]);
     }
 }

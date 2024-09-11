@@ -28,53 +28,53 @@ LWECT::~LWECT(){
     } 
 }
  
-void LWECT::mul(LWECT *out, int64_t scalar){
+void LWECT::mul(LWECT &out, int64_t scalar){
     for(int32_t i = 0; i <= param->dim; ++i){
-        out->ct[i] = (ct[i] * scalar) % param->modulus;
+        out.ct[i] = (ct[i] * scalar) % param->modulus;
     }
 }
 
-void LWECT::mul_lazy(LWECT *out, int64_t scalar){
+void LWECT::mul_lazy(LWECT& out, int64_t scalar){
     for(int32_t i = 0; i <= param->dim; ++i){
-        out->ct[i] = (ct[i] * scalar);
+        out.ct[i] = (ct[i] * scalar);
     }
 }
  
-void LWECT::add(LWECT *out, LWECT *in){
+void LWECT::add(LWECT& out, LWECT& in){
     for(int32_t i = 0; i <= this->param->dim; ++i){
-        out->ct[i] = (this->ct[i] + in->ct[i]) % this->param->modulus;
+        out.ct[i] = (this->ct[i] + in.ct[i]) % this->param->modulus;
     }
 }
  
-void LWECT::sub(LWECT* out, LWECT *in){
+void LWECT::sub(LWECT& out, LWECT& in){
     for(int32_t i = 0; i <= this->param->dim; ++i){
-        out->ct[i] = Utils::integer_mod_form(this->ct[i] - in->ct[i], this->param->modulus);
+        out.ct[i] = Utils::integer_mod_form(this->ct[i] - in.ct[i], this->param->modulus);
     }
 }
   
-void LWECT::add_lazy(LWECT* out, LWECT *in){
+void LWECT::add_lazy(LWECT& out, LWECT& in){
     for(int32_t i = 0; i <= this->param->dim; ++i){
-        out->ct[i] = this->ct[i] + in->ct[i];
+        out.ct[i] = this->ct[i] + in.ct[i];
     }
 }
   
-void LWECT::add(LWECT* out, int64_t b){ 
-    out->ct[0] = (this->ct[0] + b) % this->param->modulus;
+void LWECT::add(LWECT& out, int64_t b){ 
+    out.ct[0] = (this->ct[0] + b) % this->param->modulus;
     for(int32_t i = 1; i <= param->dim; ++i){
-        out->ct[i] = this->ct[i];
+        out.ct[i] = this->ct[i];
     } 
 }
   
-void LWECT::sub(LWECT* out, int64_t b){
-    out->ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
+void LWECT::sub(LWECT& out, int64_t b){
+    out.ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
     for(int32_t i = 1; i <= param->dim; ++i){
-        out->ct[i] = this->ct[i];
+        out.ct[i] = this->ct[i];
     } 
 }
 
-void LWECT::neg(LWECT* out){   
+void LWECT::neg(LWECT& out){   
     for(int32_t i = 0; i < param->dim+1; ++i){
-        out->ct[i] = Utils::integer_mod_form(-this->ct[i], param->modulus);
+        out.ct[i] = Utils::integer_mod_form(-this->ct[i], param->modulus);
     }  
 }
  
@@ -134,20 +134,20 @@ LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<L
     }
 }
   
-void LWEModSwitcher::switch_modulus(LWECT *out_ct, LWECT *in_ct){  
+void LWEModSwitcher::switch_modulus(LWECT& out_ct, LWECT& in_ct){  
     if(long_arithmetic){ 
         long double long_temp; 
         for(int32_t i = 0; i < ct_size; ++i){
-            long_temp = long_Q_to * (long double)in_ct->ct[i];
-            out_ct->ct[i] = (int64_t)roundl(long_temp/long_Q_from); 
+            long_temp = long_Q_to * (long double)in_ct.ct[i];
+            out_ct.ct[i] = (int64_t)roundl(long_temp/long_Q_from); 
         } 
     }else{  
         double temp; 
         for(int32_t i = 0; i < ct_size; ++i){
             // Compute multiplicaiton on integers, and then convert to double
-            temp = to->modulus * in_ct->ct[i];
+            temp = to->modulus * in_ct.ct[i];
             // Divide and round to closest integer
-            out_ct->ct[i] = (int64_t)round(temp/Q_from); 
+            out_ct.ct[i] = (int64_t)round(temp/Q_from); 
         } 
     }   
 }
@@ -161,26 +161,26 @@ LWEGadgetCT::LWEGadgetCT(std::shared_ptr<LWEParam> lwe_param, int64_t base){
     this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]);  
 }
 
-void LWEGadgetCT::gadget_mul(LWECT *out_ct, int64_t scalar){ 
+void LWEGadgetCT::gadget_mul(LWECT& out_ct, int64_t scalar){ 
     int64_t *scalar_decomposed = new int64_t[digits]; 
     Utils::integer_decomp(scalar_decomposed, scalar, base, bits_base, digits);
     LWECT temp_ct(lwe_param); 
     ct_content[0]->mul(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < digits; ++i){
-        ct_content[i]->mul(&temp_ct, scalar_decomposed[i]);
-        out_ct->add(out_ct, &temp_ct);  
+        ct_content[i]->mul(temp_ct, scalar_decomposed[i]);
+        out_ct.add(out_ct, temp_ct);  
     }
     delete[] scalar_decomposed;  
 } 
     
-void LWEGadgetCT::gadget_mul_lazy(LWECT *out_ct, int64_t scalar){ 
+void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){ 
     int64_t *scalar_decomposed = new int64_t[digits]; 
     Utils::integer_decomp(scalar_decomposed, scalar, base, bits_base, digits);
     LWECT temp_ct(lwe_param); 
     ct_content[0]->mul_lazy(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < digits; ++i){
-        ct_content[i]->mul_lazy(&temp_ct, scalar_decomposed[i]);
-        out_ct->add_lazy(out_ct, &temp_ct);  
+        ct_content[i]->mul_lazy(temp_ct, scalar_decomposed[i]);
+        out_ct.add_lazy(out_ct, temp_ct);  
     }
     delete[] scalar_decomposed;  
 }
@@ -236,42 +236,42 @@ LWESK& LWESK::operator=(const LWESK other){
   
 LWECT* LWESK::encrypt(int64_t m){
     LWECT* out = new LWECT(param);
-    encrypt(out, m);
+    encrypt(*out, m);
     return out;
 }
  
-void LWESK::encrypt(LWECT *out, int64_t m){     
-    out->ct[0] = Utils::integer_mod_form(error_dist->next() + m, param->modulus); 
+void LWESK::encrypt(LWECT& out, int64_t m){     
+    out.ct[0] = Utils::integer_mod_form(error_dist->next() + m, param->modulus); 
     for(int32_t i=1; i < param->dim+1; ++i){       
-        out->ct[i] = unif_dist->next(); 
+        out.ct[i] = unif_dist->next(); 
         int64_t k = key[i-1]; 
-        out->ct[0] -= multiplier->mul(k,  out->ct[i]); 
-        out->ct[0] = Utils::integer_mod_form(out->ct[0], param->modulus); 
+        out.ct[0] -= multiplier->mul(k,  out.ct[i]); 
+        out.ct[0] = Utils::integer_mod_form(out.ct[0], param->modulus); 
     }   
 }
   
 LWECT* LWESK::encode_and_encrypt(int64_t m, PlaintextEncoding encoding){  
     LWECT* out = new LWECT(this->param);
-    encrypt(out, encoding.encode_message(m)); 
+    encrypt(*out, encoding.encode_message(m)); 
     return out;
 }
  
-void LWESK::encode_and_encrypt(LWECT* in, int64_t m, PlaintextEncoding encoding){   
+void LWESK::encode_and_encrypt(LWECT& in, int64_t m, PlaintextEncoding encoding){   
     encrypt(in, encoding.encode_message(m)); 
 } 
  
-int64_t LWESK::partial_decrypt(LWECT *in){ 
+int64_t LWESK::partial_decrypt(LWECT& in){ 
     Utils::array_mod_form(key, key, param->dim, param->modulus); 
-    int64_t phase  = in->ct[0]; 
+    int64_t phase  = in.ct[0]; 
     for(int32_t i = 1; i < param->dim+1; ++i){ 
         int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);  
-        int64_t c = Utils::integer_mod_form(in->ct[i], param->modulus);  
+        int64_t c = Utils::integer_mod_form(in.ct[i], param->modulus);  
         phase = (phase + multiplier->mul(c, k)) % param->modulus; 
     }   
     return phase; 
 }
  
-int64_t LWESK::decrypt(LWECT *in, PlaintextEncoding encoding){
+int64_t LWESK::decrypt(LWECT& in, PlaintextEncoding encoding){
     return encoding.decode_message(partial_decrypt(in));
 } 
  
@@ -294,17 +294,17 @@ LWEGadgetSK& LWEGadgetSK::operator=(const LWEGadgetSK other){
  
 LWEGadgetCT* LWEGadgetSK::gadget_encrypt(int64_t m){ 
     LWEGadgetCT* out = new LWEGadgetCT(lwe->param, this->base); 
-    gadget_encrypt(out, m);
+    gadget_encrypt(*out, m);
     return out;
 }
 
-void LWEGadgetSK::gadget_encrypt(LWEGadgetCT* gadget_ct, int64_t m){
+void LWEGadgetSK::gadget_encrypt(LWEGadgetCT& gadget_ct, int64_t m){
     int64_t temp_base = 1;     
     int64_t message = m;  
-    gadget_ct->ct_content[0] = std::unique_ptr<LWECT>(lwe->encrypt(message)); 
+    gadget_ct.ct_content[0] = std::unique_ptr<LWECT>(lwe->encrypt(message)); 
     for(int32_t i = 1; i < this->digits; ++i){
         temp_base *= this->base;      
-        gadget_ct->ct_content[i] = std::unique_ptr<LWECT>(lwe->encrypt(lwe->multiplier->mul(temp_base, message))); 
+        gadget_ct.ct_content[i] = std::unique_ptr<LWECT>(lwe->encrypt(lwe->multiplier->mul(temp_base, message))); 
     } 
 } 
 
@@ -329,21 +329,21 @@ LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
     return *this;
 }
  
-void LWEPublicKey::encrypt(LWECT* out, int64_t message){
+void LWEPublicKey::encrypt(LWECT& out, int64_t message){
     int64_t noise = rand_masking->next();
     public_key_ptr[0]->mul(out, noise); 
     LWECT temp(param);
     for(int32_t i = 1; i < size; ++i){
         noise = rand_masking->next();
-        public_key_ptr[i]->mul(&temp, noise); 
-        out->add(out, &temp); 
+        public_key_ptr[i]->mul(temp, noise); 
+        out.add(out, temp); 
     }  
-    out->add(out, message); 
+    out.add(out, message); 
 }
   
 LWECT* LWEPublicKey::encrypt(int64_t message){
     LWECT* out = new LWECT(param);  
-    encrypt(out, message);
+    encrypt(*out, message);
     return out;    
 }
  

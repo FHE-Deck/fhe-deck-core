@@ -28,11 +28,11 @@ namespace fhe_deck{
 
         LWEToRLWEKeySwitchKey& operator=(const LWEToRLWEKeySwitchKey other); 
 
-        void lwe_to_rlwe_key_switch(RLWECT *rlwe_ct_out, LWECT *lwe_ct_in);
+        void lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, LWECT& lwe_ct_in);
 
-        void eval_auto_poly(Polynomial* __restrict out_poly, Polynomial* __restrict in_poly, uint32_t log2_idx);
+        void eval_auto_poly(Polynomial& out_poly, Polynomial& in_poly, uint32_t log2_idx);
 
-        void eval_auto(RLWECT* rlwe_ct_out, RLWECT* rlwe_ct_in, uint32_t log2_idx); 
+        void eval_auto(RLWECT& rlwe_ct_out, RLWECT& rlwe_ct_in, uint32_t log2_idx); 
 
         void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest);
 

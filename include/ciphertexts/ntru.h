@@ -113,50 +113,50 @@ class NTRUCT : public PolynomialCT{
     /// @brief Negacyclic rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void negacyclic_rotate(NTRUCT *out, int32_t rot);
+    void negacyclic_rotate(NTRUCT &out, int32_t rot);
 
     /// @brief Cyclical rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void cyclic_rotate(NTRUCT *out, int32_t rot);
+    void cyclic_rotate(NTRUCT &out, int32_t rot);
 
     /// @brief Negacyclic rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void homomorphic_rotate(VectorCT *out, int32_t rot);
+    void homomorphic_rotate(VectorCT &out, int32_t rot);
 
     /// @brief Adds this ciphertext to ct and store the result in out.
     /// @param out The output ciphertext.
     /// @param ct The input ciphertext.
-    void add(VectorCT *out,  VectorCT *ct);
+    void add(VectorCT &out,  VectorCT &ct);
  
     /// @brief Adds x to this ciphertext, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void add(NTRUCT *out, Polynomial *x);
+    void add(NTRUCT &out, Polynomial &x);
 
     /// @brief Subtracts ct from this ciphertext, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param ct The input ciphertext.
-    void sub(VectorCT *out, VectorCT *ct);
+    void sub(VectorCT &out, VectorCT &ct);
  
     /// @brief Subtracts x from this ciphertext, and stores the result in out. 
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void sub(NTRUCT *out, Polynomial *x); 
+    void sub(NTRUCT &out, Polynomial &x); 
  
     /// @brief Multiplies this ciphertexts with x, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void mul(NTRUCT *out, Polynomial *x);
+    void mul(NTRUCT &out, Polynomial &x);
 
     /// @brief Negates this ciphertexts coefficients and stores the result in out.
     /// @param out The output ciphertext.
-    void neg(VectorCT *out);
+    void neg(VectorCT &out);
  
     /// @brief Extracts an LWE ciphertext that encodes the constant coefficient. 
     /// @param out The output LWE ciphertext.
-    void extract_lwe(LWECT *out);
+    void extract_lwe(LWECT &out);
  
     /// @brief Produces a string representation of this object. 
     /// @return The string representation.
@@ -218,57 +218,57 @@ class NTRUSK{
     /// @brief Encrypts the message polynomial m, and stores the result in out.
     /// @param out The output ciphertext. 
     /// @param m The input polynomial.
-    void encrypt(NTRUCT *out, Polynomial *m);
+    void encrypt(NTRUCT &out, Polynomial &m);
  
     /// @brief Encrypts the message polynomial m, and returns the result.
     /// @param m The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    NTRUCT* encrypt(Polynomial *m); 
+    NTRUCT* encrypt(Polynomial &m); 
 
     /// @brief Encodes and the message polynomial m, and returns the result.
     /// @param m The input polynomial.
     /// @param encoding The encoding scheme.
     /// @return Creates and returns a new ciphertext.
-    NTRUCT* encode_and_encrypt(Polynomial* m, PlaintextEncoding encoding);
+    NTRUCT* encode_and_encrypt(Polynomial &m, PlaintextEncoding encoding);
  
     /// @brief Partially decrypts the ciphertext. Multiplies the ct polynomial with sk. 
     /// @param phase The output polynomial.
     /// @param ct The input ciphertext.
-    void partial_decrypt(Polynomial *phase, NTRUCT *ct);
+    void partial_decrypt(Polynomial &phase, NTRUCT &ct);
  
     /// @brief Decrypts the input ciphertext, and returns a new polynomial.
     /// @param ct The input ciphertext.
     /// @param encoding The encoding scheme.
     /// @return Creates and returns a new polynomial.
-    Polynomial* decrypt(NTRUCT *ct, PlaintextEncoding encoding);
+    Polynomial* decrypt(NTRUCT &ct, PlaintextEncoding encoding);
  
     /// @brief Decrypts ct, and stores the result in out.
     /// @param out The  output polynomial.
     /// @param ct the input ciphertext.
     /// @param encoding The encoding scheme.
-    void decrypt(Polynomial *out, NTRUCT *ct, PlaintextEncoding encoding);
+    void decrypt(Polynomial &out, NTRUCT &ct, PlaintextEncoding encoding);
    
     /// @brief Encrypts msg * inv_sk. 
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    NTRUCT* kdm_encrypt(Polynomial* msg); 
+    NTRUCT* kdm_encrypt(Polynomial &msg); 
  
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out
     /// @param ct_out The output ciphertext.
     /// @param msg The input polynomial.
-    void kdm_encrypt(NTRUCT *ct_out, Polynomial* msg);
+    void kdm_encrypt(NTRUCT &ct_out, Polynomial &msg);
     
     /// @brief Encodes msg,  encrypts encoding.encode(msg) * inv_sk, and stores the result in ct_out
     /// @param ct_out The output ciphertext.
     /// @param msg The input polynomial.
     /// @param encoding The input encoding.
-    void kdm_encode_and_encrypt(NTRUCT *ct_out, Polynomial* msg, PlaintextEncoding encoding);
+    void kdm_encode_and_encrypt(NTRUCT &ct_out, Polynomial &msg, PlaintextEncoding encoding);
     
     /// @brief Encodes msg,  encrypts encoding.encode(msg) * inv_sk.
     /// @param msg The input polynomial.
     /// @param encoding The input encoding.
     /// @return Creates and returns a new ciphertext.
-    NTRUCT* kdm_encode_and_encrypt(Polynomial* msg, PlaintextEncoding encoding);
+    NTRUCT* kdm_encode_and_encrypt(Polynomial &msg, PlaintextEncoding encoding);
   
     /// @brief Extracts the LWE key.
     /// @return Creates and returns a new LWE key, with a newly created LWEParam object.
@@ -330,9 +330,9 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @brief Multiplies this with the input ct, and stores the result in out.
   /// @param out The output ciphertext.
   /// @param ct The input ciphertext.
-  void mul(VectorCT *out, const VectorCT *ct);
+  void mul(VectorCT &out, const VectorCT &ct);
 
-  void mul(VectorCT *out, const Polynomial *scalar);
+  void mul(VectorCT &out, const Polynomial &scalar);
 
   template <class Archive>
     void save( Archive & ar ) const
@@ -377,7 +377,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
-    GadgetVectorCT* gadget_encrypt(Vector *msg); 
+    GadgetVectorCT* gadget_encrypt(Vector &msg); 
 
     /// @brief Encrypts the input message array msg, and returns the result.
     /// @param msg The input message array.
@@ -388,7 +388,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    GadgetVectorCT* kdm_gadget_encrypt(Polynomial *msg); 
+    GadgetVectorCT* kdm_gadget_encrypt(Polynomial &msg); 
 
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
@@ -399,7 +399,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    ExtendedPolynomialCT* extended_encrypt(Polynomial *msg); 
+    ExtendedPolynomialCT* extended_encrypt(Polynomial &msg); 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
@@ -423,7 +423,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
 
     private:
  
-    std::vector<std::unique_ptr<NTRUCT>> ext_enc(Polynomial *msg);
+    std::vector<std::unique_ptr<NTRUCT>> ext_enc(Polynomial &msg);
 };
  
 } /// End of namespace fhe_deck
