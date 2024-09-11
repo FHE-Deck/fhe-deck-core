@@ -98,7 +98,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message){
     return FHEContext::encrypt_public(message, current_encoding);
 }
 
-int64_t FHEContext::decrypt(Ciphertext& c_in){
+int64_t FHEContext::decrypt(const Ciphertext& c_in){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }  
@@ -156,7 +156,7 @@ HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message)){
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
 }
   
-Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, HomomorphicAccumulator lut){  
+Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, const HomomorphicAccumulator& lut){  
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -176,7 +176,7 @@ Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, HomomorphicAccumulator lut){
     return Ciphertext(ct_out, ct_in.encoding, this); 
 }
    
-std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec){ 
+std::vector<Ciphertext> FHEContext::eval_lut_amortized(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec){ 
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }    
@@ -215,27 +215,27 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(Ciphertext& ct_in, std::v
     return out_vec;
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding){
+Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding){
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut);
 }
  
-Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space)){
+Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space)){
     HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding){
+Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding){
     HomomorphicAccumulator lut = this->genrate_lut(f, encoding);
     return eval_lut(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message)){
+Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message)){
     HomomorphicAccumulator lut = this->genrate_lut(f);
     return eval_lut(ct_in, lut);
 }
  
-Ciphertext FHEContext::sanitize(Ciphertext& ct){
+Ciphertext FHEContext::sanitize(const Ciphertext& ct){
     if(!config->eval_key.is_sanitization_supported){
         throw std::logic_error("Sanitization is not supported, or sanitization key is not loaded!");
     }

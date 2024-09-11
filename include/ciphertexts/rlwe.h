@@ -138,27 +138,27 @@ class RLWECT : public PolynomialCT{
     /// @brief Add ct to this, and store the result in out.
     /// @param out The output RLWECT object.
     /// @param ct The input RLWECT object.
-    void add(VectorCT &out,  VectorCT &ct);
+    void add(VectorCT &out, const VectorCT &ct);
  
     /// @brief Add the polynomial x to this, and store the result in out.
     /// @param out The output RLWECT object.
     /// @param x The input polynomial.
-    void add(RLWECT &out, Polynomial &x);
+    void add(RLWECT &out, const Polynomial &x);
 
     /// @brief Subtract ct from this, and store the result in out.
     /// @param out The output RLWECT object.
     /// @param ct The input RLWECT object.
-    void sub(VectorCT &out, VectorCT &ct);
+    void sub(VectorCT &out, const VectorCT &ct);
  
     /// @brief Subtract the polynomial x from this, and store the result in out.
     /// @param out The output RLWECT object.
     /// @param x The input polynomial.
-    void sub(RLWECT &out, Polynomial &x); 
+    void sub(RLWECT &out, const Polynomial &x); 
  
     /// @brief Multiply this by the polynomial x, and store the result in out.
     /// @param out The output RLWECT object.
     /// @param x The input polynomial.
-    void mul(RLWECT &out, Polynomial &x);
+    void mul(RLWECT &out, const Polynomial &x);
 
     /// @brief Multiply this by the integer x, and store the result in out.
     /// @param out The output RLWECT object.
@@ -369,12 +369,12 @@ class RLWESK{
     /// @brief The encryption function. Encrypts the message m, and stores the result in out.
     /// @param out The resulting ciphertext. It is assumed the object is properly initialized.
     /// @param m Polynomial message to be encrypted.
-    void encrypt(RLWECT &out, Polynomial &m);  
+    void encrypt(RLWECT &out, const Polynomial &m);  
     
     /// @brief The encryption function. Encrypts the message m, and returns the resulting ciphertext.
     /// @param m The polynomial message to be encrypted.
     /// @return Creates and returns the resulting ciphertext.
-    RLWECT* encrypt(Polynomial &m); 
+    RLWECT* encrypt(const Polynomial &m); 
 
     /// @brief Encodes the message m using the encoding scheme, and encrypts it.
     /// @param m The input message.
@@ -385,7 +385,7 @@ class RLWESK{
     /// @brief Partial decryption. Runs b - a*sk_poly, and stores the result in out.
     /// @param phase The resulting partial decryption. 
     /// @param ct The input ciphertext.
-    void partial_decrypt(Polynomial &phase, RLWECT &ct);
+    void partial_decrypt(Polynomial &phase, const RLWECT &ct);
   
     /// @brief  Decrypts the ciphertext ct, and returns the resulting polynomial.
     /// @param ct The input ciphertext.
@@ -397,7 +397,7 @@ class RLWESK{
     /// @param out The resulting polynomial.
     /// @param ct The input ciphertext.
     /// @param encoding The plaintext encoding scheme.
-    void decrypt(Polynomial &out, RLWECT &ct, PlaintextEncoding encoding);
+    void decrypt(Polynomial &out, const RLWECT &ct, PlaintextEncoding encoding);
  
     /// @brief Extract a LWE key from this secret key. The LWE secret key decrypt LWE ciphertexts extracted from the RLWE ciphertexts for the zero coefficient.
     /// @param lwe_key An array that stores the LWE secret key.
@@ -458,24 +458,24 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    GadgetVectorCT* gadget_encrypt(Vector &msg); 
+    GadgetVectorCT* gadget_encrypt(const Vector &msg); 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size); 
+    GadgetVectorCT* gadget_encrypt(const uint64_t *msg, int32_t size); 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    ExtendedPolynomialCT* extended_encrypt(Polynomial &msg); 
+    ExtendedPolynomialCT* extended_encrypt(const Polynomial &msg); 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    ExtendedPolynomialCT* extended_encrypt(uint64_t *msg, int32_t size); 
+    ExtendedPolynomialCT* extended_encrypt(const uint64_t *msg, int32_t size); 
 
  
     template <class Archive>
@@ -494,7 +494,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
 
   private:
 
-  std::vector<std::unique_ptr<RLWECT>> ext_enc(Polynomial &msg);
+  std::vector<std::unique_ptr<RLWECT>> ext_enc(const Polynomial &msg);
 
 };
  

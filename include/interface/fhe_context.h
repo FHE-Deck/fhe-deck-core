@@ -100,7 +100,7 @@ class FHEContext{
     /// @brief Decrypt the input Ciphertext (requires public key)
     /// @param ct The input ciphertext
     /// @return Return the decrypted integer.
-    int64_t decrypt(Ciphertext& ct);
+    int64_t decrypt(const Ciphertext& ct);
 
     // Getters and setter for default plaintext encoding (requires either secret kor public key)
 
@@ -159,40 +159,40 @@ class FHEContext{
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param lut The homomorphic accumulator
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(Ciphertext& ct_in, HomomorphicAccumulator lut);
+    Ciphertext eval_lut(const Ciphertext& ct_in, const HomomorphicAccumulator& lut);
    
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param encoding The plaintext encoding (if different from the default one)
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
+    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped. 
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space));
+    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space));
   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param encoding The plaintext encoding (if different from the default one)
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding);
+    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding);
   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped. 
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(Ciphertext& ct_in, int64_t (*f)(int64_t message));
+    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message));
 
     /// @brief Sanitize the input ciphertext.  
     /// @param ct_in The input ciphertext to be sanitized.
     /// @return A new sanitized ciphertext, which is inpedendent of the input ciphertext, but which encodes the same message.
-    Ciphertext sanitize(Ciphertext& ct_in);
+    Ciphertext sanitize(const Ciphertext& ct_in);
   
     /// @brief Evaluates the set of homomorphic accumulators on the input ciphertext. This function bootstraps the input ciphertext. 
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param luts The vector of homomorphic accumulators
     /// @return A vector of ciphertexts correspondng to the accumulator evaluations
-    std::vector<Ciphertext> eval_lut_amortized(Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts);
+    std::vector<Ciphertext> eval_lut_amortized(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts);
    
     /// @brief Evaluates scalar + Sum_i(scalars[i] * ct_vec[i])
     /// @param ct_vec In input ciphertexts

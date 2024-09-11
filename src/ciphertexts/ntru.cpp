@@ -83,23 +83,23 @@ void NTRUCT::homomorphic_rotate(VectorCT &out, int32_t rot){
     }
 }
  
-void NTRUCT::add(VectorCT& out, VectorCT &ct){  
+void NTRUCT::add(VectorCT& out, const VectorCT &ct){  
     NTRUCT &out_ptr = static_cast<NTRUCT&>(out); 
-    NTRUCT &ct_ptr = static_cast<NTRUCT&>(ct);
+    const NTRUCT &ct_ptr = static_cast<const NTRUCT&>(ct);
     ct_ptr.ct_poly.add(out_ptr.ct_poly, ct_poly); 
 }
   
-void NTRUCT::add(NTRUCT &out, Polynomial &x){
+void NTRUCT::add(NTRUCT &out, const Polynomial &x){
     ct_poly.add(out.ct_poly, x); 
 }
  
-void NTRUCT::sub(VectorCT &out, VectorCT &ct){  
+void NTRUCT::sub(VectorCT &out, const VectorCT &ct){  
     NTRUCT &out_ptr = static_cast<NTRUCT&>(out);
-    NTRUCT &ct_ptr = static_cast<NTRUCT&>(ct);
+    const NTRUCT &ct_ptr = static_cast<const NTRUCT&>(ct);
     ct_poly.sub(out_ptr.ct_poly, ct_ptr.ct_poly); 
 }
   
-void NTRUCT::sub(NTRUCT &out, Polynomial &x){
+void NTRUCT::sub(NTRUCT &out, const Polynomial &x){
     ct_poly.sub(out.ct_poly, x);  
 }
 
@@ -108,7 +108,7 @@ void NTRUCT::neg(VectorCT &out){
     ct_poly.neg(out_ptr.ct_poly); 
 }
   
-void NTRUCT::mul(NTRUCT &out, Polynomial &x){ 
+void NTRUCT::mul(NTRUCT &out, const Polynomial &x){ 
     param->mul_engine->mul(out.ct_poly, ct_poly, x); 
 }
  
@@ -208,7 +208,7 @@ NTRUSK& NTRUSK::operator=(const NTRUSK other){
     return *this;
 }
   
-void NTRUSK::encrypt(NTRUCT &out, Polynomial &m){  
+void NTRUSK::encrypt(NTRUCT &out, const Polynomial &m){  
     if(m.degree < param->size){
         throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m, degree is too big!");
     }
@@ -228,13 +228,13 @@ void NTRUSK::encrypt(NTRUCT &out, Polynomial &m){
     out.ct_poly.add(out.ct_poly, m);
 }
 
-NTRUCT* NTRUSK::encrypt(Polynomial &m){   
+NTRUCT* NTRUSK::encrypt(const Polynomial &m){   
     NTRUCT* out = new NTRUCT(param);  
     this->encrypt(*out, m);
     return out;
 }
 
-NTRUCT* NTRUSK::encode_and_encrypt(Polynomial &m, PlaintextEncoding encoding){ 
+NTRUCT* NTRUSK::encode_and_encrypt(const Polynomial &m, PlaintextEncoding encoding){ 
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(m.coefs[i]);
@@ -242,7 +242,7 @@ NTRUCT* NTRUSK::encode_and_encrypt(Polynomial &m, PlaintextEncoding encoding){
     return encrypt(m_scaled); 
 }
  
-void NTRUSK::partial_decrypt(Polynomial &phase, NTRUCT &ct){   
+void NTRUSK::partial_decrypt(Polynomial &phase, const NTRUCT &ct){   
     if(phase.degree != param->size){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
@@ -255,32 +255,32 @@ void NTRUSK::partial_decrypt(Polynomial &phase, NTRUCT &ct){
     sk.mul(phase, ct.ct_poly, param->mul_engine); 
 }
 
-Polynomial* NTRUSK::decrypt(NTRUCT &ct, PlaintextEncoding encoding){ 
+Polynomial* NTRUSK::decrypt(const NTRUCT &ct, PlaintextEncoding encoding){ 
     Polynomial* out = new Polynomial(param->size, param->coef_modulus);
     decrypt(*out, ct, encoding);  
     return out;
 }
 
-void NTRUSK::decrypt(Polynomial &out, NTRUCT &ct, PlaintextEncoding encoding){   
+void NTRUSK::decrypt(Polynomial &out, const NTRUCT &ct, PlaintextEncoding encoding){   
     this->partial_decrypt(out, ct);  
     for(int32_t i = 0; i < out.degree; ++i){
         out.coefs[i] = encoding.decode_message(out.coefs[i]);
     } 
 }
  
-NTRUCT* NTRUSK::kdm_encrypt(Polynomial& msg){
+NTRUCT* NTRUSK::kdm_encrypt(const Polynomial& msg){
     NTRUCT* out = new NTRUCT(param);
     kdm_encrypt(*out, msg);
     return out;
 } 
 
-void NTRUSK::kdm_encrypt(NTRUCT &out, Polynomial& msg){
+void NTRUSK::kdm_encrypt(NTRUCT &out, const Polynomial& msg){
     Polynomial kdm_msg(param->size, param->coef_modulus);
     inv_sk.mul(kdm_msg, msg, param->mul_engine);
     encrypt(out, kdm_msg);
 }
  
-void NTRUSK::kdm_encode_and_encrypt(NTRUCT &out, Polynomial& msg, PlaintextEncoding encoding){
+void NTRUSK::kdm_encode_and_encrypt(NTRUCT &out, const Polynomial& msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(msg.coefs[i]);
@@ -288,7 +288,7 @@ void NTRUSK::kdm_encode_and_encrypt(NTRUCT &out, Polynomial& msg, PlaintextEncod
     kdm_encrypt(out, m_scaled);  
 }
  
-NTRUCT* NTRUSK::kdm_encode_and_encrypt(Polynomial& msg, PlaintextEncoding encoding){
+NTRUCT* NTRUSK::kdm_encode_and_encrypt(const Polynomial& msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
         m_scaled.coefs[i] = encoding.encode_message(msg.coefs[i]);
@@ -324,13 +324,13 @@ NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other){
     throw std::runtime_error("NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other): Don't copy the secret key!");  
 }
   
-GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(Vector &msg){     
+GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(const Vector &msg){     
     Polynomial msg_poly(msg.vec, sk->param->size, sk->param->coef_modulus);
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  
-GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
+GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
     if(size > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
@@ -342,12 +342,12 @@ GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
     return gadget_encrypt(msg_poly);
 }
  
-GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(Polynomial &msg){
+GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg){
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 } 
 
-GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int32_t size){
+GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(const uint64_t *msg, int32_t size){
     if(size > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
@@ -360,12 +360,12 @@ GadgetVectorCT* NTRUGadgetSK::kdm_gadget_encrypt(uint64_t *msg, int32_t size){
 } 
  
 
-ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(Polynomial &msg){      
+ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(const Polynomial &msg){      
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
     return new NTRUGadgetCT(sk->param, gadget, gadget_ct);
 }
  
-ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(uint64_t *msg, int32_t size){
+ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(const uint64_t *msg, int32_t size){
     if(size > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
@@ -378,7 +378,7 @@ ExtendedPolynomialCT* NTRUGadgetSK::extended_encrypt(uint64_t *msg, int32_t size
 }
 
 
-std::vector<std::unique_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(Polynomial &msg){
+std::vector<std::unique_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(const Polynomial &msg){
     std::vector<std::unique_ptr<NTRUCT>> gadget_ct;     
     std::shared_ptr<Polynomial> msg_cpy(msg.clone());  
     // Encryptions of - msg* base**i    

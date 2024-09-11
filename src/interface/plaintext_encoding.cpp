@@ -19,7 +19,7 @@ PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plainte
 }
 
 
-int64_t PlaintextEncoding::encode_message(int64_t message){ 
+int64_t PlaintextEncoding::encode_message(int64_t message)const{ 
     /// TODO: Its better to first multiply the message by the ciphertext modulus, divide by ticks and then round.
     /// FOr now tests with ks_functional_bootstrap fail. Perhaps the test enforces this encoding somehow. Need to check it out. 
     uint64_t scale = ciphertext_modulus/ticks; 
@@ -27,7 +27,7 @@ int64_t PlaintextEncoding::encode_message(int64_t message){
 }
  
         
-int64_t PlaintextEncoding::decode_message(int64_t encoded_message){ 
+int64_t PlaintextEncoding::decode_message(int64_t encoded_message)const{ 
     int64_t message = 0;
     if(type == full_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus;
@@ -60,13 +60,13 @@ int64_t PlaintextEncoding::decode_message(int64_t encoded_message){
 } 
 
  
-void PlaintextEncoding::encode_message(Vector& out, Vector& message){ 
+void PlaintextEncoding::encode_message(Vector& out, const Vector& message)const{ 
     for(int32_t i = 0; i < message.size; ++i){
         out.vec[i] = encode_message(message.vec[i]);
     }
 }
  
-void PlaintextEncoding::decode_message(Vector& out, Vector& encoded_message){
+void PlaintextEncoding::decode_message(Vector& out, const Vector& encoded_message)const{
     for(int32_t i = 0; i < encoded_message.size; ++i){
         out.vec[i] = decode_message(encoded_message.vec[i]);
     }

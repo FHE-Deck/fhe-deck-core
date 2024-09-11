@@ -36,23 +36,23 @@ public:
     /// @brief Encode a message.
     /// @param message The message to be encoded.
     /// @return The encoded message.
-    int64_t encode_message(int64_t message);
+    int64_t encode_message(int64_t message)const;
 
     /// @brief Decode a message.
     /// @param phase The encoded message. 
     /// @return The decoded message. 
-    int64_t decode_message(int64_t encoded_message);
+    int64_t decode_message(int64_t encoded_message)const;
 
 
     /// @brief Encode a message.
     /// @param message The message to be encoded.
     /// @return The encoded message.
-    void encode_message(Vector& out, Vector& message);
+    void encode_message(Vector& out, const Vector& message)const;
 
     /// @brief Decode a message.
     /// @param phase The encoded message. 
     /// @return The decoded message. 
-    void decode_message(Vector& out, Vector& encoded_message);
+    void decode_message(Vector& out, const Vector& encoded_message)const;
 
     template <class Archive>
     void save( Archive & ar ) const

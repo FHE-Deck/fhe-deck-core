@@ -29,7 +29,7 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_orig
     }
 }
    
-void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, LWECT& lwe_ct_in) { 
+void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in) { 
     rlwe_ct_out.b.zeroize(); 
     rlwe_ct_out.b.coefs[0] = lwe_ct_in.ct[0];  
     Utils::array_mod_form(lwe_ct_in.ct, lwe_ct_in.ct, lwe_ct_in.param->dim  + 1, dest_param->coef_modulus);  
@@ -45,7 +45,7 @@ void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, LWECT& l
     }
 }
 
-void LWEToRLWEKeySwitchKey::eval_auto(fhe_deck::RLWECT& rlwe_ct_out, fhe_deck::RLWECT& rlwe_ct_in, uint32_t log2_idx) {
+void LWEToRLWEKeySwitchKey::eval_auto(fhe_deck::RLWECT& rlwe_ct_out, const fhe_deck::RLWECT& rlwe_ct_in, uint32_t log2_idx) {
     /// Then multiply the auto_a part with the automorphism 
     /// Add the authomorphism of b to the output. 
     //// Yep: (0, auto(b)) + Key(auto(s)) * auto(a) 
@@ -59,7 +59,7 @@ void LWEToRLWEKeySwitchKey::eval_auto(fhe_deck::RLWECT& rlwe_ct_out, fhe_deck::R
 }
 
 void LWEToRLWEKeySwitchKey::eval_auto_poly(fhe_deck::Polynomial& out_poly,
-                                           fhe_deck::Polynomial& in_poly, uint32_t idx) {
+                                           const fhe_deck::Polynomial& in_poly, uint32_t idx) {
     // we know the degree is a power of 2 
     if (idx == out_poly.degree + 1) {
         // N + 1 automorphism just negates odd entries

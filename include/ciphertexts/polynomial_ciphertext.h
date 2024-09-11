@@ -113,13 +113,13 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual ExtendedPolynomialCT* extended_encrypt(Polynomial &msg) = 0; 
+    virtual ExtendedPolynomialCT* extended_encrypt(const Polynomial &msg) = 0; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual ExtendedPolynomialCT* extended_encrypt(uint64_t *msg, int32_t size) = 0; 
+    virtual ExtendedPolynomialCT* extended_encrypt(const uint64_t *msg, int32_t size) = 0; 
   
     template <class Archive>
     void save( Archive & ar ) const {

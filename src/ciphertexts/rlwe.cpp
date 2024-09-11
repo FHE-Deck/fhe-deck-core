@@ -44,25 +44,25 @@ void RLWECT::homomorphic_rotate(VectorCT &out, int32_t rot){
     }
 }
  
-void RLWECT::add(VectorCT& out, VectorCT &ct){  
+void RLWECT::add(VectorCT& out, const VectorCT &ct){  
     RLWECT &out_ptr = static_cast<RLWECT&>(out); 
-    RLWECT &ct_ptr = static_cast<RLWECT&>(ct);
+    const RLWECT &ct_ptr = static_cast<const RLWECT&>(ct);
     ct_ptr.a.add(out_ptr.a, a);
     ct_ptr.b.add(out_ptr.b, b);  
 }
   
-void RLWECT::add(RLWECT &out, Polynomial &x){
+void RLWECT::add(RLWECT &out, const Polynomial &x){
     b.add(out.b, x); 
 }
  
-void RLWECT::sub(VectorCT &out, VectorCT &ct){  
+void RLWECT::sub(VectorCT &out, const VectorCT &ct){  
     RLWECT &out_ptr = static_cast<RLWECT&>(out);
-    RLWECT &ct_ptr = static_cast<RLWECT&>(ct);
+    const RLWECT &ct_ptr = static_cast<const RLWECT&>(ct);
     a.sub(out_ptr.a, ct_ptr.a);
     b.sub(out_ptr.b, ct_ptr.b); 
 }
   
-void RLWECT::sub(RLWECT &out, Polynomial &x){
+void RLWECT::sub(RLWECT &out, const Polynomial &x){
     b.sub(out.b, x);  
 }
 
@@ -72,7 +72,7 @@ void RLWECT::neg(VectorCT &out){
     b.neg(out_ptr.b); 
 }
   
-void RLWECT::mul(RLWECT &out, Polynomial &x){ 
+void RLWECT::mul(RLWECT &out, const Polynomial &x){ 
     this->a.mul(out.a, x, param->mul_engine);
     this->b.mul(out.b, x, param->mul_engine); 
 }
@@ -288,7 +288,7 @@ RLWESK& RLWESK::operator=(const RLWESK other){
     return *this;
 }
   
-void RLWESK::encrypt(RLWECT &out, Polynomial &m){  
+void RLWESK::encrypt(RLWECT &out, const Polynomial &m){  
     if(m.degree < param->size){
         throw std::logic_error("RLWESK::encrypt(Polynomial *m): Input polynomial m, degree is too big!");
     }
@@ -311,7 +311,7 @@ void RLWESK::encrypt(RLWECT &out, Polynomial &m){
     out.b.add(out.b, message);   
 }
 
-RLWECT* RLWESK::encrypt(Polynomial &m){   
+RLWECT* RLWESK::encrypt(const Polynomial &m){   
     RLWECT* out = new RLWECT(param);  
     this->encrypt(*out, m);
     return out;
@@ -326,7 +326,7 @@ RLWECT* RLWESK::encode_and_encrypt(Polynomial& m, PlaintextEncoding encoding){
     return out;
 }
 
-void RLWESK::partial_decrypt(Polynomial &phase, RLWECT &ct){   
+void RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct){   
     if(phase.degree != param->size){
         throw std::logic_error("RLWESK::phase(Polynomial *phase, RLWECT *ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
@@ -346,7 +346,7 @@ Polynomial* RLWESK::decrypt(RLWECT &ct, PlaintextEncoding encoding){
     return out;
 }
  
-void RLWESK::decrypt(Polynomial &out, RLWECT &ct, PlaintextEncoding encoding){
+void RLWESK::decrypt(Polynomial &out, const RLWECT &ct, PlaintextEncoding encoding){
     this->partial_decrypt(out, ct);   
     for(int32_t i = 0; i < out.degree; ++i){
         out.coefs[i] = encoding.decode_message(out.coefs[i]);
@@ -381,7 +381,7 @@ RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other){
     throw std::runtime_error("RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other): Don't copy the secret key!");  
 }
 
-std::vector<std::unique_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg){
+std::vector<std::unique_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Polynomial &msg){
     std::vector<std::unique_ptr<RLWECT>> ext_ct; 
     std::shared_ptr<Polynomial> msg_cpy(msg.clone()); 
     // Encryptions of - msg* base**i    
@@ -395,7 +395,7 @@ std::vector<std::unique_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg){
     return ext_ct;
 }
   
-GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Vector &msg){  
+GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(const Vector &msg){  
     Polynomial msg_poly(msg.vec, rlwe_sk->param->size, rlwe_sk->param->coef_modulus);    
     std::vector<std::unique_ptr<RLWECT>> gadget_ct = ext_enc(msg_poly); 
     // Encryptions of - msg * sk * base**i    
@@ -407,7 +407,7 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(Vector &msg){
     return new RLWEGadgetCT(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
-GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
+GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
     if(size > rlwe_sk->param->size){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }
@@ -419,12 +419,12 @@ GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size){
     return gadget_encrypt(msg_poly);
 }
  
-ExtendedPolynomialCT* RLWEGadgetSK::extended_encrypt(Polynomial &msg){      
+ExtendedPolynomialCT* RLWEGadgetSK::extended_encrypt(const Polynomial &msg){      
     std::vector<std::unique_ptr<RLWECT>> gadget_ct = ext_enc(msg); 
     return new ExtendedRLWECT(rlwe_sk->param, gadget, gadget_ct);
 }
  
-ExtendedPolynomialCT* RLWEGadgetSK::extended_encrypt(uint64_t *msg, int32_t size){
+ExtendedPolynomialCT* RLWEGadgetSK::extended_encrypt(const uint64_t *msg, int32_t size){
     if(size > rlwe_sk->param->size){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }

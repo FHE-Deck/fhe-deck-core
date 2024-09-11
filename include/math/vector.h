@@ -58,6 +58,7 @@ class Vector{
 
     template <class Archive>
     void save( Archive & ar ) const
+
     { 
         ar(size, modulus);   
         ar(cereal::binary_data(vec, sizeof(int64_t) * size));  

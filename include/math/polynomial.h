@@ -50,53 +50,53 @@ class PolynomialMultiplicationEngine{
     /// @brief Computes the evaluation form of a polynomial
     /// @param in Output in evaluation form
     /// @param out The input polyniomial in coefficient form
-    virtual void to_eval(PolynomialEvalForm &out, Polynomial &in) = 0; 
+    virtual void to_eval(PolynomialEvalForm &out, const  Polynomial &in)= 0; 
 
     /// @brief Compute the evaluation for of a polynomial array
     /// @param in The output polynomial array in evaluation form 
     /// @param out The input polynomial array in coefficient form
-    virtual void to_eval(PolynomialArrayEvalForm &out, PolynomialArrayCoefForm &in) = 0;
+    virtual void to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in) = 0;
   
     /// @brief Computes the coefficient form from the evaluation form of a polynomial
     /// @param in The input polynomial in evaluation form
     /// @param out The output polynomial in coefficient form
-    virtual void to_coef(Polynomial &out, PolynomialEvalForm &in) = 0; 
+    virtual void to_coef(Polynomial &out, const PolynomialEvalForm &in) = 0; 
 
     /// @brief Computes the coefficient form from the evaluation form of an array of polynomials
     /// @param in The input polynomial array in evaluation form
     /// @param out The output polynomial array in coefficient form
-    virtual void to_coef(PolynomialArrayCoefForm &out, PolynomialArrayEvalForm &in) = 0;
+    virtual void to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in) = 0;
 
     /// @brief Multiplies two polynomials that are given in evaluation form.
     /// @param out The output polynomial in evaluation form
     /// @param in_1 The first input polynomial in evaluation form
     /// @param in_2 The second input polynomial in evaluation form
-    virtual void mul(PolynomialEvalForm &out, PolynomialEvalForm &in_1, PolynomialEvalForm &in_2) = 0;
+    virtual void mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2) = 0;
  
     /// @brief Multiplies polynomials given in coefficient form
     /// @param out The output polynomial in coefficient form
     /// @param in_1 The first input polynomial in coefficient form
     /// @param in_2 The second input polynomial in coefficient form
-    virtual void mul(Polynomial &out, Polynomial &in_1,  Polynomial &in_2); 
+    virtual void mul(Polynomial &out, const Polynomial &in_1,  const Polynomial &in_2); 
    
     /// @brief Computes the inner product or the given polynomial arrays. That is, it computes the sum of the element-wise products of the polynomials in the given arrays.
     /// @param out The output polynomial in coefficient form
     /// @param in_1 The first input polynomial array in coefficient form
     /// @param in_2 The second input polynomial array in evaluation form
-    virtual void multisum(Polynomial &out, PolynomialArrayCoefForm &in_1, PolynomialArrayEvalForm &in_2) = 0;
+    virtual void multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2) = 0;
 
     /// @brief Computes the inner product or the given polynomial arrays. That is, it computes the sum of the element-wise products of the polynomials in the given arrays.
     /// @param out The output polynomial in coefficient form
     /// @param in_1 The first input polynomial array in evalulation form
     /// @param in_2 The second input polynomial array in evaluation form
-    virtual void multisum(Polynomial &out, PolynomialArrayEvalForm &in_1, PolynomialArrayEvalForm &in_2) = 0;
+    virtual void multisum(Polynomial &out, const PolynomialArrayEvalForm &in_1, const PolynomialArrayEvalForm &in_2) = 0;
  
     /// @brief Computes the inner product or the given polynomial arrays. That is, it computes the sum of the element-wise products of the polynomials in the given arrays.
     /// @param out The output polynomial in coefficient form
     /// @param out_in_1_eval Teh evaluation form of in_1
     /// @param in_1 The first input polynomial array in coefficient form
     /// @param in_2 The second input polynomial array in evaluation form
-    virtual void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, PolynomialArrayCoefForm &in_1, PolynomialArrayEvalForm &in_2) = 0;
+    virtual void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2) = 0;
  
 };
  
@@ -119,21 +119,21 @@ class PolynomialEvalForm{
     /// @brief Adds other to this polynomial and stores the output in out.
     /// @param out The output polynomial
     /// @param other The input polynomial
-    virtual void add(PolynomialEvalForm &out, PolynomialEvalForm &other) = 0;
+    virtual void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const = 0;
     
     /// @brief Subtracts other to this polynomial and stores the output in out.
     /// @param out The output polynomial
     /// @param other The input polynomial
-    virtual void sub(PolynomialEvalForm &out, PolynomialEvalForm &other) = 0;
+    virtual void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const = 0;
     
     /// @brief Multiplies scalar with this polynomial and stores the output in out.
     /// @param out The output polynomial
     /// @param scalar The input scalar
-    virtual void mul(PolynomialEvalForm &out, int64_t scalar) = 0; 
+    virtual void mul(PolynomialEvalForm &out, int64_t scalar)const = 0; 
     
     /// @brief Negates this polynomial and stores the output in out.
     /// @param out The output polynomial 
-    virtual void neg(PolynomialEvalForm &out) = 0; 
+    virtual void neg(PolynomialEvalForm &out)const = 0; 
  
 };
 
@@ -162,13 +162,13 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void sub(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar);
+    void mul(PolynomialEvalForm &out, int64_t scalar)const;
 
-    void neg(PolynomialEvalForm &out);
+    void neg(PolynomialEvalForm &out)const;
  
 };
 
@@ -197,13 +197,13 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void sub(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar);
+    void mul(PolynomialEvalForm &out, int64_t scalar)const;
 
-    void neg(PolynomialEvalForm &out);
+    void neg(PolynomialEvalForm &out)const;
  
 };
 
@@ -230,13 +230,13 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void sub(PolynomialEvalForm &out, PolynomialEvalForm &other);
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar);
+    void mul(PolynomialEvalForm &out, int64_t scalar)const;
 
-    void neg(PolynomialEvalForm &out);
+    void neg(PolynomialEvalForm &out)const;
  
 };
 
@@ -253,7 +253,7 @@ class PolynomialInversionEngine{
     /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
     /// @param out The output polynomial
     /// @param in The input polynomial
-    virtual void inv(Polynomial &out, Polynomial &in) = 0;
+    virtual void inv(Polynomial &out, const Polynomial &in)const = 0;
  
 };
  
@@ -333,42 +333,42 @@ class Polynomial: public Vector{
 
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial
-    Polynomial* clone();
+    Polynomial* clone() const;
 
     /// @brief Cyclically rotates the coeefficients of this polynomial by rotation
     /// @param out The output polynomial
     /// @param rotation The rotation size
-    void cyclic_rotate(Polynomial &out, int64_t rotation);
+    void cyclic_rotate(Polynomial &out, int64_t rotation) const;
 
     /// @brief Negacyclicly rotates the coeefficients of this polynomial by rotation
     /// @param out The output polynomial
     /// @param rotation The rotation size
-    void negacyclic_rotate(Polynomial &out, int64_t rotation);
+    void negacyclic_rotate(Polynomial &out, int64_t rotation) const;
   
     /// @brief Multiplies this polynomial by scalar and stores the output in out.
     /// @param out The output polynomial
     /// @param scalar The input scalar
-    void mul(Polynomial &out, int64_t scalar);
+    void mul(Polynomial &out, int64_t scalar) const;
 
     /// @brief Multiplies this polynomial by other and stores the output in out. Requires to have a polynomial multiplication engine set.
     /// @param out The output polynomial
     /// @param other The input polynomial
-    void mul(Polynomial &out, Polynomial &other);
+    void mul(Polynomial &out, const Polynomial &other) const;
 
     /// @brief Multiplies this polynomial by other and stores the output in out. Uses the given polynomial multiplication engine.
     /// @param out The output polynomial
     /// @param other The input polynomial
     /// @param mul_engine The polynomial multiplication engine
-    void mul(Polynomial &out, Polynomial &other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    void mul(Polynomial &out, const Polynomial &other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine) const;
 
     /// @brief Computes the multiplicative inverse of this and stores the output in out. Requires to have a polynomial inversion engine set.
     /// @param out The output polynomial
-    void inv(Polynomial &out);
+    void inv(Polynomial &out)const;
 
     /// @brief Computes the multiplicative inverse of this and stores the output in out. Uses the given polynomial inversion engine.
     /// @param out The output polynomial
     /// @param inv_engine The polynomial inversion engine
-    void inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine); 
+    void inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine) const; 
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -445,23 +445,19 @@ class PolynomialArrayCoefForm : public VectorArray{
     /// @brief Sets the i'th polyniomal in the array to poly. It copies the coefficients of poly to the coefficients of the i'th polynomial in the array.
     /// @param i The index of the polynomial in the array
     /// @param poly The input polynomial
-    void set_polynomial_at(int32_t i, Polynomial &poly); 
+    void set_polynomial_at(const int32_t i, const Polynomial &poly); 
    
     template <class Archive>
     void save( Archive & ar ) const
-    { 
-        //ar(coef_modulus, degree, array_size);  
+    {  
         ar(cereal::base_class<VectorArray>(this));   
         ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
-    {  
-        std::cout << "In Polynomial void load( Archive & ar )" << std::endl;
-        ar(cereal::base_class<VectorArray>(this));  
-        //ar(coef_modulus, degree, array_size);   
-        //full_size = degree * array_size;
+    {   
+        ar(cereal::base_class<VectorArray>(this));   
         init_from_vector();
         ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
         is_init = true;
@@ -491,12 +487,12 @@ class PolynomialArrayEvalForm{
     /// @brief Adds other to this polynomial array and stores the output in out.
     /// @param out The output polynomial array
     /// @param other The input polynomial array
-    virtual void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other) = 0;
+    virtual void add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other) = 0;
     
     /// @brief Subtracts other from this polynomial array and stores the output in out.
     /// @param out The output polynomial array
     /// @param other The input polynomial array
-    virtual void sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other) = 0;
+    virtual void sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other) = 0;
     
     /// @brief Scalar multiplication of polynomials in this array. 
     /// @param out The output polynomial array
@@ -541,15 +537,15 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
  
     PolynomialArrayEvalFormLong(int32_t array_size, int64_t degree, int64_t coef_modulus);
   
-    void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
-    void sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
     void mul(PolynomialArrayEvalForm &out, int64_t scalar); 
     
     void neg(PolynomialArrayEvalForm &out);
 
-    void mod_reduce(int64_t modulus); 
+    void mod_reduce(const int64_t modulus); 
 
     template <class Archive>
     void save( Archive & ar ) const
@@ -592,9 +588,9 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
 
     PolynomialArrayEvalFormFFTWComplex(int32_t size, int32_t array_size);
   
-    void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
-    void sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
     void mul(PolynomialArrayEvalForm &out, int64_t scalar); 
     
@@ -637,18 +633,17 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
     PolynomialArrayEvalFormFFTWLongComplex(int32_t size, int32_t array_size);
   
   
-    void add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
-    void sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other);
+    void sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
-    void mul(PolynomialArrayEvalForm &out, int64_t scalar);
+    void mul(PolynomialArrayEvalForm &out, const int64_t scalar);
   
     void neg(PolynomialArrayEvalForm &out);
   
     template <class Archive>
     void save( Archive & ar ) const
-    { 
-
+    {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
         ar(cereal::binary_data(eval_fftwl, sizeof(fftwl_complex) * full_size));  
     }

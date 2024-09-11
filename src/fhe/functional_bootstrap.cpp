@@ -2,7 +2,7 @@
 
 using namespace fhe_deck;
    
-void FunctionalBootstrapPublicKey::bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT& lwe_ct_in){      
+void FunctionalBootstrapPublicKey::bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT& lwe_ct_in){      
     // 1) Key switch to \ZZ_Q^{n+1}    
     LWECT lwe_c(ms_from_keyswitch_to_par.from); 
     key_switch_key->lwe_to_lwe_key_switch(lwe_c, lwe_ct_in);   
@@ -16,15 +16,13 @@ void FunctionalBootstrapPublicKey::bootstrap(LWECT& lwe_ct_out, std::shared_ptr<
     ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
 }
  
-std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT& lwe_ct_in, PlaintextEncoding &encoding){   
+std::vector<LWECT> FunctionalBootstrapPublicKey::bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){   
     // 1) Key switch to \ZZ_Q^{n+1}  
     LWECT lwe_c(ms_from_keyswitch_to_par.from); 
     this->key_switch_key->lwe_to_lwe_key_switch(lwe_c, lwe_ct_in);  
-    // 2) Mod switch to \ZZ_2N^{n+1}  
-    //this->ms_from_gadget_to_par.switch_modulus(lwe_c.ct, lwe_c.ct); 
+    // 2) Mod switch to \ZZ_2N^{n+1}   
     this->ms_from_keyswitch_to_par.switch_modulus(lwe_c, lwe_c); 
-    // 3) Blind rotate      
-    //this->acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding)); 
+    // 3) Blind rotate       
     std::shared_ptr<VectorCTAccumulator> acc_one(accumulator_builder->get_acc_one(encoding)); 
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
     this->blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_one); 

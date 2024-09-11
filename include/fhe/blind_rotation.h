@@ -384,7 +384,7 @@ class BlindRotationPublicKey{
     /// @param out Output accumulator which is a VectorCT (held usually by a BlindRotationOutput object)
     /// @param lwe_ct_in The input LWE ciphertext that we are going decrypt.
     /// @param acc_msg A VectorCTAccumulator specifying the function that the blind rotation should compute, on the decrypted plaintext.  
-    virtual void blind_rotate(VectorCT& out, LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
+    virtual void blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {

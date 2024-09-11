@@ -31,7 +31,7 @@ void LMPFunctionalBootstrapPublicKey::init(){
     this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par_tiny);
 }
   
-void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT& lwe_ct_in, PlaintextEncoding &encoding){    
+void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){    
     // 1) Key switch to \ZZ_Q^{n+1}   
     LWECT lwe_c_N(ms_from_keyswitch_to_par.from); 
     LWECT lwe_c(ms_from_keyswitch_to_par.from); 
@@ -81,7 +81,7 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, s
     ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
 } 
 
-std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT& lwe_ct_in, PlaintextEncoding &encoding){   
+std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){   
     // 1) Key switch to \ZZ_Q^{n+1} 
     LWECT lwe_c_N(ms_from_keyswitch_to_par.from);
     LWECT lwe_c(ms_from_keyswitch_to_par.from);

@@ -82,42 +82,42 @@ class LWECT{
 
     /// @brief Clones the ciphertext.
     /// @return Returns a pointer to the cloned ciphertext.
-    LWECT* clone();
+    LWECT* clone()const;
 
     /// @brief Multiplies this ciphertext by a scalar, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param scalar The input scalar.
-    void mul(LWECT &out, int64_t scalar);
+    void mul(LWECT &out, int64_t scalar)const;
 
     /// @brief The same as mul, but the multiplication is done wihtout modulus reduction.
-    void mul_lazy(LWECT &out, int64_t scalar); 
+    void mul_lazy(LWECT &out, int64_t scalar)const; 
 
     /// @brief Add in to this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param in The input ciphertext.
-    void add(LWECT &out, LWECT &in); 
+    void add(LWECT &out, const LWECT &in)const; 
 
     /// @brief Subtract in from this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param in The input ciphertext.
-    void sub(LWECT &out, LWECT &in); 
+    void sub(LWECT &out, const LWECT &in)const; 
 
     /// @brief Same void add(LWECT *out, LWECT *in) as add but without modulus reduction.
-    void add_lazy(LWECT &out, LWECT &in);  
+    void add_lazy(LWECT &out, const LWECT &in)const;  
 
     /// @brief Add the scalar b to this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param b The input scalar.
-    void add(LWECT &out, int64_t b); 
+    void add(LWECT &out, int64_t b)const; 
 
     /// @brief Subtract b from this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
     /// @param b The input scalar.
-    void sub(LWECT& out, int64_t b);
+    void sub(LWECT& out, int64_t b)const;
 
     /// @brief Negate this ciphertext, and store the result in out.
     /// @param out The output ciphertext.
-    void neg(LWECT& out);
+    void neg(LWECT& out)const;
   
     template <class Archive>
     void save( Archive & ar ) const
@@ -180,7 +180,7 @@ class LWEModSwitcher{
   /// @param out_ct The output ciphertext.
   /// @param in_ct The input ciphertext.
   /// @note The function changes only the ct field of out_ct. In particular, it doesn't sent the parameters field, so you must make sure out_ct has the right parameters and is already initialized.
-  void switch_modulus(LWECT &out_ct, LWECT& in_ct);
+  void switch_modulus(LWECT &out_ct, const LWECT& in_ct);
 };
  
 /**
@@ -253,7 +253,7 @@ class LWESK {
     /// @brief Partially decrypts a ciphertext. That is, this function computes the inner product of the secret key and the ciphertext, and returns the result.
     /// @param out The in ciphertext. 
     /// @return Returns result of the inner produict. 
-    int64_t partial_decrypt(LWECT& in); 
+    int64_t partial_decrypt(const LWECT& in); 
 
     /// @brief Decrypts the input ciphertext. 
     /// @param in The input ciphertext.

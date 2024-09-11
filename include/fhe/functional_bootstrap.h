@@ -53,27 +53,27 @@ class FunctionalBootstrapPublicKey{
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
-    void bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT &lwe_ct_in);
+    void bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT &lwe_ct_in);
      
     /// @brief Full domain bootstrapping procedure.  
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT &lwe_ct_in, PlaintextEncoding &encoding) = 0;
+    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
     
     /// @brief Multivalue bootstrapping procedure. Its not necesarily a full domain bootstrapping. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
-    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT &lwe_ct_in, PlaintextEncoding &encoding);
+    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding);
  
     /// @brief Full domain bootstrapping procedure. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT &lwe_ct_in, PlaintextEncoding &encoding) = 0;
+    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const

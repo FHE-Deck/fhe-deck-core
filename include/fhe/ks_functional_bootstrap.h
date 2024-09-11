@@ -32,9 +32,9 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,  
         std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder);
 
-    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, LWECT& lwe_ct_in, PlaintextEncoding &encoding);
+    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
-    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, LWECT& lwe_ct_in, PlaintextEncoding &encoding);
+    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
     private:
 

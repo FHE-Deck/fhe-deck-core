@@ -14,7 +14,7 @@ DucasStehleWashingMachine::DucasStehleWashingMachine(
     this->washing_cycles = washing_cycles;
 }
 
-void DucasStehleWashingMachine::sanitize(LWECT& ct_out, LWECT& ct_in, PlaintextEncoding encoding){
+void DucasStehleWashingMachine::sanitize(LWECT& ct_out, const LWECT& ct_in, const PlaintextEncoding &encoding){
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
@@ -48,7 +48,7 @@ KluczniakRandomizedBootstrapping::KluczniakRandomizedBootstrapping(
     this->masking_pk = masking_pk; 
 }
 
-void KluczniakRandomizedBootstrapping::sanitize(LWECT& ct_out, LWECT& ct_in, PlaintextEncoding encoding){
+void KluczniakRandomizedBootstrapping::sanitize(LWECT& ct_out, const LWECT& ct_in, const PlaintextEncoding &encoding){
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   

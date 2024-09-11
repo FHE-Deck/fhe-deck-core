@@ -27,8 +27,8 @@ KSFunctionalBootstrapPublicKey::KSFunctionalBootstrapPublicKey(
   
 void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_ct_out,
                                                                         std::shared_ptr<VectorCTAccumulator> acc_in,
-                                                                        fhe_deck::LWECT &lwe_ct_in,
-                                                                        fhe_deck::PlaintextEncoding &encoding) { 
+                                                                        const fhe_deck::LWECT &lwe_ct_in,
+                                                                        const fhe_deck::PlaintextEncoding &encoding) { 
     LWECT lwe_c_N(this->key_switch_key->destination);
     key_switch_key->lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in); 
     lwe_c_N.param = ms_from_keyswitch_to_par.to;
@@ -70,8 +70,8 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_
 }
  
 std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
-        std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, fhe_deck::LWECT& lwe_ct_in,
-        fhe_deck::PlaintextEncoding &encoding) { 
+        std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const fhe_deck::LWECT& lwe_ct_in,
+        const fhe_deck::PlaintextEncoding &encoding) { 
  
     LWECT lwe_c_N(this->key_switch_key->destination);
     key_switch_key->lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in); 

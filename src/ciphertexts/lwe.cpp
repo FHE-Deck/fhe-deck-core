@@ -28,51 +28,51 @@ LWECT::~LWECT(){
     } 
 }
  
-void LWECT::mul(LWECT &out, int64_t scalar){
+void LWECT::mul(LWECT &out, int64_t scalar)const{
     for(int32_t i = 0; i <= param->dim; ++i){
         out.ct[i] = (ct[i] * scalar) % param->modulus;
     }
 }
 
-void LWECT::mul_lazy(LWECT& out, int64_t scalar){
+void LWECT::mul_lazy(LWECT& out, int64_t scalar)const{
     for(int32_t i = 0; i <= param->dim; ++i){
         out.ct[i] = (ct[i] * scalar);
     }
 }
  
-void LWECT::add(LWECT& out, LWECT& in){
+void LWECT::add(LWECT& out, const LWECT& in)const{
     for(int32_t i = 0; i <= this->param->dim; ++i){
         out.ct[i] = (this->ct[i] + in.ct[i]) % this->param->modulus;
     }
 }
  
-void LWECT::sub(LWECT& out, LWECT& in){
+void LWECT::sub(LWECT& out, const LWECT& in)const{
     for(int32_t i = 0; i <= this->param->dim; ++i){
         out.ct[i] = Utils::integer_mod_form(this->ct[i] - in.ct[i], this->param->modulus);
     }
 }
   
-void LWECT::add_lazy(LWECT& out, LWECT& in){
+void LWECT::add_lazy(LWECT& out, const LWECT& in)const{
     for(int32_t i = 0; i <= this->param->dim; ++i){
         out.ct[i] = this->ct[i] + in.ct[i];
     }
 }
   
-void LWECT::add(LWECT& out, int64_t b){ 
+void LWECT::add(LWECT& out, int64_t b)const{ 
     out.ct[0] = (this->ct[0] + b) % this->param->modulus;
     for(int32_t i = 1; i <= param->dim; ++i){
         out.ct[i] = this->ct[i];
     } 
 }
   
-void LWECT::sub(LWECT& out, int64_t b){
+void LWECT::sub(LWECT& out, int64_t b)const{
     out.ct[0] = Utils::integer_mod_form(this->ct[0] - b, this->param->modulus);
     for(int32_t i = 1; i <= param->dim; ++i){
         out.ct[i] = this->ct[i];
     } 
 }
 
-void LWECT::neg(LWECT& out){   
+void LWECT::neg(LWECT& out)const{   
     for(int32_t i = 0; i < param->dim+1; ++i){
         out.ct[i] = Utils::integer_mod_form(-this->ct[i], param->modulus);
     }  
@@ -102,7 +102,7 @@ LWECT& LWECT::operator=(const LWECT other){
     return *this;
 } 
 
-LWECT* LWECT::clone(){
+LWECT* LWECT::clone()const{
     LWECT* out = new LWECT(param);
     for(int32_t i = 0; i < param->dim+1; ++i){
         out->ct[i] = this->ct[i];
@@ -134,7 +134,7 @@ LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<L
     }
 }
   
-void LWEModSwitcher::switch_modulus(LWECT& out_ct, LWECT& in_ct){  
+void LWEModSwitcher::switch_modulus(LWECT& out_ct, const LWECT& in_ct){  
     if(long_arithmetic){ 
         long double long_temp; 
         for(int32_t i = 0; i < ct_size; ++i){
@@ -260,7 +260,7 @@ void LWESK::encode_and_encrypt(LWECT& in, int64_t m, PlaintextEncoding encoding)
     encrypt(in, encoding.encode_message(m)); 
 } 
  
-int64_t LWESK::partial_decrypt(LWECT& in){ 
+int64_t LWESK::partial_decrypt(const LWECT& in){ 
     Utils::array_mod_form(key, key, param->dim, param->modulus); 
     int64_t phase  = in.ct[0]; 
     for(int32_t i = 1; i < param->dim+1; ++i){ 

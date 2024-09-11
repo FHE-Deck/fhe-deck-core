@@ -33,12 +33,12 @@ class VectorCT{
     /// @brief Adds this ciphertext and ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The ciphertext to add
-    virtual void add(VectorCT &out,  VectorCT &ct) = 0;
+    virtual void add(VectorCT &out, const VectorCT &ct) = 0;
     
     /// @brief Subtracts ct from this ciphertext, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void sub(VectorCT &out, VectorCT &ct) = 0;
+    virtual void sub(VectorCT &out, const VectorCT &ct) = 0;
   
     /// @brief Negates this ciphertext and stores the result in out.
     /// @param out The output ciphertext
@@ -110,13 +110,13 @@ class GadgetVectorCTSK{
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(uint64_t *msg, int32_t size) = 0; 
+    virtual GadgetVectorCT* gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
       
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(Vector &msg) = 0;  
+    virtual GadgetVectorCT* gadget_encrypt(const Vector &msg) = 0;  
 
     template <class Archive>
     void save( Archive & ar ) const {}

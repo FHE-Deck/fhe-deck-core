@@ -40,7 +40,7 @@ void LWEToLWEKeySwitchKey::set_key_switch_type(uint64_t base, int32_t digits){
     }
 }
  
-void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(LWECT& lwe_ct_out, LWECT& lwe_ct_in){  
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){  
     if(this->ks_type == lazy_key_switch){
         lwe_to_lwe_key_switch_lazy(lwe_ct_out, lwe_ct_in);
     }else if(this->ks_type == partial_lazy_key_switch){
@@ -49,7 +49,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(LWECT& lwe_ct_out, LWECT& lwe_c
     lwe_to_lwe_key_switch_bussy(lwe_ct_out, lwe_ct_in);   
 }
   
-void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, LWECT& lwe_ct_in){ 
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
     key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in.ct[1]); 
     LWECT temp_lwe_ct(destination);
     for(int32_t i=2; i < origin->dim+1; ++i){  
@@ -60,7 +60,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, LWECT& 
     Utils::array_mod_form(lwe_ct_out.ct, lwe_ct_out.ct, destination->dim+1, destination->modulus);   
 }
  
-void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out, LWECT& lwe_ct_in){ 
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
     key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in.ct[1]); 
     LWECT temp_lwe_ct(destination);  
     for(int32_t i=2; i < origin->dim+1; ++i){   
@@ -72,7 +72,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out,
     Utils::array_mod_form(lwe_ct_out.ct, lwe_ct_out.ct, destination->dim+1, destination->modulus);   
 } 
  
-void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, LWECT& lwe_ct_in){ 
+void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
     key_content[0]->gadget_mul(lwe_ct_out, lwe_ct_in.ct[1]); 
     LWECT temp_lwe_ct(destination);
     for(int32_t i=2; i < origin->dim+1; ++i){  

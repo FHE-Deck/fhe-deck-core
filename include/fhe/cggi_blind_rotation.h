@@ -42,7 +42,7 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     /// @param out The output ciphertext (its assumed to be already allocated, with the proper implementation)
     /// @param lwe_ct_in The LWECT to blind rotate. 
     /// @param acc_msg The accumulator that will be rotated. 
-    void blind_rotate(VectorCT& out, LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg);
+    void blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg);
 
 
     template <class Archive>

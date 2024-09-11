@@ -50,7 +50,7 @@ VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
 }
 
-void VectorArray::init(int32_t size, int64_t modulus, int32_t array_size){ 
+void VectorArray::init(const int32_t size, const int64_t modulus, const int32_t array_size){ 
     this->size = size;
     this->modulus = modulus;
     this->array_size = array_size; 
@@ -88,7 +88,7 @@ void VectorArray::neg(VectorArray &out){
     } 
 }
   
-void VectorArray::mul(VectorArray &out, int64_t scalar){
+void VectorArray::mul(VectorArray &out, const int64_t scalar){
     for(int32_t i = 0; i < full_size; ++i){
         out.vec_array[i] = Utils::integer_mod_form(vec_array[i] * scalar, this->modulus); 
     }

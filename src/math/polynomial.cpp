@@ -3,7 +3,7 @@
 using namespace fhe_deck;
  
 
-void PolynomialMultiplicationEngine::mul(Polynomial &out, Polynomial &in_1, Polynomial &in_2){   
+void PolynomialMultiplicationEngine::mul(Polynomial &out, const Polynomial &in_1, const Polynomial &in_2){   
     PolynomialEvalForm* eval_in_1 = init_polynomial_eval_form();
     to_eval(*eval_in_1, in_1);  
     PolynomialEvalForm* eval_in_2 = init_polynomial_eval_form();
@@ -15,9 +15,7 @@ void PolynomialMultiplicationEngine::mul(Polynomial &out, Polynomial &in_1, Poly
     delete eval_in_2;
     delete eval_out;
 }
-  
-
-  
+   
 PolynomialEvalFormLongInteger::~PolynomialEvalFormLongInteger(){
     if(is_init){
         delete[] eval_long;
@@ -37,30 +35,30 @@ void PolynomialEvalFormLongInteger::zeroize(){
     }
 }
 
-void PolynomialEvalFormLongInteger::add(PolynomialEvalForm &out, PolynomialEvalForm &other){ 
-    PolynomialEvalFormLongInteger& other_cast = static_cast<PolynomialEvalFormLongInteger&>(other);
+void PolynomialEvalFormLongInteger::add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{ 
+    const PolynomialEvalFormLongInteger& other_cast = static_cast<const PolynomialEvalFormLongInteger&>(other);
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_long[i] = this->eval_long[i] + other_cast.eval_long[i];
     }
 }
 
-void PolynomialEvalFormLongInteger::sub(PolynomialEvalForm &out, PolynomialEvalForm &other){
-    PolynomialEvalFormLongInteger& other_cast = static_cast<PolynomialEvalFormLongInteger&>(other);
+void PolynomialEvalFormLongInteger::sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{
+    const PolynomialEvalFormLongInteger& other_cast = static_cast<const PolynomialEvalFormLongInteger&>(other);
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_long[i] = this->eval_long[i] - other_cast.eval_long[i];
     }  
 }
 
-void PolynomialEvalFormLongInteger::mul(PolynomialEvalForm &out, int64_t scalar){
+void PolynomialEvalFormLongInteger::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_long[i] = this->eval_long[i] * scalar;
     } 
 }
  
-void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm &out){
+void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm &out)const{
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_long[i] = -this->eval_long[i];
@@ -87,25 +85,25 @@ void PolynomialEvalFormFFTWComplex::zeroize(){
     }
 }
 
-void PolynomialEvalFormFFTWComplex::add(PolynomialEvalForm &out, PolynomialEvalForm &other){
-    PolynomialEvalFormFFTWComplex& other_cast = static_cast<PolynomialEvalFormFFTWComplex&>(other);
-    PolynomialEvalFormFFTWComplex& out_cast = static_cast<PolynomialEvalFormFFTWComplex&>(out);
+void PolynomialEvalFormFFTWComplex::add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{
+    const PolynomialEvalFormFFTWComplex& other_cast = static_cast<const PolynomialEvalFormFFTWComplex&>(other);
+    const PolynomialEvalFormFFTWComplex& out_cast = static_cast<const PolynomialEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_fftw[i][0] = this->eval_fftw[i][0] + other_cast.eval_fftw[i][0];
         out_cast.eval_fftw[i][1] = this->eval_fftw[i][1] + other_cast.eval_fftw[i][1];
     } 
 }
 
-void PolynomialEvalFormFFTWComplex::sub(PolynomialEvalForm &out, PolynomialEvalForm &other){
-    PolynomialEvalFormFFTWComplex& other_cast = static_cast<PolynomialEvalFormFFTWComplex&>(other);
-    PolynomialEvalFormFFTWComplex& out_cast = static_cast<PolynomialEvalFormFFTWComplex&>(out);
+void PolynomialEvalFormFFTWComplex::sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{
+    const PolynomialEvalFormFFTWComplex& other_cast = static_cast<const PolynomialEvalFormFFTWComplex&>(other);
+    const PolynomialEvalFormFFTWComplex& out_cast = static_cast<const PolynomialEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_fftw[i][0] = this->eval_fftw[i][0] - other_cast.eval_fftw[i][0];
         out_cast.eval_fftw[i][1] = this->eval_fftw[i][1] - other_cast.eval_fftw[i][1];
     } 
 }
 
-void PolynomialEvalFormFFTWComplex::mul(PolynomialEvalForm &out, int64_t scalar){
+void PolynomialEvalFormFFTWComplex::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormFFTWComplex& out_cast = static_cast<PolynomialEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_fftw[i][0] = this->eval_fftw[i][0] * scalar;
@@ -113,7 +111,7 @@ void PolynomialEvalFormFFTWComplex::mul(PolynomialEvalForm &out, int64_t scalar)
     }  
 }
  
-void PolynomialEvalFormFFTWComplex::neg(PolynomialEvalForm &out){ 
+void PolynomialEvalFormFFTWComplex::neg(PolynomialEvalForm &out)const{ 
     PolynomialEvalFormFFTWComplex& out_cast = static_cast<PolynomialEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_fftw[i][0] = -this->eval_fftw[i][0];
@@ -141,8 +139,8 @@ void PolynomialEvalFormFFTWLongComplex::zeroize(){
     }
 }
 
-void PolynomialEvalFormFFTWLongComplex::add(PolynomialEvalForm &out, PolynomialEvalForm &other){
-    PolynomialEvalFormFFTWLongComplex& other_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(other);
+void PolynomialEvalFormFFTWLongComplex::add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{
+    const PolynomialEvalFormFFTWLongComplex& other_cast = static_cast<const PolynomialEvalFormFFTWLongComplex&>(other);
     PolynomialEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(out);
     for(int32_t i = 0; i < size; ++ i){
         out_cast.eval_fftwl[i][0] = this->eval_fftwl[i][0] + other_cast.eval_fftwl[i][0];
@@ -150,8 +148,8 @@ void PolynomialEvalFormFFTWLongComplex::add(PolynomialEvalForm &out, PolynomialE
     }       
 }
  
-void PolynomialEvalFormFFTWLongComplex::sub(PolynomialEvalForm &out, PolynomialEvalForm &other){
-    PolynomialEvalFormFFTWLongComplex& other_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(other);
+void PolynomialEvalFormFFTWLongComplex::sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const{
+    const PolynomialEvalFormFFTWLongComplex& other_cast = static_cast<const PolynomialEvalFormFFTWLongComplex&>(other);
     PolynomialEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
         out_cast.eval_fftwl[i][0] = this->eval_fftwl[i][0] - other_cast.eval_fftwl[i][0];
@@ -159,7 +157,7 @@ void PolynomialEvalFormFFTWLongComplex::sub(PolynomialEvalForm &out, PolynomialE
     } 
 }
 
-void PolynomialEvalFormFFTWLongComplex::mul(PolynomialEvalForm &out, int64_t scalar){
+void PolynomialEvalFormFFTWLongComplex::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
             out_cast.eval_fftwl[i][0] = this->eval_fftwl[i][0] * scalar;
@@ -167,7 +165,7 @@ void PolynomialEvalFormFFTWLongComplex::mul(PolynomialEvalForm &out, int64_t sca
         } 
 }
  
-void PolynomialEvalFormFFTWLongComplex::neg(PolynomialEvalForm &out){
+void PolynomialEvalFormFFTWLongComplex::neg(PolynomialEvalForm &out)const{
     PolynomialEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialEvalFormFFTWLongComplex&>(out);
     for(int32_t i = 0; i < size; ++i){
             out_cast.eval_fftwl[i][0] = -this->eval_fftwl[i][0];
@@ -228,11 +226,11 @@ void Polynomial::set_inversion_engine(std::shared_ptr<PolynomialInversionEngine>
     this->is_inv_engine_set = true; 
 }
 
-void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation){
+void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
     Utils::rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
 }
 
-void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation){   
+void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{   
     /// TODO: That implementation is not the best. 
     Utils::negacyclic_rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
     Utils::array_mod_form(out.coefs, out.coefs, this->degree, this->coef_modulus);
@@ -252,7 +250,7 @@ void Polynomial::zeroize(){
     }
 }
  
-Polynomial* Polynomial::clone(){
+Polynomial* Polynomial::clone() const{
     if(!is_init){
         throw std::logic_error("Polynomial::clone: Polynomial is not initialized!");
     }
@@ -268,7 +266,7 @@ Polynomial* Polynomial::clone(){
     return out;
 } 
    
-void Polynomial::mul(Polynomial &out, int64_t scalar){ 
+void Polynomial::mul(Polynomial &out, int64_t scalar)const{ 
     if(this->degree != out.degree){
         throw std::logic_error("Polynomial::mul(Polynomial *out, int64_t scalar): Degrees of polynomials don't match!");
     }
@@ -281,7 +279,7 @@ void Polynomial::mul(Polynomial &out, int64_t scalar){
     } 
 }
 
-void Polynomial::mul(Polynomial &out, Polynomial &other){   
+void Polynomial::mul(Polynomial &out, const Polynomial &other)const{   
     if(this->is_mul_engine_set){ 
         this->mul(out, other, this->mul_engine); 
     }else{
@@ -289,15 +287,15 @@ void Polynomial::mul(Polynomial &out, Polynomial &other){
     }
 }
 
-void Polynomial::mul(Polynomial &out, Polynomial &other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){  
+void Polynomial::mul(Polynomial &out, const Polynomial &other, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine)const{  
     mul_engine->mul(out, *this, other); 
 }
   
-void Polynomial::inv(Polynomial &out){
+void Polynomial::inv(Polynomial &out)const{
     this->inv_engine->inv(out, *this);
 }
 
-void Polynomial::inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine){
+void Polynomial::inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine)const{
     inv_engine->inv(out, *this);
 }
    
@@ -336,7 +334,7 @@ PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArra
     return *this;
 }
 
-void PolynomialArrayCoefForm::set_polynomial_at(int32_t i, Polynomial &poly){
+void PolynomialArrayCoefForm::set_polynomial_at(int32_t i, const Polynomial &poly){
     if(poly.degree != this->degree){
         throw std::logic_error("PolynomialArrayCoefForm::set_polynomial_at(int32_t i, Polynomial *poly): degrees are inconsistent.");
     }
@@ -367,23 +365,22 @@ PolynomialArrayEvalFormLong::PolynomialArrayEvalFormLong(int32_t array_size, int
     this->is_init = true; 
 }
 
-void PolynomialArrayEvalFormLong::add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    PolynomialArrayEvalFormLong& other_cast = static_cast<PolynomialArrayEvalFormLong&>(other);
-    PolynomialArrayEvalFormLong& out_cast = static_cast<PolynomialArrayEvalFormLong&>(out);
+void PolynomialArrayEvalFormLong::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
+    const PolynomialArrayEvalFormLong& other_cast = static_cast<const PolynomialArrayEvalFormLong&>(other);
+    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
     for(int32_t i = 0; i < full_size; ++i){
          out_cast.eval_long[i] = this->eval_long[i] + other_cast.eval_long[i];
     }
 }
 
-void PolynomialArrayEvalFormLong::sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    PolynomialArrayEvalFormLong& other_cast = static_cast<PolynomialArrayEvalFormLong&>(other);
-    PolynomialArrayEvalFormLong& out_cast = static_cast<PolynomialArrayEvalFormLong&>(out);
+void PolynomialArrayEvalFormLong::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
+    const PolynomialArrayEvalFormLong& other_cast = static_cast<const PolynomialArrayEvalFormLong&>(other);
+    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
     for(int32_t i = 0; i < full_size; ++i){
          out_cast.eval_long[i] = this->eval_long[i] - other_cast.eval_long[i];
     }
 }
-
-
+ 
 void PolynomialArrayEvalFormLong::mul(PolynomialArrayEvalForm &out, int64_t scalar){
     PolynomialArrayEvalFormLong& out_cast = static_cast<PolynomialArrayEvalFormLong&>(out); 
     for(int32_t i = 0; i < full_size; ++i){
@@ -402,7 +399,6 @@ void PolynomialArrayEvalFormLong::mod_reduce(int64_t modulus){
     Utils::array_mod_form(this->eval_long, this->eval_long, full_size, modulus); 
 }
 
-
 PolynomialArrayEvalFormFFTWComplex::~PolynomialArrayEvalFormFFTWComplex(){
     if(this->is_init){
         delete[] eval_fftw;
@@ -417,25 +413,23 @@ PolynomialArrayEvalFormFFTWComplex::PolynomialArrayEvalFormFFTWComplex(int32_t s
     this->is_init = true;
 }
 
-
-void PolynomialArrayEvalFormFFTWComplex::add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    PolynomialArrayEvalFormFFTWComplex& other_cast = static_cast<PolynomialArrayEvalFormFFTWComplex&>(other);
-    PolynomialArrayEvalFormFFTWComplex& out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex&>(out);
+void PolynomialArrayEvalFormFFTWComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
+    const PolynomialArrayEvalFormFFTWComplex& other_cast = static_cast<const PolynomialArrayEvalFormFFTWComplex&>(other);
+    const PolynomialArrayEvalFormFFTWComplex& out_cast = static_cast<const PolynomialArrayEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < full_size; ++i){
             out_cast.eval_fftw[i][0] = this->eval_fftw[i][0] + other_cast.eval_fftw[i][0];
             out_cast.eval_fftw[i][1] = this->eval_fftw[i][1] + other_cast.eval_fftw[i][1];
         } 
 }
 
-void PolynomialArrayEvalFormFFTWComplex::sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    PolynomialArrayEvalFormFFTWComplex& other_cast = static_cast<PolynomialArrayEvalFormFFTWComplex&>(other);
-    PolynomialArrayEvalFormFFTWComplex& out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex&>(out);
+void PolynomialArrayEvalFormFFTWComplex::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
+    const PolynomialArrayEvalFormFFTWComplex& other_cast = static_cast<const PolynomialArrayEvalFormFFTWComplex&>(other);
+    const PolynomialArrayEvalFormFFTWComplex& out_cast = static_cast<const PolynomialArrayEvalFormFFTWComplex&>(out);
     for(int32_t i = 0; i < full_size; ++i){
             out_cast.eval_fftw[i][0] = this->eval_fftw[i][0] - other_cast.eval_fftw[i][0];
             out_cast.eval_fftw[i][1] = this->eval_fftw[i][1] - other_cast.eval_fftw[i][1];
         } 
 }
-
 
 void PolynomialArrayEvalFormFFTWComplex::mul(PolynomialArrayEvalForm &out, int64_t scalar){
     PolynomialArrayEvalFormFFTWComplex& out_cast = static_cast<PolynomialArrayEvalFormFFTWComplex&>(out);
@@ -467,18 +461,18 @@ PolynomialArrayEvalFormFFTWLongComplex::PolynomialArrayEvalFormFFTWLongComplex(i
     this->is_init = true;
 }
 
-void PolynomialArrayEvalFormFFTWLongComplex::add(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
-    PolynomialArrayEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex&>(out);
-    PolynomialArrayEvalFormFFTWLongComplex& other_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex&>(other);
+void PolynomialArrayEvalFormFFTWLongComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
+    const PolynomialArrayEvalFormFFTWLongComplex& out_cast = static_cast<const PolynomialArrayEvalFormFFTWLongComplex&>(out);
+    const PolynomialArrayEvalFormFFTWLongComplex& other_cast = static_cast<const PolynomialArrayEvalFormFFTWLongComplex&>(other);
     for(int32_t i = 0; i < full_size; ++i){
         out_cast.eval_fftwl[i][0] = this->eval_fftwl[i][0] + other_cast.eval_fftwl[i][0];
         out_cast.eval_fftwl[i][1] = this->eval_fftwl[i][1] + other_cast.eval_fftwl[i][1];
     } 
 }
 
-void PolynomialArrayEvalFormFFTWLongComplex::sub(PolynomialArrayEvalForm &out, PolynomialArrayEvalForm &other){
+void PolynomialArrayEvalFormFFTWLongComplex::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     PolynomialArrayEvalFormFFTWLongComplex& out_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex&>(out);
-    PolynomialArrayEvalFormFFTWLongComplex& other_cast = static_cast<PolynomialArrayEvalFormFFTWLongComplex&>(other);
+    const PolynomialArrayEvalFormFFTWLongComplex& other_cast = static_cast<const PolynomialArrayEvalFormFFTWLongComplex&>(other);
     for(int32_t i = 0; i < full_size; ++i){
         out_cast.eval_fftwl[i][0] = this->eval_fftwl[i][0] - other_cast.eval_fftwl[i][0];
         out_cast.eval_fftwl[i][1] = this->eval_fftwl[i][1] - other_cast.eval_fftwl[i][1];
@@ -500,4 +494,7 @@ void PolynomialArrayEvalFormFFTWLongComplex::neg(PolynomialArrayEvalForm &out){
         out_cast.eval_fftwl[i][1] = -this->eval_fftwl[i][1];
     } 
 }
+
+
+
  

@@ -25,15 +25,15 @@ class PolynomialMultiplicationEngineBuilder{
 
     PolynomialMultiplicationEngineBuilder() = default;
 
-    void set_coef_modulus(int64_t coef_modulus);
+    void set_coef_modulus(const int64_t coef_modulus);
 
-    void set_degree(int64_t degree);
+    void set_degree(const int64_t degree);
 
-    void set_ring_type(RingType ring);
+    void set_ring_type(const RingType ring);
 
-    void set_polynomial_arithmetic(PolynomialArithmetic arithmetic);
+    void set_polynomial_arithmetic(const PolynomialArithmetic arithmetic);
 
-    void set_modulus_type(ModulusType mod_type);
+    void set_modulus_type(const ModulusType mod_type);
 
     std::shared_ptr<PolynomialMultiplicationEngine> build(); 
 };
