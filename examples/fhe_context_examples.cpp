@@ -148,14 +148,15 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0: OK"  << std::endl;
 
-    auto fun_msb = [](int64_t m, int64_t t = 5) -> int64_t {
+    std::function<int64_t(int64_t,int64_t)> fun_msb = [](int64_t m, int64_t t) -> int64_t {
         if(m < t/2){
             return 0;
         }else{
             return 1;
         } 
     }; 
-    HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb); 
+    std::function<int64_t(int64_t,int64_t)> fun_msb_t = std::bind(fun_msb, std::placeholders::_1, 5);
+    HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb_t); 
     ct4 = context.eval_lut(ct1, lut_fun_msb);
 
     assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
@@ -1039,13 +1040,6 @@ void serialization_test(){
 
 int main(){  
 
-    #ifdef FOO
-    std::cout << "Foo is defined" << std::endl;
-    #endif
-    #ifndef FOO
-    std::cout << "Foo is not defined" << std::endl;
-    #endif
-         
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1058,7 +1052,7 @@ int main(){
 
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     
-    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
+    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
   
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
   

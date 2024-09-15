@@ -33,11 +33,10 @@ VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator ot
 }
   
 
- /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
- FunctionalAccumulator::FunctionalAccumulator(const BootFunction& boot_F, long dim,
+ /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators. 
+ FunctionalAccumulator::FunctionalAccumulator(const std::function<long(long, long)> f, long dim,
                                               long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
-         nullptr /* DANGER */, false) {
-    // TODO: for now we assume that this accumulator is only used for FDFB-2
+         nullptr, false) { 
   
     int32_t skip = 2*(dim/encoding.plaintext_space);
     int32_t half_plaintext_space = encoding.plaintext_space / 2;
@@ -50,19 +49,17 @@ VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator ot
     poly_msb_1.zeroize();
     b_prim.zeroize();
     for(long i = 0; i < half_plaintext_space; i++) {   
-        poly_msb_0.coefs[skip * i] = -boot_F(half_plaintext_space - i - 1, encoding.plaintext_space);
-        poly_msb_1.coefs[skip * i] = boot_F(encoding.plaintext_space - i - 1, encoding.plaintext_space);
+        poly_msb_0.coefs[skip * i] = -f(half_plaintext_space - i - 1, encoding.plaintext_space);
+        poly_msb_1.coefs[skip * i] = f(encoding.plaintext_space - i - 1, encoding.plaintext_space);
     }
     Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
     Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus); 
-
  
-}
+}  
   
 FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim,
                                              long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
-        nullptr, false) {
-    // TODO: for now we assume that this accumulator is only used for FDFB-2
+        nullptr, false) { 
 
     int32_t skip = 2*(dim/encoding.plaintext_space);
     int32_t half_plaintext_space = encoding.plaintext_space / 2;
@@ -88,7 +85,7 @@ RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param)
     this->param = param;
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding){ 
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
     RotationPoly poly(f, this->param->size, output_encoding);   
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
@@ -96,7 +93,7 @@ VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(in
     return new VectorCTAccumulator(acc_ptr, poly);
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding){
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
     RotationPoly poly(f, this->param->size, output_encoding);  
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
     acc_ptr->a.zeroize();
@@ -136,7 +133,7 @@ NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
     this->is_sk_set = true;
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding){  
+VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){  
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
@@ -147,7 +144,7 @@ VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(in
     } 
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding){
+VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
         std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(param)); 

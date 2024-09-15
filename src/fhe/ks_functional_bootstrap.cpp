@@ -4,25 +4,26 @@ using namespace fhe_deck;
  
 
 KSFunctionalBootstrapPublicKey::KSFunctionalBootstrapPublicKey(
-        std::shared_ptr<LWEParam> lwe_par, std::shared_ptr<LWEParam> lwe_par_tiny,
-        fhe_deck::BlindRotationPublicKey *blind_rotation_key, fhe_deck::LWEToLWEKeySwitchKey *key_switch_key,
+        std::shared_ptr<LWEParam> lwe_par,  
+        fhe_deck::BlindRotationPublicKey *blind_rotation_key, 
+        fhe_deck::LWEToLWEKeySwitchKey *key_switch_key,
         fhe_deck::LWEToRLWEKeySwitchKey *key_switch_key_rlwe,
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder) {
-     
-    this->is_full_domain_bootstrap_function_amortizable = true;
+        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder) { 
+
     this->blind_rotation_key = std::shared_ptr<BlindRotationPublicKey>(blind_rotation_key);
     this->key_switch_key = std::shared_ptr<LWEToLWEKeySwitchKey>(key_switch_key);
     this->accumulator_builder = accumulator_builder;
     this->lwe_par = lwe_par;
-    this->lwe_par_tiny = lwe_par_tiny;
-    this->rlwe_ksk = std::shared_ptr<LWEToRLWEKeySwitchKey>(key_switch_key_rlwe);
+    this->blind_rotate_output_builder = blind_rotate_output_builder;  
+    this->rlwe_ksk = std::shared_ptr<LWEToRLWEKeySwitchKey>(key_switch_key_rlwe);  
+    init();
+}
+
+void KSFunctionalBootstrapPublicKey::init(){
+    is_full_domain_bootstrap_function_amortizable = true;
     this->poly_ct_params  = rlwe_ksk->dest_param;
-    // Initialize BlindRotateOutputs
-    this->blind_rotate_output_builder = blind_rotate_output_builder; 
-    // Mod Switch from Extracted Q to 2 * N
     this->ms_from_keyswitch_to_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par);
-     
 }
   
 void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_ct_out,

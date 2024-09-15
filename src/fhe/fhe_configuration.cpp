@@ -693,7 +693,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     // 2**4
     long gadget_decomp_base = 1 << 17;
     int masking_size = 3370;
-    double stddev_masking = 0;
+    double stddev_masking = 3.19;
     KeyDistribution rlwe_key_type = ternary;
 
     std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
@@ -705,8 +705,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     int lwe_ks_decomp_base = 1<<2;
     // 2**(14)
     double lwe_stddev = 1 << 12;
-    std::shared_ptr<LWEParam> lwe_param = std::make_shared<LWEParam>(lwe_dim, coef_modulus);
- 
+    std::shared_ptr<LWEParam> lwe_param = std::make_shared<LWEParam>(lwe_dim, coef_modulus); 
     eval_key.default_encoding = PlaintextEncoding(full_domain, 32, coef_modulus);
 
     /// =================== Generate Secret keys
@@ -727,6 +726,8 @@ void FHEConfiguration::init_tfhe_11_KS() {
  
     /// =================== Generate Public Keys
 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+
     long rlwe_base = 1 << 4;
     std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
     std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
@@ -744,8 +745,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(rlwe_param);
     eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new KSFunctionalBootstrapPublicKey(
-            lwe_param_rot,
-            lwe_param_tiny,
+            lwe_param_rot, 
             blind_rotation_key,
             ks_public_key,
             rlwe_ksk,
@@ -759,8 +759,6 @@ void FHEConfiguration::init_tfhe_11_KS() {
 }
 
 
-
-
 void FHEConfiguration::init_tfhe_11_KS_amortized() {
     // 2**11
     int degree = 2048;
@@ -771,7 +769,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     // 2**4
     long gadget_decomp_base = 1 << 13;
     int masking_size = 3370;
-    double stddev_masking = 0;
+    double stddev_masking = 3.19;
     KeyDistribution rlwe_key_type = ternary;
 
     std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
@@ -788,6 +786,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
 
     /// =================== Generate Secret keys
 
+
     // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
     std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary));
 
@@ -804,6 +803,8 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
  
     /// =================== Generate Public Keys
 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
+
     long rlwe_base = 1 << 4;
     std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
     std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
@@ -815,15 +816,16 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     // Masking Key Gen 
     // The blind rotation key
     BlindRotationPublicKey *blind_rotation_key = new CGGIBlindRotationKey(rlwe_gadget_sk, g_lwe);
+    
     // Init Accumulator builder
+    /// TODO: Not good.... Generaly this AbstractAccumulatorBuilder is crap...
     eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
     // Build the public key
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(rlwe_param);
     eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new KSFunctionalBootstrapPublicKey(
-            lwe_param_rot,
-            lwe_param_tiny,
+            lwe_param_rot, 
             blind_rotation_key,
             ks_public_key,
             rlwe_ksk,
@@ -833,6 +835,6 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 }
 

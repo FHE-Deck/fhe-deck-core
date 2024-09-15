@@ -3,6 +3,7 @@ build/
 CMakeFiles/
 external/
 tests/
+docs/
 Makefile
 compile_commands.json
 cmake_install.cmake

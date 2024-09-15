@@ -135,25 +135,25 @@ class FHEContext{
     /// @param f The function to be embedded
     /// @param encoding The encoding of the plaintext space
     /// @return The homomorphic accumulator
-    HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
+    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t, int64_t)> f, PlaintextEncoding encoding);
 
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded 
     /// @return The homomorphic accumulator
     /// @note The the fuction uses the default plaintext encoding
-    HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space));
+    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t, int64_t)> f);
   
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded
     /// @param encoding The encoding of the plaintext space
     /// @return The homomorphic accumulator
-    HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message), PlaintextEncoding encoding);
+    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding);
 
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded 
     /// @return The homomorphic accumulator
     /// @note The the fuction uses the default plaintext encoding
-    HomomorphicAccumulator genrate_lut(int64_t (*f)(int64_t message));
+    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t)> f);
 
     /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.

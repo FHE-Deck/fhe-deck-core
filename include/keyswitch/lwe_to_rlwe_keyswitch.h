@@ -28,6 +28,8 @@ namespace fhe_deck{
 
         LWEToRLWEKeySwitchKey& operator=(const LWEToRLWEKeySwitchKey other); 
 
+        void init();
+
         void lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in);
 
         void eval_auto_poly(Polynomial& out_poly, const Polynomial& in_poly, uint32_t log2_idx);
@@ -35,6 +37,20 @@ namespace fhe_deck{
         void eval_auto(RLWECT& rlwe_ct_out, const RLWECT& rlwe_ct_in, uint32_t log2_idx); 
 
         void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest);
+
+
+        template <class Archive>
+        void save( Archive & ar ) const
+        { 
+            ar(ext_key_content, dest_param);   
+        }
+            
+        template <class Archive>
+        void load( Archive & ar )
+        {  
+            ar(ext_key_content, dest_param);   
+            init(); 
+        }    
 
         private:
         /// @brief inverse of the ring degree

@@ -38,14 +38,14 @@ public:
     /// @param degree The degree of the polynomial.
     /// @param output_encoding The encoding used to encode messages on the polynomial.
     /// @param is_amortized_form Indicates whether the polynomial is in amortized form or not. By defaults is false.
-    RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
+    RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false);
 
     /// @brief Constructs a rotation polynomial.
     /// @param f The function to be embedded in the polynomial.
     /// @param degree The degree of the polynomial.
     /// @param output_encoding The encoding used to encode messages on the polynomial.
     /// @param is_amortized_form Indicates whether the polynomial is in amortized form or not. By defaults is false.
-    RotationPoly(int64_t (*f)(int64_t message), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
+    RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
   
     /// @brief Copy constructor.
     /// @param poly The polynomial to be copied.

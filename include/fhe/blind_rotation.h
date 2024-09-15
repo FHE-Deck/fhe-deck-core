@@ -60,18 +60,18 @@ class HomomorphicAccumulator{
 class FunctionalAccumulator : public VectorCTAccumulator {
 
     public:
-        using BootFunction = std::function<long(long,long)>;
+        //using BootFunction = std::function<long(long,long)>;
 
         Polynomial poly_msb_0;
         Polynomial poly_msb_1;
 
-        BootFunction func;
-        long (*func_ptr)(long message, long plaintext_space);
+        //BootFunction func;
+        //long (*func_ptr)(long message, long plaintext_space);
 
         // debug
-        Polynomial sk;
+        //Polynomial sk;
 
-        FunctionalAccumulator(const BootFunction& boot_F, long dim, long coef_modulus, PlaintextEncoding encoding);
+        FunctionalAccumulator(const std::function<long(long,long)>, long dim, long coef_modulus, PlaintextEncoding encoding);
 
         FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim, long coef_modulus, PlaintextEncoding encoding); 
 };
@@ -87,13 +87,13 @@ class AbstractAccumulatorBuilder{
     /// @param f The function that blind rotation given the accumulator should compute.
     /// @param output_encoding The encoding of the plaintexts. 
     /// @return Returns a new object of VectorCTAccumulator.
-    virtual VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding) = 0;
+    virtual VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) = 0;
 
     /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
     /// @param f The function that blind rotation given the accumulator should compute.
     /// @param output_encoding The encoding of the plaintexts. 
     /// @return Returns a new object of VectorCTAccumulator.
-    virtual VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding) = 0;
+    virtual VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) = 0;
 
     /// @brief This is a special function, that returns a accumulator which after blind rotation will return the most significant bit of the message. 
     /// @return Returns a new object of VectorCTAccumulator.
@@ -135,13 +135,13 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
+    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding);
 
     /// @brief Computes a VectorCTAccumulator that embeds the function f.
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
+    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding); 
   
     /// @brief Return a Accumulator that computes the most significant bit of the message.
     /// @return The accumulator. 
@@ -191,13 +191,13 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding);
+    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding);
 
     /// @brief Computes a VectorCTAccumulator that embeds the function f.
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding); 
+    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding); 
   
     /// @brief Return a Accumulator that computes the most significant bit of the message.
     /// @return The accumulator. 

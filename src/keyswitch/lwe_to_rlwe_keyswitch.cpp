@@ -4,10 +4,7 @@ using namespace fhe_deck;
 
 LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) {
     dest_param = sk_dest->rlwe_sk->param;
-    degree_inv = Utils::mod_inv(dest_param->size, dest_param->coef_modulus); 
-    bits_degree = Utils::number_of_bits(dest_param->size) - 1;
-    mask_mod_degree_times_two = dest_param->size * 2 - 1;
-    mask_mod_degree = dest_param->size - 1;  
+    init();
     key_switching_key_gen(sk_origin, sk_dest);
 }
 
@@ -18,6 +15,13 @@ LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(const LWEToRLWEKeySwitchKey &other)
 LWEToRLWEKeySwitchKey& LWEToRLWEKeySwitchKey::operator=(const LWEToRLWEKeySwitchKey other){
     throw std::runtime_error("LWEToRLWEKeySwitchKey& LWEToRLWEKeySwitchKey::operator=(const LWEToRLWEKeySwitchKey other)");
     return *this;
+}
+
+void LWEToRLWEKeySwitchKey::init(){
+    degree_inv = Utils::mod_inv(dest_param->size, dest_param->coef_modulus); 
+    bits_degree = Utils::number_of_bits(dest_param->size) - 1;
+    mask_mod_degree_times_two = dest_param->size * 2 - 1;
+    mask_mod_degree = dest_param->size - 1;  
 }
 
 void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 

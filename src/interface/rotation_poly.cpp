@@ -34,7 +34,7 @@ RotationPoly& RotationPoly::operator=(const RotationPoly other){
     return *this;
 }
 
-RotationPoly::RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
+RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
     this->degree = degree; 
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.ciphertext_modulus;
@@ -67,7 +67,7 @@ RotationPoly::RotationPoly(int64_t (*f)(int64_t message, int64_t plaintext_space
     this->is_init = true;
 }
 
-RotationPoly::RotationPoly(int64_t (*f)(int64_t message), int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){
+RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){
     this->degree = degree; 
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.ciphertext_modulus;

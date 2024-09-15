@@ -129,7 +129,7 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
     this->current_encoding = PlaintextEncoding(type, current_encoding.plaintext_space, current_encoding.ciphertext_modulus);  
 }
  
-HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding){
+HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t, int64_t)> f, PlaintextEncoding encoding){
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -137,14 +137,14 @@ HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message, int
     return out; 
 }
 
-HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message, int64_t plaintext_space)){
+HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t, int64_t)> f){
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
 }
 
-HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message), PlaintextEncoding encoding){ 
+HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding){ 
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -152,7 +152,7 @@ HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message), Pl
 }
  
 
-HomomorphicAccumulator FHEContext::genrate_lut(int64_t (*f)(int64_t message)){   
+HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t)> f){   
     return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
 }
   

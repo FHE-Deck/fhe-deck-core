@@ -11,7 +11,7 @@ Ciphertext::Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding encoding,
     this->context = context; 
 }
 
-Ciphertext::Ciphertext(const Ciphertext &other){ 
+Ciphertext::Ciphertext(const Ciphertext &other){  
     this->encoding = other.encoding;
     if(other.is_lwe_ct){
         this->lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone());
@@ -23,7 +23,7 @@ Ciphertext::Ciphertext(const Ciphertext &other){
     }
 }
         
-Ciphertext& Ciphertext::operator=(const Ciphertext other){  
+Ciphertext& Ciphertext::operator=(const Ciphertext other){   
     if (this == &other)
     {
         return *this;
