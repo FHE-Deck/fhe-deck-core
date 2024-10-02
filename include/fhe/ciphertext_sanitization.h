@@ -48,7 +48,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
         /// @brief The functional bootstrap public key
         std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
         /// @brief The accumulator builder (we need to compute the identity function)
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+        std::shared_ptr<AbstractFunctionBuilder> accumulator_builder;
         /// @brief The masking public key (used to sample a fresh ciphertext of zero)
         std::shared_ptr<LWEPublicKey> masking_pk; 
         /// @brief Number of washing cycles
@@ -65,7 +65,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
         /// @param washing_cycles Number of washing cycles
         DucasStehleWashingMachine(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
-            std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
+            std::shared_ptr<AbstractFunctionBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk,
             int32_t washing_cycles);
 
@@ -100,7 +100,7 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
         /// @brief The functional bootstrap public key
         std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
         /// @brief The accumulator builder (we need to compute the identity function)
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+        std::shared_ptr<AbstractFunctionBuilder> accumulator_builder;
         /// @brief The masking public key (used to sample a fresh ciphertext of zero)
         std::shared_ptr<LWEPublicKey> masking_pk; 
   
@@ -114,7 +114,7 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
         /// @param masking_pk The masking public key (used to sample a fresh ciphertext of zero)
         KluczniakRandomizedBootstrapping(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
-            std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
+            std::shared_ptr<AbstractFunctionBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk);
 
         /// @brief Sanitizes a LWE ciphertext. THe output ciphertext is statistically independent of the input ciphertext, but encrypts the same plaintext.

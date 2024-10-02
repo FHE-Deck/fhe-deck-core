@@ -183,7 +183,7 @@ RotationPoly RotationPoly::rot_msb(int32_t plaintext_space, int64_t degree, int6
 RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){
     int64_t* acc = new int64_t[N]; 
     for(int32_t i = 0; i < N; ++i){
-        acc[i] =  0;
+        acc[i] = 0;
     }  
     RotationPoly out;
     out.degree = N; 

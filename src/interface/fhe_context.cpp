@@ -132,8 +132,11 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
 HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t, int64_t)> f, PlaintextEncoding encoding){
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
-    }  
-    HomomorphicAccumulator out(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, encoding))); 
+    }   
+    auto boot_acc = config->eval_key.boot_acc_builder->prepare_specification(f, encoding); 
+    auto func_spec = config->eval_key.func_boot_acc_builder->prepare_specification(f, encoding);
+    auto multival_spec =config->eval_key.multivalue_acc_builder->prepare_specification(f, encoding);
+    HomomorphicAccumulator out(boot_acc, func_spec, multival_spec);
     return out; 
 }
 
@@ -141,34 +144,45 @@ HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t, in
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
-    return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
+    auto boot_acc = config->eval_key.boot_acc_builder->prepare_specification(f, current_encoding); 
+    auto func_spec = config->eval_key.func_boot_acc_builder->prepare_specification(f, current_encoding);
+    auto multival_spec = config->eval_key.multivalue_acc_builder->prepare_specification(f, current_encoding);
+    HomomorphicAccumulator out(boot_acc, func_spec, multival_spec);
+    return out;  
 }
 
 HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding){ 
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
-    return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, encoding))); 
+    auto boot_acc = config->eval_key.boot_acc_builder->prepare_specification(f, encoding); 
+    auto func_spec = config->eval_key.func_boot_acc_builder->prepare_specification(f, encoding);
+    auto multival_spec = config->eval_key.multivalue_acc_builder->prepare_specification(f, encoding);
+    HomomorphicAccumulator out(boot_acc, func_spec, multival_spec);
+    return out;  
 }
- 
-
+  
 HomomorphicAccumulator FHEContext::genrate_lut(std::function<int64_t(int64_t)> f){   
-    return HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator>(config->eval_key.accumulator_builder->prepare_accumulator(f, current_encoding))); 
+    auto boot_acc = config->eval_key.boot_acc_builder->prepare_specification(f, current_encoding); 
+    auto func_spec = config->eval_key.func_boot_acc_builder->prepare_specification(f, current_encoding);
+    auto multival_spec = config->eval_key.multivalue_acc_builder->prepare_specification(f, current_encoding);
+    HomomorphicAccumulator out(boot_acc, func_spec, multival_spec);
+    return out;  
 }
   
 Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, const HomomorphicAccumulator& lut){  
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
-    }  
+    }   
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
     if(ct_in.encoding.type == full_domain){    
-        config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out.get(), lut.accumulator, *ct_in.lwe_c.get(), ct_in.encoding);
+        config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out.get(), lut.func_boot_acc, *ct_in.lwe_c.get(), ct_in.encoding);
     }else if(ct_in.encoding.type == partial_domain){  
-        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(),  lut.accumulator, *ct_in.lwe_c.get()); 
+        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(),  lut.boot_acc, *ct_in.lwe_c.get()); 
     }else if(ct_in.encoding.type == signed_limied_short_int){    
         LWECT c_in_copy(ct_in.lwe_c->param);
         ct_in.lwe_c->add(c_in_copy, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
-        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(), lut.accumulator, c_in_copy);   
+        config->eval_key.bootstrap_pk->bootstrap(*ct_out.get(), lut.boot_acc, c_in_copy);   
     } 
     else{
         throw std::logic_error("Non existend encoding type!");
@@ -180,22 +194,24 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(const Ciphertext& ct_in, 
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }    
-    // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
-    std::vector<std::shared_ptr<VectorCTAccumulator>> accumulator_vec;
-    for(HomomorphicAccumulator i: lut_vec){
-        accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.accumulator)); 
-    } 
+    
     // The output vector of LWECT 
     std::vector<LWECT> out_vec_lwe;   
-    if((ct_in.encoding.type == full_domain) && !config->eval_key.bootstrap_pk->is_full_domain_bootstrap_function_amortizable){
+    if((ct_in.encoding.type == full_domain) && !config->eval_key.bootstrap_pk->is_full_domain_bootstrap_function_amortizable){ 
         // Amortization is not supported so lets run sequentially.
-        for(std::shared_ptr<VectorCTAccumulator> acc: accumulator_vec){
+        for(HomomorphicAccumulator& acc: lut_vec){
             LWECT ct_out(ct_in.lwe_c->param);  
-            config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out, acc, *ct_in.lwe_c.get(), ct_in.encoding);
+            config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out, acc.func_boot_acc, *ct_in.lwe_c.get(), ct_in.encoding);
             out_vec_lwe.push_back(ct_out);
         }
     // Otherwise we run the amortized procedures. 
-    }else if(ct_in.encoding.type == full_domain){ 
+    }  
+    // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
+    std::vector<std::shared_ptr<FunctionSpecification>> accumulator_vec;
+    for(HomomorphicAccumulator& i: lut_vec){
+        accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.multivalue_acc)); 
+    }  
+    if(ct_in.encoding.type == full_domain){ 
         out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, *ct_in.lwe_c.get(), ct_in.encoding);
     }else if(ct_in.encoding.type == partial_domain){ 
         out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, *ct_in.lwe_c.get(), ct_in.encoding);

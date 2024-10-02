@@ -4,7 +4,7 @@ using namespace fhe_deck;
 
 DucasStehleWashingMachine::DucasStehleWashingMachine(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
-            std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
+            std::shared_ptr<AbstractFunctionBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk,
             int32_t washing_cycles){
 
@@ -17,8 +17,8 @@ DucasStehleWashingMachine::DucasStehleWashingMachine(
 void DucasStehleWashingMachine::sanitize(LWECT& ct_out, const LWECT& ct_in, const PlaintextEncoding &encoding){
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
-    };   
-    std::shared_ptr<VectorCTAccumulator> acc(accumulator_builder->prepare_accumulator(fun_identity, encoding));
+    };    
+    std::shared_ptr<FunctionSpecification> acc(accumulator_builder->prepare_specification(fun_identity, encoding));
     LWECT ct_of_zero(masking_pk->param);
     for(int32_t i = 0; i < washing_cycles; ++i){
         masking_pk->encrypt(ct_of_zero, 0);
@@ -40,7 +40,7 @@ void DucasStehleWashingMachine::sanitize(LWECT& ct_out, const LWECT& ct_in, cons
 
 KluczniakRandomizedBootstrapping::KluczniakRandomizedBootstrapping(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 
-            std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder,
+            std::shared_ptr<AbstractFunctionBuilder> accumulator_builder,
             std::shared_ptr<LWEPublicKey> masking_pk){
 
     this->fun_bootstrap_pk = fun_bootstrap_pk;
@@ -52,7 +52,7 @@ void KluczniakRandomizedBootstrapping::sanitize(LWECT& ct_out, const LWECT& ct_i
     auto fun_identity = [](int64_t m) -> int64_t {
         return m; 
     };   
-    std::shared_ptr<VectorCTAccumulator> acc(accumulator_builder->prepare_accumulator(fun_identity, encoding)); 
+    std::shared_ptr<FunctionSpecification> acc(accumulator_builder->prepare_specification(fun_identity, encoding));
     /// TODO: This part should be in the FunctionalBootstrap public key - change it also in fhe_context examples
     if(encoding.type == full_domain){    
         /// NOTE: With full domain its sort of a problem because we run randomized blind rotation twice, where one time is enough.

@@ -27,13 +27,13 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         LWEToLWEKeySwitchKey *key_switch_key,
         LWEToRLWEKeySwitchKey *key_switch_key_rlwe,
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,  
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder);
+        std::shared_ptr<PreparedVectorCTAccumulators> accumulator_builder);
 
     void init();
 
-    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
+    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
-    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
+    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
 
     template <class Archive>

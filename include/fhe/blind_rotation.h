@@ -15,29 +15,59 @@
 
 namespace fhe_deck{
 
+
+/**
+ * @brief Common interface to specify functions for functional bootstrapping. 
+ */
+class FunctionSpecification{
+
+};
+
 /**
  * @brief This class is used by blind rotation implementations. It is takes as a mandatory imput to blind rotation.
  * Typically it holds a rotation polynomial, or a RLWE/NTRU ciphertext encrypting a rotation polynomial. 
  */
-class VectorCTAccumulator{ 
+class VectorCTAccumulator : public FunctionSpecification{ 
 
     public:
     /// @brief Vector ciphertext, that defines the content of the Accumulator.
     std::shared_ptr<VectorCT> acc_content; 
-    /// @brief Rotation Polynomial
-    RotationPoly rot_poly;
-    /// @brief Rotation Polynomial that is prepared for amortization.
-    RotationPoly rot_poly_amortized;   
-    bool amortization = false;
-    
-    VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, RotationPoly rot_poly, bool amortization = true);
-
-    VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, bool amortization = false);
+ 
+    VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content);
   
     VectorCTAccumulator(VectorCTAccumulator &other);
  
     VectorCTAccumulator& operator=(const VectorCTAccumulator other);
+ 
 };
+
+
+class PolynomialSpecification : public FunctionSpecification{
+
+    public:
+    /// @brief Rotation Polynomial
+    RotationPoly rot_poly;
+
+    /// @brief Rotation Polynomial that is prepared for amortization.
+    /// TODO: I think that eventually there should be only one rot_poly. For now I leave both, as a temporary solution. 
+    RotationPoly rot_poly_amortized;   
+
+    PolynomialSpecification(RotationPoly rot_poly);
+};
+ 
+ /**
+  * @brief Implements VectorCTAccumulator.
+  */
+class KSFunctionSpecification : public FunctionSpecification {
+
+    public: 
+
+        Polynomial poly_msb_0;
+        Polynomial poly_msb_1; 
+        KSFunctionSpecification(const std::function<long(long,long)>, long dim, long coef_modulus, PlaintextEncoding encoding); 
+        KSFunctionSpecification(long (*f)(long message, long plaintext_space), long dim, long coef_modulus, PlaintextEncoding encoding); 
+};
+
 
 /**
  * @brief Encapsulates the VectorCTAccumulator. 
@@ -45,41 +75,24 @@ class VectorCTAccumulator{
  */
 class HomomorphicAccumulator{
     public:
-    /// @brief The smart pointer that we wan to encapsulate. 
-    std::shared_ptr<VectorCTAccumulator> accumulator;
+    /// @brief The smart pointer that we want to encapsulate. 
+    std::shared_ptr<FunctionSpecification> boot_acc;
+    std::shared_ptr<FunctionSpecification> func_boot_acc;
+    std::shared_ptr<FunctionSpecification> multivalue_acc;
 
-    HomomorphicAccumulator(std::shared_ptr<VectorCTAccumulator> accumulator){
-        this->accumulator = accumulator;
+    HomomorphicAccumulator(std::shared_ptr<FunctionSpecification> boot_acc, 
+    std::shared_ptr<FunctionSpecification> func_boot_acc,
+    std::shared_ptr<FunctionSpecification> multivalue_acc){
+        this->boot_acc = boot_acc;
+        this->func_boot_acc = func_boot_acc;
+        this->multivalue_acc = multivalue_acc;
     }
-};
-
- /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators.
- /**
-  * @brief Implements VectorCTAccumulator.
-  */
-class FunctionalAccumulator : public VectorCTAccumulator {
-
-    public:
-        //using BootFunction = std::function<long(long,long)>;
-
-        Polynomial poly_msb_0;
-        Polynomial poly_msb_1;
-
-        //BootFunction func;
-        //long (*func_ptr)(long message, long plaintext_space);
-
-        // debug
-        //Polynomial sk;
-
-        FunctionalAccumulator(const std::function<long(long,long)>, long dim, long coef_modulus, PlaintextEncoding encoding);
-
-        FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim, long coef_modulus, PlaintextEncoding encoding); 
 };
 
 /**
  * @brief This class is used to build a VectorCTAccumulator object.  It implements various methods to build an accumulator. 
  */
-class AbstractAccumulatorBuilder{
+class AbstractFunctionBuilder{
 
     public:
     
@@ -87,29 +100,14 @@ class AbstractAccumulatorBuilder{
     /// @param f The function that blind rotation given the accumulator should compute.
     /// @param output_encoding The encoding of the plaintexts. 
     /// @return Returns a new object of VectorCTAccumulator.
-    virtual VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) = 0;
+    virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) = 0;
 
     /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
     /// @param f The function that blind rotation given the accumulator should compute.
     /// @param output_encoding The encoding of the plaintexts. 
     /// @return Returns a new object of VectorCTAccumulator.
-    virtual VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) = 0;
-
-    /// @brief This is a special function, that returns a accumulator which after blind rotation will return the most significant bit of the message. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    /// NOTE: The most signifficant bit is computed by rotating a polynomial over a negacyclic polynomial ring. This accumulator is used by LMPFunctionalBootstrapPublicKey 
-    virtual VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) = 0;
-
-    /// @brief This is a special function, that returns a accumulator which after blind rotation will return the most significant bit of the message. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    /// NOTE: The most signifficant bit is computed by rotating a polynomial over a negacyclic polynomial ring. This accumulator is used by LMPFunctionalBootstrapPublicKey 
-    virtual VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) = 0;
-  
-    /// @brief This is a special function, that returns an VectorCTAccumulator that has in its first position "1", and other positions are "0".
-    /// @return Returns a new object of VectorCTAccumulator.
-    /// NOTE: This accumulator is used by LMPFunctionalBootstrapPublicKey 
-    virtual VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) = 0; 
-
+    virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) = 0;
+   
     template <class Archive>
     void save( Archive & ar ) const { }
         
@@ -118,14 +116,109 @@ class AbstractAccumulatorBuilder{
 
 };
 
+class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
+ 
+    public:
+    std::shared_ptr<VectorCTParam> param; 
+  
+    virtual VectorCTAccumulator* prepare_accumulator(Vector& vec) = 0; 
+
+    template <class Archive>
+    void save( Archive & ar ) const {
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(param);
+     }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(param);
+    } 
+
+};
+
+
+class PolynomialSpecificationBuilder final : public AbstractFunctionBuilder{
+
+    public:
+
+    /// @brief The degree of the polynomial specification.
+    int32_t degree;
+
+    PolynomialSpecificationBuilder() = default;
+
+    PolynomialSpecificationBuilder(int32_t degree);
+
+    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
+    /// @param f The function that blind rotation given the accumulator should compute.
+    /// @param output_encoding The encoding of the plaintexts. 
+    /// @return Returns a new object of VectorCTAccumulator.
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
+
+    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
+    /// @param f The function that blind rotation given the accumulator should compute.
+    /// @param output_encoding The encoding of the plaintexts. 
+    /// @return Returns a new object of VectorCTAccumulator.
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
+
+    template <class Archive>
+    void save( Archive & ar ) const {
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(degree);
+     }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(degree);
+    } 
+
+};
+
+class KSFunctionSpecificationBuilder final : public AbstractFunctionBuilder{
+
+    public:
+
+    int32_t degree;
+    int64_t coef_modulus;
+
+    KSFunctionSpecificationBuilder() = default;
+
+    KSFunctionSpecificationBuilder(int32_t degree, int64_t coef_modulus);
+
+    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
+    /// @param f The function that blind rotation given the accumulator should compute.
+    /// @param output_encoding The encoding of the plaintexts. 
+    /// @return Returns a new object of VectorCTAccumulator.
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
+
+    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
+    /// @param f The function that blind rotation given the accumulator should compute.
+    /// @param output_encoding The encoding of the plaintexts. 
+    /// @return Returns a new object of VectorCTAccumulator.
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
+ 
+     template <class Archive>
+    void save( Archive & ar ) const {
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(degree, coef_modulus);
+     }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<AbstractFunctionBuilder>(this));    
+        ar(degree, coef_modulus);
+    } 
+};
+
 /**
  * @brief Build VectorCTAccumulator where the VectorCT is a RLWE ciphertext.
  */
-class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
+class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     public:
     /// @brief The RLWE parameters.
-    std::shared_ptr<RLWEParam> param;
+    //std::shared_ptr<RLWEParam> param;
 
     RLWEAccumulatorBuilder() = default;
 
@@ -135,47 +228,49 @@ class RLWEAccumulatorBuilder : public AbstractAccumulatorBuilder{
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding);
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
 
     /// @brief Computes a VectorCTAccumulator that embeds the function f.
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding); 
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
+
+    VectorCTAccumulator* prepare_accumulator(Vector& vec) override;
   
     /// @brief Return a Accumulator that computes the most significant bit of the message.
     /// @return The accumulator. 
-    VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding);
+    //VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) override;
   
-    VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding);
+    //VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) override;
   
     /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
     /// @param output_encoding The encoding used to encode the first position to 1.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
+    //VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) override;
 
     template <class Archive>
     void save( Archive & ar ) const { 
-        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
-        ar(param);
+        ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
+        //ar(param);
     }
         
     template <class Archive>
     void load( Archive & ar ) { 
-        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
-        ar(param);
+        ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
+        //ar(param);
     } 
 };
   
 /**
  * @brief Build VectorCTAccumulator where the VectorCT is a NTRU ciphertext.
  */
-class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
+class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     public:
 
     /// @brief The NTRU parameters.
-    std::shared_ptr<NTRUParam> param;
+    //std::shared_ptr<NTRUParam> param;
 
     /// @brief The NTRU parameters.
     /// TODO: Need to make a public version. 
@@ -191,14 +286,52 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding);
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
 
     /// @brief Computes a VectorCTAccumulator that embeds the function f.
     /// @param f The funciton f.
     /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding); 
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
+
+    VectorCTAccumulator* prepare_accumulator(Vector& vec) override;
   
+    /// @brief Return a Accumulator that computes the most significant bit of the message.
+    /// @return The accumulator. 
+    //VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) override;
+
+    //VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) override;
+  
+    /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
+    /// @param output_encoding The encoding used to encode the first position to 1.
+    /// @return Pointer to the new vector CTAccumulator object.
+    //VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) override;
+
+    template <class Archive>
+    void save( Archive & ar ) const { 
+        ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
+        ar(sk);
+    }
+        
+    template <class Archive>
+    void load( Archive & ar ) { 
+        ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
+        ar(sk);
+        this->is_sk_set = true;
+    } 
+};
+
+
+class PreparedVectorCTAccumulators{
+
+    public: 
+
+    std::shared_ptr<VectorCTAccumulatorBuilder> builder;
+
+    PreparedVectorCTAccumulators() = default;
+
+    PreparedVectorCTAccumulators(std::shared_ptr<VectorCTAccumulatorBuilder> builder);
+
     /// @brief Return a Accumulator that computes the most significant bit of the message.
     /// @return The accumulator. 
     VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding);
@@ -211,18 +344,20 @@ class NTRUAccumulatorBuilder : public AbstractAccumulatorBuilder{
     VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
 
     template <class Archive>
-    void save( Archive & ar ) const { 
-        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
-        ar(param, sk);
+    void save( Archive & ar ) const {
+        ar(builder);
     }
         
     template <class Archive>
-    void load( Archive & ar ) { 
-        ar(cereal::base_class<AbstractAccumulatorBuilder>(this));    
-        ar(param, sk);
-        this->is_sk_set = true;
-    } 
+    void load( Archive & ar ) {
+        ar(builder);
+     } 
+ 
 };
+
+
+
+
    
 /**
  * @brief Interface for outputs of a blind rotation algorithm.
@@ -245,7 +380,7 @@ class BlindRotateOutput{
     /// @brief Performs post rotation. For multi-value bootstrapping this is the step where the accumulator is updated. Its called post rotation, because we usually use it after a blind rotation. 
     /// @param bl_out Output of the post rotation. 
     /// @param acc The accumulator that is used to update this blind rotation output.
-    virtual void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc) = 0; 
+    virtual void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc) = 0; 
 };
 
 /**
@@ -344,7 +479,7 @@ class RLWEBlindRotateOutput : public BlindRotateOutput{
 
     void extract_lwe(LWECT& out);
 
-    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
+    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc); 
 };
 
 /**
@@ -363,7 +498,7 @@ class NTRUBlindRotateOutput : public BlindRotateOutput{
   
     void extract_lwe(LWECT& out);
 
-    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc); 
+    void post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc); 
 };
  
 
@@ -400,6 +535,9 @@ class BlindRotationPublicKey{
  
 }/// End of namespace fhe_deck
 
+
+CEREAL_REGISTER_TYPE(fhe_deck::KSFunctionSpecificationBuilder)
+CEREAL_REGISTER_TYPE(fhe_deck::PolynomialSpecificationBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::RLWEAccumulatorBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUAccumulatorBuilder) 
 CEREAL_REGISTER_TYPE(fhe_deck::RLWEBlindRotateOutputBuilder)

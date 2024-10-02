@@ -1,42 +1,28 @@
 #include "blind_rotation.h"
 
 using namespace fhe_deck;
-  
-VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, RotationPoly rot_poly, bool amortization){  
-    this->acc_content = acc_content;
-    this->rot_poly = rot_poly;
-    this->rot_poly_amortized = rot_poly; 
-    this->amortization = amortization;
-    if(this->amortization){
-        this->rot_poly_amortized.to_amortization_form();
-    }
-}
- 
-VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content, bool amortization){
-    this->acc_content = acc_content;
-    this->amortization = amortization; 
+    
+VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content){
+    this->acc_content = acc_content; 
 }
 
 VectorCTAccumulator::VectorCTAccumulator(VectorCTAccumulator &other){
-    this->acc_content = other.acc_content;
-    this->rot_poly = other.rot_poly;
-    this->rot_poly_amortized = other.rot_poly_amortized;
-    this->amortization = other.amortization;
+    this->acc_content = other.acc_content; 
 }
 
 VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator other){
-    this->acc_content = other.acc_content;
-    this->rot_poly = other.rot_poly;
-    this->rot_poly_amortized = other.rot_poly_amortized;
-    this->amortization = other.amortization;
+    this->acc_content = other.acc_content; 
     return *this;
 }
   
-
- /// TODO: Check what this exactly does, and whether we can implement it with existing accumulators. 
- FunctionalAccumulator::FunctionalAccumulator(const std::function<long(long, long)> f, long dim,
-                                              long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
-         nullptr, false) { 
+PolynomialSpecification::PolynomialSpecification(RotationPoly rot_poly){ 
+    this->rot_poly = rot_poly;
+    this->rot_poly_amortized = rot_poly;  
+    this->rot_poly_amortized.to_amortization_form(); 
+}
+ 
+ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, long)> f, long dim,
+                                              long coef_modulus, PlaintextEncoding encoding){ 
   
     int32_t skip = 2*(dim/encoding.plaintext_space);
     int32_t half_plaintext_space = encoding.plaintext_space / 2;
@@ -57,9 +43,8 @@ VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator ot
  
 }  
   
-FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaintext_space), long dim,
-                                             long coef_modulus, PlaintextEncoding encoding) : VectorCTAccumulator(
-        nullptr, false) { 
+KSFunctionSpecification::KSFunctionSpecification(long (*f)(long message, long plaintext_space), long dim,
+                                             long coef_modulus, PlaintextEncoding encoding){ 
 
     int32_t skip = 2*(dim/encoding.plaintext_space);
     int32_t half_plaintext_space = encoding.plaintext_space / 2;
@@ -81,112 +66,122 @@ FunctionalAccumulator::FunctionalAccumulator(long (*f)(long message, long plaint
 }
  
 
+PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){
+    this->degree = degree;
+}
+
+std::shared_ptr<FunctionSpecification> PolynomialSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
+    RotationPoly poly(f, this->degree, output_encoding);    
+    return std::make_shared<PolynomialSpecification>(poly);
+}
+
+std::shared_ptr<FunctionSpecification> PolynomialSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
+    RotationPoly poly(f, this->degree, output_encoding);    
+    return std::make_shared<PolynomialSpecification>(poly);
+}
+
+
+KSFunctionSpecificationBuilder::KSFunctionSpecificationBuilder(int32_t degree, int64_t coef_modulus){
+    this->degree = degree;
+    this->coef_modulus = coef_modulus;
+}
+ 
+std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
+    std::function<int64_t(int64_t, int64_t)> f_2 = [f](int64_t x, int64_t p) {
+        return f(Utils::integer_mod_form(x, p));
+    };
+    return std::make_shared<KSFunctionSpecification>(f_2, degree, coef_modulus, output_encoding);
+}
+
+std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
+    return std::make_shared<KSFunctionSpecification>(f, degree, coef_modulus, output_encoding);
+}
+
 RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
     this->param = param;
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
+std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
     RotationPoly poly(f, this->param->size, output_encoding);   
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
+    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
     acc_ptr->a.zeroize();
-    acc_ptr->b = poly;  
-    return new VectorCTAccumulator(acc_ptr, poly);
+    acc_ptr->b = poly;   
+    return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
+std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
     RotationPoly poly(f, this->param->size, output_encoding);  
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(param)); 
+    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
     acc_ptr->a.zeroize();
-    acc_ptr->b = poly;  
-    return  new VectorCTAccumulator(acc_ptr, poly);
+    acc_ptr->b = poly;   
+    return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
 
-VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_sgn(PlaintextEncoding output_encoding){     
-    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);    
-    std::shared_ptr<RLWECT> acc_ptr(new RLWECT(param)); 
+VectorCTAccumulator* RLWEAccumulatorBuilder::prepare_accumulator(Vector& vec){
+    Polynomial vec_cast = static_cast<Polynomial&>(vec);
+    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
     acc_ptr->a.zeroize();
-    acc_ptr->b = poly;  
-    return new VectorCTAccumulator(acc_ptr, poly, false); 
+    acc_ptr->b = vec_cast;  
+    return new VectorCTAccumulator(acc_ptr);
 }
-
-VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_msb(PlaintextEncoding output_encoding){     
-    RotationPoly poly = RotationPoly::rot_msb(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);    
-    std::shared_ptr<RLWECT> acc_ptr(new RLWECT(param)); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = poly;  
-    return new VectorCTAccumulator(acc_ptr, poly, false); 
-}
-
-VectorCTAccumulator* RLWEAccumulatorBuilder::get_acc_one(PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly::rot_one(this->param->size, output_encoding.ciphertext_modulus);
-    poly.coefs[1] = output_encoding.encode_message(1); 
-    std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(this->param); 
-    std::shared_ptr<RLWECT> acc_ptr(new RLWECT(param)); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = poly;  
-    return new VectorCTAccumulator(acc_ptr, poly, false);
-}
-
+  
 NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
     this->sk = sk;
     this->param = this->sk->param;
     this->is_sk_set = true;
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){  
+std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){  
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
-        std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
-        sk->kdm_encrypt(*acc.get(), poly);
-        return new VectorCTAccumulator(acc, poly);
+        std::shared_ptr<NTRUCT> acc(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
+        sk->kdm_encrypt(*acc.get(), poly); 
+        return std::make_shared<VectorCTAccumulator>(acc);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
 
-VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
+std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
-        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(param)); 
-        sk->kdm_encrypt(*acc.get(), poly);
-        return new VectorCTAccumulator(acc, poly);
-    }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
-    } 
-}
-
-VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_sgn(PlaintextEncoding output_encoding){     
-    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);   
-    if(is_sk_set){   
-        std::shared_ptr<NTRUCT> acc(new NTRUCT(param));  
+        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
         sk->kdm_encrypt(*acc.get(), poly); 
-        return new VectorCTAccumulator(acc, poly, false);
+        return std::make_shared<VectorCTAccumulator>(acc);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
-
-VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_msb(PlaintextEncoding output_encoding){     
-    RotationPoly poly = RotationPoly::rot_msb(output_encoding.plaintext_space, this->param->size, this->param->coef_modulus);   
-    if(is_sk_set){   
-        std::shared_ptr<NTRUCT> acc(new NTRUCT(param));  
-        sk->kdm_encrypt(*acc.get(), poly); 
-        return new VectorCTAccumulator(acc, poly, false);
-    }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
-    } 
-}
-
-VectorCTAccumulator* NTRUAccumulatorBuilder::get_acc_one(PlaintextEncoding output_encoding){ 
-    RotationPoly poly = RotationPoly::rot_one(this->param->size, output_encoding.ciphertext_modulus);
-    poly.coefs[1] = output_encoding.encode_message(1); 
+ 
+VectorCTAccumulator* NTRUAccumulatorBuilder::prepare_accumulator(Vector& vec){
+    Polynomial vec_cast = static_cast<Polynomial&>(vec);
     if(is_sk_set){  
-        std::shared_ptr<NTRUCT> acc(new NTRUCT(param)); 
-        sk->kdm_encrypt(*acc.get(), poly);
-        return new VectorCTAccumulator(acc, poly, false);
+        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
+        sk->kdm_encrypt(*acc.get(), vec_cast);
+        return new VectorCTAccumulator(acc);
     }else{
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
+}
+  
+PreparedVectorCTAccumulators::PreparedVectorCTAccumulators(std::shared_ptr<VectorCTAccumulatorBuilder> builder){
+    this->builder = builder;
+}
+
+VectorCTAccumulator* PreparedVectorCTAccumulators::get_acc_sgn(PlaintextEncoding output_encoding){
+    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.plaintext_space, builder->param->size, output_encoding.ciphertext_modulus);   
+    return builder->prepare_accumulator(poly);
+}
+
+VectorCTAccumulator* PreparedVectorCTAccumulators::get_acc_msb(PlaintextEncoding output_encoding){
+    RotationPoly poly = RotationPoly::rot_msb(output_encoding.plaintext_space, builder->param->size, output_encoding.ciphertext_modulus);  
+    return builder->prepare_accumulator(poly);
+}
+  
+VectorCTAccumulator* PreparedVectorCTAccumulators::get_acc_one(PlaintextEncoding output_encoding){ 
+    RotationPoly poly = RotationPoly::rot_one(builder->param->size, output_encoding.ciphertext_modulus);
+    poly.coefs[1] = output_encoding.encode_message(1);  
+    return builder->prepare_accumulator(poly);
 }
 
 RLWEBlindRotateOutputBuilder::RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEParam> param){
@@ -204,7 +199,6 @@ BlindRotateOutput* RLWEBlindRotateOutputBuilder::build(){
 NTRUBlindRotateOutputBuilder::NTRUBlindRotateOutputBuilder(std::shared_ptr<NTRUParam> param){
     this->ntru_param = param;
 }
-
 
 LWEParam* NTRUBlindRotateOutputBuilder::build_extract_lwe_param(){
     return new LWEParam(ntru_param->size, ntru_param->coef_modulus);  
@@ -227,9 +221,10 @@ void RLWEBlindRotateOutput::extract_lwe(LWECT& out){
     accumulator_ptr->extract_lwe(out);
 }
 
-void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
-    std::shared_ptr<RLWEBlindRotateOutput> out_ptr = std::static_pointer_cast<RLWEBlindRotateOutput>(bl_out); 
-    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc->rot_poly_amortized);
+void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc){ 
+    std::shared_ptr<PolynomialSpecification> acc_cast = std::static_pointer_cast<PolynomialSpecification>(acc);
+    std::shared_ptr<RLWEBlindRotateOutput> out_ptr = std::static_pointer_cast<RLWEBlindRotateOutput>(bl_out);  
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->rot_poly_amortized);
 }
 
 NTRUBlindRotateOutput::~NTRUBlindRotateOutput(){ 
@@ -245,9 +240,10 @@ void NTRUBlindRotateOutput::extract_lwe(LWECT& out){
     accumulator_ptr->extract_lwe(out);
 }
 
-void NTRUBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<VectorCTAccumulator> acc){ 
+void NTRUBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc){ 
+    std::shared_ptr<PolynomialSpecification> acc_cast = std::static_pointer_cast<PolynomialSpecification>(acc);
     std::shared_ptr<NTRUBlindRotateOutput> out_ptr = std::static_pointer_cast<NTRUBlindRotateOutput>(bl_out); 
-    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc->rot_poly_amortized);
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->rot_poly_amortized);
 }
 
  

@@ -92,8 +92,13 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk)); 
     // Build the public key  
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
+
     // Init Accumulator Builder and Blind Rotation Output Builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder(new RLWEBlindRotateOutputBuilder(rlwe_param));
 
     // Generate the Functional Bootstrapping Public Key and its Specific Values 
@@ -106,7 +111,7 @@ void FHEConfiguration::init_tfhe_11_NTT(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     std::shared_ptr<FunctionalBootstrapPublicKey> rand_bootstrap_pk(new LMPFunctionalBootstrapPublicKey(
         lwe_param_rot, 
@@ -114,9 +119,9 @@ void FHEConfiguration::init_tfhe_11_NTT(){
         rand_blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
     
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(rand_bootstrap_pk, eval_key.accumulator_builder, eval_key.encrypt_pk));
+    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(rand_bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk));
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
@@ -187,7 +192,12 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     
     std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new CGGIBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe)); 
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -198,9 +208,9 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(eval_key.bootstrap_pk, eval_key.accumulator_builder, eval_key.encrypt_pk, 4));
+    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(eval_key.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk, 4));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -261,7 +271,11 @@ void FHEConfiguration::init_tfhe_11_B(){
     // The blind rotation key  
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+ 
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -272,7 +286,7 @@ void FHEConfiguration::init_tfhe_11_B(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -338,7 +352,13 @@ void FHEConfiguration::init_tfhe_11_flood(){
     // The blind rotation key  
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    // Init Accumulator builder
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -349,7 +369,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -415,7 +435,12 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     // The blind rotation key  
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -426,7 +451,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -502,7 +527,12 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     // The blind rotation key  
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -513,7 +543,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -580,7 +610,13 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
     // The blind rotation key  
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
     // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
+
     // Build the public key 
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
@@ -591,7 +627,7 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -646,8 +682,13 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     // lwe_sk after modulus switching to 2*N (for negacyclic ring).  
     std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
     std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Init Accumulator builder and blind rotate output builder.
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_sk));
+    // Init Accumulator builder and blind rotate output builder. 
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_sk));
+    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_sk));
+    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(ntru_param->size);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<NTRUBlindRotateOutputBuilder>(new NTRUBlindRotateOutputBuilder(ntru_param));
     // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
     // This key is the main decryption key for the scheme.
@@ -672,7 +713,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
         blind_rotation_key, 
         ks_public_key, 
         blind_rotate_output_builder, 
-        eval_key.accumulator_builder));
+        prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -738,8 +779,13 @@ void FHEConfiguration::init_tfhe_11_KS() {
     // Masking Key Gen 
     // The blind rotation key
     BlindRotationPublicKey *blind_rotation_key = new CGGIBlindRotationKey(rlwe_gadget_sk, g_lwe);
-    // Init Accumulator builder
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    // Init Accumulator builder 
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+    eval_key.multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
     // Build the public key
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
@@ -750,7 +796,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
             ks_public_key,
             rlwe_ksk,
             blind_rotate_output_builder,
-            eval_key.accumulator_builder));
+            prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -819,7 +865,13 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     
     // Init Accumulator builder
     /// TODO: Not good.... Generaly this AbstractAccumulatorBuilder is crap...
-    eval_key.accumulator_builder = std::shared_ptr<AbstractAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+    eval_key.func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+    eval_key.multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+
+
+
     // Build the public key
     std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
     std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
@@ -830,7 +882,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
             ks_public_key,
             rlwe_ksk,
             blind_rotate_output_builder,
-            eval_key.accumulator_builder));
+            prepared_acc_builder));
 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;

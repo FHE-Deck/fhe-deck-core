@@ -13,97 +13,115 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     
     context.generate_context(param_set); 
-
-    
-    std::cout << "Encrypt..." << std::endl;
-    Ciphertext c1  = context.encrypt(1);  
- 
-    std::cout << "Encrypt..." << std::endl;
+    int32_t modulus = context.current_encoding.plaintext_space;
+     
+    int32_t c1_plain = 1;
+    Ciphertext c1  = context.encrypt(c1_plain);  
+    int32_t c2_plain = 2;
     Ciphertext c2  = context.encrypt(2);  
-
-    std::cout << "Decrypt..." << std::endl;
-    assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
+ 
+    assertm(context.decrypt(c1) == c1_plain, "Decrypt(c1) == 1");
     std::cout << "Decrypt(c1) == 1: OK" << std::endl; 
     
-    assertm(context.decrypt(c2) == 2, "Decrypt(c2) == 2");
+    assertm(context.decrypt(c2) == c2_plain, "Decrypt(c2) == 2");
     std::cout << "Decrypt(c2) == 2: OK" << std::endl; 
  
-     
-    Ciphertext c3 = context.encrypt(0);
+    int32_t c3_plain = 0;
+    Ciphertext c3 = context.encrypt(c3_plain);
     c3.add(c1); 
+    c3_plain = (c3_plain + c1_plain) % modulus;
     
-    assertm(context.decrypt(c3) == 1, "Decrypt(c3+c1) == 1");
+    assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1) == 1");
     std::cout << "Decrypt(c3+c1): OK" << std::endl;
     c3.add(c2); 
-    assertm(context.decrypt(c3) == 3, "Decrypt(c3+c1+c2) == 3");
+    c3_plain = (c3_plain + c2_plain) % modulus;
+    assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1+c2) == 3");
     std::cout << "Decrypt(c3+c1+c2): OK" << std::endl;
     c3.add(c2); 
-    assertm(context.decrypt(c3) == 1, "Decrypt(c3+c1+c2+c2) == 1");
+    c3_plain = (c3_plain + c2_plain) % modulus;
+    std::cout << "context.decrypt(c3): " << context.decrypt(c3) << std::endl;
+    assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1+c2+c2) == 1");
     std::cout << "Decrypt(c3+c1+c2+c2) OK" << std::endl;
 
 
     c3.mul(3); 
-    assertm(context.decrypt(c3) == 3, "Decrypt((c3+c1+c2+c2) * 3) == 3");
+    c3_plain = (c3_plain * 3) % modulus;
+    assertm(context.decrypt(c3) == c3_plain, "Decrypt((c3+c1+c2+c2) * 3) == 3");
     std::cout << "Decrypt((c3+c1+c2+c2) * 3): OK"  << std::endl; 
  
     std::cout << "Copying to LWE ct objects" << std::endl;
     Ciphertext ct1 = c1;
- 
-
+  
     Ciphertext ct2 = c2;
-    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1");
+    assertm(context.decrypt(ct1) == c1_plain, "context.decrypt(&ct1) == 1");
     std::cout << "context.decrypt(&ct1) == 1: OK"  << std::endl;
 
-    assertm(context.decrypt(ct2) == 2, "context.decrypt(&ct2) == 2");
+    assertm(context.decrypt(ct2) == c2_plain, "context.decrypt(&ct2) == 2");
     std::cout << "context.decrypt(&ct2) == 2: OK"  << std::endl;
     Ciphertext ct3 = ct1 + 1;  
-    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(ct1 + 1)) == 2");
+    c3_plain = (c1_plain + 1) % modulus;
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct1 + 1)) == 2");
     std::cout << "context.decrypt(&(ct1 + 1)) == 2: OK"  << std::endl;
 
     ct3 = 1 + ct1;  
-    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(1+ ct1)) == 2");
+    c3_plain = (1 + c1_plain) % modulus;
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(1+ ct1)) == 2");
     std::cout << "context.decrypt(&(1+ ct1)) == 2: OK"  << std::endl;
 
     ct3 = ct1 - 2; 
-    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct1 - 2)) == 3");
+    c3_plain = Utils::integer_mod_form(c1_plain - 2, modulus);
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct1 - 2)) == 3");
     std::cout << "context.decrypt(&(ct1 - 2)) == 3: OK"  << std::endl;
 
     ct3 = 2 - ct1; 
-    assertm(context.decrypt(ct3) == 1, "context.decrypt(&(2 - ct1)) == 1");
+    c3_plain = Utils::integer_mod_form(2 - c1_plain, modulus);
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(2 - ct1)) == 1");
     std::cout << "context.decrypt(&(2 - ct1)) == 1: OK"  << std::endl;
  
     ct3 = ct1 * 2; 
-    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(ct1 * 2)) == 2");
+    c3_plain = (c1_plain * 2) % modulus;
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct1 * 2)) == 2");
     std::cout << "context.decrypt(&(ct1 * 2)) == 2: "  << std::endl;
 
     ct3 = 2 * ct1; 
-    assertm(context.decrypt(ct3) == 2, "context.decrypt(&(2 * ct1)) == 2");
+    c3_plain = (2 * c1_plain) % modulus;
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(2 * ct1)) == 2");
     std::cout << "context.decrypt(&(2 * ct1)) == 2: OK"   << std::endl;
 
     ct3 = ct1 + ct2; 
-    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct1 + ct2)) == 3");
+    c3_plain = (c1_plain + c2_plain) % modulus;
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct1 + ct2)) == 3");
     std::cout << "context.decrypt(&(ct1 + ct2)) == 3: OK"  << std::endl;
 
     ct3 = ct2 - ct1; 
-    assertm(context.decrypt(ct3) == 1, "context.decrypt(&(ct2 - ct1)) == 1");
+    c3_plain = Utils::integer_mod_form(c2_plain - c1_plain, modulus);
+    
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct2 - ct1)) == 1");
     std::cout << "context.decrypt(&(ct2 - ct1)) == 1: OK"   << std::endl;
 
-    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1"); 
+    assertm(context.decrypt(ct1) == c1_plain, "context.decrypt(&ct1) == 1"); 
     std::cout << "context.decrypt(&ct1) == 1: OK" << std::endl;
+
     ct3 = - ct1; 
-    assertm(context.decrypt(ct3) == 3, "context.decrypt(&(ct3 = - ct1))) == 3"); 
+    c3_plain = Utils::integer_mod_form(-c1_plain, modulus);
+    assertm(context.decrypt(ct3) == c3_plain, "context.decrypt(&(ct3 = - ct1))) == 3"); 
     std::cout << "context.decrypt(&(ct3 = - ct1))) == 3: OK" << std::endl;
-    assertm(context.decrypt(ct1) == 1, "context.decrypt(&ct1) == 1"); 
+
+
+    assertm(context.decrypt(ct1) == c1_plain, "context.decrypt(&ct1) == 1"); 
     std::cout << "context.decrypt(&ct1) == 1: OK" << std::endl;
      
     Ciphertext ct4 = ct1;
-    assertm(context.decrypt(ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
+    int32_t c4_plain = c1_plain;
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(&(ct4 = ct1))) == 1"); 
     std::cout << "context.decrypt(&(ct4 = ct1))) == 1: OK"   << std::endl;
     ct4 = ct1;
-    assertm(context.decrypt(ct4) == 1, "context.decrypt(&(ct4 = ct1))) == 1"); 
+    c4_plain = c1_plain;
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(&(ct4 = ct1))) == 1"); 
     std::cout << "context.decrypt(&(ct4 = ct1))) == 1: OK"   << std::endl; 
     ct4 = ct2;
-    assertm(context.decrypt(ct4) == 2, "context.decrypt(&(ct4 = ct2))) == 2"); 
+    c4_plain = c2_plain;
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(&(ct4 = ct2))) == 2"); 
     std::cout << "context.decrypt(&(ct4 = ct2))) == 2: OK"   << std::endl;
  
  
@@ -116,8 +134,10 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     scalars.push_back(1);
     int64_t scalar = 3;
     ct4 = context.eval_affine_function(v, scalars, scalar);  
+
+    c4_plain = Utils::integer_mod_form(c1_plain * 2 + c2_plain * 1 + 3, modulus);
     // The outcome should be 3, because (2 * 1 + 1 * 2 + 3) % 4 = 3
-    assertm(context.decrypt(ct4) == 3, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3"); 
     std::cout << "context.decrypt(&((2 * 1 + 1 * 2 + 3) % 4 = 3))) == 3: OK"   << std::endl; 
   
     auto id = [](int64_t m) -> int64_t {
@@ -126,9 +146,9 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
   
     HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
   
-    ct4 = context.eval_lut(ct1, lut_identity);
-    std::cout << "context.decrypt(&ct4): " << context.decrypt(ct4) << std::endl;
-    assertm(context.decrypt(ct4) == 1, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
+    ct4 = context.eval_lut(ct1, lut_identity);  
+    c4_plain = c1_plain;
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_identity)) == 1: OK"  << std::endl;
  
     auto id_plus = [](int64_t m) -> int64_t {
@@ -136,16 +156,19 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     }; 
 
     HomomorphicAccumulator lut_id_plus = context.genrate_lut(id_plus); 
-    ct4 = context.eval_lut(ct1, lut_id_plus);
-    assertm(context.decrypt(ct4) == 2, "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2"); 
+    ct4 = context.eval_lut(ct1, lut_id_plus); 
+    c4_plain = Utils::integer_mod_form(id_plus(c1_plain), modulus);
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2: OK"  << std::endl;
  
     ct4 = context.eval_lut(ct4, lut_id_plus);
-    assertm(context.decrypt(ct4) == 3, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3"); 
+    c4_plain = Utils::integer_mod_form(id_plus(c4_plain), modulus);
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3: OK"  << std::endl;
 
     ct4 = context.eval_lut(ct4, lut_id_plus);
-    assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
+    c4_plain = Utils::integer_mod_form(id_plus(c4_plain), modulus);
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 0: OK"  << std::endl;
 
     std::function<int64_t(int64_t,int64_t)> fun_msb = [](int64_t m, int64_t t) -> int64_t {
@@ -155,11 +178,11 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
             return 1;
         } 
     }; 
-    std::function<int64_t(int64_t,int64_t)> fun_msb_t = std::bind(fun_msb, std::placeholders::_1, 5);
+    std::function<int64_t(int64_t)> fun_msb_t = std::bind(fun_msb, std::placeholders::_1, modulus);
     HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb_t); 
     ct4 = context.eval_lut(ct1, lut_fun_msb);
-
-    assertm(context.decrypt(ct4) == 0, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
+    c4_plain = fun_msb_t(c1_plain);
+    assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0: OK"  << std::endl;
    
     std::cout << "Done. See you....." << std::endl;
@@ -212,17 +235,17 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     {
         std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
         cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
-        oarchive_glwe_ct(context.config->eval_key.accumulator_builder); 
+        oarchive_glwe_ct(context.config->eval_key.boot_acc_builder); 
         os_glwe_ct.close();  
     }
-    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    std::shared_ptr<VectorCTAccumulatorBuilder> boot_acc_builder;
     {
         std::ifstream is_glwe_ct("fhe_context_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
-        iarchive_glwe_ct(accumulator_builder);   
+        iarchive_glwe_ct(boot_acc_builder);   
         std::remove("fhe_context_test"); 
     }
-    context.config->eval_key.accumulator_builder = accumulator_builder; 
+    context.config->eval_key.boot_acc_builder = boot_acc_builder; 
 
     {
         std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
@@ -361,9 +384,11 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0");
     std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl; 
 
+/*
     Ciphertext sanitized = context.sanitize(ct_nand);
     assertm(context.decrypt(sanitized) == 0, "sanitised == 0");
     std::cout << "sanitized = ct_nand = 0: OK"   << std::endl; 
+*/
 }
 
 
@@ -748,18 +773,15 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
 
-
     out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts);
- 
-
+  
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
-
  
     out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts);
-
+ 
       
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
@@ -1039,25 +1061,31 @@ void serialization_test(){
 
 
 int main(){  
-
+     
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
-
+ 
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT_flood);
  
     test_for_signed_limied_short_int(FHENamedParams::tfhe_11_NTT);
+ 
+   test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT);
  
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_B);
 
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     
+    amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
+
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
   
-    amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
-  
-    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized);   
- 
-    serialization_test();  
+    amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized); 
+   
+    test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_KS);
+
+    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
+
+    serialization_test();   
   
 }

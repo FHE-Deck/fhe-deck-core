@@ -9,11 +9,11 @@ KSFunctionalBootstrapPublicKey::KSFunctionalBootstrapPublicKey(
         fhe_deck::LWEToLWEKeySwitchKey *key_switch_key,
         fhe_deck::LWEToRLWEKeySwitchKey *key_switch_key_rlwe,
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder) { 
+        std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder) { 
 
     this->blind_rotation_key = std::shared_ptr<BlindRotationPublicKey>(blind_rotation_key);
     this->key_switch_key = std::shared_ptr<LWEToLWEKeySwitchKey>(key_switch_key);
-    this->accumulator_builder = accumulator_builder;
+    this->prepared_acc_builder = prepared_acc_builder;
     this->lwe_par = lwe_par;
     this->blind_rotate_output_builder = blind_rotate_output_builder;  
     this->rlwe_ksk = std::shared_ptr<LWEToRLWEKeySwitchKey>(key_switch_key_rlwe);  
@@ -27,7 +27,7 @@ void KSFunctionalBootstrapPublicKey::init(){
 }
   
 void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_ct_out,
-                                                                        std::shared_ptr<VectorCTAccumulator> acc_in,
+                                                                        std::shared_ptr<FunctionSpecification> acc_in,
                                                                         const fhe_deck::LWECT &lwe_ct_in,
                                                                         const fhe_deck::PlaintextEncoding &encoding) { 
     LWECT lwe_c_N(this->key_switch_key->destination);
@@ -36,7 +36,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_
     ms_from_keyswitch_to_par.switch_modulus(lwe_c_N, lwe_c_N);  
     lwe_c_N.add(lwe_c_N, lwe_c_N.param->modulus / (2 * encoding.plaintext_space));   
     /// Blind rotate to compute the msb
-    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_msb(encoding)); 
+    std::shared_ptr<VectorCTAccumulator> acc_msb(this->prepared_acc_builder->get_acc_msb(encoding)); 
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
     this->blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c_N, acc_msb);  
     br_out->extract_lwe(lwe_ct_out); 
@@ -46,7 +46,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_
     /// acc_proto is a RLWECT that contain the MSB of the input ciphertext
     this->rlwe_ksk->lwe_to_rlwe_key_switch(*acc_proto.get(), lwe_ct_out); 
     /// Construct the acc_proto rotation polynomial that will be used for the final blind rotation
-    std::shared_ptr<FunctionalAccumulator> acc_in_F = std::static_pointer_cast<FunctionalAccumulator>(acc_in);  
+    std::shared_ptr<KSFunctionSpecification> acc_in_F = std::static_pointer_cast<KSFunctionSpecification>(acc_in);  
     Polynomial rot_delta = acc_in_F->poly_msb_1; 
     /// Compute rot_delta = poly_0 - poly_1  
     rot_delta.sub(rot_delta, acc_in_F->poly_msb_0);    
@@ -66,12 +66,11 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_
     /// Final blind rotate & extract
     std::shared_ptr<VectorCTAccumulator> acc_F = std::make_shared<VectorCTAccumulator>(acc_proto);
     this->blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c_N, acc_F); 
-    br_out->extract_lwe(lwe_ct_out);
- 
+    br_out->extract_lwe(lwe_ct_out); 
 }
  
 std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
-        std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const fhe_deck::LWECT& lwe_ct_in,
+        std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const fhe_deck::LWECT& lwe_ct_in,
         const fhe_deck::PlaintextEncoding &encoding) { 
  
     LWECT lwe_c_N(this->key_switch_key->destination);
@@ -115,8 +114,8 @@ std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
     LWECT tmp_res(lwe_ct_in); 
     RLWECT plus_res(poly_ct_params);
     RLWECT minus_res(poly_ct_params); 
-    for(std::shared_ptr<fhe_deck::VectorCTAccumulator>& acc_in : acc_in_vec) { 
-        std::shared_ptr<FunctionalAccumulator> acc_in_F = std::static_pointer_cast<FunctionalAccumulator>(acc_in); 
+    for(std::shared_ptr<fhe_deck::FunctionSpecification>& acc_in : acc_in_vec) { 
+        std::shared_ptr<KSFunctionSpecification> acc_in_F = std::static_pointer_cast<KSFunctionSpecification>(acc_in); 
         Polynomial a = acc_in_F->poly_msb_1;
         Polynomial b = acc_in_F->poly_msb_0;
         a.neg(a); 

@@ -24,8 +24,7 @@ namespace fhe_deck{
 enum class FHENamedParams{ 
     tfhe_11_B, tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized, lmp_12_NTT_amortized, ntrunium_12_NTT, tfhe_11_KS, tfhe_11_KS_amortized
 };
-
-
+ 
 class PublicEvaluationKey{
 
     public: 
@@ -34,7 +33,11 @@ class PublicEvaluationKey{
 
     bool is_bootstrap_pk_set = false;
     std::shared_ptr<FunctionalBootstrapPublicKey> bootstrap_pk; 
-    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+
+    std::shared_ptr<VectorCTAccumulatorBuilder> boot_acc_builder; 
+    std::shared_ptr<AbstractFunctionBuilder> func_boot_acc_builder;
+    std::shared_ptr<AbstractFunctionBuilder> multivalue_acc_builder;
+    
     PlaintextEncoding default_encoding; 
     
     bool is_encrypt_pk_set = false;
@@ -52,7 +55,7 @@ class PublicEvaluationKey{
         ar(name);
         ar(is_bootstrap_pk_set);
         if(is_bootstrap_pk_set){
-            ar(bootstrap_pk, accumulator_builder, default_encoding);
+            ar(bootstrap_pk, boot_acc_builder, func_boot_acc_builder, multivalue_acc_builder, default_encoding);
         }
         ar(is_encrypt_pk_set);
         if(is_encrypt_pk_set){
@@ -71,7 +74,7 @@ class PublicEvaluationKey{
         ar(name);
         ar(is_bootstrap_pk_set);
         if(is_bootstrap_pk_set){
-            ar(bootstrap_pk, accumulator_builder, default_encoding);
+            ar(bootstrap_pk, boot_acc_builder, func_boot_acc_builder, multivalue_acc_builder, default_encoding);
         }
         ar(is_encrypt_pk_set);
         if(is_encrypt_pk_set){
@@ -89,7 +92,6 @@ class FHEConfiguration{
     
     public:   
 
-    
     bool is_secret_key_set = false;
     std::shared_ptr<LWESK> secret_key;
  
@@ -120,8 +122,7 @@ class FHEConfiguration{
     void init_tfhe_11_KS();
 
     void init_tfhe_11_KS_amortized();
-
-     
+ 
 };
 
 }

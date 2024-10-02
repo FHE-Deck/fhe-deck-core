@@ -39,7 +39,7 @@ class FunctionalBootstrapPublicKey{
     /// @brief LWE after modulus switching to 2*N (Can actually be extracted form the blind rotation key);
     std::shared_ptr<LWEParam> lwe_par;   
     /// @brief Needed to build a special accumulators, like acc_one that is used in the amortized bootstrapping.
-    std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder;
+    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder;
     /// @brief A modulus switcher, that switcher from the LWE ciphertext extracted from a blind rotation output to a LWE with a smaller modulus.
     LWEModSwitcher ms_from_extract_to_intermediate; 
     /// @brief A modulus switcher, that switcher from the LWE ciphertext output by a LWE key switch to the LWE that is ready to be blind rotated. 
@@ -53,39 +53,38 @@ class FunctionalBootstrapPublicKey{
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
-    void bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT &lwe_ct_in);
+    void bootstrap(LWECT &lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT &lwe_ct_in);
      
     /// @brief Full domain bootstrapping procedure.  
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
+    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
     
     /// @brief Multivalue bootstrapping procedure. Its not necesarily a full domain bootstrapping. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
-    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding);
+    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding);
  
     /// @brief Full domain bootstrapping procedure. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
+    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const
-    {  
-        /// TODO: Need to change this class in genral. Need to have the Blind rotations output builder. 
-      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);    
+    {   
+      ar(blind_rotation_key, key_switch_key, lwe_par, prepared_acc_builder, blind_rotate_output_builder);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-      ar(blind_rotation_key, key_switch_key, lwe_par, accumulator_builder, blind_rotate_output_builder);  
+      ar(blind_rotation_key, key_switch_key, lwe_par, prepared_acc_builder, blind_rotate_output_builder);  
     }    
  
 };

@@ -6,9 +6,8 @@ using namespace fhe_deck;
 
 CGGIBlindRotationKey::CGGIBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gadget_sk, std::shared_ptr<LWESK> lwe_sk){ 
     this->lwe_par = lwe_sk->param;    
-    this->vector_ct_param = gadget_sk->vector_ct_param;
-
-    // The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
+    this->vector_ct_param = gadget_sk->vector_ct_param; 
+    /// NOTE: The follwing code may be sensitive. Especially ext_s and the question of its removal from memory.
     std::shared_ptr<uint64_t[]> ext_s;
     ext_s = std::unique_ptr<uint64_t[]>(this->init_binary_extended_lwe_key(lwe_sk));  
     blind_rotation_key_gen(gadget_sk, ext_s);  

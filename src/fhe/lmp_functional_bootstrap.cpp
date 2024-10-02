@@ -9,12 +9,12 @@ LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
         std::shared_ptr<BlindRotationPublicKey> blind_rotation_key, 
         std::shared_ptr<LWEToLWEKeySwitchKey> key_switch_key,  
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,
-        std::shared_ptr<AbstractAccumulatorBuilder> accumulator_builder){ 
+        std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder){ 
     this->is_full_domain_bootstrap_function_amortizable = true;
     this->blind_rotation_key = blind_rotation_key;
     this->key_switch_key = key_switch_key;
     this->blind_rotate_output_builder = blind_rotate_output_builder;
-    this->accumulator_builder = accumulator_builder;
+    this->prepared_acc_builder = prepared_acc_builder;
     this->lwe_par = lwe_par; 
     this->lwe_par_tiny = lwe_par_tiny; 
     init();
@@ -31,7 +31,7 @@ void LMPFunctionalBootstrapPublicKey::init(){
     this->ms_from_gadget_to_tiny_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par_tiny);
 }
   
-void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<VectorCTAccumulator> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){    
+void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){    
     // 1) Key switch to \ZZ_Q^{n+1}   
     LWECT lwe_c_N(ms_from_keyswitch_to_par.from); 
     LWECT lwe_c(ms_from_keyswitch_to_par.from); 
@@ -54,12 +54,11 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, s
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!)   
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
     PlaintextEncoding msb_mask_pt_encoding(full_domain, 4, encoding.ciphertext_modulus);
-    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_sgn(msb_mask_pt_encoding));   
+    std::shared_ptr<VectorCTAccumulator> acc_msb(this->prepared_acc_builder->get_acc_sgn(msb_mask_pt_encoding));   
     blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_msb);   
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(lwe_ct_out);
-    ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
-    // And again: 
+    ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out); 
     key_switch_key->lwe_to_lwe_key_switch(lwe_c, lwe_ct_out); 
     // 2) Mod switch to \ZZ_2N^{n+1} Note that this should actually modulus switch to N not to 2N!  
     ms_from_keyswitch_to_par.switch_modulus(lwe_c, lwe_c); 
@@ -75,13 +74,14 @@ void LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT& lwe_ct_out, s
         lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)lwe_par->modulus/4), lwe_par->modulus);
     }  
     // 3) Blind rotate 
-    blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_in);
+    std::shared_ptr<VectorCTAccumulator> acc_in_cast = std::static_pointer_cast<VectorCTAccumulator>(acc_in);
+    blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_in_cast);
     // 4) Sample Extract   
     br_out->extract_lwe(lwe_ct_out); 
     ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
 } 
 
-std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<VectorCTAccumulator>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){   
+std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding){   
     // 1) Key switch to \ZZ_Q^{n+1} 
     LWECT lwe_c_N(ms_from_keyswitch_to_par.from);
     LWECT lwe_c(ms_from_keyswitch_to_par.from);
@@ -105,7 +105,7 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     // 3) Blind rotate (Compute the sign, but with scale 2N/2 = N!) 
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build());   
     PlaintextEncoding msb_mask_pt_encoding(full_domain, 4, encoding.ciphertext_modulus);
-    std::shared_ptr<VectorCTAccumulator> acc_msb(this->accumulator_builder->get_acc_sgn(msb_mask_pt_encoding));   
+    std::shared_ptr<VectorCTAccumulator> acc_msb(this->prepared_acc_builder->get_acc_sgn(msb_mask_pt_encoding));   
     blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_msb);
     // 4) Sample Extract (I can perform it oon the lwe_ct_out because it should have the right dimension)  
     br_out->extract_lwe(lwe_ct_out);
@@ -122,13 +122,12 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     }else{
         lwe_c.ct[0] = Utils::integer_mod_form(lwe_c.ct[0] - (int64_t)round((double)lwe_par->modulus/4), lwe_par->modulus);
     }  
-    // 3) Blind rotate  
-    //acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding));
-    std::shared_ptr<VectorCTAccumulator> acc_one = std::shared_ptr<VectorCTAccumulator>(accumulator_builder->get_acc_one(encoding));
+    // 3) Blind rotate   
+    std::shared_ptr<VectorCTAccumulator> acc_one = std::shared_ptr<VectorCTAccumulator>(prepared_acc_builder->get_acc_one(encoding));
     blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_one);
     std::vector<LWECT> out_vec; 
      std::shared_ptr<BlindRotateOutput> br_temp(blind_rotate_output_builder->build()); 
-    for(std::shared_ptr<VectorCTAccumulator> i:  acc_in_vec){    
+    for(std::shared_ptr<FunctionSpecification> i:  acc_in_vec){    
         br_out->post_rotation(br_temp, i);   
         br_temp->extract_lwe(lwe_ct_out); 
         ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
