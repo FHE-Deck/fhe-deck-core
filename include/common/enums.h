@@ -9,26 +9,36 @@
 
 namespace fhe_deck{
 
-enum RingType {cyclic, negacyclic};
+enum class RingType {cyclic, negacyclic};
 
-enum ModulusType {any, power_of_two}; 
+enum class ModulusType {any, power_of_two}; 
 
-enum KeyDistribution {binary, ternary, uniform};
+enum class KeyDistribution {binary, ternary, uniform};
 
-enum PolynomialArithmetic {ntl, double_fft, long_double_fft, ntt64};
+enum class PolynomialArithmetic {double_fft, long_double_fft, ntt64};
 
-enum PolynomialInversionEngineType {ntl_inv};
+enum class PolynomialInversionEngineType {ntl_inv};
  
-enum GadgetType {signed_decomposition_gadget, discrete_gaussian_gadget};
+enum class GadgetType {signed_decomposition_gadget, discrete_gaussian_gadget};
 
-enum KeySwitchType {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
+enum class VectorEncryptionType {RLWE, NTRU};
+
+enum class KeySwitchType {standard_key_switch, lazy_key_switch, partial_lazy_key_switch};
+ 
   
-enum PlaintextEncodingType {signed_limied_short_int, signed_limied_short_int_bl, full_domain, partial_domain};
+enum class PlaintextEncodingType {signed_limied_short_int, signed_limied_short_int_bl, full_domain, partial_domain};
  
-enum FullDomainBootstrappingAlgorithm{
-    liu_micciancio_polyakov 
+enum class BlindRotationAlgorithm{
+    cggi_binary
 };
 
+enum class FullDomainBootstrappingAlgorithm{
+    liu_micciancio_polyakov, kluczniak_shield_fdfb2
+};
+
+enum class SanitizationAlgorithm{
+    ducas_stehle, kluczniak 
+};
 
 }
 

@@ -34,17 +34,14 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
     if(!is_init){
         throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): No polynomial arithmetic type set!");
     }
-    if(arithmetic == ntt64){
+    if(arithmetic == PolynomialArithmetic::ntt64){
         return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(degree, coef_modulus));
     }
-    if(arithmetic == double_fft){ 
+    if(arithmetic == PolynomialArithmetic::double_fft){ 
         return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWNegacyclicEngine(degree, coef_modulus));
     }
-    if(arithmetic == long_double_fft){
+    if(arithmetic == PolynomialArithmetic::long_double_fft){
         return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWLongNegacyclicEngine(degree, coef_modulus));
-    }
-    if(arithmetic == ntl){
-        throw std::logic_error("NTL Not Supported Yet.");
-    }
+    } 
     throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): Polynomial arithmetic not supported!");
 }

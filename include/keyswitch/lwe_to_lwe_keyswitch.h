@@ -18,7 +18,7 @@ class LWEToLWEKeySwitchKey{
   public:
 
     /// @brief The content of the key switching key (all its ciphertexts)
-    std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]> key_content;
+    std::shared_ptr<std::shared_ptr<LWEGadgetCT>[]> key_content;
     /// @brief  LWE Parameter from which we do the switching. 
     std::shared_ptr<LWEParam> origin; 
     /// @brief The LWE Parameters of the destination ciphertext. 
@@ -75,7 +75,7 @@ class LWEToLWEKeySwitchKey{
     {  
       ar(origin, destination, ks_type);
       //ar(key_content);     
-      key_content = std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]>(new std::unique_ptr<LWEGadgetCT>[origin->dim]); 
+      key_content = std::shared_ptr<std::shared_ptr<LWEGadgetCT>[]>(new std::shared_ptr<LWEGadgetCT>[origin->dim]); 
       for(int32_t i = 0; i < origin->dim; ++i){      
         ar(key_content[i]);  
       }   

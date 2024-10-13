@@ -2,6 +2,257 @@
 
 using namespace fhe_deck;
 
+
+BasicBootstrapBuilder::BasicBootstrapBuilder(){
+    this->secret_key = std::make_shared<FHESecretKey>();
+}
+ 
+void BasicBootstrapBuilder::set_ring_parameters(int64_t degree, int64_t coef_modulus,RingType ring_type, PolynomialArithmetic arithmetic){
+    this->degree = degree;
+    this->coef_modulus = coef_modulus;
+    this->ring_type = ring_type;
+    this->arithmetic = arithmetic;
+}
+
+void BasicBootstrapBuilder::set_vector_encryption_parameters(VectorEncryptionType vector_encyption_type, KeyDistribution key_distribution, double stddev){
+    this->vector_encyption_type = vector_encyption_type;
+    this->key_distribution = key_distribution;
+    this->stddev = stddev;
+}
+
+void BasicBootstrapBuilder::set_gadget_parameters(GadgetType gadget_type, int64_t gadget_decomp_base){
+    this->gadget_type = gadget_type;
+    this->gadget_decomp_base = gadget_decomp_base;
+}
+
+void BasicBootstrapBuilder::set_gadget_stddev(double gadget_stddev){
+    this->gadget_stddev = gadget_stddev;
+}
+
+void BasicBootstrapBuilder::set_lwe_key_switching_parameters(int32_t dimension, int64_t lwe_modulus, KeyDistribution lwe_key_distribution, int64_t decomp_base, double lwe_stddev){
+    this->lwe_dim = dimension;
+    this->lwe_modulus = lwe_modulus;
+    this->lwe_key_distribution = lwe_key_distribution;
+    this->lwe_ks_decomp_base = decomp_base;
+    this->lwe_stddev = lwe_stddev;
+}
+
+ 
+
+void BasicBootstrapBuilder::set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm fdfb_algorithm){
+    this->fdfb_algorithm = fdfb_algorithm;
+}
+
+void BasicBootstrapBuilder::set_lwe_to_rlwe_keyswitch_parameters(int64_t lwe_to_rlwe_decomp_base){
+    this->lwe_to_rlwe_decomp_base = lwe_to_rlwe_decomp_base;
+}
+
+void BasicBootstrapBuilder::set_blind_rotation_algorithm(BlindRotationAlgorithm br_algorithm){
+    this->br_algorithm = br_algorithm;
+}
+
+
+void BasicBootstrapBuilder::transfer_parameters(BasicBootstrapBuilder& other){ 
+    this->degree = other.degree;
+    this->coef_modulus = other.coef_modulus;
+    this->stddev = other.stddev;   
+    this->ring_type = other.ring_type;
+    this->arithmetic = other.arithmetic;
+    this->vector_ct_secret_key = other.vector_ct_secret_key; 
+    this->gadget_type = other.gadget_type;
+    this->gadget_decomp_base = other.gadget_decomp_base;
+    this->vector_encyption_type = other.vector_encyption_type; 
+    this->key_distribution = other.key_distribution; 
+    this->gadget_stddev = other.gadget_stddev;  
+    this->lwe_dim = other.lwe_dim;
+    this->lwe_modulus = other.lwe_modulus;
+    this->lwe_ks_decomp_base = other.lwe_ks_decomp_base;
+    this->lwe_stddev = other.lwe_stddev; 
+    this->lwe_key_distribution = other.lwe_key_distribution;  
+    this->lwe_to_rlwe_decomp_base = other.lwe_to_rlwe_decomp_base; 
+    this->br_algorithm = other.br_algorithm; 
+    this->fdfb_algorithm = other.fdfb_algorithm;
+}
+
+void BasicBootstrapBuilder::transfer_secret_key(BasicBootstrapBuilder& other){
+    this->lwe_param = other.lwe_param;
+    this->lwe_gadget_sk = other.lwe_gadget_sk;
+    this->secret_key->lwe_sk = other.secret_key->lwe_sk;
+    this->vector_ct_param = other.vector_ct_param;
+    this->vector_ct_secret_key = other.vector_ct_secret_key;
+    this->blind_rotate_output_builder = other.blind_rotate_output_builder;
+    this->is_secret_keys_build = true;
+}
+        
+void BasicBootstrapBuilder::transfer_key_switching_key(BasicBootstrapBuilder& other){
+    this->ks_public_key = other.ks_public_key;
+    this->is_lwe_to_lwe_keyswitch_build = true; 
+}
+
+void BasicBootstrapBuilder::build(){
+
+    if(!is_gadget_vector_build){ 
+        build_vector_ct_gadget();
+        is_gadget_vector_build = true;
+    }
+    if(!is_secret_keys_build){ 
+        build_secret_keys();
+        is_gadget_vector_build = true;
+    }
+    if(!is_vector_ct_gadget_secret_key_build){
+        build_vector_ct_gadget_secret_key();
+        is_vector_ct_gadget_secret_key_build = true;
+    }
+    if(!is_blind_rotation_key_build){ 
+        build_blind_rotation_key();
+        is_blind_rotation_key_build = true;
+    }
+    if(!is_lwe_to_lwe_keyswitch_build){ 
+        build_lwe_to_lwe_key_switching_key();
+        is_lwe_to_lwe_keyswitch_build = true;
+    }
+    if(!is_functional_bootstrap_build){ 
+        build_functional_bootstrap_key();
+        is_lwe_to_lwe_keyswitch_build = true;
+    }
+     
+}
+
+void BasicBootstrapBuilder::build_secret_keys(){ 
+    this->lwe_param = std::make_shared<LWEParam>(this->lwe_dim, this->lwe_modulus);  
+    /// =================== Generate Secret keys   
+    /// Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
+    std::shared_ptr<LWESK> gadget_lwe = std::make_shared<LWESK>(lwe_param, this->lwe_stddev, KeyDistribution::binary); 
+    this->lwe_gadget_sk = std::make_shared<LWEGadgetSK>(gadget_lwe, lwe_ks_decomp_base);  
+    /// Generate Keys for the blind rotation gadget
+    if(this->vector_encyption_type == VectorEncryptionType::RLWE){ 
+        std::shared_ptr<RLWEParam> rlwe_param = std::make_shared<RLWEParam>(this->ring_type, this->degree, this->coef_modulus, this->arithmetic); 
+        this->vector_ct_param = rlwe_param;
+        std::shared_ptr<RLWESK> rlwe = std::make_shared<RLWESK>(rlwe_param, this->key_distribution, this->stddev); 
+        this->secret_key->lwe_sk = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());   
+        this->blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(std::static_pointer_cast<RLWEParam>(vector_ct_param));
+        this->vector_ct_secret_key = rlwe;
+   
+    }else if(this->vector_encyption_type == VectorEncryptionType::NTRU){
+        std::shared_ptr<NTRUParam> ntru_param = std::make_shared<NTRUParam>(this->ring_type, this->degree, this->coef_modulus, this->arithmetic); 
+        this->vector_ct_param = ntru_param;
+        std::shared_ptr<NTRUSK> ntru_sk = std::make_shared<NTRUSK>(ntru_param, this->stddev);  
+        this->secret_key->lwe_sk = std::shared_ptr<LWESK>(ntru_sk->extract_lwe_key());   
+        this->blind_rotate_output_builder = std::make_shared<NTRUBlindRotateOutputBuilder>(std::static_pointer_cast<NTRUParam>(vector_ct_param));
+        this->vector_ct_secret_key = ntru_sk;
+ 
+    } else{
+        throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Vector Encryption Type");
+    }
+}
+ 
+
+void BasicBootstrapBuilder::build_vector_ct_gadget(){
+    if(gadget_type == GadgetType::signed_decomposition_gadget){
+        vector_ct_gadget = std::make_shared<SignedDecompositionGadget>(this->degree, this->coef_modulus, this->gadget_decomp_base);
+    }else if(gadget_type == GadgetType::discrete_gaussian_gadget){
+        vector_ct_gadget = std::make_shared<DiscreteGaussianSamplingGadget>(this->degree, this->coef_modulus, this->gadget_decomp_base, this->gadget_stddev);
+    }else{
+        throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Gadget Type");
+    }
+}
+ 
+void BasicBootstrapBuilder::build_vector_ct_gadget_secret_key(){ 
+    if(this->vector_encyption_type == VectorEncryptionType::RLWE){   
+        std::shared_ptr<RLWESK> rlwe_sk = std::static_pointer_cast<RLWESK>(vector_ct_secret_key);
+        secret_key->gadget_sk = std::make_shared<RLWEGadgetSK>(vector_ct_gadget, rlwe_sk);   
+
+    }else if(this->vector_encyption_type == VectorEncryptionType::NTRU){  
+        std::shared_ptr<NTRUSK> ntru_sk = std::static_pointer_cast<NTRUSK>(vector_ct_secret_key);
+        secret_key->gadget_sk = std::make_shared<NTRUGadgetSK>(vector_ct_gadget, ntru_sk);   
+    } else{
+        throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Vector Encryption Type");
+    }
+}
+
+void BasicBootstrapBuilder::build_blind_rotation_key(){ 
+    if(this->br_algorithm == BlindRotationAlgorithm::cggi_binary){ 
+        blind_rotation_key = std::make_shared<CGGIBlindRotationKey>(secret_key->gadget_sk, lwe_gadget_sk->lwe);   
+    }else{
+        throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Blind Rotation Algorithm");
+    }
+}
+
+void BasicBootstrapBuilder::build_lwe_to_lwe_key_switching_key(){ 
+    ks_public_key = std::make_shared<LWEToLWEKeySwitchKey>(secret_key->lwe_sk, lwe_gadget_sk); 
+}
+
+void BasicBootstrapBuilder::build_functional_bootstrap_key(){
+    // Build the public key  
+    if(fdfb_algorithm == FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov){
+        setup_liu_micciancio_polyakov();
+    }else if(fdfb_algorithm == FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2){ 
+        setup_kluczniak_shield_fdfb2();
+    }else{
+        throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Full Domain Bootstrapping Algorithm");
+    }
+}
+
+void BasicBootstrapBuilder::setup_liu_micciancio_polyakov(){ 
+ 
+        if(this->vector_encyption_type == VectorEncryptionType::RLWE){  
+            std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(vector_ct_param);
+            boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+            func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size); 
+        }else if(this->vector_encyption_type == VectorEncryptionType::NTRU){ 
+            std::shared_ptr<NTRUGadgetSK> ntru_gadget_sk =  std::static_pointer_cast<NTRUGadgetSK>(secret_key->gadget_sk); 
+            std::shared_ptr<NTRUParam> ntru_param = std::static_pointer_cast<NTRUParam>(vector_ct_param);
+            boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_gadget_sk->sk));
+            func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_gadget_sk->sk));
+            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(ntru_param->size); 
+        }
+        else{
+            throw std::logic_error(" BasicBootstrapBuilder::build(): liu_micciancio_polyakov doesn't support the given vector_encyption_type");
+        } 
+        std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(boot_acc_builder); 
+        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size * 2));  
+        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size)); 
+        bootstrap_pk = std::make_shared<LMPFunctionalBootstrapPublicKey>(
+            lwe_param_rot, 
+            lwe_param_tiny,
+            blind_rotation_key, 
+            ks_public_key, 
+            blind_rotate_output_builder, 
+            prepared_acc_builder);
+}
+
+void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
+
+        std::shared_ptr<LWEToRLWEKeySwitchKey> rlwe_ksk;
+        if(this->vector_encyption_type == VectorEncryptionType::RLWE){ 
+            // Init Accumulator Builder and Blind Rotation Output Builder
+            std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(vector_ct_param);
+            boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
+            func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+            multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+  
+            std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk =  std::static_pointer_cast<RLWEGadgetSK>(secret_key->gadget_sk); 
+            std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, lwe_to_rlwe_decomp_base));
+            std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe_gadget_sk->rlwe_sk));
+            rlwe_ksk = std::make_shared<LWEToRLWEKeySwitchKey>(this->secret_key->lwe_sk, rlwe_gadget_sk_rksk);
+        }else{
+            throw std::logic_error(" BasicBootstrapBuilder::build(): kluczniak_shield_fdfb2 doesn't support the given vector_encyption_type");
+        }  
+        std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(boot_acc_builder);
+        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size * 2));
+        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size * 2));
+        bootstrap_pk = std::make_shared<KSFunctionalBootstrapPublicKey>( 
+                lwe_param_rot, 
+                blind_rotation_key,
+                ks_public_key,
+                rlwe_ksk,
+                blind_rotate_output_builder,
+                prepared_acc_builder);
+
+}
+
+ 
 /*
 =========================================================== TFHEKeyGenerator (Named Parameters) ================================================= 
 */
@@ -11,9 +262,7 @@ FHEConfiguration::FHEConfiguration(FHENamedParams name){
 }
    
 void FHEConfiguration::generate_keys(){
-    if(eval_key.name == FHENamedParams::tfhe_11_B){
-        init_tfhe_11_B();
-    } else if(eval_key.name == FHENamedParams::tfhe_11_flood){
+    if(eval_key.name == FHENamedParams::tfhe_11_flood){
         init_tfhe_11_flood();
     } else if(eval_key.name == FHENamedParams::tfhe_11_NTT){
         init_tfhe_11_NTT();
@@ -39,89 +288,33 @@ void FHEConfiguration::generate_keys(){
  
   
 void FHEConfiguration::init_tfhe_11_NTT(){ 
-    /// =================== Parameter Definition for the Functional Bootstrapping Algorithm 
-    // 2**11
-    int32_t degree = 2048; 
-    // 2**48 - 16383 % 2*(2**11) = 1 (NTT Friendly), Base-4096 decomposition of 281474976694273: [1, 4092, 4095, 4095], L_2 norm: 7091.016499769268
-    int64_t coef_modulus = 281474976694273;
-    double rlwe_stddev = 3.2; 
-    // 2**8
-    int64_t gadget_decomp_base = 256;  
-    // stddev_simul approx  2**(17.78)
-    double stddev_simul = 225812;  
-    int32_t masking_size = 8192;
-    // stddev_simul approx  2**(12.37) 
-    double stddev_masking = 8192;
-    KeyDistribution rlwe_key_type = ternary; 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    std::shared_ptr<Gadget> rand_gadget(new DiscreteGaussianSamplingGadget(degree, coef_modulus, gadget_decomp_base, stddev_simul)); 
-    
-    // 2**9 + 400
-    int32_t lwe_dim = 912;
-    // 2**7
-    int32_t lwe_ks_decomp_base = 128;
-    // 2**(26) 
-    double lwe_stddev = 67108864;
-    std::shared_ptr<LWEParam> lwe_param(new LWEParam(lwe_dim, coef_modulus)); 
-
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys   
-    /// Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    /// Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk(new RLWEGadgetSK(deter_gadget, rlwe)); 
+   
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution ::ternary, 3.2);
+    builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 16777216);
+    builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 281474976694273); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
  
-    std::shared_ptr<RLWEGadgetSK> rlwe_rand_gadget_sk(new RLWEGadgetSK(rand_gadget, rlwe)); 
-    /// This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
+    sanitization_builder.transfer_parameters(builder); 
+    sanitization_builder.set_gadget_parameters(GadgetType::discrete_gaussian_gadget, 256);
+    sanitization_builder.gadget_stddev = 225812; 
+
+    sanitization_builder.transfer_key_switching_key(builder);
+    sanitization_builder.transfer_secret_key(builder); 
  
-    /// =================== Generate Public keys   
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
-     
-    // The blind rotation key  (run procedure depending on Enum Configuration)
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-
-    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new CGGIBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe));  
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk)); 
-    // Build the public key  
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-
-    // Init Accumulator Builder and Blind Rotation Output Builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder(new RLWEBlindRotateOutputBuilder(rlwe_param));
-
-    // Generate the Functional Bootstrapping Public Key and its Specific Values 
-    /// TODO: Initialize this lwe_param_tiny inside the LMPFunctionalBootstrapPublicKey constructor
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
+    sanitization_builder.build(); 
+    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk));
     
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
-    std::shared_ptr<FunctionalBootstrapPublicKey> rand_bootstrap_pk(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        rand_blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-    
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(rand_bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk));
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
@@ -131,759 +324,217 @@ void FHEConfiguration::init_tfhe_11_NTT(){
  
 
 void FHEConfiguration::init_tfhe_11_NTT_flood(){ 
-    // 2**11
-    int32_t degree = 2048;
-    // 2**36 - 12287 % 2*(2**11) = 1 (NTT friendly prime)
-    //int64_t Q = 68719464449;
-    // 2**48 - 16383 % 2*(2**11) = 1 (NTT Friendly), Base-4096 decomposition of 281474976694273: [1, 4092, 4095, 4095], L_2 norm: 7091.016499769268
-    int64_t coef_modulus = 281474976694273;
-    double rlwe_stddev = 3.2;
-    // 2**4 -> 2**12
-    int64_t gadget_decomp_base = 256; 
-    // Set to dummy 1 (here we tests noise flooding which will perform similarly to deter)
-    double stddev_simul = 225812;  
-    int32_t masking_size = 8192;
-    // stddev_simul approx  2**(12.37)
-    double stddev_masking = 8192;
-    KeyDistribution rlwe_key_type = ternary;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64));
-    //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, signed_decomposition_gadget);
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    std::shared_ptr<Gadget> sanit_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base)); 
-    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
-     
-    // 2**9 + 400
-    int32_t lwe_dim = 912;
-    int32_t lwe_ks_decomp_base = 128;
-    // 2**(26)
-    double lwe_stddev = 67108864; 
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus)); 
-
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
  
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    std::shared_ptr<RLWEGadgetSK> rlwe_rand_gadget_sk(new RLWEGadgetSK(sanit_gadget, rlwe)); 
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
- 
-    /// =================== Generate Public Keys 
+    //BasicBootstrapBuilder builder;
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 16777216);
+    builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 281474976694273); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
 
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe)); 
-    
-    std::shared_ptr<BlindRotationPublicKey> rand_blind_rotation_key(new CGGIBlindRotationKey(rlwe_rand_gadget_sk, lwe_gadget_sk->lwe)); 
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
+    // Now reset the Gadget to the randomized one  
+    sanitization_builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    sanitization_builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    sanitization_builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 256);
+    sanitization_builder.gadget_stddev = 225812;
+    sanitization_builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
+    sanitization_builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    sanitization_builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
 
-
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(eval_key.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk, 4));
-
+    sanitization_builder.transfer_key_switching_key(builder);
+    sanitization_builder.transfer_secret_key(builder); 
+      
+    sanitization_builder.build(); 
+    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk, 4));
+      
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = true;
 } 
-
-// Power of two parameter set
-void FHEConfiguration::init_tfhe_11_B(){ 
-    // 2**11
-    int32_t degree = 2048;
-    // 2**36
-    int64_t coef_modulus = 68719476736;
-    double rlwe_stddev = 3.2;
-    // 2**4
-    int64_t gadget_decomp_base = 16; 
-    double stddev_simul = 505;
-    int32_t masking_size = 3370;
-    double stddev_masking = 4010391;
-    KeyDistribution rlwe_key_type = ternary;
- 
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, double_fft)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-
-
-    // 2**9 + 430
-    int32_t lwe_dim = 912;
-    int32_t lwe_ks_decomp_base = 128;
-    // 2**(14)
-    double lwe_stddev = 16384;  
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary));  
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
- 
-    /// =================== Generate Public Keys 
-
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking)); 
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
- 
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
-    this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
-} 
-
  
 void FHEConfiguration::init_tfhe_11_flood(){ 
-    // 2**11
-    int32_t degree = 2048;
-    // 2**36
-    int64_t coef_modulus = 68719476736;
-    double rlwe_stddev = 3.2;
-    // 2**4
-    int64_t gadget_decomp_base = 16; 
-    double stddev_simul = 505;
-    int32_t masking_size = 3370;
-    double stddev_masking = 4010391;
-    KeyDistribution rlwe_key_type = ternary;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, double_fft));
-    //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, signed_decomposition_gadget);
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base * gadget_decomp_base)); 
-    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
-
-    /// Parameters for the LWE to LWE Key Switching Key
-    // 2**9 + 430
-    int32_t lwe_dim = 912;
-    int32_t lwe_ks_decomp_base = 128;
-    // 2**(14) 
-    double lwe_stddev = 16384;
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    //std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
-    //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
-
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
  
-    /// =================== Generate Public Keys 
-
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-    // Init Accumulator builder
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    builder.set_ring_parameters(2048, 68719476736, RingType::negacyclic, PolynomialArithmetic::double_fft);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 4096);
+    builder.set_lwe_key_switching_parameters(912, 68719476736, KeyDistribution::binary, 128, 16384);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 68719476736); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 4010391)); 
+ 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 } 
 
 void FHEConfiguration::init_tfhe_11_NTT_amortized(){ 
-    // 2**11
-    int32_t degree = 2048; 
-    // (2**51 - 45055) % 2*(2**11) = 1 and prime (NTT Friendly),   
-    int64_t coef_modulus = 2251799813640193;  
-
-    double rlwe_stddev = 3.2; 
-    KeyDistribution rlwe_key_type = ternary;
-    // 2**9
-    int64_t gadget_decomp_base = 512;  
-    // stddev_simul approx  2**(19.28)
-    double stddev_simul = 638072;  
-
-    int32_t masking_size = 8050;
-    // stddev_simul approx  2**(11.22)
-    double stddev_masking = 8192;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
+  
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    builder.set_ring_parameters(2048, 2251799813640193, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 262144);
+    builder.set_lwe_key_switching_parameters(950, 2251799813640193, KeyDistribution::binary, 512, 262144);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::partial_domain, 8, 2251799813640193); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8050, 8192)); 
  
- 
-    int32_t lwe_dim = 950;
-    // 2**9
-    int32_t lwe_ks_decomp_base = 512;
-    // 2**(23) 
-    double lwe_stddev = 262144;
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    //std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
-    //LWEGadgetParam lwe_gadget_param = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
-
-    eval_key.default_encoding = PlaintextEncoding(partial_domain, 8, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
- 
-    /// =================== Generate Public Keys 
-
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 } 
  
 
 void FHEConfiguration::init_tfhe_12_NTT_amortized(){  
-    // 2**12
-    int32_t degree = 4096; 
-    // (2**51 - 131071) % 2*(2**12) = 1 and prime (NTT Friendly),   
-    //int64_t Q = 2251799813554177;
-    // 52-bit modulus
-    //int64_t Q = 4503599627149313;
-    // 53-bit modulus
-    //int64_t Q = 9007199254429697;
-    // 54-bit modulus
-    int64_t coef_modulus =  18014398509309953;
-  
-    double rlwe_stddev = 3.2; 
-    KeyDistribution rlwe_key_type = ternary;
-    // 2**8
-    int64_t gadget_decomp_base = 256;  
-    // stddev_simul approx  2**(19.28)
-    double stddev_simul = 638072;   
-    // 2**13
-    int32_t masking_size = 14936;
-    // stddev_simul approx  2**(14)
-    double stddev_masking = 16384;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base * gadget_decomp_base)); 
-    
-    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget); 
-    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
-    //sk_arithmetic = hexl_ntt; 
-
-    int32_t lwe_dim = 950;
-    // 2**9
-    int32_t lwe_ks_decomp_base = 512; 
-    // 2**(23) 
-    double lwe_stddev = 262144;
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    //std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
-    //LWEGadgetParam lwe_gadget_par = LWEGadgetParam(std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus, binary, lwe_stddev)), lwe_ks_decomp_base); 
-
-    eval_key.default_encoding = PlaintextEncoding(partial_domain, 16, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
  
-    /// =================== Generate Public Keys 
-
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    builder.set_ring_parameters(4096, 18014398509309953,  RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 65536);
+    builder.set_lwe_key_switching_parameters(950, 18014398509309953, KeyDistribution::binary, 512, 262144);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::partial_domain, 16, 18014398509309953); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 14936, 16384)); 
+ 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_bootstrap_pk_set = true; 
+    eval_key.is_sanitization_supported = false;
 } 
 
 
 
-
+/// TODO: I think this parameter set was only for a paper test. Actually could be derived from the init_tfhe_12_NTT_amortized set.
 void FHEConfiguration::init_lmp_12_NTT_amortized(){  
-    // 2**12
-    int32_t degree = 4096; 
-    // 281474976694273 % 2*(2**12) = 1 and prime (NTT Friendly),    
-    // 48-bit modulus
-    int64_t coef_modulus =  281474976694273;
   
-    double rlwe_stddev = 3.2; 
-    KeyDistribution rlwe_key_type = ternary;
-    // (that is a test parameter set anyway) 2**16 or 2**12 - recompile if necessary
-    int64_t gadget_decomp_base = 1 << 12;  
-    // stddev_simul approx  2**(19.28)
-    double stddev_simul = 638072;   
-    // 2**13
-    int32_t masking_size = 14936;
-    // stddev_simul approx  2**(14)
-    double stddev_masking = 16384;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base)); 
-     
-    int32_t lwe_dim = 900;
-    // 2**9
-    int32_t lwe_ks_decomp_base = 1 << 3; 
-    // 2**(23) 
-    double lwe_stddev = 3.2;
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus)); 
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
+    builder.set_ring_parameters(4096, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 1 << 12);
+    builder.set_lwe_key_switching_parameters(900, 281474976694273, KeyDistribution::binary, 1 << 3, 3.2);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 281474976694273); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 14936, 16384)); 
  
-    eval_key.default_encoding = PlaintextEncoding(partial_domain, 16, coef_modulus); 
-    //eval_key.default_encoding = PlaintextEncoding(full_domain, 32, coef_modulus);
-
-    /// =================== Generate Secret keys 
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation. 
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev)); 
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring). 
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key());
- 
-    /// =================== Generate Public Keys 
-
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(rlwe_gadget_sk, lwe_gadget_sk->lwe));   
-    // Init Accumulator builder
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-
-    // Build the public key 
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size)); 
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<RLWEBlindRotateOutputBuilder>(new RLWEBlindRotateOutputBuilder(rlwe_param));
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 } 
 
 
 
 void FHEConfiguration::init_ntrunium_12_NTT(){ 
-    /// =================== Parameter Definition for the Functional Bootstrapping Algorithm
-
-    // 2**11
-    int32_t degree = 4096; 
-    // 2**45 - 204799 % 2*(2**12) = 1 (NTT Friendly) 
-    int64_t coef_modulus = 35184371884033;
-    double ntru_stddev = 1/4.0; 
-    // 2**15
-    int64_t gadget_decomp_base = 32768;  
-    // stddev_simul approx  2**(17.78)
-    double stddev_simul = 225812;  
-    int32_t masking_size = 8192;
-    // stddev_simul approx  2**(12.37) 
-    double stddev_masking = 8192; 
-    std::shared_ptr<NTRUParam> ntru_param(new NTRUParam(negacyclic, degree, coef_modulus, ntt64));
-    //Gadget deter_gadget = Gadget(N, Q, rlwe_basis * rlwe_basis * rlwe_basis, signed_decomposition_gadget);
-    //Gadget rand_gadget = Gadget(N, Q, rlwe_basis, stddev_simul, discrete_gaussian_gadget);
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
-    //std::shared_ptr<RLWEGadgetParam> rlwe_gadget_param = std::shared_ptr<RLWEGadgetParam>(new RLWEGadgetParam(rlwe_param, deter_gadget)); 
-    //sk_arithmetic = hexl_ntt;
-
-    // 2**9 + 400
-    int32_t lwe_dim = 750;
-    // 2**7
-    int32_t lwe_ks_decomp_base = 2;
-    // 2**(26) 
-    double lwe_stddev = 16384;
-    std::shared_ptr<LWEParam> lwe_param = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, coef_modulus));
-    //std::shared_ptr<LWEGadgetParam> lwe_gadget_param = std::shared_ptr<LWEGadgetParam>(new LWEGadgetParam(lwe_param, lwe_ks_decomp_base)); 
-
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 4, coef_modulus); 
-    FullDomainBootstrappingAlgorithm fdfb_alg = liu_micciancio_polyakov;
-
-    /// =================== Generate Secret keys  
-    
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary)); 
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base)); 
-    // Gen GadgetNTRUSecretKey. its the NTRU Key for Blind Rotation. 
-    std::shared_ptr<NTRUSK> ntru_sk = std::shared_ptr<NTRUSK>(new NTRUSK(ntru_param, ntru_stddev)); 
-    std::shared_ptr<NTRUGadgetSK> ntru_gadget_sk = std::shared_ptr<NTRUGadgetSK>(new NTRUGadgetSK(deter_gadget, ntru_sk));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring).  
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2)); 
-    std::shared_ptr<fhe_deck::LWESK> lwe_sk = std::shared_ptr<LWESK>(new LWESK(lwe_param, g_lwe->key, lwe_stddev,  binary)); 
-    // Init Accumulator builder and blind rotate output builder. 
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_sk));
-    eval_key.func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_sk));
-    eval_key.multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(ntru_param->size);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::shared_ptr<NTRUBlindRotateOutputBuilder>(new NTRUBlindRotateOutputBuilder(ntru_param));
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(ntru_sk->extract_lwe_key());
- 
-    /// =================== Generate Public Keys 
- 
-    // Key Switching Key Gen
-    std::shared_ptr<LWEToLWEKeySwitchKey> ks_public_key(new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk));
-    // Masking Key Gen
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-    //LWEPublicKey *masking_public_key = new LWEPublicKey(secret_key, masking_size, stddev_masking);
-    // The blind rotation key   
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key(new CGGIBlindRotationKey(ntru_gadget_sk, lwe_gadget_sk->lwe));   
-    // Build the public key 
-    // TODO: This modulus switching looks increadibly ugly
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, ntru_param->size * 2)); 
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, ntru_param->size));  
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new LMPFunctionalBootstrapPublicKey(
-        lwe_param_rot, 
-        lwe_param_tiny,
-        blind_rotation_key, 
-        ks_public_key, 
-        blind_rotate_output_builder, 
-        prepared_acc_builder));
-
+   
+    builder.set_vector_encryption_parameters(VectorEncryptionType::NTRU, KeyDistribution::ternary, 1/4.0);
+    builder.set_ring_parameters(4096, 35184371884033, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget,  32768);
+    builder.set_lwe_key_switching_parameters(750, 35184371884033, KeyDistribution::binary, 2, 16384);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
+    // Masking Key Gen 
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 35184371884033); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
+  
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 } 
- 
-
-
+  
 
 void FHEConfiguration::init_tfhe_11_KS() {
-    // 2**11
-    int degree = 2048;
-    // 2**36
-    //long coef_modulus = 1l << 28;
-    long coef_modulus = 2251799813640193;
-    double rlwe_stddev = 3.19;
-    // 2**4
-    long gadget_decomp_base = 1 << 17;
-    int masking_size = 3370;
-    double stddev_masking = 3.19;
-    KeyDistribution rlwe_key_type = ternary;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
  
-
-    // 2**9 + 430
-    int lwe_dim = 900;
-    int lwe_ks_decomp_base = 1<<2;
-    // 2**(14)
-    double lwe_stddev = 1 << 12;
-    std::shared_ptr<LWEParam> lwe_param = std::make_shared<LWEParam>(lwe_dim, coef_modulus); 
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 32, coef_modulus);
-
-    /// =================== Generate Secret keys
-
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary));
-
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base));
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation.
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev));
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring).
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2));
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key()); 
-
- 
-    /// =================== Generate Public Keys
-
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-
-    long rlwe_base = 1 << 4;
-    std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
- 
-    // Key Switching Key Gen
-    auto *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk);
-    auto *rlwe_ksk = new LWEToRLWEKeySwitchKey(this->secret_key, rlwe_gadget_sk_rksk);
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.19);
+    builder.set_ring_parameters(2048, 2251799813640193,  RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 1 << 17);
+    builder.set_lwe_key_switching_parameters(900, 2251799813640193, KeyDistribution::binary, 1<<2, 1 << 12);
+    builder.set_lwe_to_rlwe_keyswitch_parameters(1 << 4);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
     // Masking Key Gen 
-    // The blind rotation key
-    BlindRotationPublicKey *blind_rotation_key = new CGGIBlindRotationKey(rlwe_gadget_sk, g_lwe);
-    // Init Accumulator builder 
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
-    eval_key.multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-    // Build the public key
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(rlwe_param);
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new KSFunctionalBootstrapPublicKey(
-            lwe_param_rot, 
-            blind_rotation_key,
-            ks_public_key,
-            rlwe_ksk,
-            blind_rotate_output_builder,
-            prepared_acc_builder));
-
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 2251799813640193); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 3.19)); 
+ 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
-    eval_key.is_sanitization_supported = true;
+    eval_key.is_sanitization_supported = false;
 }
 
 
 void FHEConfiguration::init_tfhe_11_KS_amortized() {
-    // 2**11
-    int degree = 2048;
-    // 2**36
-    //long coef_modulus = 1l << 28;
-    long coef_modulus = 4503599627366401;
-    double rlwe_stddev = 3.19;
-    // 2**4
-    long gadget_decomp_base = 1 << 13;
-    int masking_size = 3370;
-    double stddev_masking = 3.19;
-    KeyDistribution rlwe_key_type = ternary;
-
-    std::shared_ptr<RLWEParam> rlwe_param(new RLWEParam(negacyclic, degree, coef_modulus, ntt64)); 
-    std::shared_ptr<Gadget> deter_gadget = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, gadget_decomp_base));
-  
-    // 2**9 + 430
-    int lwe_dim = 900;
-    int lwe_ks_decomp_base = 1<<2;
-    // 2**(14)
-    double lwe_stddev = 1 << 12;
-    std::shared_ptr<LWEParam> lwe_param = std::make_shared<LWEParam>(lwe_dim, coef_modulus);
  
-    eval_key.default_encoding = PlaintextEncoding(full_domain, 32, coef_modulus);
-
-    /// =================== Generate Secret keys
-
-
-    // Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> g_lwe = std::shared_ptr<LWESK>(new LWESK(lwe_param, lwe_stddev, binary));
-
-    std::shared_ptr<LWEGadgetSK> lwe_gadget_sk(new LWEGadgetSK(g_lwe, lwe_ks_decomp_base));
-    // Gen GadgetRLWESecretKey. its the RLWE Key for Blind Rotation.
-    std::shared_ptr<RLWESK> rlwe = std::shared_ptr<RLWESK>(new RLWESK(rlwe_param, rlwe_key_type, rlwe_stddev));
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget, rlwe));
-    // lwe_sk after modulus switching to 2*N (for negacyclic ring).
-    std::shared_ptr<LWEParam> lwe_param_for_blind_rotation = std::shared_ptr<LWEParam>(new LWEParam(lwe_dim, degree * 2));
-    // Extracting the LWE Key to decrypt the constant coefficients of a RLWE ciphertext.
-    // This key is the main decryption key for the scheme.
-    this->secret_key = std::shared_ptr<LWESK>(rlwe->extract_lwe_key()); 
-
- 
-    /// =================== Generate Public Keys
-
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key, masking_size, stddev_masking));
-
-    long rlwe_base = 1 << 4;
-    std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, rlwe_base));
-    std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe));
-
-
-    // Key Switching Key Gen
-    auto *ks_public_key = new LWEToLWEKeySwitchKey(secret_key, lwe_gadget_sk);
-    auto *rlwe_ksk = new LWEToRLWEKeySwitchKey(this->secret_key, rlwe_gadget_sk_rksk);
+    builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.19);
+    builder.set_ring_parameters(2048, 4503599627366401, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 1 << 13);
+    builder.set_lwe_key_switching_parameters(900, 4503599627366401, KeyDistribution::binary, 1<<2, 1 << 12);
+    builder.set_lwe_to_rlwe_keyswitch_parameters(1 << 4);
+    builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
+    builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
+    builder.build(); 
+    this->secret_key = builder.secret_key; 
+    eval_key.boot_acc_builder = builder.boot_acc_builder;
+    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
+    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
+    eval_key.bootstrap_pk = builder.bootstrap_pk;
     // Masking Key Gen 
-    // The blind rotation key
-    BlindRotationPublicKey *blind_rotation_key = new CGGIBlindRotationKey(rlwe_gadget_sk, g_lwe);
-    
-    // Init Accumulator builder
-    /// TODO: Not good.... Generaly this AbstractAccumulatorBuilder is crap...
-    eval_key.boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-    eval_key.func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
-    eval_key.multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(eval_key.boot_acc_builder);
-
-
-
-    // Build the public key
-    std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, rlwe_param->size * 2));
-    std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, rlwe_param->size * 2));
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder = std::make_shared<RLWEBlindRotateOutputBuilder>(rlwe_param);
-    eval_key.bootstrap_pk = std::shared_ptr<FunctionalBootstrapPublicKey>(new KSFunctionalBootstrapPublicKey(
-            lwe_param_rot, 
-            blind_rotation_key,
-            ks_public_key,
-            rlwe_ksk,
-            blind_rotate_output_builder,
-            prepared_acc_builder));
-
+    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 4503599627366401); 
+    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 3.19)); 
+ 
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;

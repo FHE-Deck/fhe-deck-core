@@ -23,9 +23,9 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
     
-    PolynomialEvalForm* init_polynomial_eval_form(); 
+    std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form(); 
 
-    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size);
+    std::shared_ptr<PolynomialArrayEvalForm> init_polynomial_array_eval_form(int32_t array_size);
 
     void to_eval(PolynomialEvalForm &out, const Polynomial &in);
     
@@ -57,9 +57,9 @@ class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
   
-    PolynomialEvalForm* init_polynomial_eval_form();
+    std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form();
 
-    PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size);
+    std::shared_ptr<PolynomialArrayEvalForm> init_polynomial_array_eval_form(int32_t array_size);
  
     void to_eval(PolynomialEvalForm &out, const Polynomial &in);
  

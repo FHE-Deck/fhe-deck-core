@@ -29,7 +29,7 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_orig
     Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.degree, sk_dest->rlwe_sk->sk_poly.coef_modulus);  
     for(int i = 2; i <= dest_param->size; i *= 2) {
         eval_auto_poly(sk_auto, sk_origin_poly, i+1); 
-        ext_key_content.push_back(std::unique_ptr<ExtendedPolynomialCT>(sk_dest->extended_encrypt(sk_auto))); 
+        ext_key_content.push_back(sk_dest->extended_encrypt(sk_auto)); 
     }
 }
    

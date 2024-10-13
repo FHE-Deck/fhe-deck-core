@@ -14,21 +14,21 @@ CGGIBlindRotationKey::CGGIBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
 }
   
 void CGGIBlindRotationKey::blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){    
-    std::unique_ptr<VectorCT> next_acc(this->vector_ct_param->init_ct(vector_ct_param));
+    std::shared_ptr<VectorCT> next_acc = this->vector_ct_param->init_ct(vector_ct_param);
     acc->acc_content->homomorphic_rotate(out, lwe_ct_in.ct[0]);     
     for(int32_t i = 0; i < lwe_par->dim; ++i){    
-        out.homomorphic_rotate(*next_acc.get(), lwe_ct_in.ct[i+1]);   
-        next_acc->sub(*next_acc.get(), out);      
-        bk[i]->mul(*next_acc.get(), *next_acc.get());    
+        out.homomorphic_rotate(*next_acc, lwe_ct_in.ct[i+1]);   
+        next_acc->sub(*next_acc, out);      
+        bk[i]->mul(*next_acc, *next_acc);    
         next_acc->add(out, out); 
     }   
 }
    
 void CGGIBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<uint64_t[]> ext_s){
-    std::unique_ptr<uint64_t[]> msg(new uint64_t[1]);
+    std::shared_ptr<uint64_t[]> msg(new uint64_t[1]);
     for(int32_t i = 0; i < lwe_par->dim; ++i){    
         msg[0] = ext_s[i]; 
-        bk.push_back(std::unique_ptr<GadgetVectorCT>(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1)));
+        bk.push_back(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1));
     }      
 }
 

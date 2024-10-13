@@ -18,7 +18,7 @@ class PlaintextEncoding{
 public:
 
     /// @brief Type of encoding used for encoding and decoding plaintext messages.
-    PlaintextEncodingType type = full_domain;
+    PlaintextEncodingType type = PlaintextEncodingType::full_domain;
     /// @brief Number of elements in the plaintext space.
     int64_t plaintext_space = 0;
     /// @brief Ciphertext modulus used for encoding and decoding plaintext messages.
@@ -64,11 +64,11 @@ public:
     void load( Archive & ar )
     {   
         ar(type, plaintext_space, ciphertext_modulus);
-         if(type == full_domain){ 
+         if(type == PlaintextEncodingType::full_domain){ 
             this->ticks =  plaintext_space;
-        }else if(type ==  partial_domain){ 
+        }else if(type ==  PlaintextEncodingType::partial_domain){ 
             this->ticks = 2 * plaintext_space; 
-        }else if(type == signed_limied_short_int){ 
+        }else if(type == PlaintextEncodingType::signed_limied_short_int){ 
             this->ticks = 4 * plaintext_space;
         }else{
             throw std::logic_error("Non existend encoding type!");

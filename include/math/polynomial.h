@@ -40,12 +40,12 @@ class PolynomialMultiplicationEngine{
 
     /// @brief Initialialilzes a new PolynomialEvalForm object
     /// @return A pointer to the new PolynomialEvalForm object
-    virtual PolynomialEvalForm* init_polynomial_eval_form() = 0;
+    virtual std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form() = 0;
 
     /// @brief Initialliases a new PolynomialArrayCoefForm object
     /// @param array_size The array size
     /// @return A pointer to the new PolynomialArrayCoefForm object
-    virtual PolynomialArrayEvalForm* init_polynomial_array_eval_form(int32_t array_size) = 0;
+    virtual std::shared_ptr<PolynomialArrayEvalForm> init_polynomial_array_eval_form(int32_t array_size) = 0;
   
     /// @brief Computes the evaluation form of a polynomial
     /// @param in Output in evaluation form
@@ -99,6 +99,21 @@ class PolynomialMultiplicationEngine{
     virtual void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2) = 0;
  
 };
+
+/**
+ * @brief Interface that handles polynomial inversion. 
+ */
+class PolynomialInversionEngine{
+
+    public: 
+      
+    /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
+    /// @param out The output polynomial
+    /// @param in The input polynomial
+    virtual void inv(Polynomial &out, const Polynomial &in)const = 0;
+ 
+};
+
  
 /**
  * @brief Interface that handles evaluation forms of polynomials. These are polynomials after computing a Fast Fourier Transform (in the frequency domain).  
@@ -162,13 +177,13 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar)const;
+    void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
-    void neg(PolynomialEvalForm &out)const;
+    void neg(PolynomialEvalForm &out)const override;
  
 };
 
@@ -197,13 +212,13 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar)const;
+    void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
-    void neg(PolynomialEvalForm &out)const;
+    void neg(PolynomialEvalForm &out)const override;
  
 };
 
@@ -230,33 +245,16 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
 
     void zeroize();
 
-    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const;
+    void sub(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
-    void mul(PolynomialEvalForm &out, int64_t scalar)const;
+    void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
-    void neg(PolynomialEvalForm &out)const;
+    void neg(PolynomialEvalForm &out)const override;
  
 };
 
-/**
- * @brief Interface that handles polynomial inversion. 
- */
-class PolynomialInversionEngine{
-
-    public: 
-    
-    /// @brief Type of the polynomial inversion algorithm.
-    PolynomialInversionEngineType type;
-
-    /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
-    /// @param out The output polynomial
-    /// @param in The input polynomial
-    virtual void inv(Polynomial &out, const Polynomial &in)const = 0;
- 
-};
- 
 /**
  * @brief The Polynomials class. Holds an array of int64_t coefficients. Implement basic operations on polynomials modulo a coefficient modulus.
  */
@@ -297,11 +295,6 @@ class Polynomial: public Vector{
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
     Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
-   
-    /// @brief Called by the constructors to initialize the polynomial
-    /// @param degree The degree of the polynomial
-    /// @param coef_modulus The coefficient modulus
-    //void init(int32_t degree, int64_t coef_modulus);
 
     void init_from_vec();
   
@@ -333,7 +326,7 @@ class Polynomial: public Vector{
 
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial
-    Polynomial* clone() const;
+    std::shared_ptr<Polynomial> clone() const;
 
     /// @brief Cyclically rotates the coeefficients of this polynomial by rotation
     /// @param out The output polynomial
@@ -401,10 +394,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
     bool is_mul_engine_set = false;
-    
-    /// @brief Default destructor. Frees poly_array.
-    //~PolynomialArrayCoefForm();
-
+      
     /// @brief Default constructor
     PolynomialArrayCoefForm() = default;
 
@@ -631,8 +621,7 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
     PolynomialArrayEvalFormFFTWLongComplex() = default;
  
     PolynomialArrayEvalFormFFTWLongComplex(int32_t size, int32_t array_size);
-  
-  
+   
     void add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);
     
     void sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other);

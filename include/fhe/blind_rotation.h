@@ -47,11 +47,7 @@ class PolynomialSpecification : public FunctionSpecification{
     public:
     /// @brief Rotation Polynomial
     RotationPoly rot_poly;
-
-    /// @brief Rotation Polynomial that is prepared for amortization.
-    /// TODO: I think that eventually there should be only one rot_poly. For now I leave both, as a temporary solution. 
-    RotationPoly rot_poly_amortized;   
-
+ 
     PolynomialSpecification(RotationPoly rot_poly);
 };
  
@@ -121,7 +117,7 @@ class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
     public:
     std::shared_ptr<VectorCTParam> param; 
   
-    virtual VectorCTAccumulator* prepare_accumulator(Vector& vec) = 0; 
+    virtual std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) = 0; 
 
     template <class Archive>
     void save( Archive & ar ) const {
@@ -216,9 +212,7 @@ class KSFunctionSpecificationBuilder final : public AbstractFunctionBuilder{
  */
 class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
-    public:
-    /// @brief The RLWE parameters.
-    //std::shared_ptr<RLWEParam> param;
+    public: 
 
     RLWEAccumulatorBuilder() = default;
 
@@ -236,19 +230,8 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
     /// @return Pointer to the new vector CTAccumulator object.
     std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
 
-    VectorCTAccumulator* prepare_accumulator(Vector& vec) override;
-  
-    /// @brief Return a Accumulator that computes the most significant bit of the message.
-    /// @return The accumulator. 
-    //VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) override;
-  
-    //VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) override;
-  
-    /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
-    /// @param output_encoding The encoding used to encode the first position to 1.
-    /// @return Pointer to the new vector CTAccumulator object.
-    //VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) override;
-
+    std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
+   
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
@@ -267,11 +250,7 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
  */
 class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
-    public:
-
-    /// @brief The NTRU parameters.
-    //std::shared_ptr<NTRUParam> param;
-
+    public: 
     /// @brief The NTRU parameters.
     /// TODO: Need to make a public version. 
     std::shared_ptr<NTRUSK> sk;
@@ -294,19 +273,8 @@ class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
     /// @return Pointer to the new vector CTAccumulator object.
     std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
 
-    VectorCTAccumulator* prepare_accumulator(Vector& vec) override;
-  
-    /// @brief Return a Accumulator that computes the most significant bit of the message.
-    /// @return The accumulator. 
-    //VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding) override;
-
-    //VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding) override;
-  
-    /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
-    /// @param output_encoding The encoding used to encode the first position to 1.
-    /// @return Pointer to the new vector CTAccumulator object.
-    //VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding) override;
-
+    std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
+ 
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
@@ -334,14 +302,16 @@ class PreparedVectorCTAccumulators{
 
     /// @brief Return a Accumulator that computes the most significant bit of the message.
     /// @return The accumulator. 
-    VectorCTAccumulator* get_acc_sgn(PlaintextEncoding output_encoding);
+    std::shared_ptr<VectorCTAccumulator> get_acc_sgn(PlaintextEncoding output_encoding);
 
-    VectorCTAccumulator* get_acc_msb(PlaintextEncoding output_encoding);
+    std::shared_ptr<VectorCTAccumulator> get_acc_msb(PlaintextEncoding output_encoding);
   
     /// @brief Return a acccumulator that has its first position set to 1, and all other positions set to 0.
     /// @param output_encoding The encoding used to encode the first position to 1.
     /// @return Pointer to the new vector CTAccumulator object.
-    VectorCTAccumulator* get_acc_one(PlaintextEncoding output_encoding);
+    std::shared_ptr<VectorCTAccumulator> get_acc_one(PlaintextEncoding output_encoding);
+
+    std::shared_ptr<VectorCTAccumulator> get_pad_poly(PlaintextEncoding output_encoding);
 
     template <class Archive>
     void save( Archive & ar ) const {

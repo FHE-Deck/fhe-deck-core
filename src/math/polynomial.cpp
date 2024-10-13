@@ -4,16 +4,13 @@ using namespace fhe_deck;
  
 
 void PolynomialMultiplicationEngine::mul(Polynomial &out, const Polynomial &in_1, const Polynomial &in_2){   
-    PolynomialEvalForm* eval_in_1 = init_polynomial_eval_form();
+    std::shared_ptr<PolynomialEvalForm> eval_in_1 = init_polynomial_eval_form();
     to_eval(*eval_in_1, in_1);  
-    PolynomialEvalForm* eval_in_2 = init_polynomial_eval_form();
+    std::shared_ptr<PolynomialEvalForm> eval_in_2 = init_polynomial_eval_form();
     to_eval(*eval_in_2, in_2); 
-    PolynomialEvalForm* eval_out = init_polynomial_eval_form(); 
+    std::shared_ptr<PolynomialEvalForm> eval_out = init_polynomial_eval_form(); 
     mul(*eval_out, *eval_in_1, *eval_in_2);  
-    to_coef(out, *eval_out); 
-    delete eval_in_1;
-    delete eval_in_2;
-    delete eval_out;
+    to_coef(out, *eval_out);  
 }
    
 PolynomialEvalFormLongInteger::~PolynomialEvalFormLongInteger(){
@@ -250,11 +247,11 @@ void Polynomial::zeroize(){
     }
 }
  
-Polynomial* Polynomial::clone() const{
+std::shared_ptr<Polynomial> Polynomial::clone() const{
     if(!is_init){
         throw std::logic_error("Polynomial::clone: Polynomial is not initialized!");
     }
-    Polynomial* out = new Polynomial(degree, coef_modulus);
+    std::shared_ptr<Polynomial> out = std::make_shared<Polynomial>(degree, coef_modulus);
     if(is_mul_engine_set){
         out->set_multiplication_engine(mul_engine);
     }

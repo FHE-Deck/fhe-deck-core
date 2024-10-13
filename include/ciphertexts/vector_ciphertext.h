@@ -12,8 +12,6 @@
 
 namespace fhe_deck{
 
-///class VectorCT;
-
 
 /**
  * @brief Interface for vector ciphertexts. Intended to be used for homomorphic operations on vectors. Example implementations include RLWE and and NTRU.
@@ -60,15 +58,66 @@ class VectorCTParam{
     /// @brief The size of the vector
     int32_t size; 
 
-    /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space.
-    /// @param param The parameters of the VectorCT object. It may be weird to take the parameter, as we reference the same object in our applicaitons. The reason its written like this is because we need a shared pointer to be passed to the ciphertexts. 
-    virtual VectorCT* init_ct(std::shared_ptr<VectorCTParam> param) = 0;
+    /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space. 
+    virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param) = 0;
 
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
     void load( Archive & ar ) { } 
+};
+
+class VectorCTSK{
+
+    public:
+
+    std::shared_ptr<VectorCTParam> vector_ct_param;
+
+    /// @brief Destructor
+    virtual ~VectorCTSK() = default;
+
+
+    /// @brief The encryption function. Encrypts the message m, and stores the result in out.
+    /// @param out The resulting ciphertext. It is assumed the object is properly initialized.
+    /// @param m Polynomial message to be encrypted.
+    virtual void encrypt(VectorCT &out, const Vector &m) = 0;  
+    
+    /// @brief The encryption function. Encrypts the message m, and returns the resulting ciphertext.
+    /// @param m The polynomial message to be encrypted.
+    /// @return Creates and returns the resulting ciphertext.
+    virtual std::shared_ptr<VectorCT> encrypt(const Vector &m) = 0; 
+
+    /// @brief Encodes the message m using the encoding scheme, and encrypts it.
+    /// @param m The input message.
+    /// @param encoding The encoding scheme.
+    /// @return Creates and returns the resulting ciphertext.
+    virtual std::shared_ptr<VectorCT> encode_and_encrypt(const Vector& m, PlaintextEncoding encoding) = 0;
+
+    /// @brief Encodes the message m using the encoding scheme, and encrypts it.
+    /// @param m The input message.
+    /// @param encoding The encoding scheme.
+    /// @return Creates and returns the resulting ciphertext.
+    virtual void encode_and_encrypt(VectorCT& out, const Vector& m, PlaintextEncoding encoding) = 0;
+
+    /// @brief  Decrypts the ciphertext ct, and returns the resulting polynomial.
+    /// @param ct The input ciphertext.
+    /// @param encoding The encoding scheme.
+    /// @return Creates a new polynomial and which is the result of the decryption.
+    virtual std::shared_ptr<Vector> decrypt(const VectorCT &ct, PlaintextEncoding encoding) = 0;
+  
+    /// @brief Decrypts the ciphertext ct, and stores the result in out.
+    /// @param out The resulting polynomial.
+    /// @param ct The input ciphertext.
+    /// @param encoding The plaintext encoding scheme.
+    virtual void decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding) = 0;
+    
+    template <class Archive>
+    void save( Archive & ar ) const {}
+        
+    template <class Archive>
+    void load( Archive & ar ) {} 
+
 };
 
 /**
@@ -102,6 +151,8 @@ class GadgetVectorCTSK{
  
     /// @brief The parameters of the VactorCT scheme
     std::shared_ptr<VectorCTParam> vector_ct_param;
+    /// @brief The secret key of the VactorCT scheme
+    std::shared_ptr<VectorCTSK> secret_key;
 
     /// @brief Destructor
     virtual ~GadgetVectorCTSK() = default;
@@ -110,13 +161,13 @@ class GadgetVectorCTSK{
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
       
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual GadgetVectorCT* gadget_encrypt(const Vector &msg) = 0;  
+    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) = 0;  
 
     template <class Archive>
     void save( Archive & ar ) const {}

@@ -18,7 +18,7 @@ namespace fhe_deck{
 
     public:
         /// @brief The content of the key switching key (all its ciphertexts) 
-        std::vector<std::unique_ptr<ExtendedPolynomialCT>> ext_key_content;
+        std::vector<std::shared_ptr<ExtendedPolynomialCT>> ext_key_content;
         /// @brief The parameters of the destination RLWE ciphertext.
         std::shared_ptr<RLWEParam> dest_param;
           

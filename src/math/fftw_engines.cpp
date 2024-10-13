@@ -7,16 +7,16 @@ using namespace fhe_deck;
 FFTWNegacyclicEngine::FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus){ 
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
-    this->type = double_fft;
-    engine = FFTPlan(negacyclic, degree, false);  
+    this->type = PolynomialArithmetic::double_fft;
+    engine = FFTPlan(RingType::negacyclic, degree, false);  
 }
 
-PolynomialEvalForm* FFTWNegacyclicEngine::init_polynomial_eval_form(){
-    return new PolynomialEvalFormFFTWComplex(engine.init_fft_poly(), engine.plan_size);
+std::shared_ptr<PolynomialEvalForm> FFTWNegacyclicEngine::init_polynomial_eval_form(){
+    return std::make_shared<PolynomialEvalFormFFTWComplex>(engine.init_fft_poly(), engine.plan_size);
 }
 
-PolynomialArrayEvalForm* FFTWNegacyclicEngine::init_polynomial_array_eval_form(int32_t array_size){
-    return new PolynomialArrayEvalFormFFTWComplex(this->engine.plan_size, array_size); 
+std::shared_ptr<PolynomialArrayEvalForm> FFTWNegacyclicEngine::init_polynomial_array_eval_form(int32_t array_size){
+    return std::make_shared<PolynomialArrayEvalFormFFTWComplex>(this->engine.plan_size, array_size); 
 }
   
 void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
@@ -162,16 +162,16 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEva
 FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_modulus){ 
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
-    engine = FFTPlan(negacyclic, degree, true);  
-    this->type = long_double_fft;
+    engine = FFTPlan(RingType::negacyclic, degree, true);  
+    this->type = PolynomialArithmetic::long_double_fft;
 }
   
-PolynomialEvalForm* FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
-    return new PolynomialEvalFormFFTWLongComplex(engine.init_fft_poly_l(), engine.plan_size);
+std::shared_ptr<PolynomialEvalForm> FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
+    return std::make_shared<PolynomialEvalFormFFTWLongComplex>(engine.init_fft_poly_l(), engine.plan_size);
 }
 
-PolynomialArrayEvalForm* FFTWLongNegacyclicEngine::init_polynomial_array_eval_form(int32_t size){
-    return new PolynomialArrayEvalFormFFTWLongComplex(this->engine.plan_size, size);
+std::shared_ptr<PolynomialArrayEvalForm> FFTWLongNegacyclicEngine::init_polynomial_array_eval_form(int32_t size){
+    return std::make_shared<PolynomialArrayEvalFormFFTWLongComplex>(this->engine.plan_size, size);
 }
  
 void FFTWLongNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){

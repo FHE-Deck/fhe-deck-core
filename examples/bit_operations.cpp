@@ -10,7 +10,7 @@ int32_t main(){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(FHENamedParams::tfhe_11_NTT);
-    context.set_default_message_encoding_type(partial_domain);
+    context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain);
     context.set_default_plaintext_space(4);
 
  

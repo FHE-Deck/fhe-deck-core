@@ -26,8 +26,8 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     public:
     
     // The blind rotation key 
-    /// TODO: Perhap we shold use md_span?
-    std::vector<std::unique_ptr<GadgetVectorCT>> bk; 
+    /// TODO: Perhaps we shold use md_span?
+    std::vector<std::shared_ptr<GadgetVectorCT>> bk; 
     std::shared_ptr<VectorCTParam> vector_ct_param;
    
     /// @brief Constructor (default constructor is needed for serialization purposes)

@@ -82,7 +82,7 @@ class LWECT{
 
     /// @brief Clones the ciphertext.
     /// @return Returns a pointer to the cloned ciphertext.
-    LWECT* clone()const;
+    std::unique_ptr<LWECT> clone()const;
 
     /// @brief Multiplies this ciphertext by a scalar, and stores the result in out.
     /// @param out The output ciphertext.
@@ -200,7 +200,7 @@ class LWESK {
     /// @brief Standard deviation of the error distribution.
     double stddev;
     /// @brief The secret key. Initialized in the constructors and freed in the destructor.
-    int64_t *key; 
+    int64_t *key;   
     /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
     std::unique_ptr<LongIntegerMultipler> multiplier;
     /// @brief Free the key.
@@ -231,7 +231,7 @@ class LWESK {
     /// @brief Encryption a message m, and returns a pointer to a new LWECT object.
     /// @param m The input message. Should be an integer in the ciphertext modulus range.
     /// @return Pointer to the new ciphertext. 
-    LWECT* encrypt(int64_t m);
+    std::unique_ptr<LWECT> encrypt(int64_t m);
 
     /// @brief Encryption a message m, and stores the result in out
     /// @param out pointer to the output ciphertext. It is assumed it is already initialized with the right parameters.  
@@ -242,7 +242,7 @@ class LWESK {
     /// @param m The input message.
     /// @param encoding The plaintext encoding specification. It is used to encode the message m, before encrypting it. 
     /// @return Returns a pointer to the new ciphertext, that encrypts encoding.encode(m).
-    LWECT* encode_and_encrypt(int64_t m, PlaintextEncoding encoding); 
+    std::unique_ptr<LWECT> encode_and_encrypt(int64_t m, PlaintextEncoding encoding); 
     
     /// @brief Encodes and encrypts a message m, and stores the result in out.
     /// @param m The input message.
@@ -379,7 +379,7 @@ class LWEGadgetSK{
     /// @brief Encrypts a message m, and returns a pointer to a new LWEGadgetCT object.
     /// @param m The message m
     /// @return A newly constructed LWEGadgetCT object that encrypts m.
-    LWEGadgetCT* gadget_encrypt(int64_t m); 
+    std::shared_ptr<LWEGadgetCT> gadget_encrypt(int64_t m); 
 
     /// @brief Encrypts a message m, and and stores the result in the out.
     /// @param out The output ciphertext
@@ -436,11 +436,11 @@ class LWEPublicKey{
     /// @brief Encrypts the message and output a pointer to a newly created ciphertexts.
     /// @param message The input message.
     /// @return The output ciphertexts. 
-    LWECT* encrypt(int64_t message);
+    std::unique_ptr<LWECT> encrypt(int64_t message);
 
     /// @brief  Encrypts zero, and returns a pointer to the ciphertext.
     /// @return The pointer to a fresh enncryption of zero.
-    LWECT* ciphertext_of_zero();
+    std::unique_ptr<LWECT> ciphertext_of_zero();
 
     template <class Archive>
     void save( Archive & ar ) const

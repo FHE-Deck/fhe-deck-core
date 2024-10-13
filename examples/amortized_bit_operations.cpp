@@ -10,9 +10,16 @@ using namespace fhe_deck;
 int32_t main(){
 
     FHEContext ctx; 
-    std::cout << "Generate Keys..." << std::endl;
+    std::cerr << "Generate Keys..." ;
     ctx.generate_context(FHENamedParams::tfhe_11_NTT_amortized);  
+    std::cerr << "\rGenerate Keys: OK" << std::endl;
+    int64_t elapsed = 0;   
+    int32_t num_of_evals = 0;
+    std::chrono::_V2::system_clock::time_point start;
+    std::chrono::_V2::system_clock::time_point stop;
     
+    std::cerr << "Setup functions...";
+
     auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
     };  
@@ -39,12 +46,19 @@ int32_t main(){
     int32_t repetition_num = 5;
     int32_t msg;
     int64_t dec;
+    std::cerr << "\rSetup functions: OK" << std::endl;
+    std::cerr << "Testing..." ;
     for(int32_t i = 0; i < test_num; ++i){
         msg = i % 8;
         ct = ctx.encrypt_public(msg);
         for(int32_t j = 0; j < repetition_num; ++j){  
+            start = std::chrono::high_resolution_clock::now(); 
             out_cts = ctx.eval_lut_amortized(ct, bit_decomp_luts);   
+            stop = std::chrono::high_resolution_clock::now(); 
+            elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
+            num_of_evals++;
             ct2 = ctx.eval_affine_function(out_cts, comp, 0);  
+            
             dec = ctx.decrypt(ct2);
             if(dec != msg){
                 std::cout << "Fail after " << i  << ", " << j << " tests!" << std::endl;
@@ -73,6 +87,8 @@ int32_t main(){
             ct = ct2;
         }
     }
-    std::cout << "Stress test OK" << std::endl;
- 
+    std::cerr << "\rTesting: OK" << std::endl; 
+    
+    std::cout << "Time elapsed:  " << elapsed << " ms, " << (double)elapsed/1000.0 << " s" << std::endl; 
+    std::cout << "Time per eval:  " << (double)elapsed/num_of_evals << " ms, " << ((double)elapsed/num_of_evals)/1000.0 << " s" << std::endl; 
 }

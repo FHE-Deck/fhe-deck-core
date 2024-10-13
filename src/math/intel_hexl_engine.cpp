@@ -8,7 +8,7 @@ IntelHexlNTTEngine::IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;
     this->ntt = intel::hexl::NTT(degree, coef_modulus);
-    this->type = ntt64;
+    this->type = PolynomialArithmetic::ntt64;
 }
   
 void IntelHexlNTTEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){ 
@@ -27,12 +27,12 @@ void IntelHexlNTTEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialA
     } 
 }
 
-PolynomialEvalForm* IntelHexlNTTEngine::init_polynomial_eval_form(){ 
-    return new PolynomialEvalFormLongInteger(new int64_t[degree], degree, coef_modulus);
+std::shared_ptr<PolynomialEvalForm> IntelHexlNTTEngine::init_polynomial_eval_form(){ 
+    return std::make_shared<PolynomialEvalFormLongInteger>(new int64_t[degree], degree, coef_modulus);
 }
 
-PolynomialArrayEvalForm* IntelHexlNTTEngine::init_polynomial_array_eval_form(int32_t array_size){ 
-    return new PolynomialArrayEvalFormLong(array_size, degree, coef_modulus); 
+std::shared_ptr<PolynomialArrayEvalForm> IntelHexlNTTEngine::init_polynomial_array_eval_form(int32_t array_size){ 
+    return std::make_shared<PolynomialArrayEvalFormLong>(array_size, degree, coef_modulus); 
 }
  
 void IntelHexlNTTEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){  

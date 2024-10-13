@@ -18,9 +18,9 @@ namespace fhe_deck{
  * @brief Interface for vector ciphertext parameters. Example implementations include RLWEParam and NTRUParam.
  */
 class PolynomialCTParam : public VectorCTParam {
-    public:
- 
 
+    public:
+  
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<VectorCTParam>(this));  
@@ -113,13 +113,14 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual ExtendedPolynomialCT* extended_encrypt(const Polynomial &msg) = 0; 
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Polynomial &msg) = 0; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual ExtendedPolynomialCT* extended_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    
   
     template <class Archive>
     void save( Archive & ar ) const {

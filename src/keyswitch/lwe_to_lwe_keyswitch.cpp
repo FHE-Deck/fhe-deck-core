@@ -19,9 +19,9 @@ LWEToLWEKeySwitchKey& LWEToLWEKeySwitchKey::operator=(const LWEToLWEKeySwitchKey
 }
  
 void LWEToLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){   
-    key_content = std::unique_ptr<std::unique_ptr<LWEGadgetCT>[]>(new std::unique_ptr<LWEGadgetCT>[origin->dim]); 
+    key_content = std::unique_ptr<std::shared_ptr<LWEGadgetCT>[]>(new std::shared_ptr<LWEGadgetCT>[origin->dim]); 
     for(int32_t i = 0; i < origin->dim; ++i){      
-        key_content[i] = std::unique_ptr<LWEGadgetCT>(sk_dest->gadget_encrypt(sk_origin->key[i]));  
+        key_content[i] = sk_dest->gadget_encrypt(sk_origin->key[i]);  
     }   
 } 
  
@@ -32,18 +32,19 @@ void LWEToLWEKeySwitchKey::set_key_switch_type(uint64_t base, int32_t digits){
     uint32_t sum_lazy_bits = bits_Q + bits_base + digits + bits_N;
     uint32_t sum_partial_lazy_bits = bits_Q + bits_base + digits + 1;
     if(sum_lazy_bits < 64){ 
-        ks_type = lazy_key_switch;  
+    }else if(this->ks_type == KeySwitchType::partial_lazy_key_switch){
+        ks_type = KeySwitchType::lazy_key_switch;  
     }else if(sum_partial_lazy_bits < 64){ 
-        ks_type = partial_lazy_key_switch; 
+        ks_type = KeySwitchType::partial_lazy_key_switch; 
     }else{ 
-        ks_type = standard_key_switch; 
+        ks_type = KeySwitchType::standard_key_switch; 
     }
 }
  
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){  
-    if(this->ks_type == lazy_key_switch){
+    if(this->ks_type == KeySwitchType::lazy_key_switch){
         lwe_to_lwe_key_switch_lazy(lwe_ct_out, lwe_ct_in);
-    }else if(this->ks_type == partial_lazy_key_switch){
+    }else if(this->ks_type == KeySwitchType::partial_lazy_key_switch){
         lwe_to_lwe_key_switch_partial_lazy(lwe_ct_out, lwe_ct_in);
     } 
     lwe_to_lwe_key_switch_bussy(lwe_ct_out, lwe_ct_in);   

@@ -5,13 +5,13 @@ PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plainte
     this->type = type;
     this->plaintext_space = plaintext_space;
     this->ciphertext_modulus = ciphertext_modulus;
-    if(type == full_domain){ 
+    if(type == PlaintextEncodingType::full_domain){ 
         this->ticks =  plaintext_space;
-    }else if(type ==  partial_domain){ 
+    }else if(type ==  PlaintextEncodingType::partial_domain){ 
         this->ticks = 2 * plaintext_space; 
-    }else if(type == signed_limied_short_int){ 
+    }else if(type == PlaintextEncodingType::signed_limied_short_int){ 
         this->ticks = 4 * plaintext_space;
-    }else if(type == signed_limied_short_int_bl){
+    }else if(type == PlaintextEncodingType::signed_limied_short_int_bl){
         this->ticks = 4 * plaintext_space;
     }else{
         throw std::logic_error("Non existent plaintext encoding type");
@@ -29,19 +29,19 @@ int64_t PlaintextEncoding::encode_message(int64_t message)const{
         
 int64_t PlaintextEncoding::decode_message(int64_t encoded_message)const{ 
     int64_t message = 0;
-    if(type == full_domain){ 
+    if(type == PlaintextEncodingType::full_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus;
         message = round(encoded_message * scale) ;
         message %= plaintext_space;
-    }else if(type ==  partial_domain){ 
+    }else if(type ==  PlaintextEncodingType::partial_domain){ 
         double scale = this->ticks/(double)ciphertext_modulus; 
         message = round(encoded_message * scale) ;   
         message %= plaintext_space;  
-    }else if(type == signed_limied_short_int){   
+    }else if(type == PlaintextEncodingType::signed_limied_short_int){   
         double scale = this->ticks/(double)ciphertext_modulus; 
         message = round(encoded_message * scale);  
         message = Utils::integer_signed_form(message, this->ticks); 
-    }else if(type == signed_limied_short_int_bl){ 
+    }else if(type == PlaintextEncodingType::signed_limied_short_int_bl){ 
         double scale = this->ticks/(double)ciphertext_modulus;
         message = round(encoded_message * scale);   
         if(message == 0){

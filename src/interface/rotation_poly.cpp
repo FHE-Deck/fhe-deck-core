@@ -41,13 +41,13 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t de
     this->is_amortized_form = is_amortized_form;
     coefs = new int64_t[degree]; 
     PlaintextEncoding input_encoding; 
-    if(output_encoding.type == full_domain){ 
+    if(output_encoding.type == PlaintextEncodingType::full_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, degree);
-    }else if(output_encoding.type == partial_domain){ 
+    }else if(output_encoding.type == PlaintextEncodingType::partial_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
-    }else if(output_encoding.type == signed_limied_short_int){
+    }else if(output_encoding.type == PlaintextEncodingType::signed_limied_short_int){
         // Actually I need to have some sort of special encoding here. 
-        input_encoding = PlaintextEncoding(signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
+        input_encoding = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
     }else{
          throw std::logic_error("Non existend encoding type!");
     }
@@ -75,12 +75,12 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     this->coefs = new int64_t[degree];
      
     PlaintextEncoding input_encoding; 
-    if(output_encoding.type == full_domain){ 
+    if(output_encoding.type == PlaintextEncodingType::full_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, degree);
-    }else if(output_encoding.type == partial_domain){ 
+    }else if(output_encoding.type == PlaintextEncodingType::partial_domain){ 
         input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
-    }else if(output_encoding.type == signed_limied_short_int){ 
-        input_encoding = PlaintextEncoding(signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
+    }else if(output_encoding.type == PlaintextEncodingType::signed_limied_short_int){ 
+        input_encoding = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
     }
  
     int64_t arg;

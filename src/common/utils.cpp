@@ -98,7 +98,7 @@ NTL::ZZ_pX Utils::get_ring_poly(RingType ring, int64_t N, int64_t modulus){
     for(int32_t i=1; i < N; ++i){
             psi_arr[i] = 0;
     } 
-    if(ring==cyclic){
+    if(ring==RingType::cyclic){
         psi_arr[0] = modulus-1;
     }else{
         psi_arr[0] = 1;
@@ -518,37 +518,7 @@ void Utils::compose(int64_t *out, int64_t **d_ct, int32_t sizeof_poly, int32_t b
     } 
     delete[] temp_array;
 }
-
-/*
-void Utils::gaussian_sample(int64_t **out, long* in, int32_t sizeof_poly, int32_t basis, int32_t k, int32_t ell, Sampler &rand){
-    int32_t mask = basis-1;
-    int32_t shift;  
-    long* gaussians = new long[sizeof_poly];
-    for(int32_t j = 0; j < sizeof_poly; ++j){
-        gaussians[j] = 0;
-    }
-    int64_t prev_gauss;
-    for(int32_t i = 0; i < ell; ++i){
-        shift = k*i;
-        for(int32_t j=0; j < sizeof_poly; ++j){
-            prev_gauss = gaussians[j];
-            // Here we sample the new gaussian  
-            //gaussians[j] = rand.gaussian(basis, 0, stddev);
-            gaussians[j] = rand.gaussian(basis);
-            // The jth coefficients of the ith (decomposed) polynomial 
-            out[i][j] = (in[j] & mask) >> shift; 
-            out[i][j] += gaussians[j] - prev_gauss;
-            // I think i can actually shift this by k, instead of dividing it by basis
-            // gaussians[j] = gaussians[j]/basis;
-            gaussians[j] = gaussians[j] >> k;
-        }
-        mask = mask << k;
-    }
-    delete[] gaussians; 
-}
-*/
- 
-
+  
 
 int64_t Utils::max(long* in, int32_t N){
     int64_t max = in[0];
