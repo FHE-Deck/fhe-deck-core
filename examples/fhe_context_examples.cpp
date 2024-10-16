@@ -13,6 +13,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     
     context.generate_context(param_set); 
+    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
     int32_t modulus = context.current_encoding.plaintext_space;
      
     int32_t c1_plain = 1;
@@ -745,6 +746,7 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
+    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
     
     auto id = [](int64_t m) -> int64_t {
         return m;
@@ -1192,6 +1194,7 @@ void serialization_test(){
 
 int main(){  
      
+     
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1201,20 +1204,22 @@ int main(){
     test_for_signed_limied_short_int(FHENamedParams::tfhe_11_NTT);
  
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT);
- 
-    //test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_B);
+
+    test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT_amortized);
+
+    test_for_default_full_domain_encoding(FHENamedParams::tfhe_12_NTT_amortized);
+  
 
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
-
-    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
-  
+ 
     amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized); 
    
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_KS);
-
+    
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
+    
 
     serialization_test();   
   

@@ -175,9 +175,9 @@ Ciphertext FHEContext::eval_lut(const Ciphertext& ct_in, const HomomorphicAccumu
         throw std::logic_error("No Public Key Initialized!");
     }   
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
-    if(ct_in.encoding.type == PlaintextEncodingType::full_domain){    
+    if(ct_in.encoding.type == PlaintextEncodingType::full_domain){     
         config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding);
-    }else if(ct_in.encoding.type == PlaintextEncodingType::partial_domain){  
+    }else if(ct_in.encoding.type == PlaintextEncodingType::partial_domain){   
         config->eval_key.bootstrap_pk->bootstrap(*ct_out,  lut.boot_acc, *ct_in.lwe_c); 
     }else if(ct_in.encoding.type == PlaintextEncodingType::signed_limied_short_int){    
         LWECT c_in_copy(ct_in.lwe_c->param);
@@ -209,7 +209,8 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(const Ciphertext& ct_in, 
     // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
     std::vector<std::shared_ptr<FunctionSpecification>> accumulator_vec;
     for(HomomorphicAccumulator& i: lut_vec){
-        accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.multivalue_acc)); 
+        //accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.multivalue_acc)); 
+        accumulator_vec.push_back(i.multivalue_acc); 
     }  
     if(ct_in.encoding.type == PlaintextEncodingType::full_domain){ 
         out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, *ct_in.lwe_c, ct_in.encoding);

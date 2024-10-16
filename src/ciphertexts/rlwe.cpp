@@ -33,7 +33,7 @@ void RLWECT::cyclic_rotate(RLWECT &out, int32_t rot){
 
 void RLWECT::homomorphic_rotate(VectorCT &out, int32_t rot){ 
     // What we do here, is realy multiplication with a monomial.
-    if(this->param->ring == RingType::negacyclic){ 
+    if(this->param->ring == RingType::negacyclic){  
         negacyclic_rotate(static_cast<RLWECT&>(out), rot);
     }else if(this->param->ring == RingType::cyclic){
         cyclic_rotate(static_cast<RLWECT&>(out), rot);

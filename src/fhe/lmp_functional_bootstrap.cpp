@@ -126,9 +126,9 @@ std::vector<LWECT> LMPFunctionalBootstrapPublicKey::full_domain_bootstrap(std::v
     std::shared_ptr<VectorCTAccumulator> acc_one = std::shared_ptr<VectorCTAccumulator>(prepared_acc_builder->get_acc_one(encoding));
     blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c, acc_one);
     std::vector<LWECT> out_vec; 
-     std::shared_ptr<BlindRotateOutput> br_temp(blind_rotate_output_builder->build()); 
-    for(std::shared_ptr<FunctionSpecification> i:  acc_in_vec){    
-        br_out->post_rotation(br_temp, i);   
+    std::shared_ptr<BlindRotateOutput> br_temp(blind_rotate_output_builder->build()); 
+    for(std::shared_ptr<FunctionSpecification> i:  acc_in_vec){      
+        br_out->post_rotation(br_temp, i);     
         br_temp->extract_lwe(lwe_ct_out); 
         ms_from_extract_to_intermediate.switch_modulus(lwe_ct_out, lwe_ct_out);
         out_vec.push_back(lwe_ct_out);  

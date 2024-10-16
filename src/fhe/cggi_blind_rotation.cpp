@@ -13,9 +13,9 @@ CGGIBlindRotationKey::CGGIBlindRotationKey(std::shared_ptr<GadgetVectorCTSK> gad
     blind_rotation_key_gen(gadget_sk, ext_s);  
 }
   
-void CGGIBlindRotationKey::blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){    
-    std::shared_ptr<VectorCT> next_acc = this->vector_ct_param->init_ct(vector_ct_param);
-    acc->acc_content->homomorphic_rotate(out, lwe_ct_in.ct[0]);     
+void CGGIBlindRotationKey::blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc){     
+    std::shared_ptr<VectorCT> next_acc = this->vector_ct_param->init_ct(vector_ct_param);  
+    acc->acc_content->homomorphic_rotate(out, lwe_ct_in.ct[0]);  
     for(int32_t i = 0; i < lwe_par->dim; ++i){    
         out.homomorphic_rotate(*next_acc, lwe_ct_in.ct[i+1]);   
         next_acc->sub(*next_acc, out);      
