@@ -100,11 +100,19 @@ target_include_directories(fhe_deck PUBLIC include)
 target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
 
 add_subdirectory(examples) 
- 
-#add_subdirectory(tests) 
-
+  
 
 install(
     TARGETS fhe_deck
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib 
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+)
+
+install(
+    TARGETS fhe_deck
+    EXPORT fhe_deck
+)
+
+install(
+    DIRECTORY include/fhe_deck
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
