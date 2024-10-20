@@ -113,6 +113,6 @@ install(
 )
 
 install(
-    DIRECTORY include/fhe_deck
+    DIRECTORY include
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
