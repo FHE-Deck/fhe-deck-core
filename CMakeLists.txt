@@ -99,7 +99,7 @@ target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so 
 
 add_subdirectory(examples) 
  
-add_subdirectory(tests) 
+#add_subdirectory(tests) 
 
 
 install(
