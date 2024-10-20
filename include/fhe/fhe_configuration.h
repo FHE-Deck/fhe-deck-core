@@ -122,10 +122,13 @@ class BasicBootstrapBuilder{
 
     bool is_gadget_vector_build = false;
     bool is_secret_keys_build = false;
+    bool is_public_key_build = false;
     bool is_vector_ct_gadget_secret_key_build = false;
     bool is_blind_rotation_key_build = false;
     bool is_lwe_to_lwe_keyswitch_build = false;
     bool is_functional_bootstrap_build = false;
+    bool is_plaintext_encoding_build = false;
+
 
     /// @brief Below are parameters for the ring scheme
     int64_t degree;
@@ -164,6 +167,11 @@ class BasicBootstrapBuilder{
     std::shared_ptr<AbstractFunctionBuilder> func_boot_acc_builder;
     std::shared_ptr<AbstractFunctionBuilder> multivalue_acc_builder;
 
+    /// @brief Parameters for the public key
+    int64_t pk_size; 
+    double pk_stddev;
+    std::shared_ptr<LWEPublicKey> encrypt_pk;
+
     /// @brief Key and parameters that are often generated and needed by the bootstrapping algorithms.
     std::shared_ptr<VectorCTParam> vector_ct_param;
     std::shared_ptr<BlindRotationPublicKey> blind_rotation_key;
@@ -173,6 +181,15 @@ class BasicBootstrapBuilder{
     std::shared_ptr<Gadget> vector_ct_gadget;
     std::shared_ptr<LWEParam> lwe_param;
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk;
+
+    /// @brief Parameters for the defauls plaintext encoding
+    PlaintextEncoding default_encoding;
+    PlaintextEncodingType plaintext_encoding_type;
+    int64_t plaintext_space;
+
+    /// @brief Additional Sanitization parameters
+    SanitizationAlgorithm sanitization_alg;
+    int32_t washing_cycles;
 
     BasicBootstrapBuilder();
      
@@ -187,17 +204,22 @@ class BasicBootstrapBuilder{
 
     void set_blind_rotation_algorithm(BlindRotationAlgorithm br_algorithm);
 
+    void set_public_key_parameters(int64_t size, double stddev);
+
     void set_lwe_key_switching_parameters(int32_t dimension, int64_t lwe_modulus, KeyDistribution lwe_key_distribution, int64_t decomp_base, double lwe_stddev);
 
     void set_lwe_to_rlwe_keyswitch_parameters(int64_t lwe_to_rlwe_decomp_base);
 
     void set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm fdfb_algorithm);
-
-    void set_sanitization_algorithm(SanitizationAlgorithm sanitization_alg, std::shared_ptr<Gadget> sanitization_vector_ct_gadget);
+ 
+    void set_default_plaintext_encoding(PlaintextEncodingType type, int64_t splaintext_space);
+ 
 
     void build();
  
     void build_secret_keys();
+
+    void build_public_key();
 
     void build_vector_ct_gadget();
 
@@ -209,9 +231,14 @@ class BasicBootstrapBuilder{
 
     void build_functional_bootstrap_key();
 
+    void build_plaintext_encoding();
+  
+    void transfer_parameters(const BasicBootstrapBuilder& other);
 
+    std::shared_ptr<fhe_deck::FHESecretKey> get_secret_key();
 
-    void transfer_parameters(BasicBootstrapBuilder& other);
+    void get_bootstrap_public_key(fhe_deck::PublicEvaluationKey& eval_key);
+ 
 
     /// @brief Sets the pointers to the secret key in other to the key in this, and marks the flag that the secret key is already generated.
     /// @param other The other builder object
@@ -220,6 +247,10 @@ class BasicBootstrapBuilder{
     /// @brief Sets the pointers to the key switching key in other to the key in this, and marks the flag that the key switching key is already generated.
     /// @param other 
     void transfer_key_switching_key(BasicBootstrapBuilder& other);
+
+    /// @brief Sets the pointers to the public key in other to the key in this, and marks the flag that the key switching key is already generated.
+    /// @param other 
+    void transfer_public_key(BasicBootstrapBuilder& other);
 
     private:
 
@@ -249,11 +280,13 @@ class FHEConfiguration{
     FHEConfiguration(FHENamedParams name);
    
     void generate_keys();
-  
+ 
+    void build_sanitization_key(); 
+
     void init_tfhe_11_NTT(); 
-
+  
     void init_tfhe_11_NTT_flood();
-
+  
     void init_tfhe_11_flood();
 
     void init_tfhe_11_NTT_amortized(); 

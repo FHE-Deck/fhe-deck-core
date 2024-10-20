@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
  
 project(fhe_deck)
- 
-option(USE_FOO "Use FOO" ON)
 
 set(third_party "${PROJECT_SOURCE_DIR}/build/third_party/")
 
@@ -101,4 +99,10 @@ target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so 
 
 add_subdirectory(examples) 
  
-#add_subdirectory(tests) 
+add_subdirectory(tests) 
+
+
+install(
+    TARGETS fhe_deck
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib 
+)

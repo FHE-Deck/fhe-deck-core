@@ -51,8 +51,17 @@ void BasicBootstrapBuilder::set_blind_rotation_algorithm(BlindRotationAlgorithm 
     this->br_algorithm = br_algorithm;
 }
 
+void BasicBootstrapBuilder::set_public_key_parameters(int64_t size, double stddev){
+    this->pk_size = size;
+    this->pk_stddev = stddev;
+}
 
-void BasicBootstrapBuilder::transfer_parameters(BasicBootstrapBuilder& other){ 
+void BasicBootstrapBuilder::set_default_plaintext_encoding(PlaintextEncodingType plaintext_encoding_type, int64_t plaintext_space){
+    this->plaintext_encoding_type = plaintext_encoding_type;
+    this->plaintext_space = plaintext_space;
+}
+
+void BasicBootstrapBuilder::transfer_parameters(const BasicBootstrapBuilder& other){ 
     this->degree = other.degree;
     this->coef_modulus = other.coef_modulus;
     this->stddev = other.stddev;   
@@ -69,9 +78,13 @@ void BasicBootstrapBuilder::transfer_parameters(BasicBootstrapBuilder& other){
     this->lwe_ks_decomp_base = other.lwe_ks_decomp_base;
     this->lwe_stddev = other.lwe_stddev; 
     this->lwe_key_distribution = other.lwe_key_distribution;  
-    this->lwe_to_rlwe_decomp_base = other.lwe_to_rlwe_decomp_base; 
+    this->lwe_to_rlwe_decomp_base = other.lwe_to_rlwe_decomp_base;
+    this->pk_size = other.pk_size; 
+    this->pk_stddev = pk_stddev; 
     this->br_algorithm = other.br_algorithm; 
-    this->fdfb_algorithm = other.fdfb_algorithm;
+    this->fdfb_algorithm = other.fdfb_algorithm; 
+    this->plaintext_encoding_type  = other.plaintext_encoding_type;
+    this->plaintext_space = other.plaintext_space;
 }
 
 void BasicBootstrapBuilder::transfer_secret_key(BasicBootstrapBuilder& other){
@@ -89,6 +102,11 @@ void BasicBootstrapBuilder::transfer_key_switching_key(BasicBootstrapBuilder& ot
     this->is_lwe_to_lwe_keyswitch_build = true; 
 }
 
+void BasicBootstrapBuilder::transfer_public_key(BasicBootstrapBuilder& other){
+    this->encrypt_pk = other.encrypt_pk;
+    this->is_public_key_build = true;
+}
+
 void BasicBootstrapBuilder::build(){
 
     if(!is_gadget_vector_build){ 
@@ -98,6 +116,10 @@ void BasicBootstrapBuilder::build(){
     if(!is_secret_keys_build){ 
         build_secret_keys();
         is_gadget_vector_build = true;
+    }
+    if(!is_public_key_build){
+        build_public_key();
+        is_public_key_build = true;
     }
     if(!is_vector_ct_gadget_secret_key_build){
         build_vector_ct_gadget_secret_key();
@@ -114,6 +136,10 @@ void BasicBootstrapBuilder::build(){
     if(!is_functional_bootstrap_build){ 
         build_functional_bootstrap_key();
         is_lwe_to_lwe_keyswitch_build = true;
+    }
+    if(!is_plaintext_encoding_build){
+        build_plaintext_encoding();
+        is_plaintext_encoding_build = true;
     }
      
 }
@@ -146,6 +172,10 @@ void BasicBootstrapBuilder::build_secret_keys(){
     }
 }
  
+
+void BasicBootstrapBuilder::build_public_key(){
+    this->encrypt_pk =std::make_shared<LWEPublicKey>(secret_key->lwe_sk, this->pk_size, this->pk_stddev); 
+}
 
 void BasicBootstrapBuilder::build_vector_ct_gadget(){
     if(gadget_type == GadgetType::signed_decomposition_gadget){
@@ -191,6 +221,10 @@ void BasicBootstrapBuilder::build_functional_bootstrap_key(){
     }else{
         throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Full Domain Bootstrapping Algorithm");
     }
+}
+
+void BasicBootstrapBuilder::build_plaintext_encoding(){ 
+    this->default_encoding = PlaintextEncoding(this->plaintext_encoding_type, this->plaintext_space, encrypt_pk->param->modulus); 
 }
 
 void BasicBootstrapBuilder::setup_liu_micciancio_polyakov(){ 
@@ -252,6 +286,25 @@ void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
 
 }
 
+ std::shared_ptr<fhe_deck::FHESecretKey> BasicBootstrapBuilder::get_secret_key(){
+    return this->secret_key;
+ }
+
+void BasicBootstrapBuilder::get_bootstrap_public_key(fhe_deck::PublicEvaluationKey& eval_key){
+    if(is_blind_rotation_key_build){
+        eval_key.boot_acc_builder = this->boot_acc_builder;
+        eval_key.func_boot_acc_builder = this->func_boot_acc_builder;
+        eval_key.multivalue_acc_builder = this->multivalue_acc_builder;
+        eval_key.bootstrap_pk = this->bootstrap_pk; 
+        eval_key.is_bootstrap_pk_set = true;
+    } 
+    if(is_public_key_build){ 
+        eval_key.encrypt_pk = this->encrypt_pk;
+        eval_key.is_encrypt_pk_set = true;
+    }
+    eval_key.default_encoding = this->default_encoding;
+}
+
  
 /*
 =========================================================== TFHEKeyGenerator (Named Parameters) ================================================= 
@@ -259,9 +312,6 @@ void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
 
 FHEConfiguration::FHEConfiguration(FHENamedParams name){
     eval_key.name = name; 
-}
-   
-void FHEConfiguration::generate_keys(){
     if(eval_key.name == FHENamedParams::tfhe_11_flood){
         init_tfhe_11_flood();
     } else if(eval_key.name == FHENamedParams::tfhe_11_NTT){
@@ -284,6 +334,32 @@ void FHEConfiguration::generate_keys(){
     else{ 
         throw std::runtime_error("TFHEKeyGenerator::TFHEKeyGenerator: Parameter set note supported! Perhaps the chosen parameter set requires additional dependencies to be compiled?"); 
     }
+    
+}
+   
+void FHEConfiguration::generate_keys(){
+    builder.build(); 
+    this->secret_key = builder.get_secret_key();
+    builder.get_bootstrap_public_key(eval_key);  
+    build_sanitization_key();
+}
+
+void FHEConfiguration::build_sanitization_key(){
+    if(!eval_key.is_sanitization_supported){
+        return;
+    }
+    sanitization_builder.transfer_key_switching_key(builder);
+    sanitization_builder.transfer_secret_key(builder);  
+    sanitization_builder.transfer_public_key(builder);
+    sanitization_builder.build(); 
+    if(sanitization_builder.sanitization_alg == SanitizationAlgorithm::kluczniak){
+        eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk));
+    }else if(sanitization_builder.sanitization_alg == SanitizationAlgorithm::ducas_stehle){
+      
+        eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk, sanitization_builder.washing_cycles));  
+    }else{
+        throw std::logic_error("Unsupported SanitizationAlgorithm");
+    }
 }
  
   
@@ -295,33 +371,22 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 281474976694273); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
- 
+    builder.set_public_key_parameters(8192, 8192);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
+    sanitization_builder.sanitization_alg = SanitizationAlgorithm::kluczniak;
     sanitization_builder.transfer_parameters(builder); 
     sanitization_builder.set_gadget_parameters(GadgetType::discrete_gaussian_gadget, 256);
     sanitization_builder.gadget_stddev = 225812; 
-
-    sanitization_builder.transfer_key_switching_key(builder);
-    sanitization_builder.transfer_secret_key(builder); 
- 
-    sanitization_builder.build(); 
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new KluczniakRandomizedBootstrapping(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk));
-    
+   
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = true;
  
-} 
- 
+}  
 
 void FHEConfiguration::init_tfhe_11_NTT_flood(){ 
  
@@ -332,36 +397,25 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 281474976694273); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
+    builder.set_public_key_parameters(8192, 8192);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
 
-    // Now reset the Gadget to the randomized one  
-    sanitization_builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution::ternary, 3.2);
-    sanitization_builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    // Now reset the Gadget to the randomized one   
+    sanitization_builder.transfer_parameters(builder);
+    sanitization_builder.sanitization_alg = SanitizationAlgorithm::ducas_stehle; 
+    sanitization_builder.washing_cycles = 4;
     sanitization_builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 256);
-    sanitization_builder.gadget_stddev = 225812;
-    sanitization_builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
-    sanitization_builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
-    sanitization_builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-
-    sanitization_builder.transfer_key_switching_key(builder);
-    sanitization_builder.transfer_secret_key(builder); 
-      
-    sanitization_builder.build(); 
-    eval_key.sanitization_pk =  std::shared_ptr<SanitizationKey>(new DucasStehleWashingMachine(sanitization_builder.bootstrap_pk, eval_key.boot_acc_builder, eval_key.encrypt_pk, 4));
-      
+    sanitization_builder.gadget_stddev = 225812; 
+    
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = true;
 } 
+ 
  
 void FHEConfiguration::init_tfhe_11_flood(){ 
  
@@ -371,19 +425,15 @@ void FHEConfiguration::init_tfhe_11_flood(){
     builder.set_lwe_key_switching_parameters(912, 68719476736, KeyDistribution::binary, 128, 16384);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 68719476736); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 4010391)); 
+    builder.set_public_key_parameters(3370, 4010391);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
 } 
 
@@ -395,19 +445,15 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     builder.set_lwe_key_switching_parameters(950, 2251799813640193, KeyDistribution::binary, 512, 262144);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::partial_domain, 8, 2251799813640193); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8050, 8192)); 
+    builder.set_public_key_parameters(8050, 8192);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::partial_domain, 8);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
 } 
  
@@ -420,19 +466,15 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     builder.set_lwe_key_switching_parameters(950, 18014398509309953, KeyDistribution::binary, 512, 262144);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::partial_domain, 16, 18014398509309953); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 14936, 16384)); 
+    builder.set_public_key_parameters(14936, 16384);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::partial_domain, 16);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true; 
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true; 
     eval_key.is_sanitization_supported = false;
 } 
 
@@ -447,19 +489,15 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
     builder.set_lwe_key_switching_parameters(900, 281474976694273, KeyDistribution::binary, 1 << 3, 3.2);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 281474976694273); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 14936, 16384)); 
+    builder.set_public_key_parameters(14936, 16384);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
-    eval_key.is_encrypt_pk_set = true;
-    eval_key.is_bootstrap_pk_set = true;
+    //eval_key.is_encrypt_pk_set = true;
+    //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
 } 
 
@@ -473,15 +511,11 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     builder.set_lwe_key_switching_parameters(750, 35184371884033, KeyDistribution::binary, 2, 16384);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 4, 35184371884033); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 8192, 8192)); 
+    builder.set_public_key_parameters(8192, 8192);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
   
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -499,15 +533,11 @@ void FHEConfiguration::init_tfhe_11_KS() {
     builder.set_lwe_to_rlwe_keyswitch_parameters(1 << 4);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 2251799813640193); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 3.19)); 
+    builder.set_public_key_parameters(3370, 3.19);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;
@@ -525,15 +555,11 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     builder.set_lwe_to_rlwe_keyswitch_parameters(1 << 4);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
-    builder.build(); 
-    this->secret_key = builder.secret_key; 
-    eval_key.boot_acc_builder = builder.boot_acc_builder;
-    eval_key.func_boot_acc_builder = builder.func_boot_acc_builder;
-    eval_key.multivalue_acc_builder = builder.multivalue_acc_builder;
-    eval_key.bootstrap_pk = builder.bootstrap_pk;
-    // Masking Key Gen 
-    eval_key.default_encoding = PlaintextEncoding(PlaintextEncodingType::full_domain, 32, 4503599627366401); 
-    eval_key.encrypt_pk = std::shared_ptr<LWEPublicKey>(new LWEPublicKey(secret_key->lwe_sk, 3370, 3.19)); 
+    builder.set_public_key_parameters(3370, 3.19);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
+    //builder.build(); 
+    //this->secret_key = builder.get_secret_key();
+    //builder.get_bootstrap_public_key(eval_key);  
  
     this->is_secret_key_set = true;
     eval_key.is_encrypt_pk_set = true;

@@ -1,8 +1,8 @@
-#include "fhe_context.h"
- 
 #include <cassert>
 #define assertm(exp, msg) assert(((void)msg, exp))
 
+#include "fhe_deck.h"
+ 
 using namespace fhe_deck;
 
 int32_t main(){

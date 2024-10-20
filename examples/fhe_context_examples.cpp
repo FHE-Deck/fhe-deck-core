@@ -1,6 +1,8 @@
 #include <iostream>
-#include "fhe_context.h" 
 #include <cassert>
+#include "fhe_deck.h" 
+
+
 #define assertm(exp, msg) assert(((void)msg, exp))
  
 using namespace fhe_deck;
@@ -454,12 +456,11 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     num_of_evals++;
     assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0");
     std::cout << "ct_nand(1, 1) = 0: OK"   << std::endl; 
-
-/*
+ 
     Ciphertext sanitized = context.sanitize(ct_nand);
     assertm(context.decrypt(sanitized) == 0, "sanitised == 0");
-    std::cout << "sanitized = ct_nand = 0: OK"   << std::endl; 
-*/
+    std::cout << "sanitized = ct_nand = 0: OK"   << std::endl;  
+
     std::cout << "Time elapsed:  " << elapsed << " ms, " << (double)elapsed/1000.0 << " s" << std::endl; 
     std::cout << "Time per eval:  " << (double)elapsed/num_of_evals << " ms, " << ((double)elapsed/num_of_evals)/1000.0 << " s" << std::endl; 
 }
@@ -1208,8 +1209,7 @@ int main(){
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT_amortized);
 
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_12_NTT_amortized);
-  
-
+   
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
