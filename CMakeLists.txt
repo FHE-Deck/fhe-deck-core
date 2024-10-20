@@ -96,9 +96,8 @@ add_library(fhe_deck STATIC
 	${INC_FHE} ${SRC_FHE}
 )
 
-target_include_directories(fhe_deck PUBLIC include) 
-#target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
-target_link_libraries(fhe_deck PRIVATE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
+target_include_directories(fhe_deck PUBLIC include)  
+target_link_libraries(fhe_deck INTERFACE ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
  
 add_subdirectory(examples) 
   
