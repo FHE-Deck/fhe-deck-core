@@ -114,5 +114,5 @@ install(
 
 install(
     DIRECTORY include
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
