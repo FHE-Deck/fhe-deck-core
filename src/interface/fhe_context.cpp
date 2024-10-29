@@ -205,25 +205,26 @@ std::vector<Ciphertext> FHEContext::eval_lut_amortized(const Ciphertext& ct_in, 
             out_vec_lwe.push_back(ct_out);
         }
     // Otherwise we run the amortized procedures. 
-    }  
-    // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
-    std::vector<std::shared_ptr<FunctionSpecification>> accumulator_vec;
-    for(HomomorphicAccumulator& i: lut_vec){
-        //accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.multivalue_acc)); 
-        accumulator_vec.push_back(i.multivalue_acc); 
-    }  
-    if(ct_in.encoding.type == PlaintextEncodingType::full_domain){ 
-        out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, *ct_in.lwe_c, ct_in.encoding);
-    }else if(ct_in.encoding.type == PlaintextEncodingType::partial_domain){ 
-        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, *ct_in.lwe_c, ct_in.encoding);
-    }else if(ct_in.encoding.type == PlaintextEncodingType::signed_limied_short_int){  
-        LWECT ct_cast(ct_in.lwe_c->param);
-        ct_in.lwe_c->add(ct_cast, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
-        out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, ct_cast, ct_in.encoding); 
+    } else{ 
+        // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
+        std::vector<std::shared_ptr<FunctionSpecification>> accumulator_vec;
+        for(HomomorphicAccumulator& i: lut_vec){
+            //accumulator_vec.push_back(std::static_pointer_cast<VectorCTAccumulator>(i.multivalue_acc)); 
+            accumulator_vec.push_back(i.multivalue_acc); 
+        }  
+        if(ct_in.encoding.type == PlaintextEncodingType::full_domain){ 
+            out_vec_lwe = config->eval_key.bootstrap_pk->full_domain_bootstrap(accumulator_vec, *ct_in.lwe_c, ct_in.encoding);
+        }else if(ct_in.encoding.type == PlaintextEncodingType::partial_domain){ 
+            out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, *ct_in.lwe_c, ct_in.encoding);
+        }else if(ct_in.encoding.type == PlaintextEncodingType::signed_limied_short_int){  
+            LWECT ct_cast(ct_in.lwe_c->param);
+            ct_in.lwe_c->add(ct_cast, ct_in.encoding.encode_message(ct_in.encoding.plaintext_space));
+            out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, ct_cast, ct_in.encoding); 
+        } 
+        else{
+            throw std::logic_error("Non existend encoding type!");
+        }  
     } 
-    else{
-        throw std::logic_error("Non existend encoding type!");
-    }
     // Load the LWECT's into the Ciphertext wrapper
     std::vector<Ciphertext> out_vec;
     for(LWECT ct: out_vec_lwe){

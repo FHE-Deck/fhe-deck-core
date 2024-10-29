@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
  
 project(fhe_deck)
 
-set(third_party "${PROJECT_SOURCE_DIR}/build/third_party/")
+set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
 
 include(ExternalProject)  
 ExternalProject_Add(
@@ -59,8 +59,8 @@ link_directories(${third_party}/cereal/lib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops -fsanitize=address -static-libasan -g")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops -fsanitize=address -static-libasan -g")
 
 # source files 
 file(GLOB INC_MATH include/math/*.cpp)

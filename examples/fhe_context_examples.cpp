@@ -1220,6 +1220,9 @@ int main(){
     
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
     
+    amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
+
+    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
 
     serialization_test();   
   
