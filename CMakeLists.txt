@@ -59,8 +59,8 @@ link_directories(${third_party}/cereal/lib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops -fsanitize=address -static-libasan -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -funroll-loops -fsanitize=address -static-libasan -g")
 
 # source files 
 file(GLOB INC_MATH include/math/*.cpp)
@@ -100,7 +100,7 @@ target_include_directories(fhe_deck PUBLIC include)
 target_link_libraries(fhe_deck PUBLIC ntl ${third_party}/fftw3/lib/libfftw3.so ${third_party}/fftwl3/lib/libfftw3l.so ${third_party}/intel_hexl/lib/libhexl.a)
  
 add_subdirectory(examples) 
-  
+add_subdirectory(tests) 
 
 install(
     TARGETS fhe_deck
