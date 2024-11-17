@@ -1,113 +1,7 @@
 #include "utils.h"
  
 using namespace fhe_deck;
-
-void Utils::set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f, int32_t sizeof_f, int64_t Q){
-    NTL::ZZ_p coef;
-    coef.init(NTL::ZZ(Q));
-    for(int32_t i = 0; i < sizeof_f; ++i){
-        coef = f[i];
-        NTL::SetCoeff(poly, i, coef);
-    } 
-}
-
-void Utils::set_array_from_polynomial(int64_t *f, int32_t sizeof_array, NTL::ZZ_pX poly){ 
-    for(int32_t i = 0; i < sizeof_array; ++i){
-        f[i] = 0;
-    }
-    int64_t deg = NTL::deg(poly);
-    for(int32_t i = 0; i <= deg; ++i){
-         f[i] = NTL::conv<long>(poly[i]);
-    } 
-}
-
-
-void Utils::add_polynomials(int64_t *out, int64_t *in_1, int64_t *in_2, int32_t sizeof_in_1, int32_t sizeof_in_2){
-    if(sizeof_in_1 < sizeof_in_2){
-        for(int32_t i = 0; i < sizeof_in_1; ++i){
-            out[i] = in_1[i] + in_2[i];
-        }
-        for(int32_t i = sizeof_in_1; i < sizeof_in_2; ++i){
-            out[i] = in_2[i];
-        }
-    }else{
-        for(int32_t i = 0; i < sizeof_in_2; ++i){
-            out[i] = in_1[i] + in_2[i];
-        }
-        for(int32_t i = sizeof_in_2; i < sizeof_in_1; ++i){
-            out[i] = in_2[i];
-        }
-    }
-}
-
-
-void Utils::mod_polynomial(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t modulus){
-    for(int32_t i = 0; i < sizeof_in; +i){
-        out[i] = in[i] % modulus;
-    }
-}
-
-
-void Utils::mul_scalar(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t scalar){
-    for(int32_t i = 0; i < sizeof_in; ++i){
-        out[i] = in[i] * scalar;
-    }
-}
-
-
-void Utils::mul_mod(int64_t *out, int64_t *in_1, int32_t sizeof_in_1, int64_t *in_2, int32_t sizeof_in_2, int64_t N, int64_t modulus, RingType ring){
-   NTL::ZZ_pX in_1_poly;
-   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
-   NTL::ZZ_pX in_2_poly;
-   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
-   NTL::ZZ_pX res = NTL::MulMod(in_1_poly, in_2_poly, get_ring_poly(ring, N, modulus)); 
-   Utils::set_array_from_polynomial(out, N, res);
-}
-
-
-void Utils::add_mod(int64_t *out, int64_t *in_1, int32_t sizeof_in_1, int64_t *in_2, int32_t sizeof_in_2, int64_t N, int64_t modulus){
-   NTL::ZZ_pX in_1_poly;
-   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
-   NTL::ZZ_pX in_2_poly;
-   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
-   NTL::ZZ_pX res = in_1_poly + in_2_poly;
-   Utils::set_array_from_polynomial(out, N, res);
-}
-
-void Utils::sub_mod(int64_t *out, int64_t *in_1, int32_t sizeof_in_1, int64_t *in_2, int32_t sizeof_in_2, int64_t N, int64_t modulus){
-   NTL::ZZ_pX in_1_poly;
-   Utils::set_polynomial_from_array(in_1_poly, in_1, sizeof_in_1, modulus);
-   NTL::ZZ_pX in_2_poly;
-   Utils::set_polynomial_from_array(in_2_poly, in_2, sizeof_in_2, modulus);
-   NTL::ZZ_pX res = in_1_poly - in_2_poly;
-   Utils::set_array_from_polynomial(out, N, res);
-}
-
-
-void Utils::neg_mod(int64_t *out, int64_t *in, int32_t size, int64_t modulus){
-    for(int32_t i = 0; i < size; ++i){
-        out[i] = Utils::integer_mod_form(-in[i], modulus);
-    }
-
-}
-
-NTL::ZZ_pX Utils::get_ring_poly(RingType ring, int64_t N, int64_t modulus){
-    NTL::ZZ_pX out;
-    int64_t *psi_arr = new long[N+1]; 
-    psi_arr[N] = 1;
-    for(int32_t i=1; i < N; ++i){
-            psi_arr[i] = 0;
-    } 
-    if(ring==RingType::cyclic){
-        psi_arr[0] = modulus-1;
-    }else{
-        psi_arr[0] = 1;
-    }
-    Utils::set_polynomial_from_array(out, psi_arr, N+1, modulus); 
-    delete[] psi_arr;
-    return out;
-}
-
+ 
 
 void Utils::cp(int64_t *out, int64_t *in, int32_t size){
     for(int32_t i =0; i < size; ++i){
@@ -165,30 +59,35 @@ int32_t Utils::number_of_bits(int64_t x){
     } 
     return 64;
 }
-
+ 
+std::pair<int64_t, std::pair<int64_t, int64_t>> Utils::extended_euclidean_algorithm(int64_t a, int64_t b){
+    int64_t x0 = 0;    
+   int64_t x1 = 1;
+   int64_t y0 = 1;    
+   int64_t y1 = 0;
+   while(a != 0){ 
+        auto dv = std::div(b, a);
+        int64_t q = dv.quot; 
+        b = a;
+        a = dv.rem;
+        int64_t temp = y0;
+        y0 = y1;
+        y1 = temp - q * y1;
+        temp = x0;
+        x0 = x1;
+        x1 = temp - q * x1;
+   }     
+    int64_t gcd = b;
+    int64_t x = x0;
+    int64_t y = y0; 
+    return {gcd, {x, y}};
+}
+    
 int64_t Utils::mod_inv(int64_t in, int64_t modulus){
-    return NTL::InvMod(in, modulus);
-}
-
-int64_t Utils::square_and_div_by_4(int64_t in, int64_t modulus){
-    int64_t square = NTL::MulMod(in, in, modulus);
-    int64_t inv_four = NTL::InvMod(4, modulus);
-    return NTL::MulMod(square, inv_four, modulus);
-}
-
-
-int64_t Utils::eval_poly_mod(int64_t in, int* poly, int32_t poly_size, int64_t modulus){
-    int64_t ret = poly[0];
-    int64_t powers_of_in = 1;
-    int64_t term = 0;
-    for(int32_t i = 1; i < poly_size; ++i){
-        powers_of_in = NTL::MulMod(powers_of_in, in, modulus);
-        term =  NTL::MulMod(powers_of_in, poly[i], modulus);
-        ret = NTL::AddMod(ret, term, modulus);
-    }
-    return ret;
-}
-
+    auto [gcd, coeffs] = extended_euclidean_algorithm(in, modulus); 
+    return Utils::integer_mod_form(coeffs.first, modulus);
+} 
+ 
 
 
 bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
@@ -200,57 +99,6 @@ bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
     return true;
 }
 
-
-void Utils::rotate_poly(int64_t *out_poly, int64_t *in_poly, int32_t poly_size, int32_t rot){
-    int32_t overflow= poly_size - rot ;  
-      for(int32_t i = 0; i < overflow; ++i){   
-            out_poly[i+rot] = in_poly[i];
-            
-      }
-      for(int32_t i = 0; i < rot; ++i){ 
-            out_poly[i] = in_poly[overflow + i];
-      }
-}
-
-
-
-void Utils::negacyclic_rotate_poly(int64_t *out_poly, int64_t *in_poly, int32_t poly_size, int32_t rot){
-
-    long* temp = new long[poly_size];
-    if(rot >= poly_size){
-        for(int32_t i = 0; i < poly_size; ++i){
-            temp[i] = -in_poly[i];
-        }
-        rot = rot - poly_size;
-    }else{
-        for(int32_t i = 0; i < poly_size; ++i){
-            temp[i] = in_poly[i];
-        }
-    } 
-    // NOTE We implement negacyclic rotate actually -> it changes the sign of rot first coefficients
-    int32_t overflow=poly_size - rot ;  
-    for(int32_t i = 0; i < overflow; ++i){   
-        out_poly[i+rot] = temp[i];
-    }
-    for(int32_t i = 0; i < rot; ++i){ 
-        out_poly[i] = -temp[overflow + i];
-    }
-    delete[] temp;
-}
-
-
-
-int64_t Utils::integer_rounding(int64_t in, int64_t Q, int64_t t){
-    int64_t signed_in = Utils::integer_signed_form(in, Q);
-    double scale = (double)t/(double)Q; 
-    return (long)std::round(scale * (double)signed_in);
-}
-
-void Utils::array_rounding(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q, int64_t t){
-    for(int32_t i = 0; i < sizeof_in; ++i){
-        out[i] = Utils::integer_rounding(in[i], Q, t);
-    }  
-}
  
 int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
     int64_t half = Q/2;
@@ -265,8 +113,7 @@ int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
         return in-Q;
     }else{
         return in+Q;
-    }
-    //return in-Q ;
+    } 
 }
  
 void Utils::array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
@@ -290,64 +137,7 @@ void Utils::array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t
         out[i] = Utils::integer_mod_form(in[i], Q);
     }
 }
-
- 
-
-void Utils::round_and_mod_reduce(int64_t *out_poly, double *in_poly, int64_t modulus, int32_t sizeof_in_poly){ 
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){
-            out_poly[i] = (long)round(in_poly[i]) % modulus;
-            
-      }  
-}
-
-
-void Utils::round_and_mod_reduce(int64_t *out_poly, long double *in_poly_l, int64_t modulus, int32_t sizeof_in_poly){ 
-      long double Q_l = (long double) modulus;
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){
-            
-            out_poly[i] = round(fmodl(in_poly_l[i], Q_l)); 
-      }  
-}
-
-void Utils::round_and_mod_reduce_power_of_two(int64_t *out_poly, double *in_poly, int64_t mask, int32_t sizeof_in_poly){
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){
-            
-            out_poly[i] = ((long)in_poly[i]) & mask; 
-      }
-}
-
-void Utils::round_and_mod_reduce_power_of_two(int64_t *out_poly, long double *in_poly, int64_t mask, int32_t sizeof_in_poly){
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){ 
-            out_poly[i] = ((long)in_poly[i]) & mask;
-            
-      }
-}
-
-void Utils::mod_reduce_power_of_two(int64_t *out_poly, int64_t *in_poly, int64_t mask, int32_t sizeof_in_poly){
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){
-            out_poly[i] = in_poly[i] & mask; 
-      }
-} 
-
-
-void Utils::mod_reduce(int64_t *out_poly, int64_t *in_poly, int64_t modulus, int32_t sizeof_in_poly){
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){  
-      out_poly[i] = in_poly[i] % modulus;
-   }
-} 
-
-
-void Utils::mod_reduce(int64_t *out_poly, long double *in_poly_l, int64_t modulus, int32_t sizeof_in_poly){
-      //long double coef;
-      long double Q_l = (long double) modulus;
-      for(int32_t i = 0; i < sizeof_in_poly; ++i){  
-      out_poly[i] = round(fmodl(in_poly_l[i], Q_l));  
-    }
-}  
-
- 
-
-
+  
 std::string Utils::to_string(int64_t *poly, int32_t sizeof_poly){
     if(sizeof_poly==0){
         return "[]";
@@ -406,14 +196,7 @@ std::string Utils::complex_to_string(fftw_complex* in, int32_t from, int32_t siz
     }
     return out;
 }
-
-void Utils::set(long* out, long* in, int32_t sizeof_in){
-    for(int32_t i = 0; i < sizeof_in; ++i){
-        out[i] = in[i];
-    }
-}
-
-
+ 
 void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell){
     int64_t mask = basis-1;
     int64_t shift;
@@ -432,94 +215,8 @@ int64_t Utils::integer_compose(int64_t *dec_in, int32_t basis, int32_t ell){
         out += dec_in[i] * temp_basis;
     }
     return out;
-}
-
-/*
-- d_ct is a two dimensional array, that holds polynomials.
-- basis is the decomposition basis. We assume that its a power of two
-- ell = log_basis(limit) (usually limit is the modulus)
-- param are the ntru parameters
-*/
-void Utils::decomp(int64_t **d_ct, long* poly, int32_t sizeof_poly, int32_t basis, int32_t k, int32_t ell){
-    int64_t mask = basis-1;
-    int64_t shift;
-    for(int32_t i = 0; i < ell; ++i){
-        // TODO: Change and test for shift += k (starting from shift = -k) - should give a mini speedup
-        shift = k*i;
-        for(int32_t j=0; j < sizeof_poly; ++j){
-            // The jth coefficients of the ith (decomposed) polynomial
-            d_ct[i][j] = (poly[j] & mask) >> shift;
-        }
-        mask = mask << k;
-    }
-}
-
-/*
-Note that we assume the input polynomial has coefficients in [0, Q-1]
-*/
-void Utils::signed_decomp(int64_t **d_ct, long* poly, int32_t sizeof_poly, int32_t basis, int32_t k, int32_t ell, int64_t Q){
-    long* signed_poly = new long[sizeof_poly]; 
-    long* sign = new long[sizeof_poly];
-    Utils::array_signed_form(signed_poly, poly, sizeof_poly, Q); 
-    int64_t half = Q/2;
-    for(int32_t i = 0; i < sizeof_poly; ++i){ 
-        //signed_poly[i] =  utils::integer_signed_form(poly[i], Q);
-        if(poly[i] <= half){
-            signed_poly[i] = poly[i];
-            sign[i] = 1;
-        }else{
-            signed_poly[i] = abs(poly[i]-Q);
-            sign[i] = -1;
-        }
-    }
-    Utils::decomp(d_ct, signed_poly, sizeof_poly, basis, k, ell);
-    for(int32_t j = 0; j < ell; ++j){
-        for(int32_t i = 0; i < sizeof_poly; ++i){
-            d_ct[j][i] = d_ct[j][i] * sign[i];
-        }
-    }
-    delete[] sign;
-    delete[] signed_poly;
-}
-
-
- 
-/*
-- d_ct is a two dimensional array, that holds polynomials.
-- basis is the decomposition basis. We assume that its a power of two
-- ell = log_basis(limit) (usually limit is the modulus)
-- param are the ntru parameters
-*/ 
-void Utils::decomp(int32_t **d_ct, long* poly, int32_t sizeof_poly, int32_t basis, int32_t k, int32_t ell){
-    int32_t mask = basis-1;
-    int32_t shift;
-    for(int32_t i = 0; i < ell; ++i){
-        shift = k*i;
-        for(int32_t j=0; j < sizeof_poly; ++j){
-            // The jth coefficients of the ith (decomposed) polynomial
-            d_ct[i][j] = (poly[j] & mask) >> shift;
-        }
-        mask = mask << k;
-    }
 } 
-
-
-void Utils::compose(int64_t *out, int64_t **d_ct, int32_t sizeof_poly, int32_t basis, int32_t ell){
-    Utils::set(out, d_ct[0], sizeof_poly);
-    //std::cout << "In the loop: " << std::endl;
-    int32_t temp_basis = 1; 
-    long* temp_array = new long[sizeof_poly];
-    for(int32_t i=1; i < ell; ++i){
-        temp_basis = temp_basis * basis;
-        //std::cout << "d_ct[" << i << "]: " << utils::to_string(d_ct[i], sizeof_poly) << std::endl;
-        Utils::mul_scalar(temp_array, d_ct[i], sizeof_poly, temp_basis);
-        //std::cout << "temp_array: " << utils::to_string(temp_array, sizeof_poly) << std::endl;
-        Utils::add_polynomials(out, out, temp_array, sizeof_poly, sizeof_poly); 
-    } 
-    delete[] temp_array;
-}
-  
-
+ 
 int64_t Utils::max(long* in, int32_t N){
     int64_t max = in[0];
     for(int32_t i = 1; i < N; ++i){

@@ -1,170 +1,229 @@
 #include "polynomial_inversion_engines.h"
+#include <cassert>
 
 using namespace fhe_deck;
 
-EuclideanInversionEngine::EuclideanInversionEngine(const Polynomial& poly_mod){
-    this->poly_mod = poly_mod;
+EuclideanInversionEngine::EuclideanInversionEngine(const int32_t degree, const int64_t coef_modulus){
+    this->degree = degree;
+    this->coef_modulus = coef_modulus;
+    poly_mod = std::vector<int64_t>(degree+1, 0);
+    poly_mod[0] = 1;
+    poly_mod[degree] = 1;
 }
 
-void EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in){
-    Polynomial g(poly_mod.degree, poly_mod.coef_modulus); 
-    Polynomial v(poly_mod.degree, poly_mod.coef_modulus); 
-    euclid_alg(g, out, v, in, poly_mod); 
-}
-
-void EuclideanInversionEngine::euclid_alg(Polynomial& g, Polynomial& u, Polynomial& v, const Polynomial &a, const Polynomial &b){
-    // r0 = a
-    Polynomial r0 = a;
-    // r1 = b
-    Polynomial r1 = b;
-    // s0 = 1
-    Polynomial s0(poly_mod.degree, poly_mod.coef_modulus);
-    s0.zeroize();
-    s0.coefs[0] = 1;
-    // s1 = 0
-    Polynomial s1(poly_mod.degree, poly_mod.coef_modulus);
-    s1.zeroize(); 
-    // t0 = 0
-    Polynomial t0 = s1;
-    // t1 = 1
-    Polynomial t1 = s0;
-    // zero_poly = Poly([0])
-    Polynomial zero_poly = s1;
-    // while r1 != zero_poly:
-    while(Utils::is_eq_poly(r1.coefs, zero_poly.coefs, zero_poly.degree)){
-       
-    //     # Compute the q the quotient and remainder of dividing r0 by r1 
-    //    q = r0 // r1
-    Polynomial q(poly_mod.degree, poly_mod.coef_modulus);
-    Polynomial r(poly_mod.degree, poly_mod.coef_modulus);
-    poly_division(q, r, r0, r1);
-    //    r1copy = r1
-    Polynomial r1_copy = r1;
-    //    s1copy = s1
-    Polynomial s1_copy = s1;
-    //    t1copy = t1
-    Polynomial t1_copy = t1;
-    //    r1 = r0 - q * r1
-    Polynomial temp(poly_mod.degree, poly_mod.coef_modulus);
-    q.mul(temp, r1);
-    //    s1 = s0 - q * s1
-    //    t1 = t0 - q * t1
-    //    r0 = r1copy
-    //    s0 = s1copy
-    //    t0 = t1copy  
-     
+bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
+    std::vector<int64_t> a;
+    a.resize(in.degree);
+    for(int32_t i = 0; i < in.degree; ++i){
+        a[i] = in.coefs[i];
     }
-    //g = r0
-    //u = s0
-    //v = t0 
-    //return [g, u, v]
+    /// Remove trailing zeros from the remainder
+    while (!a.empty() && a.back() == 0) {
+        a.pop_back();
+    } 
+    auto [g, u, v] = xgcd(a, poly_mod, coef_modulus);  
+    out.zeroize();
+    for(int i = 0; i < u.size(); ++i){
+        out.coefs[i] = u[i];
+    } 
+    return !u.empty();
 }
+  
+// Given polynomials a, b returns {r0, s0, t0} s.t. a*s0 + b*t0 = r0, where r0 is the gcd of polynomials,
+// either s0 = 1, t0 = 0 or s0 = 0, t0 = 1 or
+//  deg(u) < deg(b) - deg(g), deg(v) < deg(a) - deg(g) 
+std::tuple<std::vector<int64_t>, std::vector<int64_t>, std::vector<int64_t>> EuclideanInversionEngine::xgcd(
+        const std::vector<int64_t>& a, 
+        const std::vector<int64_t>& b, 
+        uint64_t p) const{
 
-
-/*
-std::pair<std::vector<int>, std::pair<std::vector<int>, std::vector<int>>> extended_euclidean_algorithm_poly(const std::vector<int>& a, const std::vector<int>& b, int p) {
-    if (b.empty()) {
-        return {a, {{1}, {0}}};
+    std::vector<int64_t> r0 = a;
+    std::vector<int64_t> r1 = b; 
+    std::vector<int64_t> s0 = {1};
+    std::vector<int64_t> s1 = {};
+    std::vector<int64_t> t0 = {};
+    std::vector<int64_t> t1 = {1};  
+    /// NOTE: Actually you need to check if r1 is the zero poly.
+    while (r1.size() != 0) { 
+        std::vector<int64_t> r1_copy = r1;
+        auto [q, r] = polynomial_division(r0, r1, p); 
+        r1 = r; 
+        std::vector<int64_t> s1_copy = s1; 
+        std::vector<int64_t> t1_copy = t1;   
+        //r1 = polynomial_subtraction(r0, polynomial_multiplication(q, r1, p), p); 
+        s1 = polynomial_subtraction(s0, polynomial_multiplication(q, s1, p), p);   
+        t1 = polynomial_subtraction(t0, polynomial_multiplication(q, t1, p), p);   
+        r0 = r1_copy; 
+        s0 = s1_copy; 
+        t0 = t1_copy;
+    }  
+    int64_t inv_lead = modular_inverse(r0.back(), p);
+    for(int i = 0; i < r0.size(); ++i){
+        r0[i] = ((int128_t)r0[i] * (int128_t)inv_lead) % (int128_t)p;
     }
+    for(int i = 0; i < s0.size(); ++i){
+        s0[i] = ((int128_t)s0[i] * (int128_t)inv_lead) % (int128_t)p;
+    }
+    for(int i = 0; i < t0.size(); ++i){
+        t0[i] = ((int128_t)t0[i] * (int128_t)inv_lead) % (int128_t)p;
+    }
+    return {r0, s0, t0};
+} 
+   
 
-    std::pair<std::vector<int>, std::pair<std::vector<int>, std::vector<int>>> result = extended_euclidean_algorithm_poly(b, polynomial_division(a, b, p).second, p);
-    std::vector<int> g = result.first;
-    std::vector<int> s = result.second.first;
-    std::vector<int> t = result.second.second;
-
-    std::vector<int> q = polynomial_division(a, b, p).first;
-    std::vector<int> s_prime = t;
-    t = polynomial_subtraction(s, polynomial_multiplication(q, t, p), p);
-    s = s_prime;
-
-    return {g, {s, t}};
-}
-
-std::vector<int> polynomial_division(const std::vector<int>& dividend, const std::vector<int>& divisor, int p) {
-    std::vector<int> quotient(dividend.size() - divisor.size() + 1, 0);
-    std::vector<int> remainder = dividend;
-
-    while (remainder.size() >= divisor.size() && !remainder.empty()) {
-        int scale = remainder.front() / divisor.front();
-        quotient[remainder.size() - divisor.size()] = scale;
-
-        for (int i = 0; i < divisor.size(); ++i) {
-            remainder[i + remainder.size() - divisor.size()] = (remainder[i + remainder.size() - divisor.size()] - scale * divisor[i] + p) % p;
+std::pair<std::vector<int64_t>, std::vector<int64_t>> EuclideanInversionEngine::polynomial_division(
+        const std::vector<int64_t>& a, 
+        const std::vector<int64_t>& b, 
+        uint64_t p)const {
+    
+    int32_t n = a.size();
+    int32_t m = b.size(); 
+    if (n < m) {
+        return {std::vector<int64_t>(), a}; // Quotient is 0, remainder is a
+    } 
+    std::vector<int64_t> q(n - m + 1);
+    std::vector<int64_t> r = a; 
+    for (int32_t i = n - m; i >= 0; --i) {
+        q[i] = ((int128_t)r[i + m - 1] * (int128_t)modular_inverse(b[m - 1], p)) % (int128_t)p;  
+        for (int32_t j = 0; j < m; ++j) {
+            r[i + j] = Utils::integer_mod_form(r[i + j]  - (int128_t)((int128_t)q[i] * (int128_t)b[j]) % (int128_t)p, p);
         }
-
-        while (!remainder.empty() && remainder.back() == 0) {
-            remainder.pop_back();
-        }
-    }
-
-    return quotient;
+    } 
+    // Remove trailing zeros from the remainder
+    while (!r.empty() && r.back() == 0) {
+        r.pop_back();
+    } 
+    return {q, r};
 }
-*/
+ 
 
-std::vector<int> polynomial_multiplication(const std::vector<int>& a, const std::vector<int>& b, int p) {
-    std::vector<int> result(a.size() + b.size() - 1, 0);
-
-    for (int i = 0; i < a.size(); ++i) {
-        for (int j = 0; j < b.size(); ++j) {
-            result[i + j] = (result[i + j] + a[i] * b[j]) % p;
-        }
+std::vector<int64_t> EuclideanInversionEngine::polynomial_multiplication(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const { 
+    /// NOTE:  a.size() + b.size() - 1 can be -1, if a and b are zero polynomials....
+    if(a.size() == 0){
+        return {};
     }
-
-    return result;
-}
-
-std::vector<int> polynomial_subtraction(const std::vector<int>& a, const std::vector<int>& b, int p) {
-    std::vector<int> result(a.size(), 0); 
-    for (int i = 0; i < a.size(); ++i) {
-        result[i] = (a[i] - b[i] + p) % p;
+    if(b.size() == 0){
+        return {};
+    } 
+    std::vector<int64_t> result(a.size() + b.size() - 1, 0); 
+    for (int32_t i = 0; i < a.size(); ++i) {
+        for (int32_t j = 0; j < b.size(); ++j) {
+            result[i + j] = (result[i + j] + ((uint128_t)a[i] * (uint128_t)b[j]) % (uint128_t)p) % p;
+        }
     } 
     return result;
 }
 
-
-void EuclideanInversionEngine::poly_division(Polynomial& quotient, Polynomial& reminder, const Polynomial& divided, const Polynomial& divisor){
-
+std::vector<int64_t> EuclideanInversionEngine::polynomial_subtraction(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const { 
+    std::vector<int64_t> result; 
+    if(a.size() > b.size()){ 
+        result = a;
+        for (int i = 0; i < b.size() ; ++i) {
+            result[i] = (a[i] - b[i] + p) % p;
+        } 
+    }else{ 
+        result = b;
+        for (int i = 0; i < a.size() ; ++i) {
+            result[i] = (a[i] - b[i] + p) % p;
+        } 
+        for (int i = a.size(); i < b.size() ; ++i) {
+            result[i] = (-b[i] + p) % p;
+        }
+    }
+    while (!result.empty() && result.back() == 0) {
+        result.pop_back();
+    } 
+    return result;
 }
-
-
-void EuclideanInversionEngine::trivial_poly_mul(Polynomial& out, Polynomial& in_1, Polynomial& in_2){
-
+  
+ 
+std::pair<int64_t, std::pair<int64_t, int64_t>> EuclideanInversionEngine::extended_euclidean_algorithm(int64_t a, int64_t b) const{
+    int64_t x0 = 0;    
+    int64_t x1 = 1;
+    int64_t y0 = 1;    
+    int64_t y1 = 0;
+    while(a != 0){ 
+        auto dv = std::div(b, a);
+        int64_t q = dv.quot; 
+        b = a;
+        a = dv.rem;
+        int64_t temp = y0;
+        y0 = y1;
+        y1 = temp - q * y1;
+        temp = x0;
+        x0 = x1;
+        x1 = temp - q * x1;
+    }     
+    int64_t gcd = b;
+    int64_t x = x0;
+    int64_t y = y0; 
+    return {gcd, {x, y}};
 }
+  
+int64_t EuclideanInversionEngine::modular_inverse(int64_t a, int64_t p)const {
+    auto [gcd, coeffs] = extended_euclidean_algorithm(a, p); 
+    return Utils::integer_mod_form(coeffs.first, p);
+} 
 
  
-std::pair<int, std::pair<int, int>> EuclideanInversionEngine::extended_euclidean_algorithm(int a, int b) {
-    int x = 1, y = 0, x1 = 0, y1 = 1;
 
-    while (b != 0) {
-        int q = a / b;
-        int r = a % b;
-        a = b;
-        b = r;
-        x = x1;
-        y = y1;
-        x1 = x - q * x1;
-        y1 = y - q * y1;
-    }
+#if defined(USE_NTL)
 
-    return {a, {x, y}};
+NTLInversionEngine::NTLInversionEngine(const int degree, const int64_t coef_modulus){
+    this->degree = degree;
+    this->coef_modulus = coef_modulus;
+    poly_mod = std::vector<int64_t>(degree+1, 0);
+    poly_mod[0] = 1;
+    poly_mod[degree] = 1;
+    ring_poly = get_ring_poly(RingType::negacyclic, degree, coef_modulus);
 }
 
-std::pair<std::vector<int>, std::vector<int>> polynomial_division(const std::vector<int>& dividend, const std::vector<int>& divisor) {
-    std::vector<int> quotient(dividend.size() - divisor.size() + 1, 0);
-    std::vector<int> remainder = dividend;
 
-    while (remainder.size() >= divisor.size() && !remainder.empty()) {
-        int scale = remainder.front() / divisor.front();
-        quotient[remainder.size() - divisor.size()] = scale;
-
-        for (int i = 0; i < divisor.size(); ++i) {
-            remainder[i + remainder.size() - divisor.size()] -= scale * divisor[i];
-        }
-
-        while (!remainder.empty() && remainder.back() == 0) {
-            remainder.pop_back();
-        }
-    }
-
-    return {quotient, remainder};
+bool NTLInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
+    NTL::ZZ_pX temp_f; 
+    set_polynomial_from_array(temp_f, in.coefs, in.size, coef_modulus);
+    NTL::ZZ_pX temp_inv_f;  
+    int64_t status = NTL::InvModStatus(temp_inv_f, temp_f, ring_poly);   
+    set_array_from_polynomial(out.coefs, out.size, temp_inv_f);    
+    return (status == 0); 
 }
+
+void NTLInversionEngine::set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f, int32_t sizeof_f, int64_t Q)const{
+    NTL::ZZ_p coef;
+    coef.init(NTL::ZZ(Q));
+    for(int32_t i = 0; i < sizeof_f; ++i){
+        coef = f[i];
+        NTL::SetCoeff(poly, i, coef);
+    } 
+}
+
+
+void NTLInversionEngine::set_array_from_polynomial(int64_t *f, int32_t sizeof_array, NTL::ZZ_pX poly)const{ 
+    for(int32_t i = 0; i < sizeof_array; ++i){
+        f[i] = 0;
+    }
+    int64_t deg = NTL::deg(poly);
+    for(int32_t i = 0; i <= deg; ++i){
+         f[i] = NTL::conv<long>(poly[i]);
+    } 
+}
+
+
+NTL::ZZ_pX NTLInversionEngine::get_ring_poly(RingType ring, int64_t N, int64_t modulus)const{
+    NTL::ZZ_pX out;
+    int64_t *psi_arr = new long[N+1]; 
+    psi_arr[N] = 1;
+    for(int32_t i=1; i < N; ++i){
+            psi_arr[i] = 0;
+    } 
+    if(ring==RingType::cyclic){
+        psi_arr[0] = modulus-1;
+    }else{
+        psi_arr[0] = 1;
+    }
+    set_polynomial_from_array(out, psi_arr, N+1, modulus); 
+    delete[] psi_arr;
+    return out;
+}
+
+#endif

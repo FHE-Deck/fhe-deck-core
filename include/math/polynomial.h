@@ -110,7 +110,7 @@ class PolynomialInversionEngine{
     /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
     /// @param out The output polynomial
     /// @param in The input polynomial
-    virtual void inv(Polynomial &out, const Polynomial &in)const = 0;
+    virtual bool inv(Polynomial &out, const Polynomial &in)const = 0;
  
 };
 

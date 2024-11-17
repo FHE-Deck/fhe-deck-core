@@ -3,10 +3,7 @@ file(GLOB EXAMPLES *.cpp)
 set(CMAKE_C_FLAGS_INIT "-Wall")
 
 foreach(EXAMPLE_SRC ${EXAMPLES}) 
-
-	if(USE_FOO)
-		add_compile_definitions(FOO)
-	endif()
+ 
 	get_filename_component(EXAMPLE_NAME ${EXAMPLE_SRC} NAME_WE)
 	add_executable(${EXAMPLE_NAME} ${EXAMPLE_SRC}) 
 	

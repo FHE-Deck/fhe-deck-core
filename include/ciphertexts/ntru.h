@@ -8,9 +8,11 @@
  */
 
 
+/*
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h>
+*/
 #include <complex>
 #include "sample.h"
 #include "utils.h" 
@@ -20,7 +22,7 @@
 #include "polynomial.h"
 #include "polynomial_ciphertext.h"
 #include "gadget.h"
-
+#include "polynomial_inversion_engines.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

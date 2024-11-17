@@ -3,35 +3,71 @@
 
 #include "polynomial.h"
 
+#if defined(USE_NTL)
+#include <NTL/ZZX.h>
+#include <NTL/ZZ_pX.h>
+#include <NTL/ZZ_p.h>
+#endif
+
 namespace fhe_deck{
     
 class EuclideanInversionEngine : PolynomialInversionEngine{
 
     public: 
     
-    Polynomial poly_mod;
+    std::vector<int64_t> poly_mod;
+    int32_t degree;
+    int64_t coef_modulus;
 
-    EuclideanInversionEngine(const Polynomial& poly_mod);
-
+    EuclideanInversionEngine(const int32_t degree, const int64_t coef_modulus);
+  
     /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
     /// @param out The output polynomial
     /// @param in The input polynomial
-    void inv(Polynomial &out, const Polynomial &in);
+    bool inv(Polynomial &out, const Polynomial &in)const;
+     
+    std::tuple<std::vector<int64_t>, std::vector<int64_t>, std::vector<int64_t>> xgcd(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const;
+
+    std::pair<std::vector<int64_t>, std::vector<int64_t>> polynomial_division(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const;
+
+    std::vector<int64_t> polynomial_multiplication(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const;
+
+    std::vector<int64_t> polynomial_subtraction(const std::vector<int64_t>& a, const std::vector<int64_t>& b, uint64_t p)const;
+
+    std::pair<int64_t, std::pair<int64_t, int64_t>> extended_euclidean_algorithm(int64_t a, int64_t b)const;
+
+    int64_t modular_inverse(int64_t a, int64_t m) const;
+};
+
+#if defined(USE_NTL)
+   
+class NTLInversionEngine : PolynomialInversionEngine{
+
+    public: 
+    
+    std::vector<int64_t> poly_mod;
+    int32_t degree;
+    int64_t coef_modulus;
+
+    NTL::ZZ_pX ring_poly;
+
+    NTLInversionEngine(const int32_t degree, const int64_t coef_modulus);
+  
+    /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 
+    /// @param out The output polynomial
+    /// @param in The input polynomial
+    bool inv(Polynomial &out, const Polynomial &in)const;
 
     private:
 
-    // Given polynomials a, b returns u, v s.t. au + bv = g, where g is the gcd of polynomials,
-    void euclid_alg(Polynomial& g, Polynomial& u, Polynomial& v, const Polynomial &a, const Polynomial &b);
- 
-    void poly_division(Polynomial& quotient, Polynomial& reminder, const Polynomial& divided, const Polynomial& divisor);
+    void set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f, int32_t sizeof_f, int64_t Q)const;
 
-    void trivial_poly_mul(Polynomial& out, Polynomial& in_1, Polynomial& in_2);
+    void set_array_from_polynomial(int64_t *f, int32_t sizeof_array, NTL::ZZ_pX poly)const;
 
-    std::pair<int, std::pair<int, int>> extended_euclidean_algorithm(int a, int b);
-
+    NTL::ZZ_pX get_ring_poly(RingType ring, int64_t N, int64_t modulus)const;
 };
-
-
+ 
+#endif 
   
 }
 

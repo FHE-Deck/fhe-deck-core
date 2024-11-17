@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <chrono>
 #include "fhe_deck.h" 
 
 
@@ -1195,7 +1196,7 @@ void serialization_test(){
 
 int main(){  
      
-     
+      
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1209,9 +1210,9 @@ int main(){
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT_amortized);
 
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_12_NTT_amortized);
-   
-    test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
     
+    test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
+     
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
  
     amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized); 
@@ -1224,6 +1225,6 @@ int main(){
 
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
 
-    serialization_test();   
+    serialization_test();    
   
 }

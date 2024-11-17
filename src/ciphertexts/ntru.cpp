@@ -185,19 +185,16 @@ void NTRUSK::init(){
     this->sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
 }
 
-void NTRUSK::key_gen(){ 
-    int32_t status = 1;   
-    NTL::ZZ_pX temp_f;
-    NTL::ZZ_pX temp_inv_f;
+void NTRUSK::key_gen(){   
     this->sk = Polynomial(param->size, param->coef_modulus); 
+    this->inv_sk = Polynomial(param->size, param->coef_modulus);   
+    EuclideanInversionEngine inv_engine(param->size, param->coef_modulus); 
+    bool has_inverse = false; 
     do{  
-        sk_dist->fill_array(this->sk.coefs, param->size);   
-        Utils::array_mod_form(this->sk.coefs, this->sk.coefs, param->size, param->coef_modulus);
-        Utils::set_polynomial_from_array(temp_f, this->sk.coefs, param->size, param->coef_modulus);
-        status = NTL::InvModStatus(temp_inv_f, temp_f, Utils::get_ring_poly(RingType::negacyclic, param->size, param->coef_modulus));  
-    }while(status == 1); 
-    this->inv_sk = Polynomial(param->size, param->coef_modulus);  
-    Utils::set_array_from_polynomial(this->inv_sk.coefs, param->size, temp_inv_f);     
+        sk_dist->fill_array(this->sk.coefs, param->size);    
+        Utils::array_mod_form(this->sk.coefs, this->sk.coefs, param->size, param->coef_modulus);   
+        has_inverse = inv_engine.inv(this->inv_sk, this->sk);  
+    }while(!has_inverse);      
 }  
   
 NTRUSK::NTRUSK(const NTRUSK &other){

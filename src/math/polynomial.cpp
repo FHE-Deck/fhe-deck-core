@@ -224,12 +224,42 @@ void Polynomial::set_inversion_engine(std::shared_ptr<PolynomialInversionEngine>
 }
 
 void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
-    Utils::rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
+    int32_t overflow= this->degree - rotation ;  
+      for(int32_t i = 0; i < overflow; ++i){   
+            out.coefs[i+rotation] = this->coefs[i];
+            
+      }
+      for(int32_t i = 0; i < rotation; ++i){ 
+            out.coefs[i] = this->coefs[overflow + i];
+      }
+    //Utils::rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
 }
 
 void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{   
     /// TODO: That implementation is not the best. 
-    Utils::negacyclic_rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
+    //Utils::negacyclic_rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
+
+    long* temp = new long[this->degree];
+    if(rotation >= this->degree){
+        for(int32_t i = 0; i < this->degree; ++i){
+            temp[i] = -this->coefs[i];
+        }
+        rotation = rotation - this->degree;
+    }else{
+        for(int32_t i = 0; i < this->degree; ++i){
+            temp[i] = this->coefs[i];
+        }
+    } 
+    // NOTE We implement negacyclic rotate actually -> it changes the sign of rot first coefficients
+    int32_t overflow=this->degree - rotation ;  
+    for(int32_t i = 0; i < overflow; ++i){   
+        out.coefs[i+rotation] = temp[i];
+    }
+    for(int32_t i = 0; i < rotation; ++i){ 
+        out.coefs[i] = -temp[overflow + i];
+    }
+    delete[] temp;
+
     Utils::array_mod_form(out.coefs, out.coefs, this->degree, this->coef_modulus);
 }
  
