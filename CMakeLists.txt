@@ -45,7 +45,10 @@ if(USE_IntelHexl)
     link_directories(${third_party}/intel_hexl/lib) 
 
     add_library(intel_hexl_lib STATIC IMPORTED)
-    set_target_properties(intel_hexl_lib PROPERTIES IMPORTED_LOCATION ${intelhexl_link})
+    set_target_properties(intel_hexl_lib PROPERTIES 
+        IMPORTED_LOCATION ${intelhexl_link}
+        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/intel_hexl/include
+    )
 else()
     set(intelhexl_link "")
 endif() 
@@ -70,7 +73,10 @@ if(USE_FFTW)
     include_directories(${third_party}/fftw3/include)
     link_directories(${third_party}/fftw3/lib) 
     add_library(fftw3_lib SHARED IMPORTED)
-    set_target_properties(fftw3_lib PROPERTIES IMPORTED_LOCATION ${fftw_link})
+    set_target_properties(fftw3_lib PROPERTIES 
+        IMPORTED_LOCATION ${fftw_link}
+        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/fftw3/include
+    )
 else()
     set(fftw_link "")
 endif() 
@@ -96,7 +102,10 @@ if(USE_FFTWL)
     include_directories(${third_party}/fftwl3/include)
     link_directories(${third_party}/fftwl3/lib) 
     add_library(fftwl3_lib SHARED IMPORTED)
-    set_target_properties(fftwl3_lib PROPERTIES IMPORTED_LOCATION ${fftwl_link})
+    set_target_properties(fftwl3_lib PROPERTIES 
+        IMPORTED_LOCATION ${fftwl_link}
+        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/fftwl3/include
+    )
 else()
     set(fftwl_link "")
 endif() 
@@ -169,8 +178,13 @@ add_library(fhe_deck STATIC
 	${INC_FHE} ${SRC_FHE}
 )
   
-target_include_directories(fhe_deck PUBLIC include)  
-#target_link_libraries(fhe_deck PUBLIC ${ntl_link} ${fftw_link} ${fftwl_link} ${intel_hexl_link})
+#target_include_directories(fhe_deck PUBLIC include)   
+
+target_include_directories(fhe_deck PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
 
  
@@ -185,6 +199,26 @@ if(USE_TESTS)
     add_subdirectory(tests) 
 endif()
 
+
+
+# Install fhe_deck library
+install(TARGETS fhe_deck
+    EXPORT fhe_deck_targets
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+# Install export file
+install(EXPORT fhe_deck_targets
+    FILE FHEDeckConfig.cmake
+    DESTINATION lib/cmake/fhe_deck
+)
+
+# Install include directory
+install(DIRECTORY include/ DESTINATION include)
+
+#[[
 install(
     TARGETS fhe_deck
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
@@ -199,3 +233,4 @@ install(
     DIRECTORY include
     DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
+]]#
