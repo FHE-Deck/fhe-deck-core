@@ -187,6 +187,8 @@ target_include_directories(fhe_deck PUBLIC
 
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
 
+get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
+message(STATUS "fhe_deck dependencies: ${deps}")
  
 add_subdirectory(examples) 
 
@@ -202,7 +204,7 @@ endif()
 
 
 # Install fhe_deck library
-install(TARGETS fhe_deck
+install(TARGETS fhe_deck 
     EXPORT fhe_deck_targets
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
@@ -212,7 +214,7 @@ install(TARGETS fhe_deck
 # Install export file
 install(EXPORT fhe_deck_targets
     FILE FHEDeckConfig.cmake
-    DESTINATION lib/cmake/fhe_deck
+    DESTINATION lib/cmake
 )
 
 # Install include directory
