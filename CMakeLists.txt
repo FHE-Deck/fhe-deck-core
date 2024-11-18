@@ -32,6 +32,8 @@ message("--- USE_IntelHexl: " ${USE_IntelHexl})
 
 if(USE_IntelHexl)
     add_definitions(-DUSE_IntelHexl)
+
+ 
     set(intelhexl_link ${third_party}/intel_hexl/lib/libhexl.a)
     include(ExternalProject)  
     ExternalProject_Add(
@@ -46,9 +48,27 @@ if(USE_IntelHexl)
 
     add_library(intel_hexl_lib STATIC IMPORTED)
     set_target_properties(intel_hexl_lib PROPERTIES 
-        IMPORTED_LOCATION ${intelhexl_link}
-        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/intel_hexl/include
+        IMPORTED_LOCATION ${intelhexl_link} 
+    ) 
+     
+#[[
+    include(FetchContent)
+    FetchContent_Declare(
+        intel_hexl
+        GIT_REPOSITORY https://github.com/intel/hexl.git
+        GIT_TAG development
     )
+    set(HEXL_SHARED_LIB OFF) # Static library
+    set(HEXL_TESTING OFF)    # Disable testing
+    set(HEXL_BENCHMARK OFF)  # Disable benchmarks
+    FetchContent_MakeAvailable(intel_hexl)   
+    include_directories(${INTEL_HEXL_BINARY_DIR}/include)
+    add_library(intel_hexl_lib STATIC IMPORTED)
+    set_target_properties(intel_hexl_lib PROPERTIES 
+        IMPORTED_LOCATION ${INTEL_HEXL_BINARY_DIR}/lib/libhexl.a
+    )
+]]#
+
 else()
     set(intelhexl_link "")
 endif() 
@@ -60,6 +80,7 @@ endif()
 message("--- USE_FFTW: " ${USE_FFTW}) 
 if(USE_FFTW)
     add_definitions(-DUSE_FFTW)
+ 
     set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
     include(ExternalProject) 
     set(FFTW fftw_lib)
@@ -74,9 +95,22 @@ if(USE_FFTW)
     link_directories(${third_party}/fftw3/lib) 
     add_library(fftw3_lib SHARED IMPORTED)
     set_target_properties(fftw3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftw_link}
-        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/fftw3/include
-    )
+        IMPORTED_LOCATION ${fftw_link} 
+    ) 
+
+    #include(FetchContent)
+    #FetchContent_Declare(
+    #    fftw
+    #    URL https://www.fftw.org/fftw-3.3.10.tar.gz 
+    #    URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
+    #) 
+    #FetchContent_MakeAvailable(fftw)   
+    #add_subdirectory(${FFTW_SOURCE_DIR})
+    #add_library(fftw SHARED IMPORTED)
+    #set_target_properties(fftw PROPERTIES
+    #    IMPORTED_LOCATION ${FFTW_BINARY_DIR}/libfftw3.so
+    #)
+    #include_directories(${FFTW_BINARY_DIR}/include)
 else()
     set(fftw_link "")
 endif() 
@@ -103,8 +137,7 @@ if(USE_FFTWL)
     link_directories(${third_party}/fftwl3/lib) 
     add_library(fftwl3_lib SHARED IMPORTED)
     set_target_properties(fftwl3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftwl_link}
-        INTERFACE_INCLUDE_DIRECTORIES ${third_party}/fftwl3/include
+        IMPORTED_LOCATION ${fftwl_link}  
     )
 else()
     set(fftwl_link "")
@@ -177,11 +210,12 @@ add_library(fhe_deck STATIC
 	${INC_COMMON} ${SRC_COMMON} 
 	${INC_FHE} ${SRC_FHE}
 )
-  
-#target_include_directories(fhe_deck PUBLIC include)   
+    
 
 target_include_directories(fhe_deck PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${intel_hexl_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${fftw_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -200,9 +234,8 @@ message("--- USE_TESTS: " ${USE_TESTS})
 if(USE_TESTS)
     add_subdirectory(tests) 
 endif()
-
-
-
+ 
+ 
 # Install fhe_deck library
 install(TARGETS fhe_deck 
     EXPORT fhe_deck_targets
