@@ -203,6 +203,9 @@ target_include_directories(fhe_deck
         $<INSTALL_INTERFACE:include>
 )
      
+add_dependencies(fhe_deck fftw3_lib)
+add_dependencies(fhe_deck fftwl3_lib)
+add_dependencies(fhe_deck intel_hexl_lib)
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
