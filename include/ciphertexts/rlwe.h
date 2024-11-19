@@ -8,17 +8,16 @@
  */
 
  
-#include "enums.h"
-#include "sample.h"
-#include "fft_plan.h"
-#include "lwe.h"
-#include "gadget.h"
-#include "hexl/hexl.hpp"
-#include "utils.h"
-#include "polynomial.h"
-#include "polynomial_multiplication_engine_builder.h"
-#include "polynomial_ciphertext.h"
-#include "plaintext_encoding.h" 
+#include "common/enums.h"
+#include "common/sample.h"
+#include "math/fft_plan.h"
+#include "ciphertexts/lwe.h"
+#include "common/gadget.h" 
+#include "common/utils.h"
+#include "math/polynomial.h"
+#include "math/polynomial_multiplication_engine_builder.h"
+#include "ciphertexts/polynomial_ciphertext.h"
+#include "interface/plaintext_encoding.h" 
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

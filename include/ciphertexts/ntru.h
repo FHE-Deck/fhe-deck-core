@@ -14,15 +14,15 @@
 #include <NTL/ZZ_p.h>
 */
 #include <complex>
-#include "sample.h"
-#include "utils.h" 
-#include "fft_plan.h"
+#include "common/sample.h"
+#include "common/utils.h" 
+#include "math/fft_plan.h"
 
-#include "lwe.h"
-#include "polynomial.h"
-#include "polynomial_ciphertext.h"
-#include "gadget.h"
-#include "polynomial_inversion_engines.h"
+#include "ciphertexts/lwe.h"
+#include "math/polynomial.h"
+#include "ciphertexts/polynomial_ciphertext.h"
+#include "common/gadget.h"
+#include "math/polynomial_inversion_engines.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

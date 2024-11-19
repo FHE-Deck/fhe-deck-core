@@ -2,8 +2,8 @@
 #ifndef POLYNOMIAL_CIPHERTEXT_H
 #define POLYNOMIAL_CIPHERTEXT_H
 
-#include "polynomial.h"
-#include "vector_ciphertext.h"
+#include "math/polynomial.h"
+#include "ciphertexts/vector_ciphertext.h"
 
 
 /**

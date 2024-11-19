@@ -1,4 +1,4 @@
-#include "polynomial_inversion_engines.h"
+#include "math/polynomial_inversion_engines.h"
 #include <cassert>
 
 using namespace fhe_deck;

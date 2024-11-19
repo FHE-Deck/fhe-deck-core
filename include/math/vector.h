@@ -8,8 +8,8 @@
 #include <memory> 
 #include <cinttypes>
 
-#include "enums.h"
-#include "utils.h"  
+ 
+#include "common/utils.h"  
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>

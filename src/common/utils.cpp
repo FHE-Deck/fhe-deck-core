@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "common/utils.h"
  
 using namespace fhe_deck;
  
@@ -184,7 +184,7 @@ std::string Utils::to_string(int32_t *poly, int32_t sizeof_poly){
     return str;
 }
 
-
+/*
 std::string Utils::complex_to_string(fftw_complex* in, int32_t from, int32_t size){
     std::string out = "";
     for(int32_t i = from; i < size; ++i){
@@ -196,6 +196,7 @@ std::string Utils::complex_to_string(fftw_complex* in, int32_t from, int32_t siz
     }
     return out;
 }
+*/
  
 void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell){
     int64_t mask = basis-1;

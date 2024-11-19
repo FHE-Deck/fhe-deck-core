@@ -8,13 +8,13 @@
  */
 
 
-#include "ciphertext.h"
-#include "lwe.h"
-#include "rlwe.h" 
-#include "rotation_poly.h"
-#include "cggi_blind_rotation.h"
-#include "lwe_to_lwe_keyswitch.h" 
-#include "lwe_to_rlwe_keyswitch.h" 
+#include "interface/ciphertext.h"
+#include "ciphertexts/lwe.h"
+#include "ciphertexts/rlwe.h" 
+#include "interface/rotation_poly.h"
+#include "fhe/cggi_blind_rotation.h"
+#include "keyswitch/lwe_to_lwe_keyswitch.h" 
+#include "keyswitch/lwe_to_rlwe_keyswitch.h" 
 
 
 #include <cereal/archives/binary.hpp>

@@ -8,9 +8,10 @@
 
 #include <random>
 #include <iostream> 
-#include "utils.h"
-#include "plaintext_encoding.h"
-#include "polynomial_multiplication_engine_builder.h"
+#include "common/utils.h"
+#include "common/sample.h"
+#include "interface/plaintext_encoding.h"
+#include "math/polynomial_multiplication_engine_builder.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/memory.hpp>

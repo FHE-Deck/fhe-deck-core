@@ -7,8 +7,8 @@
  */
 
 
-#include "lwe.h"
-#include "functional_bootstrap.h"
+#include "ciphertexts/lwe.h"
+#include "fhe/functional_bootstrap.h"
  
 namespace fhe_deck{
   

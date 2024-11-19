@@ -6,9 +6,9 @@
  */
 
 #include <iostream>
-#include "vector.h"  
-#include "enums.h"  
-#include "utils.h"
+#include "math/vector.h"  
+#include "common/enums.h"  
+#include "common/utils.h"
 
 namespace fhe_deck{
  

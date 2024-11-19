@@ -1,4 +1,4 @@
-#include "lwe.h"
+#include "ciphertexts/lwe.h"
 
 using namespace fhe_deck;
   

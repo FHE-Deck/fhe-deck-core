@@ -1,4 +1,5 @@
-#include "plaintext_encoding.h"
+#include "interface/plaintext_encoding.h"
+
 using namespace fhe_deck;
  
 PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plaintext_space, int64_t ciphertext_modulus){

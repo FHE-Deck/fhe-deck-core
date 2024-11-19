@@ -9,9 +9,9 @@
  */
 
 
-#include "utils.h" 
-#include "sample.h"
-#include "vector.h"
+#include "common/utils.h" 
+#include "common/sample.h"
+#include "math/vector.h"
 
 #include <complex>
 #include <limits>

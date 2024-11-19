@@ -1,4 +1,4 @@
-#include "cggi_blind_rotation.h"
+#include "fhe/cggi_blind_rotation.h"
 
 using namespace fhe_deck;
   

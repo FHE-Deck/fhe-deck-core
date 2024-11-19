@@ -1,4 +1,4 @@
-#include "ks_functional_bootstrap.h"
+#include "fhe/ks_functional_bootstrap.h"
 
 using namespace fhe_deck;
  

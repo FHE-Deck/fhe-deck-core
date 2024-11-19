@@ -1,8 +1,8 @@
 
-#include "polynomial_multiplication_engine_builder.h"
+#include "math/polynomial_multiplication_engine_builder.h"
 
-#include "intel_hexl_engine.h"
-#include "fftw_engines.h"
+#include "math/intel_hexl_engine.h"
+#include "math/fftw_engines.h"
 
 using namespace fhe_deck;
 

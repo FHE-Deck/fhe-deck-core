@@ -1,4 +1,4 @@
-#include "ciphertext_sanitization.h"
+#include "fhe/ciphertext_sanitization.h"
 
 using namespace fhe_deck;
 

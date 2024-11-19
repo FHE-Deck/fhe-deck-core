@@ -8,12 +8,12 @@
  */
 
 
-#include "lwe.h"
-#include "rlwe.h" 
-#include "ciphertext_sanitization.h"
-#include "functional_bootstrap.h"
-#include "lmp_functional_bootstrap.h"
-#include "ks_functional_bootstrap.h"
+#include "ciphertexts/lwe.h"
+#include "ciphertexts/rlwe.h" 
+#include "fhe/ciphertext_sanitization.h"
+#include "fhe/functional_bootstrap.h"
+#include "fhe/lmp_functional_bootstrap.h"
+#include "fhe/ks_functional_bootstrap.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

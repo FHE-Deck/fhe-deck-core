@@ -5,9 +5,9 @@
  * @file rotation_poly.h
  */
 
-#include "utils.h"
-#include "plaintext_encoding.h"
-#include "polynomial.h"
+#include "common/utils.h"
+#include "interface/plaintext_encoding.h"
+#include "math/polynomial.h"
 
 namespace fhe_deck{
 

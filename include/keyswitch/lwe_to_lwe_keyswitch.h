@@ -6,7 +6,7 @@
  * @file lwe_to_lwe_keyswitch.h
  */
 
-#include "lwe.h"  
+#include "ciphertexts/lwe.h"  
  
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

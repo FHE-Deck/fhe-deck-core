@@ -1,7 +1,7 @@
 #ifndef POLYNOMIAL_INVERSION_ENGINES_H
 #define POLYNOMIAL_INVERSION_ENGINES_H
 
-#include "polynomial.h"
+#include "math/polynomial.h"
 
 #if defined(USE_NTL)
 #include <NTL/ZZX.h>

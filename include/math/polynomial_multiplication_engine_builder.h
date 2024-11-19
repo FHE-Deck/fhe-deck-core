@@ -5,7 +5,7 @@
  * @file polynomial_multiplication_engine_builder.h
  */
 
-#include "polynomial.h"
+#include "math/polynomial.h"
 
 namespace fhe_deck{
    

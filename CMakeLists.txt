@@ -50,6 +50,7 @@ if(USE_IntelHexl)
     set_target_properties(intel_hexl_lib PROPERTIES 
         IMPORTED_LOCATION ${intelhexl_link} 
     ) 
+    
      
 #[[
     include(FetchContent)
@@ -176,49 +177,32 @@ else()
 endif()
 
 message("--- CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
+ 
 
-# source files 
-file(GLOB INC_MATH include/math/*.cpp)
-file(GLOB SRC_MATH src/math/*.cpp)
-include_directories(include/math)
-
-file(GLOB INC_CIPHERTEXTS include/ciphertexts/*.cpp)
+# source files  
+file(GLOB SRC_MATH src/math/*.cpp) 
 file(GLOB SRC_CIPHERTEXTS src/ciphertexts/*.cpp)
-include_directories(include/ciphertexts)
-
-file(GLOB INC_KEYSWITCH include/keyswitch/*.cpp)
 file(GLOB SRC_KEYSWITCH src/keyswitch/*.cpp)
-include_directories(include/keyswitch)
-
-file(GLOB INC_COMMON include/common/*.cpp)
 file(GLOB SRC_COMMON src/common/*.cpp)
-include_directories(include/common)
-
-file(GLOB INC_INTERFACE include/interface/*.cpp)
 file(GLOB SRC_INTERFACE src/interface/*.cpp)
-include_directories(include/interface)
-
-file(GLOB INC_FHE include/fhe/*.cpp)
 file(GLOB SRC_FHE src/fhe/*.cpp)
-include_directories(include/fhe)
 
 add_library(fhe_deck STATIC
-	${INC_CIPHERTEXTS} ${SRC_CIPHERTEXTS}
-	${INC_MATH} ${SRC_MATH}
-	${INC_KEYSWITCH} ${SRC_KEYSWITCH}
-	${INC_INTERFACE} ${SRC_INTERFACE}
-	${INC_COMMON} ${SRC_COMMON} 
-	${INC_FHE} ${SRC_FHE}
-)
-    
-
-target_include_directories(fhe_deck PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${intel_hexl_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${fftw_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    ${SRC_CIPHERTEXTS}
+	${SRC_MATH}
+	${SRC_KEYSWITCH}
+	${SRC_INTERFACE}
+	${SRC_COMMON} 
+	${SRC_FHE}
 )
 
+
+target_include_directories(fhe_deck
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+     
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
@@ -242,6 +226,7 @@ install(TARGETS fhe_deck
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
 )
 
 # Install export file
@@ -251,21 +236,7 @@ install(EXPORT fhe_deck_targets
 )
 
 # Install include directory
-install(DIRECTORY include/ DESTINATION include)
-
-#[[
-install(
-    TARGETS fhe_deck
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    DESTINATION include
 )
-
-install(
-    TARGETS fhe_deck
-    EXPORT fhe_deck
-)
-
-install(
-    DIRECTORY include
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
-]]#
+ 

@@ -1,4 +1,4 @@
-#include "fhe_configuration.h"
+#include "fhe/fhe_configuration.h"
 
 using namespace fhe_deck;
 

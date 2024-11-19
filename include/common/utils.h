@@ -10,10 +10,8 @@
  
 #include <string>
 #include <memory>
-#include "sample.h"
-#include "enums.h" 
-
-#include <fftw3.h>
+#include <math.h>   
+ 
  
 
 namespace fhe_deck{
@@ -56,7 +54,7 @@ class Utils{
 
         static std::string to_string(int32_t *poly, int32_t sizeof_poly);
 
-        static std::string complex_to_string(fftw_complex* in, int32_t from, int32_t size);
+        //static std::string complex_to_string(fftw_complex* in, int32_t from, int32_t size);
  
         static int64_t integer_compose(int64_t *dec_in, int32_t basis, int32_t ell);
 

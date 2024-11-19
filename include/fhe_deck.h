@@ -2,7 +2,7 @@
 #define FHE_DECK_H
 
  
-#include "fhe_context.h" 
+#include "interface/fhe_context.h" 
 
 
 #endif 

@@ -8,10 +8,10 @@
 
 
 #include <iostream>
-#include "lwe.h"
-#include "enums.h"  
-#include "plaintext_encoding.h" 
-#include "polynomial.h"
+#include "ciphertexts/lwe.h"
+#include "common/enums.h"  
+#include "interface/plaintext_encoding.h" 
+#include "math/polynomial.h"
 
 namespace fhe_deck{
     

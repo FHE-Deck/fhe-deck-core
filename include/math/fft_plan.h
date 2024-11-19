@@ -7,9 +7,9 @@
 
 #include <fftw3.h>
 #include <random>
-#include "enums.h"
 
-#include "utils.h"
+#include "common/enums.h" 
+//#include "utils.h"
 
 namespace fhe_deck{
 

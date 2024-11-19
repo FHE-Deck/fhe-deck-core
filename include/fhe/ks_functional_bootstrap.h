@@ -7,7 +7,7 @@
  */
 
 
-#include "functional_bootstrap.h"
+#include "fhe/functional_bootstrap.h"
 
 namespace fhe_deck{
  

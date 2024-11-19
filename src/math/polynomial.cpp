@@ -1,4 +1,4 @@
-#include "polynomial.h"
+#include "math/polynomial.h"
  
 using namespace fhe_deck;
  

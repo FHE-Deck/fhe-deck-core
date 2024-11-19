@@ -1,5 +1,5 @@
 
-#include "lmp_functional_bootstrap.h"
+#include "fhe/lmp_functional_bootstrap.h"
 
 using namespace fhe_deck;
 

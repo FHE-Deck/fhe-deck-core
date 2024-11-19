@@ -1,4 +1,4 @@
-#include "vector.h"
+#include "math/vector.h"
 
 using namespace fhe_deck;
 

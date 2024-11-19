@@ -1,4 +1,4 @@
-#include "ciphertext.h"
+#include "interface/ciphertext.h"
 
 using namespace fhe_deck;
  

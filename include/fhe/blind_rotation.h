@@ -7,11 +7,11 @@
  */
 
 
-#include "lwe.h"
-#include "rlwe.h" 
-#include "ntru.h" 
-#include "rotation_poly.h"
-#include "vector_ciphertext.h"
+#include "ciphertexts/lwe.h"
+#include "ciphertexts/rlwe.h" 
+#include "ciphertexts/ntru.h" 
+#include "ciphertexts/vector_ciphertext.h"
+#include "interface/rotation_poly.h"
 
 namespace fhe_deck{
 

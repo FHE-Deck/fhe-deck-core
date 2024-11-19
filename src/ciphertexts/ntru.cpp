@@ -1,4 +1,4 @@
-#include "ntru.h" 
+#include "ciphertexts/ntru.h" 
 
 using namespace fhe_deck;
  

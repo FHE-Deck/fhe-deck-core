@@ -7,10 +7,10 @@
  */
 
 
-#include "ciphertext.h" 
-#include "fhe_configuration.h"
-#include "enums.h" 
-#include "plaintext_encoding.h"
+#include "interface/ciphertext.h" 
+#include "interface/plaintext_encoding.h"
+#include "fhe/fhe_configuration.h"
+#include "common/enums.h" 
   
 #include <cereal/archives/binary.hpp> 
 #include <cereal/types/memory.hpp>

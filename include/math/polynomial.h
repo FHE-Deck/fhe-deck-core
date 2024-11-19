@@ -6,13 +6,14 @@
  */
 
 #include <memory> 
-#include "enums.h"
-#include "utils.h"  
-#include "vector.h"
+#include "common/enums.h"
+#include "common/utils.h"  
+#include "math/vector.h"
  
 
 #include "fft_plan.h"
 #include "hexl/hexl.hpp"  
+
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>

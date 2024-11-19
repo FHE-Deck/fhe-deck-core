@@ -7,9 +7,9 @@
  */
 
 
-#include "lwe.h" 
-#include "rotation_poly.h"
-#include "blind_rotation.h"
+#include "ciphertexts/lwe.h" 
+#include "interface/rotation_poly.h"
+#include "fhe/blind_rotation.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>

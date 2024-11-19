@@ -5,7 +5,7 @@
  * @file intel_hexl_engine.h
  */
 
-#include "polynomial.h"   
+#include "math/polynomial.h"   
 
 namespace fhe_deck{
    
