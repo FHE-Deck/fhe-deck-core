@@ -2,167 +2,6 @@ cmake_minimum_required(VERSION 3.13)
  
 project(fhe_deck)
  
-### Setting External Depandencies
- 
-# Set Variabled for the NTL library. The NTL library must be installed on the system. That is when linking we use -lntl.
-if(NOT DEFINED USE_NTLLib)  
-    set(USE_NTLLib TRUE) 
-endif()
-
-message("--- USE_NTLLib: " ${USE_NTLLib})
-
-if(USE_NTLLib)
-    add_definitions(-DUSE_NTL)
-    set(ntl_link ntl)
-else()
-    set(ntl_link "")
-endif() 
-
-### Now we will download, configure and compile other external libraries. 
-#Set folder for third_party libraries. 
-set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
-
-
-# Set Intel Hexl
-if(NOT DEFINED USE_IntelHexl)  
-    set(USE_IntelHexl TRUE)
-endif()
-
-message("--- USE_IntelHexl: " ${USE_IntelHexl})
-
-if(USE_IntelHexl)
-    add_definitions(-DUSE_IntelHexl)
-
- 
-    set(intelhexl_link ${third_party}/intel_hexl/lib/libhexl.a)
-    include(ExternalProject)  
-    ExternalProject_Add(
-        intel_hexl
-        GIT_REPOSITORY https://github.com/intel/hexl.git 
-        GIT_TAG development
-        PREFIX ${PROJECT_SOURCE_DIR}/external/intel_hexl
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/intel_hexl 
-    )   
-    include_directories(${third_party}/intel_hexl/include)
-    link_directories(${third_party}/intel_hexl/lib) 
-
-    add_library(intel_hexl_lib STATIC IMPORTED)
-    set_target_properties(intel_hexl_lib PROPERTIES 
-        IMPORTED_LOCATION ${intelhexl_link} 
-    ) 
-    
-     
-#[[
-    include(FetchContent)
-    FetchContent_Declare(
-        intel_hexl
-        GIT_REPOSITORY https://github.com/intel/hexl.git
-        GIT_TAG development
-    )
-    set(HEXL_SHARED_LIB OFF) # Static library
-    set(HEXL_TESTING OFF)    # Disable testing
-    set(HEXL_BENCHMARK OFF)  # Disable benchmarks
-    FetchContent_MakeAvailable(intel_hexl)   
-    include_directories(${INTEL_HEXL_BINARY_DIR}/include)
-    add_library(intel_hexl_lib STATIC IMPORTED)
-    set_target_properties(intel_hexl_lib PROPERTIES 
-        IMPORTED_LOCATION ${INTEL_HEXL_BINARY_DIR}/lib/libhexl.a
-    )
-]]#
-
-else()
-    set(intelhexl_link "")
-endif() 
-
-# Set FFTW
-if(NOT DEFINED USE_FFTW)  
-    set(USE_FFTW TRUE)
-endif() 
-message("--- USE_FFTW: " ${USE_FFTW}) 
-if(USE_FFTW)
-    add_definitions(-DUSE_FFTW)
- 
-    set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
-    include(ExternalProject) 
-    set(FFTW fftw_lib)
-    ExternalProject_Add(
-        fftw_lib
-        URL https://www.fftw.org/fftw-3.3.10.tar.gz 
-        URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
-        PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTW}
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftw3 
-    ) 
-    include_directories(${third_party}/fftw3/include)
-    link_directories(${third_party}/fftw3/lib) 
-    add_library(fftw3_lib SHARED IMPORTED)
-    set_target_properties(fftw3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftw_link} 
-    ) 
-
-    #include(FetchContent)
-    #FetchContent_Declare(
-    #    fftw
-    #    URL https://www.fftw.org/fftw-3.3.10.tar.gz 
-    #    URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
-    #) 
-    #FetchContent_MakeAvailable(fftw)   
-    #add_subdirectory(${FFTW_SOURCE_DIR})
-    #add_library(fftw SHARED IMPORTED)
-    #set_target_properties(fftw PROPERTIES
-    #    IMPORTED_LOCATION ${FFTW_BINARY_DIR}/libfftw3.so
-    #)
-    #include_directories(${FFTW_BINARY_DIR}/include)
-else()
-    set(fftw_link "")
-endif() 
-
-
-# Set FFTW
-if(NOT DEFINED USE_FFTWL)  
-    set(USE_FFTWL TRUE)
-endif() 
-message("--- USE_FFTWL: " ${USE_FFTWL}) 
-if(USE_FFTWL)
-    add_definitions(-DUSE_FFTWL)
-    set(fftwl_link ${third_party}/fftwl3/lib/libfftw3l.so)
-    include(ExternalProject) 
-    set(FFTWL fftwl_lib)
-    ExternalProject_Add(
-        fftwl_lib
-        URL https://www.fftw.org/fftw-3.3.10.tar.gz 
-        URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
-        PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTWL}
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftwl3 -DENABLE_LONG_DOUBLE=ON 
-    ) 
-    include_directories(${third_party}/fftwl3/include)
-    link_directories(${third_party}/fftwl3/lib) 
-    add_library(fftwl3_lib SHARED IMPORTED)
-    set_target_properties(fftwl3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftwl_link}  
-    )
-else()
-    set(fftwl_link "")
-endif() 
-
-
-# Set CEREAL
-if(NOT DEFINED USE_CEREAL)  
-    set(USE_CEREAL TRUE)
-endif() 
-message("--- USE_CEREAL: " ${USE_CEREAL}) 
-if(USE_CEREAL)
-    add_definitions(-DUSE_CEREAL)
-    include(ExternalProject)  
-    ExternalProject_Add(
-        cereal_lib
-        GIT_REPOSITORY https://github.com/USCiLab/cereal.git
-        GIT_TAG v1.3.2
-        PREFIX ${PROJECT_SOURCE_DIR}/external/cereal_lib
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/cereal -DSKIP_PERFORMANCE_COMPARISON=ON -DBUILD_TESTS=OFF
-    ) 
-    include_directories(${third_party}/cereal/include)
-    link_directories(${third_party}/cereal/lib) 
-endif() 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
  
@@ -202,17 +41,149 @@ target_include_directories(fhe_deck
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-     
-add_dependencies(fhe_deck fftw_lib)
-add_dependencies(fhe_deck fftwl_lib)
-add_dependencies(fhe_deck intel_hexl)
-add_dependencies(fhe_deck cereal_lib)
+
+ 
+### Setting External Depandencies
+
+# Set Variabled for the NTL library. The NTL library must be installed on the system. That is when linking we use -lntl.
+if(NOT DEFINED USE_NTLLib)  
+    set(USE_NTLLib TRUE) 
+endif()
+
+message("--- USE_NTLLib: " ${USE_NTLLib})
+
+if(USE_NTLLib)
+    add_definitions(-DUSE_NTL)
+    set(ntl_link ntl)
+else()
+    set(ntl_link "")
+endif() 
+
+### Now we will download, configure and compile other external libraries. 
+#Set folder for third_party libraries. 
+set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
+
+
+# Set Intel Hexl
+if(NOT DEFINED USE_IntelHexl)  
+    set(USE_IntelHexl TRUE)
+endif()
+
+message("--- USE_IntelHexl: " ${USE_IntelHexl})
+
+if(USE_IntelHexl)
+    
+    add_dependencies(fhe_deck intel_hexl)
+    add_definitions(-DUSE_IntelHexl) 
+    set(intelhexl_link ${third_party}/intel_hexl/lib/libhexl.a)
+    include(ExternalProject)  
+    ExternalProject_Add(
+        intel_hexl
+        GIT_REPOSITORY https://github.com/intel/hexl.git 
+        GIT_TAG development
+        PREFIX ${PROJECT_SOURCE_DIR}/external/intel_hexl
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/intel_hexl 
+    )   
+    include_directories(${third_party}/intel_hexl/include)
+    link_directories(${third_party}/intel_hexl/lib) 
+
+    add_library(intel_hexl_lib STATIC IMPORTED)
+    set_target_properties(intel_hexl_lib PROPERTIES 
+        IMPORTED_LOCATION ${intelhexl_link} 
+    ) 
+
+else()
+    set(intelhexl_link "")
+endif() 
+
+# Set FFTW
+if(NOT DEFINED USE_FFTW)  
+    set(USE_FFTW TRUE)
+endif() 
+message("--- USE_FFTW: " ${USE_FFTW}) 
+if(USE_FFTW)
+    
+    add_dependencies(fhe_deck fftw_lib)
+    add_definitions(-DUSE_FFTW) 
+    set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
+    include(ExternalProject) 
+    set(FFTW fftw_lib)
+    ExternalProject_Add(
+        fftw_lib
+        URL https://www.fftw.org/fftw-3.3.10.tar.gz 
+        URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
+        PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTW}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftw3 
+    ) 
+    include_directories(${third_party}/fftw3/include)
+    link_directories(${third_party}/fftw3/lib) 
+    add_library(fftw3_lib SHARED IMPORTED)
+    set_target_properties(fftw3_lib PROPERTIES 
+        IMPORTED_LOCATION ${fftw_link} 
+    ) 
+
+else()
+    set(fftw_link "")
+endif() 
+
+
+# Set FFTWL
+if(NOT DEFINED USE_FFTWL)  
+    set(USE_FFTWL TRUE)
+endif() 
+message("--- USE_FFTWL: " ${USE_FFTWL}) 
+if(USE_FFTWL)
+    add_dependencies(fhe_deck fftwl_lib)
+    add_definitions(-DUSE_FFTWL)
+    set(fftwl_link ${third_party}/fftwl3/lib/libfftw3l.so)
+    include(ExternalProject) 
+    set(FFTWL fftwl_lib)
+    ExternalProject_Add(
+        fftwl_lib
+        URL https://www.fftw.org/fftw-3.3.10.tar.gz 
+        URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
+        PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTWL}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftwl3 -DENABLE_LONG_DOUBLE=ON 
+    ) 
+    include_directories(${third_party}/fftwl3/include)
+    link_directories(${third_party}/fftwl3/lib) 
+    add_library(fftwl3_lib SHARED IMPORTED)
+    set_target_properties(fftwl3_lib PROPERTIES 
+        IMPORTED_LOCATION ${fftwl_link}  
+    )
+else()
+    set(fftwl_link "")
+endif() 
+
+
+# Set CEREAL
+if(NOT DEFINED USE_CEREAL)  
+    set(USE_CEREAL TRUE)
+endif() 
+message("--- USE_CEREAL: " ${USE_CEREAL}) 
+if(USE_CEREAL) 
+    add_dependencies(fhe_deck cereal_lib)
+    add_definitions(-DUSE_CEREAL)
+    include(ExternalProject)  
+    ExternalProject_Add(
+        cereal_lib
+        GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+        GIT_TAG v1.3.2
+        PREFIX ${PROJECT_SOURCE_DIR}/external/cereal_lib
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/cereal -DSKIP_PERFORMANCE_COMPARISON=ON -DBUILD_TESTS=OFF
+    ) 
+    include_directories(${third_party}/cereal/include)
+    link_directories(${third_party}/cereal/lib) 
+endif() 
 
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
 message(STATUS "fhe_deck dependencies: ${deps}")
  
+
+### Add Subdirectories
+
 add_subdirectory(examples) 
 
 # Optionally compile tests from the tests directory (Caution: This directory is not on Github!)
@@ -224,6 +195,7 @@ if(USE_TESTS)
     add_subdirectory(tests) 
 endif()
  
+### Install instructions
  
 # Install fhe_deck library
 install(TARGETS fhe_deck 
