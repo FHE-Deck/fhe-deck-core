@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
  
 project(fhe_deck)
- 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
  
@@ -17,7 +16,6 @@ endif()
 
 message("--- CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
  
-
 # source files  
 file(GLOB SRC_MATH src/math/*.cpp) 
 file(GLOB SRC_CIPHERTEXTS src/ciphertexts/*.cpp)
