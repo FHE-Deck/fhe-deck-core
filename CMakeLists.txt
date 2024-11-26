@@ -15,25 +15,17 @@ else()
 endif()
 
 message("--- CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
- 
-# source files  
-file(GLOB SRC_MATH src/math/*.cpp) 
-file(GLOB SRC_CIPHERTEXTS src/ciphertexts/*.cpp)
-file(GLOB SRC_KEYSWITCH src/keyswitch/*.cpp)
-file(GLOB SRC_COMMON src/common/*.cpp)
-file(GLOB SRC_INTERFACE src/interface/*.cpp)
-file(GLOB SRC_FHE src/fhe/*.cpp)
-
-add_library(fhe_deck STATIC
-    ${SRC_CIPHERTEXTS}
-	${SRC_MATH}
-	${SRC_KEYSWITCH}
-	${SRC_INTERFACE}
-	${SRC_COMMON} 
-	${SRC_FHE}
-)
+  
+file(GLOB SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/*.cpp) 
+file(GLOB SRC_CIPHERTEXTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ciphertexts/*.cpp)
+file(GLOB SRC_KEYSWITCH ${CMAKE_CURRENT_SOURCE_DIR}/src/keyswitch/*.cpp)
+file(GLOB SRC_COMMON ${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.cpp)
+file(GLOB SRC_INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src/interface/*.cpp)
+file(GLOB SRC_FHE ${CMAKE_CURRENT_SOURCE_DIR}/src/fhe/*.cpp)
 
 
+add_library(fhe_deck STATIC)
+   
 target_include_directories(fhe_deck
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -55,6 +47,8 @@ if(USE_NTLLib)
     set(ntl_link ntl)
 else()
     set(ntl_link "")
+    message("--- Remove NTL from Compilation ")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/ntl_inversion_engine.cpp)
 endif() 
 
 ### Now we will download, configure and compile other external libraries. 
@@ -73,7 +67,6 @@ if(USE_IntelHexl)
     
     add_dependencies(fhe_deck intel_hexl)
     add_definitions(-DUSE_IntelHexl) 
-    set(intelhexl_link ${third_party}/intel_hexl/lib/libhexl.a)
     include(ExternalProject)  
     ExternalProject_Add(
         intel_hexl
@@ -87,11 +80,12 @@ if(USE_IntelHexl)
 
     add_library(intel_hexl_lib STATIC IMPORTED)
     set_target_properties(intel_hexl_lib PROPERTIES 
-        IMPORTED_LOCATION ${intelhexl_link} 
+        IMPORTED_LOCATION ${third_party}/intel_hexl/lib/libhexl.a
     ) 
-
+    set(intelhexl_link intel_hexl_lib) 
 else()
-    set(intelhexl_link "")
+    set(intelhexl_link "") 
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/intel_hexl_engine.cpp)
 endif() 
 
 # Set FFTW
@@ -174,10 +168,23 @@ if(USE_CEREAL)
     link_directories(${third_party}/cereal/lib) 
 endif() 
 
-target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib intel_hexl_lib)
+##### Finished to configure dependencies.
+
+
+target_sources(fhe_deck PRIVATE 
+    ${SRC_CIPHERTEXTS}
+    ${SRC_MATH}
+    ${SRC_KEYSWITCH}
+    ${SRC_INTERFACE}
+    ${SRC_COMMON} 
+    ${SRC_FHE}
+)
+
+# Target Link libraries
+target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib ${intelhexl_link})
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
-message(STATUS "fhe_deck dependencies: ${deps}")
+message(STATUS "Used dependencies for fhe_deck: ${deps}")
  
 
 ### Add Subdirectories

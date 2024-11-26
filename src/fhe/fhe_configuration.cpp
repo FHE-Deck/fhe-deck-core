@@ -366,7 +366,7 @@ void FHEConfiguration::build_sanitization_key(){
 void FHEConfiguration::init_tfhe_11_NTT(){ 
    
     builder.set_vector_encryption_parameters(VectorEncryptionType::RLWE, KeyDistribution ::ternary, 3.2);
-    builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64);
+    builder.set_ring_parameters(2048, 281474976694273, RingType::negacyclic, PolynomialArithmetic::ntt64); 
     builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 16777216);
     builder.set_lwe_key_switching_parameters(912, 281474976694273, KeyDistribution::binary, 128, 67108864);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);

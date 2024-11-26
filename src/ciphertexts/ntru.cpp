@@ -187,13 +187,14 @@ void NTRUSK::init(){
 
 void NTRUSK::key_gen(){   
     this->sk = Polynomial(param->size, param->coef_modulus); 
-    this->inv_sk = Polynomial(param->size, param->coef_modulus);   
-    EuclideanInversionEngine inv_engine(param->size, param->coef_modulus); 
+    this->inv_sk = Polynomial(param->size, param->coef_modulus);    
+    PolynomialInversionEngineBuilder inv_engine_builder(param->size, param->coef_modulus);  
+    std::shared_ptr<PolynomialInversionEngine> inv_engine = inv_engine_builder.build();
     bool has_inverse = false; 
     do{  
         sk_dist->fill_array(this->sk.coefs, param->size);    
         Utils::array_mod_form(this->sk.coefs, this->sk.coefs, param->size, param->coef_modulus);   
-        has_inverse = inv_engine.inv(this->inv_sk, this->sk);  
+        has_inverse = inv_engine->inv(this->inv_sk, this->sk);  
     }while(!has_inverse);      
 }  
   

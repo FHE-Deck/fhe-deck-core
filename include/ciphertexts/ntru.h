@@ -7,12 +7,7 @@
  * @file ntru.h
  */
 
-
-/*
-#include <NTL/ZZX.h>
-#include <NTL/ZZ_pX.h>
-#include <NTL/ZZ_p.h>
-*/
+ 
 #include <complex>
 #include "common/sample.h"
 #include "common/utils.h" 
@@ -21,8 +16,8 @@
 #include "ciphertexts/lwe.h"
 #include "math/polynomial.h"
 #include "ciphertexts/polynomial_ciphertext.h"
-#include "common/gadget.h"
-#include "math/polynomial_inversion_engines.h"
+#include "common/gadget.h" 
+#include "math/polynomial_inversion_engine_builder.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>

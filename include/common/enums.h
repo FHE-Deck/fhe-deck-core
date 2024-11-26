@@ -15,7 +15,7 @@ enum class ModulusType {any, power_of_two};
 
 enum class KeyDistribution {binary, ternary, uniform};
 
-enum class PolynomialArithmetic {double_fft, long_double_fft, ntt64};
+enum class PolynomialArithmetic {naive, double_fft, long_double_fft, ntt64};
 
 enum class PolynomialInversionEngineType {ntl_inv};
  
