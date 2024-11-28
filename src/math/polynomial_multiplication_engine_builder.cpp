@@ -4,6 +4,7 @@
 #include "math/naive_multiplication_engine.h"
 #include "math/intel_hexl_engine.h"
 #include "math/fftw_engines.h"
+#include "math/fftw_long_engine.h"
 
 using namespace fhe_deck; 
 
@@ -32,6 +33,9 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
     if(!is_init){
         throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): No polynomial arithmetic type set!");
     } 
+    if(arithmetic == PolynomialArithmetic::naive){ 
+        return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus)); 
+    }
     if(arithmetic == PolynomialArithmetic::ntt64){
         #if defined(USE_IntelHexl)
             return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(degree, coef_modulus));

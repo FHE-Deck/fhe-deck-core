@@ -6,6 +6,7 @@
  */
 
 #include "math/polynomial.h"   
+#include "hexl/hexl.hpp"  
 
 namespace fhe_deck{
    

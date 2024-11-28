@@ -9,15 +9,16 @@
 #include "common/enums.h"
 #include "common/utils.h"  
 #include "math/vector.h"
- 
-
-#include "fft_plan.h"
-#include "hexl/hexl.hpp"  
+   
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/polymorphic.hpp>
+
+
+typedef double Complex[2];
+typedef long double LongComplex[2];
 
 namespace fhe_deck{
       
@@ -196,7 +197,7 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
     public:
     
     /// @brief The evaluation form of the polynomial
-    fftw_complex* eval_fftw;
+    Complex* eval_fftw;
     /// @brief Indicates if eval_fftw has been initialized
     bool is_init = false;
     /// @brief Indicates current scale, that is used in to_coef
@@ -209,7 +210,7 @@ class PolynomialEvalFormFFTWComplex : public PolynomialEvalForm{
     /// @param eval_fftw Takes the evaluation form of the polynomial. The constructed object is now the owner of eval_fftw.
     /// @param size The size of the evaluation form
     /// @param coef_modulus The coefficient modulus
-    PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size);
+    PolynomialEvalFormFFTWComplex(Complex* eval_fftw, int32_t size);
 
     void zeroize();
 
@@ -231,9 +232,11 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
     public:
  
     /// @brief The evaluation form of the polynomial
-    fftwl_complex* eval_fftwl;
+    LongComplex* eval_fftwl;
     /// @brief Indicates if eval_fftwl has been initialized
     bool is_init = false;
+
+    long double scale = 1.0;
 
     /// @brief Default destructor
     ~PolynomialEvalFormFFTWLongComplex();	
@@ -242,7 +245,7 @@ class PolynomialEvalFormFFTWLongComplex : public PolynomialEvalForm{
     /// @param eval_fftwl Takes the evaluation form of the polynomial. The constructed object is now the owner of eval_fftwl.
     /// @param size The size of the evaluation form
     /// @param coef_modulus The coefficient modulus
-    PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size);
+    PolynomialEvalFormFFTWLongComplex(LongComplex* eval_fftwl, int32_t size);
 
     void zeroize();
 
@@ -567,7 +570,8 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
 
     public:
  
-    fftw_complex* eval_fftw; 
+    //fftw_complex* eval_fftw; 
+    Complex* eval_fftw; 
 
     bool is_init = false; 
 
@@ -591,7 +595,7 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));     
-        ar(cereal::binary_data(eval_fftw, sizeof(fftw_complex) * full_size));  
+        ar(cereal::binary_data(eval_fftw, sizeof(Complex) * full_size));  
     }
         
     template <class Archive>
@@ -599,8 +603,8 @@ class PolynomialArrayEvalFormFFTWComplex: public PolynomialArrayEvalForm{
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
         full_size = size * array_size;
-        eval_fftw = new fftw_complex[full_size];
-        ar(cereal::binary_data(eval_fftw, sizeof(fftw_complex) * full_size));  
+        eval_fftw = new Complex[full_size];
+        ar(cereal::binary_data(eval_fftw, sizeof(Complex) * full_size));  
         is_init = true;
     }    
 
@@ -613,9 +617,12 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
 
     public:
   
-    fftwl_complex* eval_fftwl; 
+    //fftwl_complex* eval_fftwl; 
+    LongComplex* eval_fftwl; 
 
     bool is_init = false; 
+
+    long double scale = 1.0;
 
     ~PolynomialArrayEvalFormFFTWLongComplex();
 
@@ -635,7 +642,7 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
-        ar(cereal::binary_data(eval_fftwl, sizeof(fftwl_complex) * full_size));  
+        ar(cereal::binary_data(eval_fftwl, sizeof(LongComplex) * full_size));  
     }
         
     template <class Archive>
@@ -643,8 +650,8 @@ class PolynomialArrayEvalFormFFTWLongComplex: public PolynomialArrayEvalForm{
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
         full_size = size * array_size;
-        eval_fftwl = new fftwl_complex[full_size];
-        ar(cereal::binary_data(eval_fftwl, sizeof(fftwl_complex) * full_size));  
+        eval_fftwl = new LongComplex[full_size];
+        ar(cereal::binary_data(eval_fftwl, sizeof(LongComplex) * full_size));  
         is_init = true;
     }    
 };

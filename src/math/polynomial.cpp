@@ -69,7 +69,7 @@ PolynomialEvalFormFFTWComplex::~PolynomialEvalFormFFTWComplex(){
     }
 }
  
-PolynomialEvalFormFFTWComplex::PolynomialEvalFormFFTWComplex(fftw_complex* eval_fftw, int32_t size){
+PolynomialEvalFormFFTWComplex::PolynomialEvalFormFFTWComplex(Complex* eval_fftw, int32_t size){
     this->eval_fftw = eval_fftw; 
     this->is_init = true; 
     this->size = size; 
@@ -123,7 +123,7 @@ PolynomialEvalFormFFTWLongComplex::~PolynomialEvalFormFFTWLongComplex(){
     }
 }
   
-PolynomialEvalFormFFTWLongComplex::PolynomialEvalFormFFTWLongComplex(fftwl_complex* eval_fftwl, int32_t size){
+PolynomialEvalFormFFTWLongComplex::PolynomialEvalFormFFTWLongComplex(LongComplex* eval_fftwl, int32_t size){
     this->eval_fftwl = eval_fftwl; 
     this->is_init = true; 
     this->size = size; 
@@ -436,7 +436,7 @@ PolynomialArrayEvalFormFFTWComplex::PolynomialArrayEvalFormFFTWComplex(int32_t s
     this->array_size = array_size; 
     this->size = size; 
     this->full_size = this->size * array_size; 
-    this->eval_fftw = new fftw_complex[full_size];   
+    this->eval_fftw = new Complex[full_size];   
     this->is_init = true;
 }
 
@@ -484,7 +484,7 @@ PolynomialArrayEvalFormFFTWLongComplex::PolynomialArrayEvalFormFFTWLongComplex(i
     this->array_size = array_size; 
     this->size = size; 
     this->full_size = this->size * array_size; 
-    this->eval_fftwl = new fftwl_complex[full_size];  
+    this->eval_fftwl = new LongComplex[full_size];  
     this->is_init = true;
 }
 

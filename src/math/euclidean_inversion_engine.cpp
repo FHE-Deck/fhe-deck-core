@@ -59,13 +59,13 @@ std::tuple<std::vector<int64_t>, std::vector<int64_t>, std::vector<int64_t>> Euc
     }  
     int64_t inv_lead = modular_inverse(r0.back(), p);
     for(int i = 0; i < r0.size(); ++i){
-        r0[i] = ((int128_t)r0[i] * (int128_t)inv_lead) % (int128_t)p;
+        r0[i] = ((__int128)r0[i] * (__int128)inv_lead) % (__int128)p;
     }
     for(int i = 0; i < s0.size(); ++i){
-        s0[i] = ((int128_t)s0[i] * (int128_t)inv_lead) % (int128_t)p;
+        s0[i] = ((__int128)s0[i] * (__int128)inv_lead) % (__int128)p;
     }
     for(int i = 0; i < t0.size(); ++i){
-        t0[i] = ((int128_t)t0[i] * (int128_t)inv_lead) % (int128_t)p;
+        t0[i] = ((__int128)t0[i] * (__int128)inv_lead) % (__int128)p;
     }
     return {r0, s0, t0};
 } 
@@ -84,9 +84,9 @@ std::pair<std::vector<int64_t>, std::vector<int64_t>> EuclideanInversionEngine::
     std::vector<int64_t> q(n - m + 1);
     std::vector<int64_t> r = a; 
     for (int32_t i = n - m; i >= 0; --i) {
-        q[i] = ((int128_t)r[i + m - 1] * (int128_t)modular_inverse(b[m - 1], p)) % (int128_t)p;  
+        q[i] = ((__int128)r[i + m - 1] * (__int128)modular_inverse(b[m - 1], p)) % (__int128)p;  
         for (int32_t j = 0; j < m; ++j) {
-            r[i + j] = Utils::integer_mod_form(r[i + j]  - (int128_t)((int128_t)q[i] * (int128_t)b[j]) % (int128_t)p, p);
+            r[i + j] = Utils::integer_mod_form(r[i + j]  - (__int128)((__int128)q[i] * (__int128)b[j]) % (__int128)p, p);
         }
     } 
     // Remove trailing zeros from the remainder
@@ -108,7 +108,7 @@ std::vector<int64_t> EuclideanInversionEngine::polynomial_multiplication(const s
     std::vector<int64_t> result(a.size() + b.size() - 1, 0); 
     for (int32_t i = 0; i < a.size(); ++i) {
         for (int32_t j = 0; j < b.size(); ++j) {
-            result[i + j] = (result[i + j] + ((uint128_t)a[i] * (uint128_t)b[j]) % (uint128_t)p) % p;
+            result[i + j] = (result[i + j] + ((__int128)a[i] * (__int128)b[j]) % (__int128)p) % p;
         }
     } 
     return result;

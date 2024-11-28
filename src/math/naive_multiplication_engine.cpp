@@ -113,12 +113,12 @@ void NaiveNegacyclicMultiplicationEngine::mul(int64_t* out, int64_t* in_1, int64
     for (int i = 0; i < degree; ++i) { 
         out[i] = 0;
         for (int32_t j = 0; j <= i; ++j) {
-            uint128_t temp = (uint128_t)in_1[j] * (uint128_t)in_2[(degree - j + i) % degree];
+            __int128 temp = (__int128)in_1[j] * (__int128)in_2[(degree - j + i) % degree];
             out[i] = (out[i] + temp) % coef_modulus;
         }
         for (int32_t j = i+1; j < degree; ++j) {
             //out[i] -= in_1[j] * in_2[(degree - j + i) % degree];
-            uint128_t temp = (in_1[j] * in_2[(degree - j + i) % degree]) % coef_modulus;
+            __int128 temp = (in_1[j] * in_2[(degree - j + i) % degree]) % coef_modulus;
             out[i] = Utils::integer_mod_form(out[i] - temp, coef_modulus);
         }
     } 
