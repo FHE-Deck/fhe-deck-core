@@ -10,8 +10,7 @@
  
 #include <complex>
 #include "common/sample.h"
-#include "common/utils.h" 
-#include "math/fft_plan.h"
+#include "common/utils.h"  
 
 #include "ciphertexts/lwe.h"
 #include "math/polynomial.h"

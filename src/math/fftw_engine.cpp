@@ -1,6 +1,262 @@
-#include "math/fftw_engines.h"
+#include "math/fftw_engine.h"
  
 using namespace fhe_deck;
+
+
+FFTPlan::~FFTPlan(){    
+    if(is_init == false){
+        return;
+    } 
+        fftw_destroy_plan(plan_to_eval_form);
+        fftw_destroy_plan(plan_to_coef_form);
+        fftw_free(in); 
+        fftw_free(out);   
+}
+ 
+ 
+FFTPlan::FFTPlan(RingType ring, int32_t N){   
+    this->ring = ring;
+    this->N = N; 
+    init_tables(); 
+}
+ 
+FFTPlan::FFTPlan(RingType ring, int32_t N, bool long_arithmetic){   
+    this->ring = ring;
+    this->N = N;
+    this->long_arithmetic = long_arithmetic;
+    init_tables();   
+}
+
+
+FFTPlan::FFTPlan(const FFTPlan& other){ 
+    this->ring = other.ring;
+    this->N = other.N;
+    this->long_arithmetic = other.long_arithmetic;
+    init_tables();
+}
+
+FFTPlan& FFTPlan::operator=(FFTPlan other){ 
+    if (this == &other)
+    { 
+        return *this;
+    } 
+    this->ring = other.ring;
+    this->N = other.N;
+    this->long_arithmetic = other.long_arithmetic;
+    init_tables();
+    return *this;
+}
+
+void FFTPlan::init_tables(){
+    if(ring == RingType::cyclic){ 
+     this->plan_size = N; 
+    }else if(ring == RingType::negacyclic){
+        this->plan_size = 2*N; 
+    }  
+    in = (double*) fftw_malloc(sizeof(double) * plan_size);
+    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) *  plan_size);
+    plan_to_eval_form = fftw_plan_dft_r2c_1d(plan_size, in, out,  FFTW_PATIENT);
+    plan_to_coef_form = fftw_plan_dft_c2r_1d(plan_size, out, in,  FFTW_PATIENT);  
+    this->is_init = true;
+}
+
+
+
+fftw_complex* FFTPlan::init_fft_poly(){
+    return new fftw_complex[plan_size]; 
+}
+ 
+
+void FFTPlan::to_eval_form(fftw_complex* eval_form, int64_t *poly){  
+    for(int32_t i = 0; i < N; ++i){ 
+        in[i] = (double)poly[i];
+        if(ring==RingType::negacyclic){
+            in[i+N] = -in[i]; 
+        } 
+    }
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = 0;
+        out[i][1] = 0;
+    } 
+    fftw_execute(plan_to_eval_form);    
+    for(int32_t i = 0; i < plan_size; ++i){ 
+        eval_form[i][0] = out[i][0];
+        eval_form[i][1] = out[i][1];
+    } 
+}
+
+void FFTPlan::to_eval_form(fftw_complex* eval_form, int32_t *poly){ 
+    for(int32_t i = 0; i < N; ++i){ 
+        in[i] = (double)poly[i];
+        if(ring==RingType::negacyclic){
+            in[i+N] = -in[i];  
+        } 
+    }
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = 0;
+        out[i][1] = 0;
+    }
+    fftw_execute(plan_to_eval_form);  
+    for(int32_t i = 0; i < plan_size; ++i){ 
+        eval_form[i][0] = out[i][0];
+        eval_form[i][1] = out[i][1];
+    } 
+}
+    
+  
+void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, int64_t *poly){ 
+    for(int32_t i = 0; i < N; ++i){ 
+        in[i] = (double)poly[i] / plan_size; 
+        if(ring==RingType::negacyclic){
+            in[i+N] = -in[i]; 
+        } 
+    }
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = 0;
+        out[i][1] = 0;
+    }
+    fftw_execute(plan_to_eval_form);  
+    for(int32_t i = 0; i < plan_size; ++i){ 
+        eval_form[i][0] = out[i][0];
+        eval_form[i][1] = out[i][1];
+    }  
+}
+
+
+void FFTPlan::to_eval_form_scale(fftw_complex* eval_form, int64_t *poly, double additional_scale){  
+    double scale = (double)(plan_size * additional_scale);
+    for(int32_t i = 0; i < N; ++i){   
+        in[i] = (double)poly[i] / scale; 
+        if(ring==RingType::negacyclic){
+            in[i+N] = -in[i]; 
+        } 
+    }
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = 0;
+        out[i][1] = 0;
+    } 
+    fftw_execute(plan_to_eval_form);   
+    for(int32_t i = 0; i < plan_size; ++i){ 
+        eval_form[i][0] = out[i][0];
+        eval_form[i][1] = out[i][1];
+    }   
+}
+ 
+
+void FFTPlan::to_coef_form(int64_t *coef_form, fftw_complex* eval_form){ 
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form);  
+    int32_t copy;
+    if(ring == RingType::cyclic){
+        copy = plan_size;
+    }else if(ring == RingType::negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = (int64_t)round(in[i]);
+    }
+}
+
+
+void FFTPlan::to_coef_form(double *coef_form, fftw_complex* eval_form){
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form); 
+    int32_t copy;
+    if(ring == RingType::cyclic){
+        copy = plan_size;
+    }else if(ring == RingType::negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = in[i];
+    }
+} 
+
+void FFTPlan::to_coef_form_scale(int64_t *coef_form, fftw_complex* eval_form, double additional_scale){
+    double scale = (double)(plan_size * additional_scale);
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form);  
+    int32_t copy;
+    if(ring == RingType::cyclic){
+        copy = plan_size;
+    }else if(ring == RingType::negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = (int64_t)round(in[i]/scale);
+    }
+}
+
+void FFTPlan::to_coef_form_scale(double *coef_form, fftw_complex* eval_form, double additional_scale){
+    double scale = (double)(plan_size * additional_scale);
+    for(int32_t i = 0; i < plan_size; ++i){
+        out[i][0] = eval_form[i][0];
+        out[i][1] = eval_form[i][1];
+    }
+    fftw_execute(plan_to_coef_form); 
+    int32_t copy;
+    if(ring == RingType::cyclic){
+        copy = plan_size;
+    }else if(ring == RingType::negacyclic){
+        copy = plan_size/2;
+    }
+    for(int32_t i = 0; i < copy; ++i){ 
+        coef_form[i] = in[i]/scale;
+    }
+}
+ 
+void FFTPlan::add_eval_form(fftw_complex *sum, fftw_complex* in_1, fftw_complex* in_2){
+    // Add the vectors (Note that its complex multiplication)
+    if(ring == RingType::cyclic){
+        for(int32_t i = 0; i < plan_size; ++i){
+            sum[i][0] = in_1[i][0] + in_2[i][0];
+            sum[i][1] = in_1[i][1] + in_2[i][1];
+        }
+    } else if(ring == RingType::negacyclic){ 
+        for(int32_t i = 0; i < plan_size; i+=2){
+            sum[i][0] = 0.0;
+            sum[i][1] = 0.0;
+            sum[i+1][0] = in_1[i+1][0] + in_2[i+1][0];
+            sum[i+1][1] = in_1[i+1][1] + in_2[i+1][1];
+        }
+    } 
+}
+
+void FFTPlan::mul_eval_form(fftw_complex *prod, fftw_complex* in_1, fftw_complex* in_2){
+    // Multiply the vectors (Note that its complex multiplication)
+    double temp;  
+    if(ring == RingType::cyclic){
+        for(int32_t i = 0; i < plan_size; ++i){ 
+            temp = in_1[i][0] * in_2[i][0] - in_1[i][1] * in_2[i][1];
+            prod[i][1] = in_1[i][0] * in_2[i][1] + in_1[i][1] * in_2[i][0];
+            prod[i][0] = temp; 
+        }
+    } else if(ring == RingType::negacyclic){ 
+        int32_t ip = 0;
+        int32_t half = plan_size/2;
+        for(int32_t i = 0; i < half; i+=2){
+            ip = i+1;
+            prod[i][0] = 0.0;
+            prod[i][1] = 0.0;
+            prod[half+i][0] = 0.0;
+            prod[half+i][1] = 0.0;
+            temp = in_1[ip][0] * in_2[ip][0] - in_1[ip][1] * in_2[ip][1];
+            prod[ip][1] = in_1[ip][0] * in_2[ip][1] + in_1[ip][1] * in_2[ip][0];
+            prod[ip][0] = temp; 
+            prod[half+ip][1] = -prod[ip][1];
+        }
+    } 
+} 
+
 
 FFTWNegacyclicEngine::FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus){ 
     this->degree = degree;
@@ -34,8 +290,7 @@ void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const Polynomia
     {  
         in_poly = &in.poly_array[i * in.degree];
         Utils::array_signed_form(input->coefs, in_poly, in.degree, in.coef_modulus);
-        out_poly = &out_cast.eval_fftw[i * out_cast.size];  
-        //engine.to_eval_form_scale(out_poly, in_poly, 2.0);  
+        out_poly = &out_cast.eval_fftw[i * out_cast.size];    
         engine.to_eval_form(out_poly, in_poly);  
     } 
     out_cast.scale = 1.0;

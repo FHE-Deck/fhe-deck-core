@@ -97,7 +97,7 @@ if(USE_FFTW)
     
     add_dependencies(fhe_deck fftw_lib)
     add_definitions(-DUSE_FFTW) 
-    set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
+    #set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
     include(ExternalProject) 
     set(FFTW fftw_lib)
     ExternalProject_Add(
@@ -111,11 +111,12 @@ if(USE_FFTW)
     link_directories(${third_party}/fftw3/lib) 
     add_library(fftw3_lib SHARED IMPORTED)
     set_target_properties(fftw3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftw_link} 
-    ) 
-
+        IMPORTED_LOCATION ${third_party}/fftw3/lib/libfftw3.so
+    )  
+    set(fftw_link fftw3_lib)
 else()
     set(fftw_link "")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_engine.cpp)
 endif() 
 
 
@@ -127,7 +128,7 @@ message("--- USE_FFTWL: " ${USE_FFTWL})
 if(USE_FFTWL)
     add_dependencies(fhe_deck fftwl_lib)
     add_definitions(-DUSE_FFTWL)
-    set(fftwl_link ${third_party}/fftwl3/lib/libfftw3l.so)
+    #set(fftwl_link ${third_party}/fftwl3/lib/libfftw3l.so)
     include(ExternalProject) 
     set(FFTWL fftwl_lib)
     ExternalProject_Add(
@@ -141,10 +142,12 @@ if(USE_FFTWL)
     link_directories(${third_party}/fftwl3/lib) 
     add_library(fftwl3_lib SHARED IMPORTED)
     set_target_properties(fftwl3_lib PROPERTIES 
-        IMPORTED_LOCATION ${fftwl_link}  
+        IMPORTED_LOCATION ${third_party}/fftwl3/lib/libfftw3l.so
     )
+    set(fftwl_link fftwl3_lib)
 else()
     set(fftwl_link "")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_long_engine.cpp)
 endif() 
 
 
@@ -181,7 +184,8 @@ target_sources(fhe_deck PRIVATE
 )
 
 # Target Link libraries
-target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib ${intelhexl_link})
+#target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib ${intelhexl_link})
+target_link_libraries(fhe_deck PUBLIC ${ntl_link} ${fftw_link} ${fftwl_link} ${intelhexl_link})
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
 message(STATUS "Used dependencies for fhe_deck: ${deps}")

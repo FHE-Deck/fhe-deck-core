@@ -3,7 +3,7 @@
 
 #include "math/naive_multiplication_engine.h"
 #include "math/intel_hexl_engine.h"
-#include "math/fftw_engines.h"
+#include "math/fftw_engine.h"
 #include "math/fftw_long_engine.h"
 
 using namespace fhe_deck; 

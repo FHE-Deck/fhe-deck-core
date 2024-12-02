@@ -231,13 +231,11 @@ void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
       }
       for(int32_t i = 0; i < rotation; ++i){ 
             out.coefs[i] = this->coefs[overflow + i];
-      }
-    //Utils::rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
+      } 
 }
 
 void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{   
-    /// TODO: That implementation is not the best. 
-    //Utils::negacyclic_rotate_poly(out.coefs, this->coefs, this->degree, rotation);  
+    /// TODO: That implementation is not the best.   
 
     long* temp = new long[this->degree];
     if(rotation >= this->degree){

@@ -9,8 +9,7 @@
 
  
 #include "common/enums.h"
-#include "common/sample.h"
-#include "math/fft_plan.h"
+#include "common/sample.h" 
 #include "ciphertexts/lwe.h"
 #include "common/gadget.h" 
 #include "common/utils.h"
