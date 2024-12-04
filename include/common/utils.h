@@ -11,9 +11,7 @@
 #include <string>
 #include <memory>
 #include <math.h>   
- 
- 
-
+  
 namespace fhe_deck{
 
 class Utils{

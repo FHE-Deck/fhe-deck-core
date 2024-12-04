@@ -27,6 +27,7 @@ class SanitizationKey{
     /// @param encoding Plaintext encoding. 
     virtual void sanitize(LWECT &ct_out, const LWECT &ct_in, const PlaintextEncoding &encoding) = 0;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {     
@@ -36,6 +37,7 @@ class SanitizationKey{
     void load( Archive & ar )
     {    
     }    
+    #endif 
 
 };
 
@@ -75,6 +77,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
         /// @param encoding The plaintext encoding
         void sanitize(LWECT &ct_out, const LWECT &ct_in, const PlaintextEncoding &encoding); 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {    
@@ -88,6 +91,7 @@ class DucasStehleWashingMachine : public SanitizationKey{
         ar(cereal::base_class<SanitizationKey>(this));     
         ar(fun_bootstrap_pk, accumulator_builder, masking_pk, washing_cycles);
     }    
+    #endif 
 
 };
 
@@ -123,6 +127,7 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
         /// @param encoding The plaintext encoding used for the messages. 
         void sanitize(LWECT &ct_out, const LWECT &ct_in, const PlaintextEncoding &encoding); 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {    
@@ -136,12 +141,15 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
         ar(cereal::base_class<SanitizationKey>(this));     
         ar(fun_bootstrap_pk, accumulator_builder, masking_pk);
     }    
+    #endif 
 };
 
 }/// End of namespace fhe_deck
 
 /// NOTE: Registering the types for serialization with cereal. 
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::DucasStehleWashingMachine)
 CEREAL_REGISTER_TYPE(fhe_deck::KluczniakRandomizedBootstrapping)
+#endif 
 
 #endif 

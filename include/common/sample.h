@@ -33,8 +33,7 @@ class StandardUniformIntegerDistribution : public Distribution{
 
     StandardUniformIntegerDistribution(int64_t from, int64_t to);
   
-    int64_t next();
-
+    int64_t next(); 
 };
 
 
@@ -48,8 +47,7 @@ class StandardRoundedGaussianDistribution : public Distribution{
   
     int64_t next(); 
 };
-
-
+ 
 }
 
 #endif

@@ -11,8 +11,7 @@
 #include <memory>
 
 namespace fhe_deck{
-
-
+ 
 /**
  * @brief Interface for vector ciphertexts. Intended to be used for homomorphic operations on vectors. Example implementations include RLWE and and NTRU.
  */
@@ -42,11 +41,13 @@ class VectorCT{
     /// @param out The output ciphertext
     virtual void neg(VectorCT &out) = 0; 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
     void load( Archive & ar ) {} 
+    #endif 
 };
 
 /**
@@ -61,11 +62,13 @@ class VectorCTParam{
     /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space. 
     virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param) = 0;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
-    void load( Archive & ar ) { } 
+    void load( Archive & ar ) { }
+    #endif  
 };
 
 class VectorCTSK{
@@ -112,11 +115,13 @@ class VectorCTSK{
     /// @param encoding The plaintext encoding scheme.
     virtual void decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding) = 0;
     
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
     void load( Archive & ar ) {} 
+    #endif
 
 };
 
@@ -135,11 +140,13 @@ class GadgetVectorCT{
     /// @param ct The input ciphertext
     virtual void mul(VectorCT &out, const VectorCT &ct) = 0;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
-    void load( Archive & ar ) {} 
+    void load( Archive & ar ) {}
+    #endif  
 };
 
 /**
@@ -169,11 +176,14 @@ class GadgetVectorCTSK{
     /// @return Creates a new ciphertext
     virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) = 0;  
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
     void load( Archive & ar ) {} 
+    #endif 
+    
 };
 
 }

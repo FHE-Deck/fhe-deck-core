@@ -35,7 +35,7 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
-
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -50,6 +50,7 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         ar(rlwe_ksk);     
         init();
     } 
+    #endif 
 
     private:
 

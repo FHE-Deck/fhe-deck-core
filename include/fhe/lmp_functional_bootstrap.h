@@ -40,6 +40,7 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -54,10 +55,13 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         ar(lwe_par_tiny);    
         init();
     } 
+    #endif 
 };
 
 }
 
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::LMPFunctionalBootstrapPublicKey)
- 
+#endif 
+
 #endif 

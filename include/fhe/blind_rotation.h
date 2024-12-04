@@ -104,12 +104,13 @@ class AbstractFunctionBuilder{
     /// @return Returns a new object of VectorCTAccumulator.
     virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) = 0;
    
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { }
         
     template <class Archive>
     void load( Archive & ar ) { } 
-
+    #endif 
 };
 
 class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
@@ -119,6 +120,7 @@ class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
   
     virtual std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) = 0; 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
@@ -130,6 +132,7 @@ class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
         ar(param);
     } 
+    #endif 
 
 };
 
@@ -157,6 +160,7 @@ class PolynomialSpecificationBuilder final : public AbstractFunctionBuilder{
     /// @return Returns a new object of VectorCTAccumulator.
     std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
@@ -168,6 +172,7 @@ class PolynomialSpecificationBuilder final : public AbstractFunctionBuilder{
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
         ar(degree);
     } 
+    #endif 
 
 };
 
@@ -194,17 +199,19 @@ class KSFunctionSpecificationBuilder final : public AbstractFunctionBuilder{
     /// @return Returns a new object of VectorCTAccumulator.
     std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
  
-     template <class Archive>
+    #if defined(USE_CEREAL)
+    template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
         ar(degree, coef_modulus);
-     }
+    }
         
     template <class Archive>
     void load( Archive & ar ) { 
         ar(cereal::base_class<AbstractFunctionBuilder>(this));    
         ar(degree, coef_modulus);
     } 
+    #endif 
 };
 
 /**
@@ -232,6 +239,7 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
    
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
@@ -243,6 +251,7 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
         ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
         //ar(param);
     } 
+    #endif 
 };
   
 /**
@@ -275,6 +284,7 @@ class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
  
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<VectorCTAccumulatorBuilder>(this));    
@@ -287,6 +297,7 @@ class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
         ar(sk);
         this->is_sk_set = true;
     } 
+    #endif 
 };
 
 
@@ -313,6 +324,7 @@ class PreparedVectorCTAccumulators{
 
     std::shared_ptr<VectorCTAccumulator> get_pad_poly(PlaintextEncoding output_encoding);
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(builder);
@@ -321,7 +333,8 @@ class PreparedVectorCTAccumulators{
     template <class Archive>
     void load( Archive & ar ) {
         ar(builder);
-     } 
+    }
+    #endif  
  
 };
 
@@ -366,11 +379,13 @@ class BlindRotateOutputBuilder{
 
     virtual BlindRotateOutput* build() = 0; 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { }
         
     template <class Archive>
-    void load( Archive & ar ) { } 
+    void load( Archive & ar ) { }
+    #endif  
 };
 
 /**
@@ -390,6 +405,7 @@ class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
 
     BlindRotateOutput* build(); 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
@@ -401,6 +417,7 @@ class RLWEBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
         ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
         ar(rlwe_param);
     } 
+    #endif 
 };
 
 /**
@@ -420,6 +437,7 @@ class NTRUBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
 
     BlindRotateOutput* build(); 
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { 
         ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
@@ -431,6 +449,7 @@ class NTRUBlindRotateOutputBuilder : public BlindRotateOutputBuilder{
         ar(cereal::base_class<BlindRotateOutputBuilder>(this));    
         ar(ntru_param);
     } 
+    #endif 
 };
 
 /**
@@ -491,6 +510,7 @@ class BlindRotationPublicKey{
     /// @param acc_msg A VectorCTAccumulator specifying the function that the blind rotation should compute, on the decrypted plaintext.  
     virtual void blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg) = 0;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(lwe_par);    
@@ -500,17 +520,19 @@ class BlindRotationPublicKey{
     void load( Archive & ar ) {
         ar(lwe_par);    
     } 
+    #endif 
 
 };
  
 }/// End of namespace fhe_deck
 
-
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::KSFunctionSpecificationBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::PolynomialSpecificationBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::RLWEAccumulatorBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUAccumulatorBuilder) 
 CEREAL_REGISTER_TYPE(fhe_deck::RLWEBlindRotateOutputBuilder)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUBlindRotateOutputBuilder)
+#endif 
 
 #endif 

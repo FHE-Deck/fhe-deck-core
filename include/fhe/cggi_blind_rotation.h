@@ -11,10 +11,12 @@
 #include "interface/rotation_poly.h"
 #include "fhe/blind_rotation.h"
 
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/polymorphic.hpp>
+#endif 
 
 namespace fhe_deck{
 
@@ -44,7 +46,7 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     /// @param acc_msg The accumulator that will be rotated. 
     void blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, std::shared_ptr<VectorCTAccumulator> acc_msg);
 
-
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -58,6 +60,7 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
       ar(cereal::base_class<BlindRotationPublicKey>(this));   
       ar(bk, vector_ct_param);    
     }    
+    #endif  
    
     private:  
 
@@ -77,6 +80,8 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
  
 }/// End of namespace fhe_deck
 
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::CGGIBlindRotationKey)
+#endif 
 
 #endif

@@ -21,6 +21,7 @@ class PolynomialCTParam : public VectorCTParam {
 
     public:
   
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<VectorCTParam>(this));  
@@ -30,6 +31,7 @@ class PolynomialCTParam : public VectorCTParam {
     void load( Archive & ar ) {
         ar(cereal::base_class<VectorCTParam>(this));  
     } 
+    #endif
 };
 
  
@@ -44,6 +46,7 @@ class PolynomialCT : public VectorCT{
     /// @brief Destructor
     virtual ~PolynomialCT() = default;
     
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<VectorCT>(this)); 
@@ -53,6 +56,7 @@ class PolynomialCT : public VectorCT{
     void load( Archive & ar ) {
         ar(cereal::base_class<VectorCT>(this)); 
     } 
+    #endif 
 };
 
 
@@ -71,11 +75,13 @@ class ExtendedPolynomialCT{
     /// @param ct The input ciphertext
     virtual void mul(VectorCT &out, const Polynomial &scalar) = 0;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {}
         
     template <class Archive>
     void load( Archive & ar ) {} 
+    #endif
 };
 
 /**
@@ -88,6 +94,7 @@ class GadgetPolynomialCT : public GadgetVectorCT{
     /// @brief Destructor
     virtual ~GadgetPolynomialCT() = default;
   
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<GadgetVectorCT>(this));   
@@ -97,6 +104,7 @@ class GadgetPolynomialCT : public GadgetVectorCT{
     void load( Archive & ar ) {
         ar(cereal::base_class<GadgetVectorCT>(this));   
     } 
+    #endif
 };
 
 
@@ -121,7 +129,7 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @return Creates a new object that stores the resulting ciphertext.
     virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size) = 0; 
     
-  
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
         ar(cereal::base_class<GadgetVectorCTSK>(this));     
@@ -131,6 +139,7 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     void load( Archive & ar ) {
         ar(cereal::base_class<GadgetVectorCTSK>(this));     
     } 
+    #endif 
 };
 
 }

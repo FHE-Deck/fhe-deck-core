@@ -8,9 +8,11 @@
 
 #include "ciphertexts/lwe.h"  
  
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
- 
+#endif 
+
 namespace fhe_deck{
   
 class LWEToLWEKeySwitchKey{
@@ -59,6 +61,7 @@ class LWEToLWEKeySwitchKey{
     /// @note The function changes only the ct field of lwe_ct_out. In particular, it doesn't sent the parameters field, so you must make sure lwe_ct_out has the right parameters and is already initialized.
     void lwe_to_lwe_key_switch(LWECT& lwe_ct_out, const LWECT& lwe_ct_in);
  
+  #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -80,6 +83,7 @@ class LWEToLWEKeySwitchKey{
         ar(key_content[i]);  
       }   
     }    
+    #endif 
     
     private:  
     /// @brief Key switch type. Described whether we do full modulus reduction, or lazy or partially lazy evaluation. 

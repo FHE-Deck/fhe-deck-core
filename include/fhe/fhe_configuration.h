@@ -15,9 +15,10 @@
 #include "fhe/lmp_functional_bootstrap.h"
 #include "fhe/ks_functional_bootstrap.h"
 
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
-
+#endif 
 
 namespace fhe_deck{
   
@@ -49,6 +50,7 @@ class PublicEvaluationKey{
 
     PublicEvaluationKey() = default;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {   
@@ -86,6 +88,7 @@ class PublicEvaluationKey{
             ar(sanitization_pk);
         }   
     }    
+    #endif 
 
 };
  
@@ -97,7 +100,7 @@ class FHESecretKey{
     std::shared_ptr<LWESK> lwe_sk;
     std::shared_ptr<GadgetVectorCTSK> gadget_sk;
 
-    
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {    
@@ -109,6 +112,7 @@ class FHESecretKey{
     {     
         ar(lwe_sk, gadget_sk); 
     }    
+    #endif 
 
 };
 

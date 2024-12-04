@@ -9,7 +9,6 @@
 #include "math/polynomial.h"
 
 namespace fhe_deck{
-
     
 /**
  * @brief This class is used to build a PolynomialInversionEngine object.  

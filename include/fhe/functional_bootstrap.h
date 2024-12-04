@@ -16,12 +16,13 @@
 #include "keyswitch/lwe_to_lwe_keyswitch.h" 
 #include "keyswitch/lwe_to_rlwe_keyswitch.h" 
 
-
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/polymorphic.hpp>
- 
+#endif 
+
 namespace fhe_deck{
   
 /**
@@ -75,6 +76,7 @@ class FunctionalBootstrapPublicKey{
     /// @param encoding The encoding of the plaintext in the input ciphertext.
     virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
 
+  #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {   
@@ -86,6 +88,7 @@ class FunctionalBootstrapPublicKey{
     {   
       ar(blind_rotation_key, key_switch_key, lwe_par, prepared_acc_builder, blind_rotate_output_builder);  
     }    
+  #endif 
  
 };
   

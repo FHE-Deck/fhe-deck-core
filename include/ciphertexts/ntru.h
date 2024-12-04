@@ -18,9 +18,11 @@
 #include "common/gadget.h" 
 #include "math/polynomial_inversion_engine_builder.h"
 
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
- 
+#endif
+
 namespace fhe_deck{
 
 
@@ -67,6 +69,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @return Retuns a new VectorCT object.
     std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param);
          
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -81,6 +84,7 @@ class NTRUParam : public PolynomialCTParam{
       ar(ring, size, coef_modulus, arithmetic);   
       init_mul_engine(); 
     } 
+    #endif
  
   private:
     void init_mul_engine(); 
@@ -158,6 +162,7 @@ class NTRUCT : public PolynomialCT{
     /// @return The string representation.
     std::string to_string();
     
+  #if defined(USE_CEREAL)
   template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -171,6 +176,7 @@ class NTRUCT : public PolynomialCT{
         ar(cereal::base_class<PolynomialCT>(this));   
         ar(param, ct_poly); 
     }  
+    #endif
 };
 
 /**
@@ -276,6 +282,7 @@ class NTRUSK : public VectorCTSK{
     /// @return Creates and returns a new LWE key, with a newly created LWEParam object.
     std::shared_ptr<LWESK> extract_lwe_key();
    
+   #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -290,6 +297,7 @@ class NTRUSK : public VectorCTSK{
       ar(param, sk, inv_sk, noise_stddev);   
       init();
     }  
+    #endif
 
     private:
       void init();
@@ -340,6 +348,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
 
   void mul(VectorCT &out, const Polynomial &scalar);
 
+  #if defined(USE_CEREAL)
   template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -354,6 +363,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
         ar(ntru_param, gadget, array_eval_a);     
         this->is_init = true;  
     } 
+    #endif
        
 };
    
@@ -413,6 +423,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @return Creates a new object that stores the resulting ciphertext.
     std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size); 
    
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -427,6 +438,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
         ar(gadget, sk);   
         secret_key = sk;
     } 
+    #endif
 
     private:
  
@@ -435,12 +447,13 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
  
 } /// End of namespace fhe_deck
 
-
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUParam)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUCT)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUSK)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetCT)
 CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetSK)
+#endif 
 
 
 #endif

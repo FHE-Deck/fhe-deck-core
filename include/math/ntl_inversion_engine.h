@@ -2,7 +2,9 @@
 #define NTL_INVERSION_ENGINES_H
 
 #include "math/polynomial.h"
- 
+
+#include <vector>
+
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h> 

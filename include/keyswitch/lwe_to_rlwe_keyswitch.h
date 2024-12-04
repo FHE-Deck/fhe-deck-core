@@ -38,7 +38,7 @@ namespace fhe_deck{
 
         void key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest);
 
-
+    #if defined(USE_CEREAL)
         template <class Archive>
         void save( Archive & ar ) const
         { 
@@ -51,6 +51,7 @@ namespace fhe_deck{
             ar(ext_key_content, dest_param);   
             init(); 
         }    
+    #endif 
 
         private:
         /// @brief inverse of the ring degree

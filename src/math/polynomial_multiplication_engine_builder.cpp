@@ -58,7 +58,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
         #else 
             std::cout << "WARNING: No FFT for quadruple precision engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
             return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
-        #endif 
+        #endif  
     } 
     throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): Polynomial arithmetic not supported!");
 }

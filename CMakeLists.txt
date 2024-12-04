@@ -23,7 +23,6 @@ file(GLOB SRC_COMMON ${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.cpp)
 file(GLOB SRC_INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src/interface/*.cpp)
 file(GLOB SRC_FHE ${CMAKE_CURRENT_SOURCE_DIR}/src/fhe/*.cpp)
 
-
 add_library(fhe_deck STATIC)
    
 target_include_directories(fhe_deck
@@ -32,22 +31,21 @@ target_include_directories(fhe_deck
         $<INSTALL_INTERFACE:include>
 )
 
- 
-### Setting External Depandencies
+### Setting External Depandencies for Inversion Engines
 
-# Set Variabled for the NTL library. The NTL library must be installed on the system. That is when linking we use -lntl.
-if(NOT DEFINED USE_NTLLib)  
-    set(USE_NTLLib TRUE) 
+if(NOT DEFINED INV_ENGINE)  
+    set(INV_ENGINE "BUILDIN") 
 endif()
-
-message("--- USE_NTLLib: " ${USE_NTLLib})
-
-if(USE_NTLLib)
+message("--- Use " ${INV_ENGINE} " Inversion Engine")
+if(INV_ENGINE STREQUAL "NTL") 
     add_definitions(-DUSE_NTL)
     set(ntl_link ntl)
-else()
+elseif(INV_ENGINE STREQUAL "BUILDIN") 
     set(ntl_link "")
-    message("--- Remove NTL from Compilation ")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/ntl_inversion_engine.cpp)
+else()
+    message(WARNING "Unrecognized inversion engine name " ${INV_ENGINE} " using DEFAULT (Build-in) inversion engine")
+    set(ntl_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/ntl_inversion_engine.cpp)
 endif() 
 
@@ -55,15 +53,12 @@ endif()
 #Set folder for third_party libraries. 
 set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
 
-
 # Set Intel Hexl
-if(NOT DEFINED USE_IntelHexl)  
-    set(USE_IntelHexl TRUE)
+if(NOT DEFINED NTT_ENGINE)  
+    set(NTT_ENGINE "Hexl") 
 endif()
-
-message("--- USE_IntelHexl: " ${USE_IntelHexl})
-
-if(USE_IntelHexl)
+message("--- Use " ${NTT_ENGINE} " NTT Engine")
+if(NTT_ENGINE STREQUAL "Hexl")
     
     add_dependencies(fhe_deck intel_hexl)
     add_definitions(-DUSE_IntelHexl) 
@@ -83,21 +78,24 @@ if(USE_IntelHexl)
         IMPORTED_LOCATION ${third_party}/intel_hexl/lib/libhexl.a
     ) 
     set(intelhexl_link intel_hexl_lib) 
+elseif(NTT_ENGINE STREQUAL "BUILDIN")
+    set(intelhexl_link "") 
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/intel_hexl_engine.cpp)
 else()
+    message(WARNING "Unrecognized NTT engine name " ${NTT_ENGINE} " using  Build-in NTT engine")
     set(intelhexl_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/intel_hexl_engine.cpp)
 endif() 
 
-# Set FFTW
-if(NOT DEFINED USE_FFTW)  
-    set(USE_FFTW TRUE)
+# Set FFTW 
+if(NOT DEFINED FFT_ENGINE)  
+    set(FFT_ENGINE "FFTW") 
 endif() 
-message("--- USE_FFTW: " ${USE_FFTW}) 
-if(USE_FFTW)
+message("--- Use " ${FFT_ENGINE} " FFT Engine") 
+if(FFT_ENGINE STREQUAL "FFTW")
     
     add_dependencies(fhe_deck fftw_lib)
-    add_definitions(-DUSE_FFTW) 
-    #set(fftw_link ${third_party}/fftw3/lib/libfftw3.so)
+    add_definitions(-DUSE_FFTW)  
     include(ExternalProject) 
     set(FFTW fftw_lib)
     ExternalProject_Add(
@@ -114,21 +112,24 @@ if(USE_FFTW)
         IMPORTED_LOCATION ${third_party}/fftw3/lib/libfftw3.so
     )  
     set(fftw_link fftw3_lib)
+elseif(FFT_ENGINE STREQUAL "BUILDIN")
+    set(fftw_link "")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_engine.cpp)
 else()
+message(WARNING "Unrecognized FFT engine name " ${FFT_ENGINE} " using  Build-in FFT engine")
     set(fftw_link "")
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_engine.cpp)
 endif() 
 
 
-# Set FFTWL
-if(NOT DEFINED USE_FFTWL)  
-    set(USE_FFTWL TRUE)
+# Set FFTWL  
+if(NOT DEFINED FFT_LONG_DOUBLE_ENGINE)  
+    set(FFT_LONG_DOUBLE_ENGINE "FFTW") 
 endif() 
-message("--- USE_FFTWL: " ${USE_FFTWL}) 
-if(USE_FFTWL)
+message("--- Use " ${FFT_LONG_DOUBLE_ENGINE} " FFT LONG DOUBLE Engine") 
+if(FFT_LONG_DOUBLE_ENGINE STREQUAL "FFTW")
     add_dependencies(fhe_deck fftwl_lib)
-    add_definitions(-DUSE_FFTWL)
-    #set(fftwl_link ${third_party}/fftwl3/lib/libfftw3l.so)
+    add_definitions(-DUSE_FFTWL) 
     include(ExternalProject) 
     set(FFTWL fftwl_lib)
     ExternalProject_Add(
@@ -145,7 +146,11 @@ if(USE_FFTWL)
         IMPORTED_LOCATION ${third_party}/fftwl3/lib/libfftw3l.so
     )
     set(fftwl_link fftwl3_lib)
+elseif(FFT_LONG_DOUBLE_ENGINE STREQUAL "BUILDIN")
+    set(fftwl_link "")
+    list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_long_engine.cpp)
 else()
+    message(WARNING "Unrecognized FFT LONG DOUBLE engine name " ${FFT_LONG_DOUBLE_ENGINE} " using  Build-in FFT LONG DOUBLE engine")
     set(fftwl_link "")
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_long_engine.cpp)
 endif() 
@@ -173,7 +178,6 @@ endif()
 
 ##### Finished to configure dependencies.
 
-
 target_sources(fhe_deck PRIVATE 
     ${SRC_CIPHERTEXTS}
     ${SRC_MATH}
@@ -183,8 +187,7 @@ target_sources(fhe_deck PRIVATE
     ${SRC_FHE}
 )
 
-# Target Link libraries
-#target_link_libraries(fhe_deck PUBLIC ${ntl_link} fftw3_lib fftwl3_lib ${intelhexl_link})
+# Target Link libraries 
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} ${fftw_link} ${fftwl_link} ${intelhexl_link})
 
 get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)

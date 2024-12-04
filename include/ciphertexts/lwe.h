@@ -12,10 +12,12 @@
 #include "common/sample.h"
 #include "interface/plaintext_encoding.h"
 #include "math/polynomial_multiplication_engine_builder.h"
-
+ 
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
+#endif
 
 
 namespace fhe_deck{
@@ -41,11 +43,14 @@ class LWEParam{
   /// @param modulus Modulus of the LWE instance
   LWEParam(int32_t dim, int64_t modulus); 
 
+  #if defined(USE_CEREAL)
    template<class Archive> 
    void serialize(Archive & ar) 
    { 
      ar(dim, modulus); 
    }   
+   #endif
+
 };
 
 /** 
@@ -120,6 +125,8 @@ class LWECT{
     /// @param out The output ciphertext.
     void neg(LWECT& out)const;
   
+
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -143,6 +150,7 @@ class LWECT{
       }
       this->init = true;
     } 
+    #endif
 };
  
  /**
@@ -262,6 +270,7 @@ class LWESK {
     /// @return Returns the decrypted message.
     int64_t decrypt(LWECT& in, PlaintextEncoding encoding); 
    
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -284,6 +293,7 @@ class LWESK {
         this->key[i] = s_arr[i];
       }   
     } 
+    #endif
 
     private:
 
@@ -329,6 +339,7 @@ class LWEGadgetCT{
   /// @param scalar The input scalar.
   void gadget_mul_lazy(LWECT& out_ct, int64_t scalar); 
 
+  #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -347,6 +358,7 @@ class LWEGadgetCT{
         ar(ct_content[i]);
       } 
     }  
+    #endif
 };
 
 /**
@@ -387,6 +399,7 @@ class LWEGadgetSK{
     /// @param m The message m
     void gadget_encrypt(LWEGadgetCT& out, int64_t m);
   
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -398,6 +411,7 @@ class LWEGadgetSK{
     {  
       ar(lwe, base, digits, bits_base);  
     }    
+    #endif
 };
 
 /**
@@ -443,6 +457,7 @@ class LWEPublicKey{
     /// @return The pointer to a fresh enncryption of zero.
     std::unique_ptr<LWECT> ciphertext_of_zero();
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -462,6 +477,7 @@ class LWEPublicKey{
           ar(public_key_ptr[i]);  
       }   
     }    
+    #endif
     
 };
  

@@ -12,8 +12,11 @@
 #include "fhe/fhe_configuration.h"
 #include "common/enums.h" 
   
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp> 
 #include <cereal/types/memory.hpp>
+#endif 
+
 #include <fstream>
 
 

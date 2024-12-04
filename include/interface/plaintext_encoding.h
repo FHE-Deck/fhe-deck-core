@@ -54,6 +54,7 @@ public:
     /// @return The decoded message. 
     void decode_message(Vector& out, const Vector& encoded_message)const;
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -74,6 +75,7 @@ public:
             throw std::logic_error("Non existend encoding type!");
         }  
     } 
+    #endif 
 
     //private: 
     

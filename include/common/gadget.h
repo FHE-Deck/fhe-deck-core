@@ -1,25 +1,26 @@
 
 #ifndef GADGET_H
 #define GADGET_H
-
-
-
+ 
 /**
  * @file gadget.h
  */
-
-
+ 
 #include "common/utils.h" 
 #include "common/sample.h"
 #include "math/vector.h"
 
 #include <complex>
 #include <limits>
+#include <iostream>
+
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/polymorphic.hpp>
+#endif
 
 namespace fhe_deck{
 
@@ -47,10 +48,10 @@ class Gadget{
     int64_t* get_gadget_vector();
 
     int64_t** init_out();
-  
-
+   
     void delete_out(int64_t** out);
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -62,6 +63,7 @@ class Gadget{
     {    
         ar(degree, modulus, base);  
     }  
+    #endif 
 };
 
 class SignedDecompositionGadget : public Gadget{
@@ -80,6 +82,7 @@ class SignedDecompositionGadget : public Gadget{
 
     void init();
 
+  #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
@@ -92,6 +95,7 @@ class SignedDecompositionGadget : public Gadget{
        ar(cereal::base_class<Gadget>(this));   
         init(); 
     }  
+  #endif 
   
 };
 
@@ -197,6 +201,7 @@ class DiscreteGaussianSamplingGadget : public Gadget{
  
     void sample(VectorArray& out, int64_t *in);
 
+  #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -211,6 +216,7 @@ class DiscreteGaussianSamplingGadget : public Gadget{
       ar(stddev);  
        setup_type_specific_parameters(); 
     } 
+    #endif 
 
   
     private:
@@ -263,9 +269,10 @@ class DiscreteGaussianSamplingGadget : public Gadget{
  
 }/// End namespace fhe_deck
  
+#if defined(USE_CEREAL)
 CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget)
 CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget) 
-
+#endif
 
 
 #endif

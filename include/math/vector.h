@@ -11,10 +11,12 @@
  
 #include "common/utils.h"  
  
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/polymorphic.hpp>
+#endif
 
 namespace fhe_deck{
 
@@ -56,6 +58,7 @@ class Vector{
     /// @param out The output vector
     void neg(Vector &out);
 
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
 
@@ -71,6 +74,7 @@ class Vector{
         init(size, modulus);   
         ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
     }  
+    #endif 
 
 };
 
@@ -125,7 +129,7 @@ class VectorArray{
     /// @param other The input polynomial array
     void mul(VectorArray &out, int64_t scalar);
 
-
+    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
@@ -140,6 +144,7 @@ class VectorArray{
         init(size, modulus, array_size);   
         ar(cereal::binary_data(vec_array, sizeof(int64_t) * size));   
     }  
+    #endif 
 
 };
 

@@ -275,16 +275,24 @@ void FHEContext::send_secret_key(std::ofstream &os){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
+    #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->secret_key); 
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
 
 void FHEContext::read_secret_key(std::ifstream &is){   
+    #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is); 
     std::shared_ptr<FHESecretKey> secret_key; 
     iarchive(secret_key);   
     config->secret_key = secret_key; 
     config->is_secret_key_set = true;
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
  
 void FHEContext::save_secret_key(std::string file_name){
@@ -296,17 +304,26 @@ void FHEContext::save_secret_key(std::string file_name){
 void FHEContext::load_secret_key(std::string file_name){ 
     std::ifstream is(file_name, std::ios::binary);
     read_secret_key(is);
+    
 }
 
 void FHEContext::send_public_key(std::ofstream &os){ 
+    #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
-    oarchive(config->eval_key); 
+    oarchive(config->eval_key);  
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
 
 void FHEContext::read_public_key(std::ifstream &is){
+    #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is);  
     iarchive(config->eval_key);    
     current_encoding = config->eval_key.default_encoding;
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
  
 void FHEContext::save_public_key(std::string file_name){
@@ -324,16 +341,24 @@ void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
+    #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os);   
     oarchive(ct.lwe_c); 
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
 
 Ciphertext FHEContext::read_Ciphertext(std::ifstream &is){
+    #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is);  
     std::shared_ptr<LWECT> ct;
     iarchive(ct);
     Ciphertext out(ct, this->current_encoding, this);
     return out;
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
  
 void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct){

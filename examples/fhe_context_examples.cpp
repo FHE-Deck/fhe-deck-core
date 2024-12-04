@@ -243,9 +243,11 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     //  The default encoding for this is actually full domain.  
     context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain); 
  
+    #if defined(USE_CEREAL)
     {
         /// Serialize and Deserialize LWEGadgetSK  
         std::ofstream os_glwe_ct("fhe_context_test", std::ios::binary); 
+        
         cereal::BinaryOutputArchive oarchive_glwe_ct(os_glwe_ct); 
         oarchive_glwe_ct(context.config->secret_key); 
         os_glwe_ct.close();  
@@ -316,7 +318,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
         std::remove("fhe_context_test"); 
     }
     context.config->eval_key.sanitization_pk = sanitization_pk; 
-
+    #endif
  
 
     Ciphertext c0  = context.encrypt(0);  
