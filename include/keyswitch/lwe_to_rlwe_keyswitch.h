@@ -8,9 +8,10 @@
 #include "ciphertexts/lwe.h"
 #include "ciphertexts/rlwe.h"
 
+#if defined(USE_CEREAL)
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
-
+#endif 
 
 namespace fhe_deck{
 
