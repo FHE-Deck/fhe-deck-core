@@ -4,6 +4,7 @@
 /**
  * @file fftw_long_engine.h
  */
+#include "global_headers.h"
 
 #include "math/polynomial.h" 
 #include <fftw3.h>

@@ -7,25 +7,19 @@
  * @file ntru.h
  */
 
- 
-#include <complex>
+#include "global_headers.h"
+
 #include "common/sample.h"
 #include "common/utils.h"  
-
-#include "ciphertexts/lwe.h"
-#include "math/polynomial.h"
-#include "ciphertexts/polynomial_ciphertext.h"
 #include "common/gadget.h" 
+#include "ciphertexts/lwe.h"
+#include "ciphertexts/polynomial_ciphertext.h"
+#include "math/polynomial.h"
 #include "math/polynomial_inversion_engine_builder.h"
-
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/vector.hpp>
-#endif
-
+#include "math/polynomial_multiplication_engine_builder.h"
+ 
 namespace fhe_deck{
-
-
+ 
 /**
  * @brief NTRUParam class is used to store the parameters of the NTRU encryption scheme.
  */

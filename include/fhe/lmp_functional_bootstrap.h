@@ -7,12 +7,12 @@
  * @file lmp_functional_bootstrap.h
  */
 
+#include "global_headers.h"
 
 #include "fhe/functional_bootstrap.h"
 
 namespace fhe_deck{
-      
-
+       
 /**
  * The Bootstrapping algorithm from Liu, Micciancio, Polyakov. Large-Precision Homomorphic Sign Evaluation Using FHEW/TFHE Bootstrapping. https://eprint.iacr.org/2021/1337
  */

@@ -8,13 +8,10 @@
  * @file sample.h
  */
 
-
-#include <random>
-
-
+#include "global_headers.h"
+ 
 namespace fhe_deck{
-
-  
+ 
 class Distribution{
 
     public: 
@@ -23,8 +20,7 @@ class Distribution{
     void fill_array(int64_t *in, int32_t length); 
 
 };
-
-
+ 
 class StandardUniformIntegerDistribution : public Distribution{
 
     public: 

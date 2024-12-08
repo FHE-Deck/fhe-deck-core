@@ -5,14 +5,10 @@
 /**
  * @file lwe_to_lwe_keyswitch.h
  */
-
-#include "ciphertexts/lwe.h"  
+#include "global_headers.h"
  
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/vector.hpp>
-#endif 
-
+#include "ciphertexts/lwe.h"  
+  
 namespace fhe_deck{
   
 class LWEToLWEKeySwitchKey{

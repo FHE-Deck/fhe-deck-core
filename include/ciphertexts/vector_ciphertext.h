@@ -7,8 +7,9 @@
  * @file vector_ciphertext.h
  */
 
+#include "global_headers.h"
 
-#include <memory>
+#include "interface/plaintext_encoding.h" 
 
 namespace fhe_deck{
  

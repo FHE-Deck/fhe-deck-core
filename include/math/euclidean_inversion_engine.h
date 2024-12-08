@@ -1,8 +1,9 @@
 #ifndef EUCLIDEAN_INVERSION_ENGINES_H
 #define EUCLIDEAN_INVERSION_ENGINES_H
 
+#include "global_headers.h"
+
 #include "math/polynomial.h"
-#include <vector>
 
 namespace fhe_deck{
     

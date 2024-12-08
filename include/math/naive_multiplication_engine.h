@@ -4,6 +4,7 @@
 /**
  * @file naive_multiplication_engine.h
  */
+#include "global_headers.h"
 
 #include "math/polynomial.h"
 

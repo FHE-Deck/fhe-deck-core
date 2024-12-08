@@ -6,8 +6,8 @@
  * @file ciphertext.h
  */
 
-
-#include <iostream>
+#include "global_headers.h"
+ 
 #include "ciphertexts/lwe.h"
 #include "common/enums.h"  
 #include "interface/plaintext_encoding.h" 

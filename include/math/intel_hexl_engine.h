@@ -5,6 +5,8 @@
  * @file intel_hexl_engine.h
  */
 
+#include "global_headers.h"
+
 #include "math/polynomial.h"   
 #include "hexl/hexl.hpp"  
 

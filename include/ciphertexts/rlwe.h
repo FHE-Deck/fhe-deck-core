@@ -6,22 +6,17 @@
  * @file rlwe.h
  */
 
- 
-#include "common/enums.h"
+ #include "global_headers.h"
+
 #include "common/sample.h" 
-#include "ciphertexts/lwe.h"
 #include "common/gadget.h" 
 #include "common/utils.h"
 #include "math/polynomial.h"
 #include "math/polynomial_multiplication_engine_builder.h"
 #include "ciphertexts/polynomial_ciphertext.h"
+#include "ciphertexts/lwe.h"
 #include "interface/plaintext_encoding.h" 
- 
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/vector.hpp>
-#endif
-
+  
 namespace fhe_deck{
  
 /**

@@ -4,8 +4,8 @@
 /**
  * @file plaintext_encoding.h
  */
-
-#include <iostream>
+#include "global_headers.h"
+ 
 #include "math/vector.h"  
 #include "common/enums.h"  
 #include "common/utils.h"

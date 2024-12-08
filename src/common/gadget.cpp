@@ -103,7 +103,7 @@ void DiscreteGaussianSamplingGadget::setup_type_specific_parameters(){
             throw std::logic_error("Gadget::setup_type_specific_parameters(): stddev < basis!");
         }  
         if(!Utils::is_power_of(base, 2)){
-            std::cout << "WARNING: Currently only power of two base is supported" << std::endl;
+            throw std::logic_error("Gadget::setup_type_specific_parameters(): Currently only power of two base is supported!");
         }
         this->bits_base = Utils::power_times(base, 2);
          

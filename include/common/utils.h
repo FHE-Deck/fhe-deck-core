@@ -1,16 +1,10 @@
- 
-#ifndef UTILS_H
+ #ifndef UTILS_H
 #define UTILS_H
- 
-
+  
 /**
  * @file utils.h
  */
-
- 
-#include <string>
-#include <memory>
-#include <math.h>   
+#include "global_headers.h"
   
 namespace fhe_deck{
 

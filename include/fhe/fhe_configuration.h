@@ -7,6 +7,7 @@
  * @file fhe_configuration.h
  */
 
+#include "global_headers.h"
 
 #include "ciphertexts/lwe.h"
 #include "ciphertexts/rlwe.h" 
@@ -14,12 +15,7 @@
 #include "fhe/functional_bootstrap.h"
 #include "fhe/lmp_functional_bootstrap.h"
 #include "fhe/ks_functional_bootstrap.h"
-
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/vector.hpp>
-#endif 
-
+ 
 namespace fhe_deck{
   
 enum class FHENamedParams{ 

@@ -5,21 +5,13 @@
 /**
  * @file fhe_context.h
  */
-
+#include "global_headers.h"
 
 #include "interface/ciphertext.h" 
 #include "interface/plaintext_encoding.h"
 #include "fhe/fhe_configuration.h"
 #include "common/enums.h" 
-  
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp> 
-#include <cereal/types/memory.hpp>
-#endif 
-
-#include <fstream>
-
-
+   
 namespace fhe_deck{
 
 /**

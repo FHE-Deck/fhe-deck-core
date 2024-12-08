@@ -4,13 +4,12 @@
 /**
  * @file rotation_poly.h
  */
-
+#include "global_headers.h"
+ 
 #include "common/utils.h"
 #include "interface/plaintext_encoding.h"
 #include "math/polynomial.h"
-
-#include <functional>
-
+ 
 namespace fhe_deck{
 
 

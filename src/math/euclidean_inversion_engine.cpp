@@ -1,5 +1,5 @@
 #include "math/euclidean_inversion_engine.h"
-#include <cassert>
+ 
 
 using namespace fhe_deck;
 

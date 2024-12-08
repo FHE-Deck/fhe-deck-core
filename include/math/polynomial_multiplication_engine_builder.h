@@ -5,6 +5,8 @@
  * @file polynomial_multiplication_engine_builder.h
  */
 
+#include "global_headers.h"
+
 #include "math/polynomial.h"
 
 

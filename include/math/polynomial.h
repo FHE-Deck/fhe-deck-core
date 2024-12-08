@@ -4,21 +4,12 @@
 /**
  * @file polynomial.h
  */
-
-#include <memory> 
-#include <stdexcept>
-#include <iostream>
+#include "global_headers.h"
+  
 #include "common/enums.h"
 #include "common/utils.h"  
 #include "math/vector.h"
-   
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/polymorphic.hpp>
-#endif 
-
+    
 typedef double Complex[2];
 typedef long double LongComplex[2];
 

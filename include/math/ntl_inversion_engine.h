@@ -1,10 +1,9 @@
 #ifndef NTL_INVERSION_ENGINES_H
 #define NTL_INVERSION_ENGINES_H
+#include "global_headers.h"
 
 #include "math/polynomial.h"
-
-#include <vector>
-
+ 
 #include <NTL/ZZX.h>
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h> 

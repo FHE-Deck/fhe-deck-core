@@ -7,22 +7,16 @@
  * @file functional_bootstrap.h
  */
 
+#include "global_headers.h"
 
 #include "interface/ciphertext.h"
+#include "interface/rotation_poly.h"
 #include "ciphertexts/lwe.h"
 #include "ciphertexts/rlwe.h" 
-#include "interface/rotation_poly.h"
 #include "fhe/cggi_blind_rotation.h"
 #include "keyswitch/lwe_to_lwe_keyswitch.h" 
 #include "keyswitch/lwe_to_rlwe_keyswitch.h" 
-
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/polymorphic.hpp>
-#endif 
-
+ 
 namespace fhe_deck{
   
 /**

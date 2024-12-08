@@ -6,6 +6,8 @@
  * @file polynomial_inversion_engine_builder.h
  */
 
+#include "global_headers.h"
+
 #include "math/polynomial.h"
 
 namespace fhe_deck{

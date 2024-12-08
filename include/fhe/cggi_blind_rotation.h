@@ -6,18 +6,12 @@
  * @file cggi_blind_rotation.h
  */
 
+#include "global_headers.h"
 
 #include "ciphertexts/lwe.h" 
 #include "interface/rotation_poly.h"
 #include "fhe/blind_rotation.h"
-
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/polymorphic.hpp>
-#endif 
-
+ 
 namespace fhe_deck{
 
 /**

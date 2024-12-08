@@ -5,24 +5,14 @@
 /**
  * @file lwe.h
  */
-
-#include <random>
-#include <iostream> 
-#include "common/utils.h"
+ 
+#include "global_headers.h"
+  
 #include "common/sample.h"
-#include "interface/plaintext_encoding.h"
-#include "math/polynomial_multiplication_engine_builder.h"
- 
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/vector.hpp>
-#endif
-
-
+#include "interface/plaintext_encoding.h" 
+   
 namespace fhe_deck{
- 
-
+  
 /** 
  * @brief LWE Parameters.  
  */  

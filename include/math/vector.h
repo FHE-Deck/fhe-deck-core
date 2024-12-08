@@ -5,19 +5,10 @@
  * @file vector.h
  */
 
-#include <memory> 
-#include <cinttypes>
-
+#include "global_headers.h"
  
 #include "common/utils.h"  
- 
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/polymorphic.hpp>
-#endif
-
+  
 namespace fhe_deck{
 
 class Vector{

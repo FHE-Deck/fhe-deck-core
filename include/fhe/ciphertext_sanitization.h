@@ -1,11 +1,11 @@
 #ifndef CIPHERTEXT_SANITIZATION_H
 #define CIPHERTEXT_SANITIZATION_H
-
-
+ 
 /**
  * @file ciphertext_sanitization.h
  */
 
+#include "global_headers.h"
 
 #include "ciphertexts/lwe.h"
 #include "fhe/functional_bootstrap.h"

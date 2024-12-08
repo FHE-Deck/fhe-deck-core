@@ -6,6 +6,7 @@
  * @file blind_rotation.h
  */
 
+#include "global_headers.h"
 
 #include "ciphertexts/lwe.h"
 #include "ciphertexts/rlwe.h" 

@@ -5,23 +5,12 @@
 /**
  * @file gadget.h
  */
+#include "global_headers.h"
  
 #include "common/utils.h" 
 #include "common/sample.h"
 #include "math/vector.h"
-
-#include <complex>
-#include <limits>
-#include <iostream>
-
-#if defined(USE_CEREAL)
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/polymorphic.hpp>
-#endif
-
+  
 namespace fhe_deck{
 
 

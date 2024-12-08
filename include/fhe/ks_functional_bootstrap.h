@@ -1,11 +1,11 @@
 #ifndef KS_FUNCTIONAL_BOOTSTRAP_H
 #define KS_FUNCTIONAL_BOOTSTRAP_H
-
-
+ 
 /**
  * @file ks_functional_bootstrap.h
  */
 
+#include "global_headers.h"
 
 #include "fhe/functional_bootstrap.h"
 

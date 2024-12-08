@@ -2,10 +2,11 @@
 #ifndef POLYNOMIAL_CIPHERTEXT_H
 #define POLYNOMIAL_CIPHERTEXT_H
 
+#include "global_headers.h"
+
 #include "math/polynomial.h"
 #include "ciphertexts/vector_ciphertext.h"
-
-
+ 
 /**
  * @file polynomial_ciphertext.h
  */
