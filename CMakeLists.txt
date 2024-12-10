@@ -37,6 +37,12 @@ file(GLOB SRC_FHE ${CMAKE_CURRENT_SOURCE_DIR}/src/fhe/*.cpp)
 add_library(fhe_deck STATIC)
    
 
+target_include_directories(fhe_deck
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include> 
+)
+
 ### Setting External Depandencies for Inversion Engines
 
 if(NOT DEFINED INV_ENGINE)  
@@ -80,17 +86,20 @@ if(NTT_ENGINE STREQUAL "Hexl")
     include_directories(${third_party}/intel_hexl/include)
     link_directories(${third_party}/intel_hexl/lib) 
 
+    
+    target_include_directories(fhe_deck PUBLIC  $<BUILD_INTERFACE:${third_party}/intel_hexl/include>)
+
     add_library(intel_hexl_lib STATIC IMPORTED)
     set_target_properties(intel_hexl_lib PROPERTIES 
         IMPORTED_LOCATION ${third_party}/intel_hexl/lib/libhexl.a
     ) 
     set(intelhexl_link intel_hexl_lib) 
 elseif(NTT_ENGINE STREQUAL "BUILDIN")
-    set(intelhexl_link "") 
+    set(intelhexl_link "")  
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/intel_hexl_engine.cpp)
 else()
     message(WARNING "Unrecognized NTT engine name " ${NTT_ENGINE} " using  Build-in NTT engine")
-    set(intelhexl_link "") 
+    set(intelhexl_link "")  
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/intel_hexl_engine.cpp)
 endif() 
 
@@ -114,17 +123,18 @@ if(FFT_ENGINE STREQUAL "FFTW")
     ) 
     include_directories(${third_party}/fftw3/include)
     link_directories(${third_party}/fftw3/lib) 
+    target_include_directories(fhe_deck PUBLIC  $<BUILD_INTERFACE:${third_party}/fftw3/include>)
     add_library(fftw3_lib SHARED IMPORTED)
     set_target_properties(fftw3_lib PROPERTIES 
         IMPORTED_LOCATION ${third_party}/fftw3/lib/libfftw3.so
     )  
     set(fftw_link fftw3_lib)
 elseif(FFT_ENGINE STREQUAL "BUILDIN")
-    set(fftw_link "")
+    set(fftw_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_engine.cpp)
 else()
 message(WARNING "Unrecognized FFT engine name " ${FFT_ENGINE} " using  Build-in FFT engine")
-    set(fftw_link "")
+    set(fftw_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_engine.cpp)
 endif() 
 
@@ -145,20 +155,22 @@ if(FFT_LONG_DOUBLE_ENGINE STREQUAL "FFTW")
         URL_HASH MD5=8ccbf6a5ea78a16dbc3e1306e234cc5c
         PREFIX ${PROJECT_SOURCE_DIR}/external/${FFTWL}
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${third_party}/fftwl3 -DENABLE_LONG_DOUBLE=ON 
-    ) 
+    )  
     include_directories(${third_party}/fftwl3/include)
     link_directories(${third_party}/fftwl3/lib) 
+    target_include_directories(fhe_deck PUBLIC  $<BUILD_INTERFACE:${third_party}/fftwl3/include>)
+
     add_library(fftwl3_lib SHARED IMPORTED)
     set_target_properties(fftwl3_lib PROPERTIES 
         IMPORTED_LOCATION ${third_party}/fftwl3/lib/libfftw3l.so
     )
     set(fftwl_link fftwl3_lib)
 elseif(FFT_LONG_DOUBLE_ENGINE STREQUAL "BUILDIN")
-    set(fftwl_link "")
+    set(fftwl_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_long_engine.cpp)
 else()
     message(WARNING "Unrecognized FFT LONG DOUBLE engine name " ${FFT_LONG_DOUBLE_ENGINE} " using  Build-in FFT LONG DOUBLE engine")
-    set(fftwl_link "")
+    set(fftwl_link "") 
     list(REMOVE_ITEM SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/fftw_long_engine.cpp)
 endif() 
 
@@ -181,21 +193,13 @@ if(USE_CEREAL)
     ) 
     include_directories(${third_party}/cereal/include)
     link_directories(${third_party}/cereal/lib) 
+    target_include_directories(fhe_deck PUBLIC  $<BUILD_INTERFACE:${third_party}/fftwl3/include>) 
 endif() 
 
 ##### Finished to configure dependencies.
 
 
 
-target_include_directories(fhe_deck
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/intel_hexl/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/fftw3/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/fftwl3/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/cereal/include>
-)
 
 message("--- CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
