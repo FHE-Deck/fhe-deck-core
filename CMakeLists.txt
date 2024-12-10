@@ -65,8 +65,7 @@ endif()
 set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
 message("--- third_party: " ${third_party})
 
-# Set Intel Hexl
-message("--- Use " ${NTT_ENGINE} " NTT Engine")
+# Set Intel Hexl 
 set(NTT_ENGINE "Hexl" CACHE STRING "Choose NTT engine")
 message("--- Use " ${NTT_ENGINE} " NTT Engine")
 if(NTT_ENGINE STREQUAL "Hexl")
@@ -190,10 +189,7 @@ if(USE_CEREAL)
 endif() 
 
 ##### Finished to configure dependencies.
-
-
-
-
+ 
 message("--- CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
 target_sources(fhe_deck PRIVATE 
@@ -221,10 +217,7 @@ if(USE_EXAMPLES)
 endif()
 
 # Optionally compile tests from the tests directory (Caution: This directory is not on Github!)
-set(USE_TESTS FALSE CACHE BOOL "Choose whether to compile unit tests.")
-#if(NOT DEFINED USE_TESTS)  
-#    set(USE_TESTS FALSE) 
-#endif()
+set(USE_TESTS FALSE CACHE BOOL "Choose whether to compile unit tests.") 
 message("--- USE_TESTS: " ${USE_TESTS})
 if(USE_TESTS)
     add_subdirectory(tests) 
