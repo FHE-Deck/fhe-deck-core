@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.13)
  
 project(fhe_deck)
+message("------- Configuring FHE-Deck ")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
  
+if(NOT DEFINED CMAKE_BUILD_TYPE)  
+    message("--- CMAKE_BUILD_TYPE not define. Set to detault Release type.")
+    set(CMAKE_BUILD_TYPE "Release") 
+endif()
+
 message("--- CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")  
@@ -15,6 +21,7 @@ else()
 endif()
 
 message("--- CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
+message("--- CMAKE_CURRENT_SOURCE_DIR: " ${CMAKE_CURRENT_SOURCE_DIR})
   
 file(GLOB SRC_MATH ${CMAKE_CURRENT_SOURCE_DIR}/src/math/*.cpp) 
 file(GLOB SRC_CIPHERTEXTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ciphertexts/*.cpp)
@@ -52,6 +59,7 @@ endif()
 ### Now we will download, configure and compile other external libraries. 
 #Set folder for third_party libraries. 
 set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
+message("--- third_party: " ${third_party})
 
 # Set Intel Hexl
 if(NOT DEFINED NTT_ENGINE)  
