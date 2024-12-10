@@ -66,7 +66,7 @@ set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
 message("--- third_party: " ${third_party})
 
 # Set Intel Hexl
-
+message("--- Use " ${NTT_ENGINE} " NTT Engine")
 set(NTT_ENGINE "Hexl" CACHE STRING "Choose NTT engine")
 message("--- Use " ${NTT_ENGINE} " NTT Engine")
 if(NTT_ENGINE STREQUAL "Hexl")
