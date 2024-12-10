@@ -191,10 +191,10 @@ target_include_directories(fhe_deck
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/intel_hexl/include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/fftw3/include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/fftwl3/include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/cereal/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/intel_hexl/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/fftw3/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/fftwl3/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/cereal/include>
 )
 
 message("--- CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
