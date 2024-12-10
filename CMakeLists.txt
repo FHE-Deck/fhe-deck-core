@@ -6,10 +6,10 @@ message("------- Configuring FHE-Deck ")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
  
 if(NOT DEFINED CMAKE_BUILD_TYPE)  
-    message("--- CMAKE_BUILD_TYPE not define. Set to detault Release type.")
+    message("--- CMAKE_BUILD_TYPE not defined. Set to detault Release type.")
     set(CMAKE_BUILD_TYPE "Release") 
 elseif(NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release"))
-    message("--- CMAKE_BUILD_TYPE not define. Set to detault Release type.")
+    message("--- CMAKE_BUILD_TYPE not defined. Set to detault Release type.")
     set(CMAKE_BUILD_TYPE "Release") 
 endif()
 
@@ -36,11 +36,6 @@ file(GLOB SRC_FHE ${CMAKE_CURRENT_SOURCE_DIR}/src/fhe/*.cpp)
 
 add_library(fhe_deck STATIC)
    
-target_include_directories(fhe_deck
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
 
 ### Setting External Depandencies for Inversion Engines
 
@@ -189,6 +184,19 @@ if(USE_CEREAL)
 endif() 
 
 ##### Finished to configure dependencies.
+
+
+
+target_include_directories(fhe_deck
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/intel_hexl/include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/fftw3/include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/fftwl3/include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/cereal/include>
+)
+
 
 target_sources(fhe_deck PRIVATE 
     ${SRC_CIPHERTEXTS}
