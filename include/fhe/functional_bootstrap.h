@@ -13,7 +13,7 @@
 #include "interface/rotation_poly.h"
 #include "ciphertexts/lwe.h"
 #include "ciphertexts/rlwe.h" 
-#include "fhe/cggi_blind_rotation.h"
+#include "fhe/cggi_blind_rotation.h" 
 #include "keyswitch/lwe_to_lwe_keyswitch.h" 
 #include "keyswitch/lwe_to_rlwe_keyswitch.h" 
  

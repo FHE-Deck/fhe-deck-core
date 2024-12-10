@@ -5,8 +5,8 @@
  * @file fftw_engine.h
  */
 #include "global_headers.h"
-
-#include <fftw3.h>
+ 
+#include "fftw3.h"
 #include "math/polynomial.h" 
 
 namespace fhe_deck{
