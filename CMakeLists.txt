@@ -197,6 +197,7 @@ target_include_directories(fhe_deck
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/third_party/cereal/include>
 )
 
+message("--- CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
 target_sources(fhe_deck PRIVATE 
     ${SRC_CIPHERTEXTS}
