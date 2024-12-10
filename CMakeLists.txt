@@ -45,9 +45,8 @@ target_include_directories(fhe_deck
 
 ### Setting External Depandencies for Inversion Engines
 
-if(NOT DEFINED INV_ENGINE)  
-    set(INV_ENGINE "BUILDIN") 
-endif()
+
+set(INV_ENGINE "BUILDIN" CACHE STRING "Choose Polynomial Inversion engine")
 message("--- Use " ${INV_ENGINE} " Inversion Engine")
 if(INV_ENGINE STREQUAL "NTL") 
     add_definitions(-DUSE_NTL)
@@ -67,9 +66,8 @@ set(third_party "${PROJECT_SOURCE_DIR}/build/third_party")
 message("--- third_party: " ${third_party})
 
 # Set Intel Hexl
-if(NOT DEFINED NTT_ENGINE)  
-    set(NTT_ENGINE "Hexl") 
-endif()
+
+set(NTT_ENGINE "Hexl" CACHE STRING "Choose NTT engine")
 message("--- Use " ${NTT_ENGINE} " NTT Engine")
 if(NTT_ENGINE STREQUAL "Hexl")
     
@@ -104,9 +102,7 @@ else()
 endif() 
 
 # Set FFTW 
-if(NOT DEFINED FFT_ENGINE)  
-    set(FFT_ENGINE "FFTW") 
-endif() 
+set(FFT_ENGINE "FFTW" CACHE STRING "Choose FFT engine")
 message("--- Use " ${FFT_ENGINE} " FFT Engine") 
 if(FFT_ENGINE STREQUAL "FFTW")
     
@@ -140,9 +136,7 @@ endif()
 
 
 # Set FFTWL  
-if(NOT DEFINED FFT_LONG_DOUBLE_ENGINE)  
-    set(FFT_LONG_DOUBLE_ENGINE "FFTW") 
-endif() 
+set(FFT_LONG_DOUBLE_ENGINE "FFTW" CACHE STRING "Choose FFT engine for Long Double arithmetic.") 
 message("--- Use " ${FFT_LONG_DOUBLE_ENGINE} " FFT LONG DOUBLE Engine") 
 if(FFT_LONG_DOUBLE_ENGINE STREQUAL "FFTW")
     add_dependencies(fhe_deck fftwl_lib)
@@ -176,9 +170,8 @@ endif()
 
 
 # Set CEREAL
-if(NOT DEFINED USE_CEREAL)  
-    set(USE_CEREAL TRUE)
-endif() 
+
+set(USE_CEREAL TRUE CACHE BOOL "Choose whether to support serializartion using cereal library.")
 message("--- USE_CEREAL: " ${USE_CEREAL}) 
 if(USE_CEREAL) 
     add_dependencies(fhe_deck cereal_lib)
@@ -221,12 +214,17 @@ message(STATUS "Used dependencies for fhe_deck: ${deps}")
 
 ### Add Subdirectories
 
-add_subdirectory(examples) 
+set(USE_EXAMPLES FALSE CACHE BOOL "Choose whether to compile examples.")
+message("--- USE_EXAMPLES: " ${USE_EXAMPLES})
+if(USE_EXAMPLES)
+    add_subdirectory(examples) 
+endif()
 
 # Optionally compile tests from the tests directory (Caution: This directory is not on Github!)
-if(NOT DEFINED USE_TESTS)  
-    set(USE_TESTS FALSE) 
-endif()
+set(USE_TESTS FALSE CACHE BOOL "Choose whether to compile unit tests.")
+#if(NOT DEFINED USE_TESTS)  
+#    set(USE_TESTS FALSE) 
+#endif()
 message("--- USE_TESTS: " ${USE_TESTS})
 if(USE_TESTS)
     add_subdirectory(tests) 
