@@ -11,14 +11,4 @@
 #include "math/naive_multiplication_engine.h" 
  
  
-#if defined(USE_FFTW)
-#include "math/fftw_engine.h"
-#endif 
-#if defined(USE_FFTWL)
-#include "math/fftw_long_engine.h"
-#endif 
-#if defined(USE_IntelHexl)
-#include "math/intel_hexl_engine.h"
-#endif
-
 #endif 
