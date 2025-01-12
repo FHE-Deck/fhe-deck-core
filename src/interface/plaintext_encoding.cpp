@@ -6,6 +6,37 @@ PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plainte
     this->type = type;
     this->plaintext_space = plaintext_space;
     this->ciphertext_modulus = ciphertext_modulus;
+    calculate_ticks(); 
+}
+
+PlaintextEncodingType PlaintextEncoding::get_type()const{
+    return type;
+}
+
+void PlaintextEncoding::set_type(PlaintextEncodingType type){
+    this->type = type;
+    calculate_ticks();
+}
+
+int64_t PlaintextEncoding::get_plaintext_space()const{
+    return plaintext_space;
+}
+
+void PlaintextEncoding::set_plaintext_space(int64_t plaintext_space){
+    this->plaintext_space = plaintext_space;
+    calculate_ticks();
+}
+
+int64_t PlaintextEncoding::get_ciphertext_modulus()const{
+    return ciphertext_modulus;
+}
+
+void PlaintextEncoding::set_ciphertext_modulus(int64_t ciphertext_modulus){
+    this->ciphertext_modulus = ciphertext_modulus;
+    calculate_ticks();
+}
+
+void PlaintextEncoding::calculate_ticks(){
     if(type == PlaintextEncodingType::full_domain){ 
         this->ticks =  plaintext_space;
     }else if(type ==  PlaintextEncodingType::partial_domain){ 
@@ -18,7 +49,6 @@ PlaintextEncoding::PlaintextEncoding(PlaintextEncodingType type, int64_t plainte
         throw std::logic_error("Non existent plaintext encoding type");
     }  
 }
-
 
 int64_t PlaintextEncoding::encode_message(int64_t message)const{ 
     /// TODO: Its better to first multiply the message by the ciphertext modulus, divide by ticks and then round.
@@ -71,4 +101,12 @@ void PlaintextEncoding::decode_message(Vector& out, const Vector& encoded_messag
     for(int32_t i = 0; i < encoded_message.size; ++i){
         out.vec[i] = decode_message(encoded_message.vec[i]);
     }
+}
+
+bool PlaintextEncoding::operator==(const PlaintextEncoding &other) const{
+    return (type == other.type) && (plaintext_space == other.plaintext_space) && (ciphertext_modulus == other.ciphertext_modulus);
+}
+
+bool PlaintextEncoding::operator!=(const PlaintextEncoding &other) const{
+    return (type != other.type) || (plaintext_space != other.plaintext_space) || (ciphertext_modulus != other.ciphertext_modulus);
 }

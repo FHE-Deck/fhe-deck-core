@@ -17,7 +17,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     
     context.generate_context(param_set); 
     context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
-    int32_t modulus = context.current_encoding.plaintext_space;
+    int32_t modulus = context.current_encoding.get_plaintext_space();
      
     int32_t c1_plain = 1;
     Ciphertext c1  = context.encrypt(c1_plain);  
@@ -32,22 +32,22 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
  
     int32_t c3_plain = 0;
     Ciphertext c3 = context.encrypt(c3_plain);
-    c3.add(c1); 
+    c3.add(c3, c1); 
     c3_plain = (c3_plain + c1_plain) % modulus;
     
     assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1) == 1");
     std::cout << "Decrypt(c3+c1): OK" << std::endl;
-    c3.add(c2); 
+    c3.add(c3, c2); 
     c3_plain = (c3_plain + c2_plain) % modulus;
     assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1+c2) == 3");
     std::cout << "Decrypt(c3+c1+c2): OK" << std::endl;
-    c3.add(c2); 
+    c3.add(c3, c2); 
     c3_plain = (c3_plain + c2_plain) % modulus;
     std::cout << "context.decrypt(c3): " << context.decrypt(c3) << std::endl;
     assertm(context.decrypt(c3) == c3_plain, "Decrypt(c3+c1+c2+c2) == 1");
     std::cout << "Decrypt(c3+c1+c2+c2) OK" << std::endl;
  
-    c3.mul(3); 
+    c3.mul(c3, 3); 
     c3_plain = (c3_plain * 3) % modulus;
     assertm(context.decrypt(c3) == c3_plain, "Decrypt((c3+c1+c2+c2) * 3) == 3");
     std::cout << "Decrypt((c3+c1+c2+c2) * 3): OK"  << std::endl; 
@@ -147,7 +147,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         return m;
     }; 
   
-    HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
+    HomomorphicAccumulator lut_identity = context.setup_function(id); 
   
     
     int64_t elapsed = 0;   
@@ -156,7 +156,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::chrono::_V2::system_clock::time_point stop;
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(ct1, lut_identity);  
+    ct4 = context.eval(ct1, lut_identity);  
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -169,10 +169,10 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         return (m+1);
     }; 
 
-    HomomorphicAccumulator lut_id_plus = context.genrate_lut(id_plus); 
+    HomomorphicAccumulator lut_id_plus = context.setup_function(id_plus); 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(ct1, lut_id_plus); 
+    ct4 = context.eval(ct1, lut_id_plus); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -182,7 +182,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_id_plus)) == 2: OK"  << std::endl;
  
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(ct4, lut_id_plus);
+    ct4 = context.eval(ct4, lut_id_plus);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -192,7 +192,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "context.decrypt(context.eval_lut(&ct4, lut_id_plus)) == 3: OK"  << std::endl;
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(ct4, lut_id_plus); 
+    ct4 = context.eval(ct4, lut_id_plus); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -209,10 +209,10 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         } 
     }; 
     std::function<int64_t(int64_t)> fun_msb_t = std::bind(fun_msb, std::placeholders::_1, modulus);
-    HomomorphicAccumulator lut_fun_msb = context.genrate_lut(fun_msb_t); 
+    HomomorphicAccumulator lut_fun_msb = context.setup_function(fun_msb_t); 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(ct1, lut_fun_msb); 
+    ct4 = context.eval(ct1, lut_fun_msb); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -220,8 +220,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     c4_plain = fun_msb_t(c1_plain);
     assertm(context.decrypt(ct4) == c4_plain, "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0"); 
     std::cout << "context.decrypt(context.eval_lut(&ct1, lut_fun_msb)) == 0: OK"  << std::endl;
-   
-   
+    
     std::cout << "Time elapsed:  " << elapsed << " ms, " << (double)elapsed/1000.0 << " s" << std::endl; 
     std::cout << "Time per eval:  " << (double)elapsed/num_of_evals << " ms, " << ((double)elapsed/num_of_evals)/1000.0 << " s" << std::endl; 
 }
@@ -355,12 +354,12 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     }; 
      
     std::cout << "genrate_lut" << std::endl;
-    HomomorphicAccumulator lut_fun_ham = context.genrate_lut(fun_ham); 
+    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham); 
 
      
     Ciphertext ct4;
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(c0, lut_fun_ham);
+    ct4 = context.eval(c0, lut_fun_ham);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -369,7 +368,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     std::cout << "context.eval_lut(c0, lut_fun_ham) == 0: OK" << std::endl;  
  
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(c1, lut_fun_ham);
+    ct4 = context.eval(c1, lut_fun_ham);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -378,7 +377,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     std::cout << "context.eval_lut(c1, lut_fun_ham) == 1: OK" << std::endl;  
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct4 = context.eval_lut(c2, lut_fun_ham);
+    ct4 = context.eval(c2, lut_fun_ham);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -386,7 +385,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     std::cout << "context.eval_lut(c2, lut_fun_ham) == 1: OK" << std::endl;  
 
     start = std::chrono::high_resolution_clock::now();
-    ct4 = context.eval_lut(c3, lut_fun_ham);
+    ct4 = context.eval(c3, lut_fun_ham);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -413,13 +412,13 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
                 return 2;
         }
     }; 
-    HomomorphicAccumulator lut_fun_nand = context.genrate_lut(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand); 
 
     Ciphertext ct0 = context.encrypt(1);  
     Ciphertext ct1 = context.encrypt(0);   
     Ciphertext combined = ct0 + (ct1 * 2);  
     start = std::chrono::high_resolution_clock::now(); 
-    Ciphertext ct_nand = context.eval_lut(combined, lut_fun_nand);
+    Ciphertext ct_nand = context.eval(combined, lut_fun_nand);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -430,7 +429,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     ct1 = context.encrypt(0);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    ct_nand = context.eval(combined, lut_fun_nand);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -441,7 +440,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     ct1 = context.encrypt(1);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    ct_nand = context.eval(combined, lut_fun_nand);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -453,7 +452,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     ct1 = context.encrypt(1);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_nand = context.eval_lut(combined, lut_fun_nand);
+    ct_nand = context.eval(combined, lut_fun_nand);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -548,12 +547,11 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
         return m; 
     };    
    
-    HomomorphicAccumulator lut_fun_identity = context.genrate_lut(fun_identity);  
- 
+    HomomorphicAccumulator lut_fun_identity = context.setup_function(fun_identity);  
    
-    Ciphertext ct_id = context.eval_lut(mct1, lut_fun_identity); 
+    Ciphertext ct_id = context.eval(mct1, lut_fun_identity); 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -561,12 +559,12 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&mct1, lut_fun_identity) == -1: OK"  << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(mct2, lut_fun_identity); 
+    ct_id = context.eval(mct2, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -574,48 +572,48 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&mct2, lut_fun_identity) == -2: OK"  << std::endl;  
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(mct3, lut_fun_identity); 
+    ct_id = context.eval(mct3, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     assertm(context.decrypt(ct_id) == -3, "context.eval_lut(&mct3, lut_fun_identity) == -3");
     std::cout << "context.eval_lut(&mct3, lut_fun_identity) == -3: OK"  << std::endl;  
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct0, lut_fun_identity); 
+    ct_id = context.eval(ct0, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     assertm(context.decrypt(ct_id) == 0, "context.eval_lut(&ct0, lut_fun_identity) == 0");
     std::cout << "context.eval_lut(&ct0, lut_fun_identity) == 0: OK"  << std::endl;  
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct1, lut_fun_identity); 
+    ct_id = context.eval(ct1, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     assertm(context.decrypt(ct_id) == 1, "context.eval_lut(&ct1, lut_fun_identity) == 1");
     std::cout << "context.eval_lut(&ct1, lut_fun_identity) == 1: OK"  << std::endl;  
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct2, lut_fun_identity); 
+    ct_id = context.eval(ct2, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -623,12 +621,12 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&ct2, lut_fun_identity) == 2: OK"  << std::endl;  
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct3, lut_fun_identity); 
+    ct_id = context.eval(ct3, lut_fun_identity); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
     start = std::chrono::high_resolution_clock::now(); 
-    ct_id = context.eval_lut(ct_id, lut_fun_identity);
+    ct_id = context.eval(ct_id, lut_fun_identity);
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -646,7 +644,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     };  
  
     start = std::chrono::high_resolution_clock::now(); 
-    Ciphertext ct_relu = context.eval_lut(ct2, fun_relu);  
+    Ciphertext ct_relu = context.eval(ct2, fun_relu);  
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -654,7 +652,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&ct2, fun_relu) == 2: OK" << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(mct3, fun_relu);  
+    ct_relu = context.eval(mct3, fun_relu);  
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -662,7 +660,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&mct0, fun_relu) == 0: OK" << std::endl; 
    
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(ct1, fun_relu); 
+    ct_relu = context.eval(ct1, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -670,7 +668,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&ct1, fun_relu) == 1: OK" << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(ct2, fun_relu); 
+    ct_relu = context.eval(ct2, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -678,7 +676,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&ct2, fun_relu) == 2: OK" << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(ct3, fun_relu); 
+    ct_relu = context.eval(ct3, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -686,7 +684,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&ct3, fun_relu) == 3: OK" << std::endl; 
     
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(mct1, fun_relu); 
+    ct_relu = context.eval(mct1, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -694,7 +692,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&mct1, fun_relu) == 0: OK" << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(mct2, fun_relu); 
+    ct_relu = context.eval(mct2, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -702,7 +700,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "context.eval_lut(&mct2, fun_relu) == 0: OK" << std::endl; 
 
     start = std::chrono::high_resolution_clock::now(); 
-    ct_relu = context.eval_lut(mct3, fun_relu); 
+    ct_relu = context.eval(mct3, fun_relu); 
     stop = std::chrono::high_resolution_clock::now(); 
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
     num_of_evals++;
@@ -756,7 +754,7 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
         return m;
     }; 
   
-    HomomorphicAccumulator lut_identity = context.genrate_lut(id); 
+    HomomorphicAccumulator lut_identity = context.setup_function(id); 
 
     std::vector<HomomorphicAccumulator> luts;
     luts.push_back(lut_identity);
@@ -764,7 +762,7 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
  
     Ciphertext ct1 = context.encrypt_public(1); 
 
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct1, luts);
+    std::vector<Ciphertext> out_cts = context.eval(ct1, luts);
 
     std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
     assertm(context.decrypt(out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
@@ -774,7 +772,7 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     assertm(context.decrypt(out_cts[1]) == 1, "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1"); 
     std::cout << "context.decrypt(context.eval_lut(&out_cts[1], lut_identity)) == 1: OK"  << std::endl;
  
-    out_cts = context.eval_lut_amortized(ct1, luts);
+    out_cts = context.eval(ct1, luts);
 
     std::cout << "context.decrypt(&out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
     assertm(context.decrypt(out_cts[0]) == 1, "context.decrypt(context.eval_lut(&out_cts[0], lut_identity)) == 1"); 
@@ -798,9 +796,9 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(context.genrate_lut(first_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(second_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(third_bit));
+    bit_decomp_luts.push_back(context.setup_function(first_bit));
+    bit_decomp_luts.push_back(context.setup_function(second_bit));
+    bit_decomp_luts.push_back(context.setup_function(third_bit));
 
     Ciphertext ct0 = context.encrypt_public(0);
     Ciphertext ct2 = context.encrypt_public(2);
@@ -811,52 +809,76 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     Ciphertext ct7 = context.encrypt_public(7);
 
 
-    out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
+    out_cts = context.eval(ct0, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts);
+    out_cts = context.eval(ct1, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts);
+    out_cts = context.eval(ct2, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    out_cts = context.eval(ct3, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    out_cts = context.eval(ct4, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    out_cts = context.eval(ct5, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    out_cts = context.eval(ct6, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    out_cts = context.eval(ct7, bit_decomp_luts);
+    std::cout << "context.decrypt(out_cts[0]): " << context.decrypt(out_cts[0]) << std::endl;
+    std::cout << "context.decrypt(out_cts[1]): " << context.decrypt(out_cts[1]) << std::endl;
+    std::cout << "context.decrypt(out_cts[2]): " << context.decrypt(out_cts[2]) << std::endl;
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -887,9 +909,9 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(context.genrate_lut(first_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(second_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(third_bit));
+    bit_decomp_luts.push_back(context.setup_function(first_bit));
+    bit_decomp_luts.push_back(context.setup_function(second_bit));
+    bit_decomp_luts.push_back(context.setup_function(third_bit));
 
     Ciphertext ct0 = context.encrypt_public(0); 
     Ciphertext ct1 = context.encrypt_public(1); 
@@ -901,7 +923,7 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     Ciphertext ct7 = context.encrypt_public(7);
 
 
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
+    std::vector<Ciphertext> out_cts = context.eval(ct0, bit_decomp_luts);
  
 
     assert(context.decrypt(out_cts[0]) == 0); 
@@ -909,14 +931,14 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts);
+    out_cts = context.eval(ct1, bit_decomp_luts);
   
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
  
-    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts);
+    out_cts = context.eval(ct2, bit_decomp_luts);
  
       
     assert(context.decrypt(out_cts[0]) == 0); 
@@ -924,34 +946,34 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    out_cts = context.eval(ct3, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    out_cts = context.eval(ct4, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    out_cts = context.eval(ct5, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    out_cts = context.eval(ct6, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    out_cts = context.eval(ct7, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -985,10 +1007,10 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(context.genrate_lut(first_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(second_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(third_bit));
-    bit_decomp_luts.push_back(context.genrate_lut(fourth_bit));
+    bit_decomp_luts.push_back(context.setup_function(first_bit));
+    bit_decomp_luts.push_back(context.setup_function(second_bit));
+    bit_decomp_luts.push_back(context.setup_function(third_bit));
+    bit_decomp_luts.push_back(context.setup_function(fourth_bit));
 
     Ciphertext ct0 = context.encrypt_public(0); 
     Ciphertext ct1 = context.encrypt_public(1); 
@@ -1010,7 +1032,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
 
     int64_t elapsed = 0; 
     std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
-    std::vector<Ciphertext> out_cts = context.eval_lut_amortized(ct0, bit_decomp_luts);
+    std::vector<Ciphertext> out_cts = context.eval(ct0, bit_decomp_luts);
     std::chrono::_V2::system_clock::time_point stop = std::chrono::high_resolution_clock::now();
     elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
   
@@ -1021,7 +1043,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 0: OK" << std::endl;
     std::cout << "Time elapsed:  " << elapsed << "ms" << std::endl; 
   
-    out_cts = context.eval_lut_amortized(ct1, bit_decomp_luts); 
+    out_cts = context.eval(ct1, bit_decomp_luts); 
      
     
 
@@ -1031,7 +1053,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 1: OK" << std::endl;
  
-    out_cts = context.eval_lut_amortized(ct2, bit_decomp_luts); 
+    out_cts = context.eval(ct2, bit_decomp_luts); 
 
       
     assert(context.decrypt(out_cts[0]) == 0); 
@@ -1040,14 +1062,14 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 2: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct3, bit_decomp_luts);
+    out_cts = context.eval(ct3, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
     assert(context.decrypt(out_cts[3]) == 0); 
     std::cout << "Test Bin Decomp 3: OK" << std::endl;
 
-    out_cts = context.eval_lut_amortized(ct4, bit_decomp_luts);
+    out_cts = context.eval(ct4, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1055,7 +1077,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 4: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct5, bit_decomp_luts);
+    out_cts = context.eval(ct5, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1063,7 +1085,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 5: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct6, bit_decomp_luts);
+    out_cts = context.eval(ct6, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1071,7 +1093,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 6: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct7, bit_decomp_luts);
+    out_cts = context.eval(ct7, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1079,7 +1101,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 7: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct8, bit_decomp_luts);
+    out_cts = context.eval(ct8, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
@@ -1087,7 +1109,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 8: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct9, bit_decomp_luts);
+    out_cts = context.eval(ct9, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 0); 
@@ -1095,7 +1117,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 9: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct10, bit_decomp_luts);
+    out_cts = context.eval(ct10, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
@@ -1103,7 +1125,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 10: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct11, bit_decomp_luts);
+    out_cts = context.eval(ct11, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 0); 
@@ -1111,7 +1133,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 11: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct12, bit_decomp_luts);
+    out_cts = context.eval(ct12, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1119,7 +1141,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 12: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct13, bit_decomp_luts);
+    out_cts = context.eval(ct13, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 0); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1127,7 +1149,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 13: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct14, bit_decomp_luts);
+    out_cts = context.eval(ct14, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 0); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1135,7 +1157,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 14: OK" << std::endl;
 
 
-    out_cts = context.eval_lut_amortized(ct15, bit_decomp_luts);
+    out_cts = context.eval(ct15, bit_decomp_luts);
     assert(context.decrypt(out_cts[0]) == 1); 
     assert(context.decrypt(out_cts[1]) == 1); 
     assert(context.decrypt(out_cts[2]) == 1); 
@@ -1152,53 +1174,207 @@ void serialization_test(){
 
     FHEContext first_context; 
     std::cout << "Generate Keys..." << std::endl;
-    first_context.generate_context(FHENamedParams::tfhe_11_NTT);
+    try{
+        
+        first_context.generate_context(FHENamedParams::tfhe_11_NTT); 
+        std::cout << "Save Secret Key" << std::endl; 
+        first_context.save_secret_key("z_sk.cereal"); 
+        std::cout << "Save Public Key" << std::endl;
+        first_context.save_public_key("z_pk.cereal");
     
-    std::cout << "Save Secret Key" << std::endl; 
-    first_context.save_secret_key("z_sk.cereal"); 
-    std::cout << "Save Public Key" << std::endl;
-    first_context.save_public_key("z_pk.cereal");
- 
-    FHEContext context; 
-    std::cout << "Load secret Key..." << std::endl; 
-    context.load_secret_key("z_sk.cereal"); 
-    std::cout << "Load Public Key..." << std::endl; 
-    context.load_public_key("z_pk.cereal");
-    std::cout << "Delete The Files..." << std::endl; 
-    std::remove("z_sk.cereal"); 
-    std::remove("z_pk.cereal"); 
+        FHEContext context; 
+        std::cout << "Load secret Key..." << std::endl; 
+        context.load_secret_key("z_sk.cereal"); 
+        std::cout << "Load Public Key..." << std::endl; 
+        context.load_public_key("z_pk.cereal");
+        std::cout << "Delete The Files..." << std::endl; 
+        std::remove("z_sk.cereal"); 
+        std::remove("z_pk.cereal"); 
 
 
-    Ciphertext ct0 = context.encrypt_public(1);   
-    assert(context.decrypt(ct0) == 1);
+        Ciphertext ct0 = context.encrypt_public(1);   
+        assert(context.decrypt(ct0) == 1);
+        
     
+        auto id_0 = [](int64_t m, int64_t t) -> int64_t {
+            return m % t;
+        }; 
+        std::function<int64_t(int64_t)> id = std::bind(id_0, std::placeholders::_1, context.get_default_plaintext_space());
+        ct0 = context.eval(ct0, id);  
+    
+        context.save_Ciphertext("z_ct.cereal", ct0);  
+        Ciphertext ct_out = context.load_Ciphertext("z_ct.cereal"); 
+        assert(context.decrypt(ct_out) == 1);
+        std::cout << "Test Eval-Lut/Save and Load Ciphertext: OK" << std::endl;
+        
+        std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
+        os << ct_out; 
+        os.close();
+        Ciphertext ct_from_stream = context.load_Ciphertext("z_rlwe_ct.cereal");
+        assert(context.decrypt(ct_from_stream) == 1);
+        std::cout << "Test Writa and Save from Stream: OK" << std::endl;
 
-    auto id = [](int64_t m, int64_t t) -> int64_t {
-        return m % t;
-    }; 
-      
-    ct0 = context.eval_lut(ct0, id);  
- 
-    context.save_Ciphertext("z_ct.cereal", ct0);  
-    Ciphertext ct_out = context.load_Ciphertext("z_ct.cereal"); 
-    assert(context.decrypt(ct_out) == 1);
-    std::cout << "Test Eval-Lut/Save and Load Ciphertext: OK" << std::endl;
-     
-    std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
-    os << ct_out; 
-    os.close();
-    Ciphertext ct_from_stream = context.load_Ciphertext("z_rlwe_ct.cereal");
-    assert(context.decrypt(ct_from_stream) == 1);
-    std::cout << "Test Writa and Save from Stream: OK" << std::endl;
-
-    std::remove("z_ct.cereal"); 
-    std::remove("z_rlwe_ct.cereal"); 
+        std::remove("z_ct.cereal"); 
+        std::remove("z_rlwe_ct.cereal");  
+    }catch (std::logic_error& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 
+void test_full_change_plaintext_space(FHENamedParams param_set){
+    std::cout << "=========== test_full_change_plaintext  =============" << std::endl;
+    FHEContext context; 
+    std::cout << "Generate Keys..." << std::endl; 
+    context.generate_context(param_set); 
+    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
+
+    int modulus_1 = 6;
+    int modulus_2 = 12; 
+    
+    Ciphertext ct_in  = context.encrypt(2, modulus_1); 
+    
+    assert(context.decrypt(ct_in) == 2);
+    std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
+    assert(ct_in.encoding.get_plaintext_space() == modulus_1);
+    std::cout << "ct_in.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl;
+    assert(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain);
+    std::cout << "ct_in.encoding.get_type() == PlaintextEncodingType::full_domain: OK "  << std::endl;
+
+    auto id = [](int64_t m) -> int64_t {
+        return m;
+    }; 
+
+
+    ct_in = context.eval(ct_in, id);  
+
+    assert(context.decrypt(ct_in) == 2);
+    std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
+    assert(ct_in.encoding.get_plaintext_space() == modulus_1);
+    std::cout << "ct_in.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl;
+    assert(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain);
+    std::cout << "ct_in.encoding.get_type() == PlaintextEncodingType::full_domain: OK "  << std::endl;
+ 
+
+    std::function<int64_t(int64_t)> fun_add = [](int64_t m) -> int64_t {
+        return (m+8)%11;
+    }; 
+
+    PlaintextEncoding encoding_1 = ct_in.encoding;
+    PlaintextEncoding encoding_2 = encoding_1;
+    encoding_2.set_plaintext_space(modulus_2);
+    
+    assert(encoding_1.get_plaintext_space() == modulus_1);
+    std::cout << "encoding_1.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+    assert(encoding_1.get_type() == PlaintextEncodingType::full_domain); 
+    std::cout << "encoding_1.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+
+    assert(encoding_2.get_plaintext_space() == modulus_2);
+    std::cout << "encoding_2.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+    assert(encoding_2.get_type() == PlaintextEncodingType::full_domain); 
+    std::cout << "encoding_2.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+ 
+
+    HomomorphicAccumulator lut_fun_add = context.setup_function(fun_add, encoding_1, encoding_2); 
+    Ciphertext ct_out = context.eval(ct_in, lut_fun_add, encoding_2);
+  
+    assert(ct_out.encoding.get_plaintext_space()  == modulus_2);
+    std::cout << "ct_out.encoding.get_plaintext_space()  == modulus_1: OK "   << std::endl; 
+    assert(ct_out.encoding.get_type() == PlaintextEncodingType::full_domain); 
+    std::cout << "ct_out.encoding.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+    assert(context.decrypt(ct_out) == 10);
+    std::cout << "ct_out.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+}
+
+
+
+
+void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
+    std::cout << "=========== test_full_change_plaintext_space_amortized =============" << std::endl;
+    FHEContext context; 
+    std::cout << "Generate Keys..." << std::endl; 
+    context.generate_context(param_set); 
+    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
+
+    int modulus_1 = 6;
+    int modulus_2 = 12; 
+    
+    Ciphertext ct_in  = context.encrypt(2, modulus_1); 
+    
+    assert(context.decrypt(ct_in) == 2);
+    std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
+    assert(ct_in.encoding.get_plaintext_space() == modulus_1);
+    std::cout << "ct_in.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl;
+    assert(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain);
+    std::cout << "ct_in.encoding.get_type() == PlaintextEncodingType::full_domain: OK "  << std::endl;
+
+    auto id = [](int64_t m) -> int64_t {
+        return m;
+    }; 
+
+    std::vector<HomomorphicAccumulator> id_luts;
+    id_luts.push_back(context.setup_function(id, ct_in.encoding, ct_in.encoding));
+    id_luts.push_back(context.setup_function(id, ct_in.encoding, ct_in.encoding));
+    
+    /// TODO: Actually I need to check perhaps whether LUT where build with the same encoding as the input ciphertext for eval.
+    /// If not, then need to throw an exeption, with instruction what to do, because its not always possible to recode a rotation poly to a different encoding.
+    /// Well general problem now, because tthe HomomorphicAccumulator doesn't have a copy of a encoding...
+    /// What options are there:
+    /// 1) I just give the encoding copies, to the HomomorphicAccumulator. Then if input or output encodings don't work, then I throw an exception.
+    /// 2) I only have setup functions that take input and output encoding explicitely (make the library harder to use if we have a non-trivial case)
+    /// OK. I guess I will go with option 1. What bothers mee a bit, is the we cannot reuse LUTs for different encodings.
+    /// But if I want flexibility then I can just pass a vector of functions, and generate the LUTs on the fly.
+    std::vector<Ciphertext> cts = context.eval(ct_in, id_luts);  
+
+    for(Ciphertext ct: cts){ 
+        assert(ct.encoding.get_type() == PlaintextEncodingType::full_domain);
+        std::cout << "ct.encoding.get_type() == PlaintextEncodingType::full_domain: OK "  << std::endl; 
+        assert(ct.encoding.get_plaintext_space() == modulus_1);
+        std::cout << "ct.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl;
+        assert(context.decrypt(ct) == 2);
+        std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
+    } 
+  
+    PlaintextEncoding encoding_1 = ct_in.encoding;
+    PlaintextEncoding encoding_2 = encoding_1;
+    encoding_2.set_plaintext_space(modulus_2);
+    
+    assert(encoding_1.get_plaintext_space() == modulus_1);
+    std::cout << "encoding_1.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+    assert(encoding_1.get_type() == PlaintextEncodingType::full_domain); 
+    std::cout << "encoding_1.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+
+    assert(encoding_2.get_plaintext_space() == modulus_2);
+    std::cout << "encoding_2.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+    assert(encoding_2.get_type() == PlaintextEncodingType::full_domain); 
+    std::cout << "encoding_2.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+ 
+    
+    std::function<int64_t(int64_t)> fun_add = [](int64_t m) -> int64_t {
+        return (m+8)%11;
+    }; 
+
+    std::vector<HomomorphicAccumulator> fun_luts;
+    fun_luts.push_back(context.setup_function(fun_add, encoding_1, encoding_2));
+    fun_luts.push_back(context.setup_function(fun_add, encoding_1, encoding_2));
+
+    //HomomorphicAccumulator lut_fun_add = context.setup_function(fun_add, encoding_1, encoding_2); 
+    std::vector<Ciphertext> ct_outs = context.eval(ct_in, fun_luts, encoding_2);
+  
+    for(Ciphertext ct_out: ct_outs){
+        assert(ct_out.encoding.get_plaintext_space()  == modulus_2);
+        std::cout << "ct_out.encoding.get_plaintext_space()  == modulus_1: OK "   << std::endl; 
+        assert(ct_out.encoding.get_type() == PlaintextEncodingType::full_domain); 
+        std::cout << "ct_out.encoding.get_type() == PlaintextEncodingType::full_domain: OK "   << std::endl; 
+        assert(context.decrypt(ct_out) == 10);
+        std::cout << "ct_out.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl; 
+    } 
+}
+
+
+
 int main(){  
-     
-      
+ 
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1227,6 +1403,22 @@ int main(){
 
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
 
-    serialization_test();    
+    serialization_test();  
+
+    test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_KS);
+     
+    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
+
+    test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT);
+
+    test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT_amortized);
+
+    test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS);
+
+    test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS_amortized); 
+
+    test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_NTT_amortized);
+
+    test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_KS_amortized);
   
 }

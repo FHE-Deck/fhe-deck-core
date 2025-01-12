@@ -19,6 +19,8 @@ class RotationPoly : public Polynomial{
  
 public:
 
+    /// @brief The plaintext encoding used to encode messages on the input ciphertext.
+    PlaintextEncoding input_encoding;
     /// @brief The plaintext encoding used to encode messages on the polynomial.
     PlaintextEncoding output_encoding;
     /// @brief Indicates whether the polynomial is encoded or decoded using the plaintext polynomials. 
@@ -33,7 +35,15 @@ public:
 
     /// @brief Default constructor.
     RotationPoly() = default;
- 
+  
+    // @brief Constructs a rotation polynomial.
+    /// @param f The function to be embedded in the polynomial.
+    /// @param degree The degree of the polynomial.
+    /// @param output_encoding The encoding used to encode messages on the input ciphertext.
+    /// @param output_encoding The encoding used to encode messages on the polynomial.
+    /// @param is_amortized_form Indicates whether the polynomial is in amortized form or not. By defaults is false.
+    RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree,  PlaintextEncoding input_encoding, PlaintextEncoding output_encoding); 
+
     /// @brief Constructs a rotation polynomial.
     /// @param f The function to be embedded in the polynomial.
     /// @param degree The degree of the polynomial.
@@ -47,6 +57,7 @@ public:
     /// @param output_encoding The encoding used to encode messages on the polynomial.
     /// @param is_amortized_form Indicates whether the polynomial is in amortized form or not. By defaults is false.
     RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form = false); 
+
   
     /// @brief Copy constructor.
     /// @param poly The polynomial to be copied.

@@ -36,9 +36,9 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
     void init();
 
-    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
+    void full_domain_bootstrap(LWECT& lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT& lwe_ct_in, const PlaintextEncoding &input_encoding, const PlaintextEncoding &output_encoding);
 
-    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &encoding);
+    std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in, const PlaintextEncoding &input_encoding, const PlaintextEncoding &output_encoding);
 
     #if defined(USE_CEREAL)
     template <class Archive>

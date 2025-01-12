@@ -61,8 +61,9 @@ class KSFunctionSpecification : public FunctionSpecification {
 
         Polynomial poly_msb_0;
         Polynomial poly_msb_1; 
-        KSFunctionSpecification(const std::function<long(long,long)>, long dim, long coef_modulus, PlaintextEncoding encoding); 
-        KSFunctionSpecification(long (*f)(long message, long plaintext_space), long dim, long coef_modulus, PlaintextEncoding encoding); 
+ 
+        KSFunctionSpecification(const std::function<long(long,long)> f, long dim, long coef_modulus, PlaintextEncoding input_encoding); 
+ 
 };
 
 
@@ -77,12 +78,19 @@ class HomomorphicAccumulator{
     std::shared_ptr<FunctionSpecification> func_boot_acc;
     std::shared_ptr<FunctionSpecification> multivalue_acc;
 
+    PlaintextEncoding input_encoding;
+    PlaintextEncoding output_encoding;
+
     HomomorphicAccumulator(std::shared_ptr<FunctionSpecification> boot_acc, 
     std::shared_ptr<FunctionSpecification> func_boot_acc,
-    std::shared_ptr<FunctionSpecification> multivalue_acc){
+    std::shared_ptr<FunctionSpecification> multivalue_acc,
+    PlaintextEncoding input_encoding,
+    PlaintextEncoding output_encoding){
         this->boot_acc = boot_acc;
         this->func_boot_acc = func_boot_acc;
         this->multivalue_acc = multivalue_acc;
+        this->input_encoding = input_encoding;
+        this->output_encoding = output_encoding;
     }
 };
 
@@ -93,18 +101,14 @@ class AbstractFunctionBuilder{
 
     public:
     
-    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) = 0;
 
     /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
+    /// @param f The function that blind rotation given the accumulator should compute. 
+    /// @param input_encoding The encoding of the plaintexts in the input ciphertext. 
+    /// @param output_encoding The encoding of the plaintexts in the output ciphertexts. 
     /// @return Returns a new object of VectorCTAccumulator.
-    virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) = 0;
-   
+    virtual std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) = 0;
+ 
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const { }
@@ -148,19 +152,9 @@ class PolynomialSpecificationBuilder final : public AbstractFunctionBuilder{
     PolynomialSpecificationBuilder() = default;
 
     PolynomialSpecificationBuilder(int32_t degree);
-
-    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
-
-    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
-
+ 
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) override;
+  
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const {
@@ -188,17 +182,7 @@ class KSFunctionSpecificationBuilder final : public AbstractFunctionBuilder{
 
     KSFunctionSpecificationBuilder(int32_t degree, int64_t coef_modulus);
 
-    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
-
-    /// @brief Build an accumulator given a function specification and an output encoding specifying how plaintexts should be encoded.
-    /// @param f The function that blind rotation given the accumulator should compute.
-    /// @param output_encoding The encoding of the plaintexts. 
-    /// @return Returns a new object of VectorCTAccumulator.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override;
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) override;
  
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -225,19 +209,9 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
     RLWEAccumulatorBuilder() = default;
 
     RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
-
-    /// @brief Computes a VectorCTAccumulator that embeds the function f.
-    /// @param f The funciton f.
-    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
-    /// @return Pointer to the new vector CTAccumulator object.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
-
-    /// @brief Computes a VectorCTAccumulator that embeds the function f.
-    /// @param f The funciton f.
-    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
-    /// @return Pointer to the new vector CTAccumulator object.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
-
+ 
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) override;
+ 
     std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
    
     #if defined(USE_CEREAL)
@@ -271,18 +245,8 @@ class NTRUAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk);
 
-    /// @brief Computes a VectorCTAccumulator that embeds the function f.
-    /// @param f The funciton f.
-    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
-    /// @return Pointer to the new vector CTAccumulator object.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding) override;
-
-    /// @brief Computes a VectorCTAccumulator that embeds the function f.
-    /// @param f The funciton f.
-    /// @param output_encoding The plaintext encoding used to encode messages on the vector accumulator.
-    /// @return Pointer to the new vector CTAccumulator object.
-    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding) override; 
-
+    std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) override;
+ 
     std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) override;
  
     #if defined(USE_CEREAL)

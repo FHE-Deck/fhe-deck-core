@@ -123,61 +123,59 @@ class FHEContext{
     /// @brief Set the default message encoding
     /// @param type The enum type of the encoding
     void set_default_message_encoding_type(PlaintextEncodingType type);
-
-    // Take a pointer to a function  (requires public key) 
-
+    
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded
-    /// @param encoding The encoding of the plaintext space
+    /// @param input_encoding The encoding of the plaintext space for the ciphertext input to a function
+    /// @param output_encoding The encoding of the plaintext space for the ciphertext output from a function
     /// @return The homomorphic accumulator
-    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t, int64_t)> f, PlaintextEncoding encoding);
+    /// @note Use this function if the intended input and output encodings are different from the current context default.
+    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding);
+ 
+    /// @brief Generates a homomoprhic Accumulator that embedds the function f
+    /// @param f The function to be embedded
+    /// @param encoding The encoding of the plaintext space for the ciphertext input and output to a function
+    /// @return The homomorphic accumulator
+    /// @note Use this function if the intended input and output encoding is different from the current context default.
+    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding);
 
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded 
     /// @return The homomorphic accumulator
-    /// @note The the fuction uses the default plaintext encoding
-    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t, int64_t)> f);
-  
-    /// @brief Generates a homomoprhic Accumulator that embedds the function f
-    /// @param f The function to be embedded
-    /// @param encoding The encoding of the plaintext space
-    /// @return The homomorphic accumulator
-    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding);
-
-    /// @brief Generates a homomoprhic Accumulator that embedds the function f
-    /// @param f The function to be embedded 
-    /// @return The homomorphic accumulator
-    /// @note The the fuction uses the default plaintext encoding
-    HomomorphicAccumulator genrate_lut(std::function<int64_t(int64_t)> f);
+    /// @note The the fuction uses the default plaintext encoding for both input and output encoding.
+    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f);
 
     /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param lut The homomorphic accumulator
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(const Ciphertext& ct_in, const HomomorphicAccumulator& lut);
+    /// TODO: input and output encoding should be defined already in HomomorphicAccumulator!
+    Ciphertext eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding);
+
+    /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param lut The homomorphic accumulator
+    /// @return The bootstrapped ciphertext
+    Ciphertext eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut);
    
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
-    /// @param encoding The plaintext encoding (if different from the default one)
+    /// @param output_encoding The plaintext encoding (if different from the default one). Input encoding is defined in ct_in.
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding encoding);
-  
-    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
-    /// @param ct_in The input ciphertext to be bootstrapped. 
-    /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space));
-  
+    //Ciphertext eval(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding);
+   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
-    /// @param encoding The plaintext encoding (if different from the default one)
+    /// @param output_encoding The plaintext encoding (if different from the default one). Input encoding is defined in ct_in
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message), PlaintextEncoding encoding);
+    Ciphertext eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding);
   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped. 
     /// @return The bootstrapped ciphertext
-    Ciphertext eval_lut(const Ciphertext& ct_in, int64_t (*f)(int64_t message));
-
+    //Ciphertext eval(const Ciphertext& ct_in, int64_t (*f)(int64_t message));
+    Ciphertext eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f);
+    
     /// @brief Sanitize the input ciphertext.  
     /// @param ct_in The input ciphertext to be sanitized.
     /// @return A new sanitized ciphertext, which is inpedendent of the input ciphertext, but which encodes the same message.
@@ -187,7 +185,14 @@ class FHEContext{
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param luts The vector of homomorphic accumulators
     /// @return A vector of ciphertexts correspondng to the accumulator evaluations
-    std::vector<Ciphertext> eval_lut_amortized(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts);
+    std::vector<Ciphertext> eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts);
+
+    /// @brief Evaluates the set of homomorphic accumulators on the input ciphertext. This function bootstraps the input ciphertext. 
+    /// @param ct_in The input ciphertext to be bootstrapped.
+    /// @param luts The vector of homomorphic accumulators
+    /// @param output_encopding Output encoding of a ciphertext. Input encoding is defined in ct_in
+    /// @return A vector of ciphertexts correspondng to the accumulator evaluations
+    std::vector<Ciphertext> eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts, PlaintextEncoding output_encopding);
    
     /// @brief Evaluates scalar + Sum_i(scalars[i] * ct_vec[i])
     /// @param ct_vec In input ciphertexts

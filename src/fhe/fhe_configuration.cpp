@@ -533,8 +533,8 @@ void FHEConfiguration::init_tfhe_11_KS() {
     builder.set_lwe_to_rlwe_keyswitch_parameters(1 << 4);
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
-    builder.set_public_key_parameters(3370, 3.19);
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
+    builder.set_public_key_parameters(3370, 3.19); 
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 31);
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
@@ -556,7 +556,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
     builder.set_public_key_parameters(3370, 3.19);
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 33);
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  

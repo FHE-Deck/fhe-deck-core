@@ -59,33 +59,33 @@ class Ciphertext{
  
         /// @brief Adds a ciphertext to this ciphertext. 
         /// @param ct The input ciphertext
-        void add(const Ciphertext& ct);
+        void add(Ciphertext& out, const Ciphertext& in) const;
 
         /// @brief Subtracts ct, from this ciphertext. 
         /// @param ct The input ciphertext
-        void sub(const Ciphertext& ct) ;
+        void sub(Ciphertext& out, const Ciphertext& in) const;
 
         /// @brief Multiplies this ciphertext by a scalar.
         /// @param b The input scalar
-        void mul(const int64_t b);
+        void mul(Ciphertext& out, const int64_t b) const;
   
         /// @brief Adds a scalar to this ciphertext.
-        Ciphertext operator+(int64_t b);
+        Ciphertext operator+(int64_t b) const;
 
         /// @brief Adds a ciphertext to this ciphertext.
-        Ciphertext operator+(Ciphertext ct);
+        Ciphertext operator+(const Ciphertext& ct) const;
 
         /// @brief Subtracts a scalar from this ciphertext.
-        Ciphertext operator-(int64_t b);
+        Ciphertext operator-(int64_t b) const;
 
         /// @brief Subtracts a ciphertext from this ciphertext.
-        Ciphertext operator-(Ciphertext ct);
+        Ciphertext operator-(const Ciphertext& ct) const;
 
         /// @brief Multiplies this ciphertext by a scalar.
-        Ciphertext operator-();
+        Ciphertext operator-() const;
     
         /// @brief Multiplies this ciphertext by a scalar.
-        Ciphertext operator*(int64_t b); 
+        Ciphertext operator*(int64_t b) const; 
 };
  
 } /// End of namesapce fhe_deck
@@ -94,18 +94,18 @@ class Ciphertext{
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator+(int64_t b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator+(int64_t b, const fhe_deck::Ciphertext& ct);
 
 /// @brief Subtraction operator where we have the int64_t b on the left hand side.
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator-(int64_t b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator-(int64_t b, const fhe_deck::Ciphertext& ct);
 
 /// @brief Multiplication operator where we have the int64_t b on the left hand side.
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator*(int64_t b, fhe_deck::Ciphertext ct);
+fhe_deck::Ciphertext operator*(int64_t b, const fhe_deck::Ciphertext& ct);
 
 #endif

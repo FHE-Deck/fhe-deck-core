@@ -36,7 +36,7 @@ int32_t main(){
     std::cout << "Decrypt(c3) == 3: OK" << std::endl; 
  
 
-    auto fun_ham = [](long m, long t) -> long {
+    auto fun_ham = [](long m) -> long {
         switch(m){
             case 0: 
                 return 0;
@@ -54,22 +54,22 @@ int32_t main(){
         }
     }; 
 
-    HomomorphicAccumulator lut_fun_ham = context.genrate_lut(fun_ham);  
+    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham);  
     std::cout << "Computing Hammming Weights..." << std::endl;
     Ciphertext ct4;
-    ct4 = context.eval_lut(c0, lut_fun_ham); 
+    ct4 = context.eval(c0, lut_fun_ham); 
     assertm(context.decrypt(ct4) == 0, "context.eval_lut(c0, lut_fun_ham) == 0");
     std::cout << "context.eval_lut(c0, lut_fun_ham) == 0: OK" << std::endl;  
 
-    ct4 = context.eval_lut(c1, lut_fun_ham); 
+    ct4 = context.eval(c1, lut_fun_ham); 
     assertm(context.decrypt(ct4) == 1, "context.eval_lut(c1, lut_fun_ham) == 1");
     std::cout << "context.eval_lut(c1, lut_fun_ham) == 1: OK" << std::endl;  
 
-    ct4 = context.eval_lut(c2, lut_fun_ham); 
+    ct4 = context.eval(c2, lut_fun_ham); 
     assertm(context.decrypt(ct4) == 1, "context.eval_lut(c2, lut_fun_ham) == 1");
     std::cout << "context.eval_lut(c2, lut_fun_ham) == 1: OK" << std::endl;  
 
-    ct4 = context.eval_lut(c3, lut_fun_ham); 
+    ct4 = context.eval(c3, lut_fun_ham); 
     assertm(context.decrypt(ct4) == 2, "context.eval_lut(c3, lut_fun_ham) == 2");
     std::cout << "context.eval_lut(c3, lut_fun_ham) == 2: OK" << std::endl;  
  
@@ -90,31 +90,31 @@ int32_t main(){
                 return 2;
         }
     }; 
-    HomomorphicAccumulator lut_fun_nand = context.genrate_lut(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand); 
   
     Ciphertext ct0 = context.encrypt(1);  
     Ciphertext ct1 = context.encrypt(0);   
 
     Ciphertext combined = ct0 + (ct1 * 2);   
-    Ciphertext ct_nand = context.eval_lut(combined, lut_fun_nand); 
+    Ciphertext ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1");  
  
     ct0 = ct_nand;  
     ct1 = context.encrypt(0);  
     combined = ct0 + (ct1 * 2);  
-    ct_nand = context.eval_lut(combined, lut_fun_nand); 
+    ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1"); 
 
     ct0 = context.encrypt(0);  
     ct1 = ct_nand;  
     combined = ct0 + (ct1 * 2);  
-    ct_nand = context.eval_lut(combined, lut_fun_nand); 
+    ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(1, 0) == 1"); 
  
     ct0 = ct_nand;  
     ct1 = ct_nand;  
     combined = ct0 + (ct1 * 2);  
-    ct_nand = context.eval_lut(combined, lut_fun_nand); 
+    ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0"); 
 
     std::cout << "Stress testing..." << std::endl;  
@@ -123,25 +123,25 @@ int32_t main(){
         ct0 = ct_nand; 
         ct1 = ct_nand; 
         combined = ct0 + (ct1 * 2);    
-        ct_nand = context.eval_lut(combined, lut_fun_nand);  
+        ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1");  
     
         ct0 = ct_nand;  
         ct1 = context.encrypt(0);  
         combined = ct0 + (ct1 * 2);  
-        ct_nand = context.eval_lut(combined, lut_fun_nand);  
+        ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1"); 
 
         ct0 = context.encrypt(0);  
         ct1 = ct_nand;  
         combined = ct0 + (ct1 * 2);  
-        ct_nand = context.eval_lut(combined, lut_fun_nand);  
+        ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(1, 0) == 1"); 
     
         ct0 = ct_nand;  
         ct1 = ct_nand;  
         combined = ct0 + (ct1 * 2);  
-        ct_nand = context.eval_lut(combined, lut_fun_nand);  
+        ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0");  
     } 
     std::cout << "Stress Test: OK" << std::endl;

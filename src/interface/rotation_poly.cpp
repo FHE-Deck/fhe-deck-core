@@ -34,33 +34,69 @@ RotationPoly& RotationPoly::operator=(const RotationPoly other){
     return *this;
 }
 
-RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
+RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     this->degree = degree; 
+    this->input_encoding = input_encoding;
     this->output_encoding = output_encoding;
-    this->coef_modulus = output_encoding.ciphertext_modulus;
+    this->coef_modulus = output_encoding.get_ciphertext_modulus();
+    this->is_amortized_form = true;
+    this->coefs = new int64_t[degree];
+     
+    //PlaintextEncoding input_encoding; 
+    PlaintextEncoding in_enc_mod_switch;
+    if(input_encoding.get_type() == PlaintextEncodingType::full_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::partial_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), 2*degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){ 
+        in_enc_mod_switch = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, input_encoding.get_plaintext_space(), 2*degree);
+    }
+ 
+    int64_t arg;
+    int32_t i = degree-1;  
+    while(in_enc_mod_switch.decode_message(i) == 0){  
+            arg = f(in_enc_mod_switch.decode_message(i));  
+ 
+            coefs[degree-i-1] = output_encoding.encode_message(arg) ; 
+            i--;
+    }
+    while(i >= 0){  
+        arg = f(in_enc_mod_switch.decode_message(i));
+     
+        coefs[degree-i-1] = output_encoding.encode_message(-arg);  
+        i--;
+    } 
+    this->is_init = true;
+}
+
+RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){ 
+    this->degree = degree;  
+    this->input_encoding = output_encoding;
+    this->output_encoding = output_encoding;
+    this->coef_modulus = output_encoding.get_ciphertext_modulus();
     this->is_amortized_form = is_amortized_form;
     coefs = new int64_t[degree]; 
-    PlaintextEncoding input_encoding; 
-    if(output_encoding.type == PlaintextEncodingType::full_domain){ 
-        input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, degree);
-    }else if(output_encoding.type == PlaintextEncodingType::partial_domain){ 
-        input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
-    }else if(output_encoding.type == PlaintextEncodingType::signed_limied_short_int){
+    PlaintextEncoding in_enc_mod_switch; 
+    if(input_encoding.get_type() == PlaintextEncodingType::full_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::partial_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), 2*degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){
         // Actually I need to have some sort of special encoding here. 
-        input_encoding = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
+        in_enc_mod_switch = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.get_plaintext_space(), 2*degree);
     }else{
          throw std::logic_error("Non existend encoding type!");
     }
 
     int64_t arg;
     int32_t i = degree-1; 
-    while(input_encoding.decode_message(i) == 0){ 
-            arg = f(input_encoding.decode_message(i), input_encoding.plaintext_space); 
+    while(in_enc_mod_switch.decode_message(i) == 0){ 
+            arg = f(in_enc_mod_switch.decode_message(i), in_enc_mod_switch.get_plaintext_space()); 
             coefs[degree-i-1] = output_encoding.encode_message(arg); 
             i--;
     }
     while(i >= 0){ 
-        arg = f(input_encoding.decode_message(i), input_encoding.plaintext_space); 
+        arg = f(in_enc_mod_switch.decode_message(i), in_enc_mod_switch.get_plaintext_space()); 
         coefs[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
@@ -69,30 +105,32 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t de
 
 RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, PlaintextEncoding output_encoding, bool is_amortized_form){
     this->degree = degree; 
+    this->input_encoding = output_encoding;
     this->output_encoding = output_encoding;
-    this->coef_modulus = output_encoding.ciphertext_modulus;
+    this->coef_modulus = output_encoding.get_ciphertext_modulus();
     this->is_amortized_form = is_amortized_form;
     this->coefs = new int64_t[degree];
      
-    PlaintextEncoding input_encoding; 
-    if(output_encoding.type == PlaintextEncodingType::full_domain){ 
-        input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, degree);
-    }else if(output_encoding.type == PlaintextEncodingType::partial_domain){ 
-        input_encoding = PlaintextEncoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
-    }else if(output_encoding.type == PlaintextEncodingType::signed_limied_short_int){ 
-        input_encoding = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.plaintext_space, 2*degree);
+    //PlaintextEncoding input_encoding; 
+    PlaintextEncoding in_enc_mod_switch;
+    if(input_encoding.get_type() == PlaintextEncodingType::full_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::partial_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), 2*degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){ 
+        in_enc_mod_switch = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, input_encoding.get_plaintext_space(), 2*degree);
     }
  
     int64_t arg;
     int32_t i = degree-1;  
-    while(input_encoding.decode_message(i) == 0){  
-            arg = f(input_encoding.decode_message(i));  
+    while(in_enc_mod_switch.decode_message(i) == 0){  
+            arg = f(in_enc_mod_switch.decode_message(i));  
  
             coefs[degree-i-1] = output_encoding.encode_message(arg) ; 
             i--;
     }
     while(i >= 0){  
-        arg = f(input_encoding.decode_message(i));
+        arg = f(in_enc_mod_switch.decode_message(i));
      
         coefs[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
@@ -104,9 +142,24 @@ void RotationPoly::encode(){
     if(is_encoded){
         return;
     } 
-    PlaintextEncoding input_encoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
+
+
+    PlaintextEncoding in_enc_mod_switch; 
+    if(input_encoding.get_type() == PlaintextEncodingType::full_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::partial_domain){ 
+        in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), 2*degree);
+    }else if(input_encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){
+        // Actually I need to have some sort of special encoding here. 
+        in_enc_mod_switch = PlaintextEncoding(PlaintextEncodingType::signed_limied_short_int_bl, output_encoding.get_plaintext_space(), 2*degree);
+    }else{
+         throw std::logic_error("Non existend encoding type!");
+    }
+
+    /// NOTE: For some reason I didn't chose full domain etc. here.... It worked anyway... Don't know why....
+    //PlaintextEncoding input_encoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
     int32_t i = degree-1; 
-    while(input_encoding.decode_message(i) == 0){  
+    while(in_enc_mod_switch.decode_message(i) == 0){  
             coefs[degree-i-1] = output_encoding.encode_message(coefs[degree-i-1]); 
             i--;
     }
@@ -134,7 +187,7 @@ void RotationPoly::to_amortization_form(){
     if(is_encoded){
         decode();   
     }
-    Utils::array_mod_form(this->coefs, this->coefs, degree, output_encoding.ciphertext_modulus); 
+    Utils::array_mod_form(this->coefs, this->coefs, degree, output_encoding.get_ciphertext_modulus()); 
     is_amortized_form = true;
 }
 
@@ -142,7 +195,7 @@ void RotationPoly::to_non_amortized_form(){
     if(!is_amortized_form){
         return;
     }
-    Utils::array_signed_form(this->coefs, this->coefs, degree, output_encoding.ciphertext_modulus); 
+    Utils::array_signed_form(this->coefs, this->coefs, degree, output_encoding.get_ciphertext_modulus()); 
     if(!is_encoded){
         encode();   
     }

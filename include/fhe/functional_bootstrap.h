@@ -55,20 +55,21 @@ class FunctionalBootstrapPublicKey{
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
+    virtual void full_domain_bootstrap(LWECT &lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT &lwe_ct_in, const PlaintextEncoding &input_encoding, const PlaintextEncoding &output_encoding) = 0;
     
     /// @brief Multivalue bootstrapping procedure. Its not necesarily a full domain bootstrapping. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
-    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding);
+    /// @param output_encoding The encoding of the output ciphertexts (note input encodings need to be handled in the FunctionSpecification's in acc_in_vec)
+    std::vector<LWECT> bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &output_encoding);
  
     /// @brief Full domain bootstrapping procedure. Applies a vector of accumulators, and returns a vector of bootstrapped ciphertexts.
     /// @param lwe_ct_out The output ciphertext
     /// @param acc_in The input accumulator specifying the function to be computed.
     /// @param lwe_ct_in The input ciphertext that we will bootstrap.
     /// @param encoding The encoding of the plaintext in the input ciphertext.
-    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &encoding) = 0;
+    virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &input_encoding, const PlaintextEncoding &output_encoding) = 0;
 
   #if defined(USE_CEREAL)
     template <class Archive>

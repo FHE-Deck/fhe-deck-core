@@ -20,102 +20,76 @@ PolynomialSpecification::PolynomialSpecification(RotationPoly rot_poly){
     this->rot_poly.to_amortization_form(); 
 }
  
- KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, long)> f, long dim,
-                                              long coef_modulus, PlaintextEncoding encoding){ 
-  
-    int32_t skip = 2*(dim/encoding.plaintext_space);
-    int32_t half_plaintext_space = encoding.plaintext_space / 2;
-    Polynomial a_prim(dim, coef_modulus);
-    poly_msb_0 = Polynomial(dim, coef_modulus);
-    a_prim.zeroize();
-    poly_msb_0.zeroize();
-    Polynomial b_prim(dim, coef_modulus);
+KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, long)> f, long dim,
+                                              long coef_modulus, PlaintextEncoding input_encoding){  
+    poly_msb_0 = Polynomial(dim, coef_modulus); 
+    poly_msb_0.zeroize(); 
     poly_msb_1 = Polynomial(dim, coef_modulus);
-    poly_msb_1.zeroize();
-    b_prim.zeroize();
-    for(long i = 0; i < half_plaintext_space; i++) {   
-        poly_msb_0.coefs[skip * i] = -f(half_plaintext_space - i - 1, encoding.plaintext_space);
-        poly_msb_1.coefs[skip * i] = f(encoding.plaintext_space - i - 1, encoding.plaintext_space);
+    poly_msb_1.zeroize(); 
+ 
+    if(input_encoding.get_plaintext_space() % 2 == 0){
+        int32_t skip = 2*(dim/input_encoding.get_plaintext_space());
+        int32_t half_plaintext_space = input_encoding.get_plaintext_space() / 2; 
+        for(long i = 0; i < half_plaintext_space; i++) {   
+            poly_msb_0.coefs[skip * i] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space());
+            poly_msb_1.coefs[skip * i] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
+        }
+    }else{
+        int32_t skip = (dim/input_encoding.get_plaintext_space());
+        /// NOTE: this is the floor of the half of the plaintext space, actually. (One tick is missing)
+        int32_t half_plaintext_space = (input_encoding.get_plaintext_space()-1)/2; 
+        for(long i = 0; i < half_plaintext_space; i+=1) {    
+            poly_msb_0.coefs[skip * (2*i+1)] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space()); 
+            poly_msb_0.coefs[skip * (2*i+2)] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space()); 
+        } 
+        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space());
+        for(long i = 0; i < half_plaintext_space; i+=1) {      
+            poly_msb_1.coefs[skip * 2*i] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
+            poly_msb_1.coefs[skip * 2*i+1] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
+        }
+  
+        poly_msb_1.coefs[skip * (2* half_plaintext_space)] = f(half_plaintext_space, input_encoding.get_plaintext_space());
     }
     Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
-    Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus); 
- 
+    Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus);  
 }  
   
-KSFunctionSpecification::KSFunctionSpecification(long (*f)(long message, long plaintext_space), long dim,
-                                             long coef_modulus, PlaintextEncoding encoding){ 
-
-    int32_t skip = 2*(dim/encoding.plaintext_space);
-    int32_t half_plaintext_space = encoding.plaintext_space / 2;
-    Polynomial a_prim(dim, coef_modulus);
-    poly_msb_0 = Polynomial(dim, coef_modulus);
-    a_prim.zeroize();
-    poly_msb_0.zeroize();
-    Polynomial b_prim(dim, coef_modulus);
-    poly_msb_1 = Polynomial(dim, coef_modulus);
-    poly_msb_1.zeroize();
-    b_prim.zeroize();
-    for(long i = 0; i < half_plaintext_space; i++) {   
-        poly_msb_0.coefs[skip * i] = -f(half_plaintext_space - i - 1, encoding.plaintext_space);
-        poly_msb_1.coefs[skip * i] = f(encoding.plaintext_space - i - 1, encoding.plaintext_space);
-    }
-    Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
-    Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus); 
- 
-}
- 
-
 PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){
     this->degree = degree;
 }
 
-std::shared_ptr<FunctionSpecification> PolynomialSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
-    RotationPoly poly(f, this->degree, output_encoding);    
+std::shared_ptr<FunctionSpecification> PolynomialSpecificationBuilder::prepare_specification(
+    std::function<int64_t(int64_t)> f, 
+    PlaintextEncoding input_encoding,
+    PlaintextEncoding output_encoding){
+    RotationPoly poly(f, this->degree, input_encoding, output_encoding);    
     return std::make_shared<PolynomialSpecification>(poly);
 }
-
-std::shared_ptr<FunctionSpecification> PolynomialSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
-    RotationPoly poly(f, this->degree, output_encoding);    
-    return std::make_shared<PolynomialSpecification>(poly);
-}
-
-
+ 
 KSFunctionSpecificationBuilder::KSFunctionSpecificationBuilder(int32_t degree, int64_t coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;
 }
- 
-std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
+
+std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     std::function<int64_t(int64_t, int64_t)> f_2 = [f](int64_t x, int64_t p) {
         return f(Utils::integer_mod_form(x, p));
     };
-    return std::make_shared<KSFunctionSpecification>(f_2, degree, coef_modulus, output_encoding);
+    return std::make_shared<KSFunctionSpecification>(f_2, degree, coef_modulus, input_encoding);
 }
-
-std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
-    return std::make_shared<KSFunctionSpecification>(f, degree, coef_modulus, output_encoding);
-}
-
+  
 RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
     this->param = param;
 }
 
-std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){ 
-    RotationPoly poly(f, this->param->size, output_encoding);   
+std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
+    RotationPoly poly(f, this->param->size, input_encoding, output_encoding);   
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
     acc_ptr->a.zeroize();
     acc_ptr->b = poly;   
     return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
-
-std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
-    RotationPoly poly(f, this->param->size, output_encoding);  
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = poly;   
-    return std::make_shared<VectorCTAccumulator>(acc_ptr);
-}
-
+ 
 std::shared_ptr<VectorCTAccumulator> RLWEAccumulatorBuilder::prepare_accumulator(Vector& vec){
     Polynomial vec_cast = static_cast<Polynomial&>(vec);
     std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
@@ -130,9 +104,9 @@ NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
     this->is_sk_set = true;
 }
 
-std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){  
+std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     if(is_sk_set){
-        RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
+        RotationPoly poly = RotationPoly(f, this->param->size, input_encoding, output_encoding);   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
         sk->kdm_encrypt(*acc, poly); 
         return std::make_shared<VectorCTAccumulator>(acc);
@@ -140,18 +114,7 @@ std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specifica
         throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
     } 
 }
-
-std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t,int64_t)> f, PlaintextEncoding output_encoding){
-    if(is_sk_set){
-        RotationPoly poly = RotationPoly(f, this->param->size, output_encoding);   
-        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
-        sk->kdm_encrypt(*acc, poly); 
-        return std::make_shared<VectorCTAccumulator>(acc);
-    }else{
-        throw std::logic_error("NTRUAccumulatorBuilder::prepare_accumulator(int64_t (*f)(int64_t message), PlaintextEncoding output_encoding): sk must be set.");
-    } 
-}
- 
+  
 std::shared_ptr<VectorCTAccumulator> NTRUAccumulatorBuilder::prepare_accumulator(Vector& vec){
     Polynomial vec_cast = static_cast<Polynomial&>(vec);
     if(is_sk_set){  
@@ -168,28 +131,28 @@ PreparedVectorCTAccumulators::PreparedVectorCTAccumulators(std::shared_ptr<Vecto
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_sgn(PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.plaintext_space, builder->param->size, output_encoding.ciphertext_modulus);   
+    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.get_plaintext_space(), builder->param->size, output_encoding.get_ciphertext_modulus());   
     return builder->prepare_accumulator(poly);
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_msb(PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly::rot_msb(output_encoding.plaintext_space, builder->param->size, output_encoding.ciphertext_modulus);  
+    RotationPoly poly = RotationPoly::rot_msb(output_encoding.get_plaintext_space(), builder->param->size, output_encoding.get_ciphertext_modulus());  
     return builder->prepare_accumulator(poly);
 }
   
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_one(PlaintextEncoding output_encoding){ 
-    RotationPoly poly = RotationPoly::rot_one(builder->param->size, output_encoding.ciphertext_modulus);
+    RotationPoly poly = RotationPoly::rot_one(builder->param->size, output_encoding.get_ciphertext_modulus());
     poly.coefs[1] = output_encoding.encode_message(1);  
     return builder->prepare_accumulator(poly);
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_pad_poly(PlaintextEncoding output_encoding){
-    Polynomial pad_poly(builder->param->size, output_encoding.ciphertext_modulus);
+    Polynomial pad_poly(builder->param->size, output_encoding.get_ciphertext_modulus());
     pad_poly.zeroize();
-    uint64_t scal = output_encoding.ciphertext_modulus / (2 * output_encoding.plaintext_space);
-    uint64_t skip = builder->param->size / (output_encoding.plaintext_space);
-    /// NOTE: This is the same as pad poly, but encoded with double the plaintext space... 
-    for(long i = 0; i < 2 * skip; i++) {
+    uint64_t scal = output_encoding.get_ciphertext_modulus() / (2 * output_encoding.get_plaintext_space());
+    uint64_t skip = 2 * (builder->param->size / (output_encoding.get_plaintext_space()));
+    /// NOTE: This is the same as pad poly, but encoded with double the plaintext space... In the paper its \frac{h} 
+    for(long i = 0; i < skip; i++) {
         pad_poly.coefs[i] = scal;
     } 
     return builder->prepare_accumulator(pad_poly);

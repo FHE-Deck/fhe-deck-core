@@ -33,9 +33,9 @@ int32_t main(){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(ctx.genrate_lut(first_bit));
-    bit_decomp_luts.push_back(ctx.genrate_lut(second_bit));
-    bit_decomp_luts.push_back(ctx.genrate_lut(third_bit));
+    bit_decomp_luts.push_back(ctx.setup_function(first_bit));
+    bit_decomp_luts.push_back(ctx.setup_function(second_bit));
+    bit_decomp_luts.push_back(ctx.setup_function(third_bit));
 
     std::vector<int64_t> comp = {1, 2, 4}; 
 
@@ -53,7 +53,7 @@ int32_t main(){
         ct = ctx.encrypt_public(msg);
         for(int32_t j = 0; j < repetition_num; ++j){  
             start = std::chrono::high_resolution_clock::now(); 
-            out_cts = ctx.eval_lut_amortized(ct, bit_decomp_luts);   
+            out_cts = ctx.eval(ct, bit_decomp_luts);   
             stop = std::chrono::high_resolution_clock::now(); 
             elapsed = elapsed + std::chrono::duration_cast<std::chrono::milliseconds>(stop-start).count();
             num_of_evals++;
@@ -74,11 +74,11 @@ int32_t main(){
                 temp = temp_0 + temp_1 + temp_2; 
                 std::cout << "temp: " << ctx.decrypt(temp) << std::endl; 
  
-                temp_0 = ctx.eval_lut(ct, bit_decomp_luts[0]);
+                temp_0 = ctx.eval(ct, bit_decomp_luts[0]);
                 std::cout << "eval_lut with bit_decomp_luts[0]: " << ctx.decrypt(temp_0) << std::endl; 
-                temp_1 = ctx.eval_lut(ct, bit_decomp_luts[1]);
+                temp_1 = ctx.eval(ct, bit_decomp_luts[1]);
                 std::cout << "eval_lut with bit_decomp_luts[1]: " << ctx.decrypt(temp_1) << std::endl; 
-                temp_2 = ctx.eval_lut(ct, bit_decomp_luts[2]);
+                temp_2 = ctx.eval(ct, bit_decomp_luts[2]);
                 std::cout << "eval_lut with bit_decomp_luts[2]: " << ctx.decrypt(temp_2) << std::endl; 
                 temp = temp_0 + temp_1 + temp_2; 
                 std::cout << "temp: " << ctx.decrypt(temp) << std::endl; 
