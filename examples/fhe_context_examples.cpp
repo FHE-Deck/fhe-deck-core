@@ -16,13 +16,15 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     
     context.generate_context(param_set); 
-    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
-    int32_t modulus = context.current_encoding.get_plaintext_space();
+    //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
+    int32_t modulus = context.get_default_plaintext_space();
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::full_domain);
      
     int32_t c1_plain = 1;
-    Ciphertext c1  = context.encrypt(c1_plain);  
+    Ciphertext c1  = context.encrypt(c1_plain, encoding);  
     int32_t c2_plain = 2;
-    Ciphertext c2  = context.encrypt(2);  
+    Ciphertext c2  = context.encrypt(2, encoding);  
  
     assertm(context.decrypt(c1) == c1_plain, "Decrypt(c1) == 1");
     std::cout << "Decrypt(c1) == 1: OK" << std::endl; 
@@ -31,7 +33,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
     std::cout << "Decrypt(c2) == 2: OK" << std::endl; 
  
     int32_t c3_plain = 0;
-    Ciphertext c3 = context.encrypt(c3_plain);
+    Ciphertext c3 = context.encrypt(c3_plain, encoding);
     c3.add(c3, c1); 
     c3_plain = (c3_plain + c1_plain) % modulus;
     
@@ -147,7 +149,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         return m;
     }; 
   
-    HomomorphicAccumulator lut_identity = context.setup_function(id); 
+    HomomorphicAccumulator lut_identity = context.setup_function(id, encoding); 
   
     
     int64_t elapsed = 0;   
@@ -169,7 +171,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         return (m+1);
     }; 
 
-    HomomorphicAccumulator lut_id_plus = context.setup_function(id_plus); 
+    HomomorphicAccumulator lut_id_plus = context.setup_function(id_plus, encoding); 
 
     start = std::chrono::high_resolution_clock::now(); 
     ct4 = context.eval(ct1, lut_id_plus); 
@@ -209,7 +211,7 @@ void test_for_default_full_domain_encoding(FHENamedParams param_set){
         } 
     }; 
     std::function<int64_t(int64_t)> fun_msb_t = std::bind(fun_msb, std::placeholders::_1, modulus);
-    HomomorphicAccumulator lut_fun_msb = context.setup_function(fun_msb_t); 
+    HomomorphicAccumulator lut_fun_msb = context.setup_function(fun_msb_t, encoding); 
 
     start = std::chrono::high_resolution_clock::now(); 
     ct4 = context.eval(ct1, lut_fun_msb); 
@@ -240,7 +242,9 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     context.generate_context(param_set);
     
     //  The default encoding for this is actually full domain.  
-    context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain); 
+    //context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain); 
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::partial_domain);
  
     #if defined(USE_CEREAL)
     {
@@ -320,10 +324,10 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     #endif
  
 
-    Ciphertext c0  = context.encrypt(0);  
-    Ciphertext c1  = context.encrypt(1);    
-    Ciphertext c2  = context.encrypt(2);  
-    Ciphertext c3  = context.encrypt(3);  
+    Ciphertext c0  = context.encrypt(0, encoding);  
+    Ciphertext c1  = context.encrypt(1, encoding);    
+    Ciphertext c2  = context.encrypt(2, encoding);  
+    Ciphertext c3  = context.encrypt(3, encoding);  
    
     assertm(context.decrypt(c0) == 0, "Decrypt(c0) == 0");
     std::cout << "Decrypt(c0) == 0: OK" << std::endl; 
@@ -354,7 +358,7 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     }; 
      
     std::cout << "genrate_lut" << std::endl;
-    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham); 
+    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham, encoding); 
 
      
     Ciphertext ct4;
@@ -412,10 +416,10 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
                 return 2;
         }
     }; 
-    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand, encoding); 
 
-    Ciphertext ct0 = context.encrypt(1);  
-    Ciphertext ct1 = context.encrypt(0);   
+    Ciphertext ct0 = context.encrypt(1, encoding);  
+    Ciphertext ct1 = context.encrypt(0, encoding);   
     Ciphertext combined = ct0 + (ct1 * 2);  
     start = std::chrono::high_resolution_clock::now(); 
     Ciphertext ct_nand = context.eval(combined, lut_fun_nand);
@@ -425,8 +429,8 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1"); 
 
 
-    ct0 = context.encrypt(1);  
-    ct1 = context.encrypt(0);  
+    ct0 = context.encrypt(1, encoding);  
+    ct1 = context.encrypt(0, encoding);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
     ct_nand = context.eval(combined, lut_fun_nand);
@@ -436,8 +440,8 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1");
     std::cout << "ct_nand(0, 1) = 1: OK"  << std::endl; 
 
-    ct0 = context.encrypt(0);  
-    ct1 = context.encrypt(1);  
+    ct0 = context.encrypt(0, encoding);  
+    ct1 = context.encrypt(1, encoding);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
     ct_nand = context.eval(combined, lut_fun_nand);
@@ -448,8 +452,8 @@ void test_for_partial_domain_encoding(FHENamedParams param_set){
     std::cout << "ct_nand(1, 0) = 1: OK"   << std::endl; 
 
 
-    ct0 = context.encrypt(1);  
-    ct1 = context.encrypt(1);  
+    ct0 = context.encrypt(1, encoding);  
+    ct1 = context.encrypt(1, encoding);  
     combined = ct0 + (ct1 * 2); 
     start = std::chrono::high_resolution_clock::now(); 
     ct_nand = context.eval(combined, lut_fun_nand);
@@ -483,20 +487,22 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl;
     // NOTE: tfhe_11_NTT can still handle a plaintext space equal to 4, but if you test with tfhe_11_B teh test will most likely fail
     context.generate_context(param_set);
-    context.set_default_message_encoding_type(PlaintextEncodingType::signed_limied_short_int);
+    //context.set_default_message_encoding_type(PlaintextEncodingType::signed_limied_short_int);
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::signed_limied_short_int);
       
-    Ciphertext ct0 = context.encrypt(0);   
-    Ciphertext ct1 = context.encrypt(1); 
-    Ciphertext ct2 = context.encrypt(2);    
-    Ciphertext ct3 = context.encrypt(3); 
+    Ciphertext ct0 = context.encrypt(0, encoding);   
+    Ciphertext ct1 = context.encrypt(1, encoding); 
+    Ciphertext ct2 = context.encrypt(2, encoding);    
+    Ciphertext ct3 = context.encrypt(3, encoding); 
      
-    Ciphertext mct1 = context.encrypt(-1); 
-    Ciphertext mct2 = context.encrypt(-2);    
-    Ciphertext mct3 = context.encrypt(-3); 
+    Ciphertext mct1 = context.encrypt(-1, encoding); 
+    Ciphertext mct2 = context.encrypt(-2, encoding);    
+    Ciphertext mct3 = context.encrypt(-3, encoding); 
   
-    Ciphertext ct4 = context.encrypt(4);  
+    Ciphertext ct4 = context.encrypt(4, encoding);  
    
-    Ciphertext mct4 = context.encrypt(-4); 
+    Ciphertext mct4 = context.encrypt(-4, encoding); 
 
     assertm(context.decrypt(ct0) == 0, "context.decrypt(&ct0) == 0");
     std::cout << "context.decrypt(&ct0) == 0: OK"   << std::endl;
@@ -547,7 +553,7 @@ void test_for_signed_limied_short_int(FHENamedParams param_set){
         return m; 
     };    
    
-    HomomorphicAccumulator lut_fun_identity = context.setup_function(fun_identity);  
+    HomomorphicAccumulator lut_fun_identity = context.setup_function(fun_identity, encoding);  
    
     Ciphertext ct_id = context.eval(mct1, lut_fun_identity); 
     start = std::chrono::high_resolution_clock::now(); 
@@ -748,19 +754,21 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
-    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
-    
+    //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain);
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::full_domain);
+
     auto id = [](int64_t m) -> int64_t {
         return m;
     }; 
   
-    HomomorphicAccumulator lut_identity = context.setup_function(id); 
+    HomomorphicAccumulator lut_identity = context.setup_function(id, encoding); 
 
     std::vector<HomomorphicAccumulator> luts;
     luts.push_back(lut_identity);
     luts.push_back(lut_identity);
  
-    Ciphertext ct1 = context.encrypt_public(1); 
+    Ciphertext ct1 = context.encrypt_public(1, encoding); 
 
     std::vector<Ciphertext> out_cts = context.eval(ct1, luts);
 
@@ -796,17 +804,17 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(context.setup_function(first_bit));
-    bit_decomp_luts.push_back(context.setup_function(second_bit));
-    bit_decomp_luts.push_back(context.setup_function(third_bit));
+    bit_decomp_luts.push_back(context.setup_function(first_bit, encoding));
+    bit_decomp_luts.push_back(context.setup_function(second_bit, encoding));
+    bit_decomp_luts.push_back(context.setup_function(third_bit, encoding));
 
-    Ciphertext ct0 = context.encrypt_public(0);
-    Ciphertext ct2 = context.encrypt_public(2);
-    Ciphertext ct3 = context.encrypt_public(3);
-    Ciphertext ct4 = context.encrypt_public(4);
-    Ciphertext ct5 = context.encrypt_public(5);
-    Ciphertext ct6 = context.encrypt_public(6);
-    Ciphertext ct7 = context.encrypt_public(7);
+    Ciphertext ct0 = context.encrypt_public(0, encoding);
+    Ciphertext ct2 = context.encrypt_public(2, encoding);
+    Ciphertext ct3 = context.encrypt_public(3, encoding);
+    Ciphertext ct4 = context.encrypt_public(4, encoding);
+    Ciphertext ct5 = context.encrypt_public(5, encoding);
+    Ciphertext ct6 = context.encrypt_public(6, encoding);
+    Ciphertext ct7 = context.encrypt_public(7, encoding);
 
 
     out_cts = context.eval(ct0, bit_decomp_luts);
@@ -885,16 +893,16 @@ void amortized_full_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "Test Bin Decomp 7: OK" << std::endl;
 
 }
-
-
-
+ 
 void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     std::cout << "=========== amortized_11_partial_domain_bootstrap_test =============" << std::endl;
  
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(param_set);
-    context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain); 
+    //context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain); 
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::partial_domain);
   
     auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
@@ -909,18 +917,18 @@ void amortized_partial_domain_bootstrap_test(FHENamedParams param_set){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(context.setup_function(first_bit));
-    bit_decomp_luts.push_back(context.setup_function(second_bit));
-    bit_decomp_luts.push_back(context.setup_function(third_bit));
+    bit_decomp_luts.push_back(context.setup_function(first_bit, encoding));
+    bit_decomp_luts.push_back(context.setup_function(second_bit, encoding));
+    bit_decomp_luts.push_back(context.setup_function(third_bit, encoding));
 
-    Ciphertext ct0 = context.encrypt_public(0); 
-    Ciphertext ct1 = context.encrypt_public(1); 
-    Ciphertext ct2 = context.encrypt_public(2);
-    Ciphertext ct3 = context.encrypt_public(3);
-    Ciphertext ct4 = context.encrypt_public(4);
-    Ciphertext ct5 = context.encrypt_public(5);
-    Ciphertext ct6 = context.encrypt_public(6);
-    Ciphertext ct7 = context.encrypt_public(7);
+    Ciphertext ct0 = context.encrypt_public(0, encoding); 
+    Ciphertext ct1 = context.encrypt_public(1, encoding); 
+    Ciphertext ct2 = context.encrypt_public(2, encoding);
+    Ciphertext ct3 = context.encrypt_public(3, encoding);
+    Ciphertext ct4 = context.encrypt_public(4, encoding);
+    Ciphertext ct5 = context.encrypt_public(5, encoding);
+    Ciphertext ct6 = context.encrypt_public(6, encoding);
+    Ciphertext ct7 = context.encrypt_public(7, encoding);
 
 
     std::vector<Ciphertext> out_cts = context.eval(ct0, bit_decomp_luts);
@@ -1227,12 +1235,17 @@ void test_full_change_plaintext_space(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
-    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
-
+    //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
+     
     int modulus_1 = 6;
     int modulus_2 = 12; 
+    PlaintextEncoding encoding_1 = context.get_default_plaintext_encoding();
+    encoding_1.set_type(PlaintextEncodingType::full_domain);
+    encoding_1.set_plaintext_space(modulus_1);
+    PlaintextEncoding encoding_2 = encoding_1;
+    encoding_2.set_plaintext_space(modulus_2);
     
-    Ciphertext ct_in  = context.encrypt(2, modulus_1); 
+    Ciphertext ct_in  = context.encrypt(2, encoding_1); 
     
     assert(context.decrypt(ct_in) == 2);
     std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
@@ -1259,10 +1272,7 @@ void test_full_change_plaintext_space(FHENamedParams param_set){
     std::function<int64_t(int64_t)> fun_add = [](int64_t m) -> int64_t {
         return (m+8)%11;
     }; 
-
-    PlaintextEncoding encoding_1 = ct_in.encoding;
-    PlaintextEncoding encoding_2 = encoding_1;
-    encoding_2.set_plaintext_space(modulus_2);
+ 
     
     assert(encoding_1.get_plaintext_space() == modulus_1);
     std::cout << "encoding_1.get_plaintext_space() == modulus_1: OK "   << std::endl; 
@@ -1294,12 +1304,17 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
-    context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
+    //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
 
     int modulus_1 = 6;
     int modulus_2 = 12; 
+    PlaintextEncoding encoding_1 = context.get_default_plaintext_encoding();
+    encoding_1.set_type(PlaintextEncodingType::full_domain);
+    encoding_1.set_plaintext_space(modulus_1);
+    PlaintextEncoding encoding_2 = encoding_1;
+    encoding_2.set_plaintext_space(modulus_2);
     
-    Ciphertext ct_in  = context.encrypt(2, modulus_1); 
+    Ciphertext ct_in  = context.encrypt(2, encoding_1); 
     
     assert(context.decrypt(ct_in) == 2);
     std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
@@ -1335,9 +1350,9 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
         std::cout << "context.decrypt(ct_in) == 2: OK "   << std::endl; 
     } 
   
-    PlaintextEncoding encoding_1 = ct_in.encoding;
-    PlaintextEncoding encoding_2 = encoding_1;
-    encoding_2.set_plaintext_space(modulus_2);
+    //PlaintextEncoding encoding_1 = ct_in.encoding;
+    //PlaintextEncoding encoding_2 = encoding_1;
+    //encoding_2.set_plaintext_space(modulus_2);
     
     assert(encoding_1.get_plaintext_space() == modulus_1);
     std::cout << "encoding_1.get_plaintext_space() == modulus_1: OK "   << std::endl; 
@@ -1373,8 +1388,47 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
 
 
 
-int main(){  
+
+void test_full_fdfb(FHENamedParams param_set){
+    std::cout << "=========== test_full_fdfb  =============" << std::endl;
+    FHEContext context; 
+    std::cout << "Generate Keys..." << std::endl; 
+    context.generate_context(param_set); 
+
+    int32_t modulus = 19; 
+    int32_t input = 17;
  
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::full_domain);
+    encoding.set_plaintext_space(modulus);
+
+    
+    auto times_in_two_and_square = [](int32_t m, int32_t modulus) -> int32_t{
+        m = Utils::integer_mod_form(m * m, modulus);
+        return Utils::integer_mod_form(m * Utils::mod_inv(4, modulus), modulus);
+    }; 
+    std::function<int64_t(int64_t)> function = std::bind(times_in_two_and_square, std::placeholders::_1, modulus);
+    HomomorphicAccumulator acc = context.setup_function(function, encoding);
+
+    Ciphertext ct_in  = context.encrypt(input, encoding); 
+    
+    Ciphertext ct_out = context.eval(ct_in, acc);
+    if(context.decrypt(ct_out) == times_in_two_and_square(input, modulus)){
+        std::cout << "Test Full Domain Function Bootstrapping: OK" << std::endl;
+    }else{
+        std::cout << "Test Full Domain Function Bootstrapping: Fail" << std::endl;
+        std::cout << "Should be: " << times_in_two_and_square(input, modulus) << std::endl;
+        std::cout << "Is: " << context.decrypt(ct_out) << std::endl;
+    } 
+}
+
+
+
+
+
+
+int main(){  
+  
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1420,5 +1474,7 @@ int main(){
     test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_NTT_amortized);
 
     test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_KS_amortized);
+     
+   //test_full_fdfb(FHENamedParams::tfhe_11_KS);
   
 }

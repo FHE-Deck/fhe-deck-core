@@ -10,14 +10,17 @@ int32_t main(){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(FHENamedParams::tfhe_11_NTT);
-    context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain);
-    context.set_default_plaintext_space(4);
+    //context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain);
+    //context.set_default_plaintext_space(4);
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
+    encoding.set_type(PlaintextEncodingType::partial_domain);
+    encoding.set_plaintext_space(4);
 
  
-    Ciphertext c0  = context.encrypt(0);  
-    Ciphertext c1  = context.encrypt(1);    
-    Ciphertext c2  = context.encrypt(2);  
-    Ciphertext c3  = context.encrypt(3);  
+    Ciphertext c0  = context.encrypt(0, encoding);  
+    Ciphertext c1  = context.encrypt(1, encoding);    
+    Ciphertext c2  = context.encrypt(2, encoding);  
+    Ciphertext c3  = context.encrypt(3, encoding);  
   
     std::cout << "context.decrypt(&c0)" <<  context.decrypt(c0) << std::endl;
     assertm(context.decrypt(c0) == 0, "Decrypt(c0) == 0");
@@ -54,7 +57,7 @@ int32_t main(){
         }
     }; 
 
-    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham);  
+    HomomorphicAccumulator lut_fun_ham = context.setup_function(fun_ham, encoding);  
     std::cout << "Computing Hammming Weights..." << std::endl;
     Ciphertext ct4;
     ct4 = context.eval(c0, lut_fun_ham); 
@@ -90,22 +93,22 @@ int32_t main(){
                 return 2;
         }
     }; 
-    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand); 
+    HomomorphicAccumulator lut_fun_nand = context.setup_function(fun_nand, encoding); 
   
-    Ciphertext ct0 = context.encrypt(1);  
-    Ciphertext ct1 = context.encrypt(0);   
+    Ciphertext ct0 = context.encrypt(1, encoding);  
+    Ciphertext ct1 = context.encrypt(0, encoding);   
 
     Ciphertext combined = ct0 + (ct1 * 2);   
     Ciphertext ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1");  
  
     ct0 = ct_nand;  
-    ct1 = context.encrypt(0);  
+    ct1 = context.encrypt(0, encoding);  
     combined = ct0 + (ct1 * 2);  
     ct_nand = context.eval(combined, lut_fun_nand); 
     assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1"); 
 
-    ct0 = context.encrypt(0);  
+    ct0 = context.encrypt(0, encoding);  
     ct1 = ct_nand;  
     combined = ct0 + (ct1 * 2);  
     ct_nand = context.eval(combined, lut_fun_nand); 

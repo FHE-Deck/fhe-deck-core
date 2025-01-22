@@ -1,4 +1,5 @@
 #include "interface/fhe_context.h"
+#include "interface/integers.h"
 
 using namespace fhe_deck;
  
@@ -9,14 +10,14 @@ FHEContext::FHEContext(){
 void FHEContext::generate_context(FHENamedParams name){    
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration(name));
     config->generate_keys(); 
-    current_encoding = config->eval_key.default_encoding;  
+    //current_encoding = config->eval_key.default_encoding;  
 }
 
 Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type){  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_type(type);
     return encrypt(message, encoding);
 }
@@ -25,7 +26,7 @@ Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_plaintext_space(plaintext_space);
     return encrypt(message, encoding);
 }
@@ -34,7 +35,7 @@ Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int6
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_type(type);
     encoding.set_plaintext_space(plaintext_space);
     return encrypt(message, encoding);
@@ -52,14 +53,14 @@ Ciphertext FHEContext::encrypt(int64_t message){
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key!");
     }
-    return encrypt(message, current_encoding);
+    return encrypt(message, config->eval_key.default_encoding);
 }
 
 Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type){  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_type(type);
     return encrypt_public(message, encoding);
 }
@@ -68,7 +69,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_plaintext_space(plaintext_space);
     return encrypt_public(message, encoding);
 }
@@ -77,7 +78,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType typ
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
-    PlaintextEncoding encoding = current_encoding;
+    PlaintextEncoding encoding = config->eval_key.default_encoding;
     encoding.set_type(type);
     encoding.set_plaintext_space(plaintext_space);
     return encrypt_public(message, encoding);
@@ -95,7 +96,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message){
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
-    return encrypt_public(message, current_encoding);
+    return encrypt_public(message, config->eval_key.default_encoding);
 }
 
 int64_t FHEContext::decrypt(const Ciphertext& c_in){
@@ -105,29 +106,51 @@ int64_t FHEContext::decrypt(const Ciphertext& c_in){
     return config->secret_key->lwe_sk->decrypt(*c_in.lwe_c, c_in.encoding);
 }
  
-PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
-    return current_encoding;
+int64_t FHEContext::decrypt(const DigitInteger& ct){
+    std::vector<int64_t> digits;
+    for(Ciphertext c: ct.encrypted_digits){
+         digits.push_back(decrypt(c));
+    }
+    return ct.int_comp(digits);
 }
 
+int64_t FHEContext::decrypt(const CRTInteger& ct){
+    std::vector<int32_t> digits;
+    for(Ciphertext c: ct.encrypted_digits){
+         digits.push_back(decrypt(c));
+    }
+    return ct.base.compose(digits);
+}
+ 
+PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
+    return config->eval_key.default_encoding;
+}
+
+/*
 void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space){
     this->current_encoding = PlaintextEncoding(type, plaintext_space, current_encoding.get_ciphertext_modulus()); 
 }
+*/
  
-int64_t  FHEContext::get_default_plaintext_space(){
-    return current_encoding.get_plaintext_space();
+int64_t FHEContext::get_default_plaintext_space(){
+    return config->eval_key.default_encoding.get_plaintext_space();
 }
 
+/* 
 void FHEContext::set_default_plaintext_space(int64_t plaintext_space){
     this->current_encoding = PlaintextEncoding(current_encoding.get_type(), plaintext_space, current_encoding.get_ciphertext_modulus());  
 }
+*/
 
-PlaintextEncodingType FHEContext::get_default_message_encoding(){
-    return this->current_encoding.get_type();
+PlaintextEncodingType FHEContext::get_default_plaintext_encoding_type(){
+    return config->eval_key.default_encoding.get_type();
 }
 
+/*
 void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){ 
     this->current_encoding = PlaintextEncoding(type, current_encoding.get_plaintext_space(), current_encoding.get_ciphertext_modulus());  
 }
+*/
    
 HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     if(!config->eval_key.is_bootstrap_pk_set){
@@ -139,10 +162,13 @@ HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)
     HomomorphicAccumulator out(boot_acc, func_spec, multival_spec, input_encoding, output_encoding);
     return out;  
 }
- 
+
+HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding){ 
+    return setup_function(f, encoding, encoding);  
+}
   
 HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f){    
-    return setup_function(f, current_encoding, current_encoding);
+    return setup_function(f, config->eval_key.default_encoding, config->eval_key.default_encoding);
 }
 
 Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding){
@@ -150,9 +176,17 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
         throw std::logic_error("No Public Key Initialized!");
     }   
     if(lut.input_encoding != ct_in.encoding){
+        std::cout << "lut.input_encoding: " << lut.input_encoding.get_plaintext_space() << std::endl;
+        std::cout << "ct_in.encoding: " << ct_in.encoding.get_plaintext_space() << std::endl;
+        std::cout << "lut..get_ciphertext_modulus(): " << lut.input_encoding.get_ciphertext_modulus() << std::endl;
+        std::cout << "ct_in..get_ciphertext_modulus(): " << ct_in.encoding.get_ciphertext_modulus() << std::endl;
+        std::cout << "lut..get_type(): " << (int32_t)lut.input_encoding.get_type() << std::endl;
+        std::cout << "ct_in..get_type(): " << (int32_t)ct_in.encoding.get_type() << std::endl;
         throw std::logic_error("Input encoding of the accumulator does not match the encoding of the input ciphertext!");
     }
     if(lut.output_encoding != output_encoding){
+        std::cout << "lut.output_encoding: " << lut.output_encoding.get_plaintext_space() << std::endl;
+        std::cout << "output_encoding: " << output_encoding.get_plaintext_space() << std::endl;
         throw std::logic_error("Output encoding of the accumulator does not match the output encoding!");
     }
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
@@ -366,3 +400,4 @@ std::ostream& operator<<(std::ostream &out, Ciphertext &c){
     return out;
 }
   
+

@@ -11,12 +11,24 @@ void Utils::cp(int64_t *out, int64_t *in, int32_t size){
 
 
 int32_t Utils::power_times(int64_t x, int64_t base){ 
+    if(x <= 1){
+        return 1;
+    }
+    //return floor(log2(x)/log2(base))+1;  
+    //int64_t digits = floor(log2(x)/log2(base))+1; 
+    
     int64_t base_bits = ceil(log2(base)); 
     int64_t x_bits = ceil(log2(x));  
-    int32_t k = ceil((double)x_bits/(double)base_bits);
-    return k; 
+    int32_t k = ceil((double)x_bits/(double)base_bits);   
+    return k;  
 }
 
+int32_t Utils::number_of_digits(int64_t x, int64_t base){
+    if(x == 0){
+        return 1;
+    }
+    return floor(log2(x)/log2(base))+1;  
+}
 
 bool Utils::is_power_of(int64_t x, int64_t base){
     int64_t temp = base; 

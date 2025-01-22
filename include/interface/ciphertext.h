@@ -81,7 +81,7 @@ class Ciphertext{
         /// @brief Subtracts a ciphertext from this ciphertext.
         Ciphertext operator-(const Ciphertext& ct) const;
 
-        /// @brief Multiplies this ciphertext by a scalar.
+        /// @brief Multiplies negates this ciphertext. 
         Ciphertext operator-() const;
     
         /// @brief Multiplies this ciphertext by a scalar.

@@ -5,5 +5,6 @@
 #include "interface/fhe_context.h"
 #include "interface/plaintext_encoding.h"
 #include "interface/rotation_poly.h"  
+#include "interface/integers.h"
 
 #endif 

@@ -81,6 +81,8 @@ class HomomorphicAccumulator{
     PlaintextEncoding input_encoding;
     PlaintextEncoding output_encoding;
 
+    HomomorphicAccumulator() = default;
+
     HomomorphicAccumulator(std::shared_ptr<FunctionSpecification> boot_acc, 
     std::shared_ptr<FunctionSpecification> func_boot_acc,
     std::shared_ptr<FunctionSpecification> multivalue_acc,
@@ -92,6 +94,31 @@ class HomomorphicAccumulator{
         this->input_encoding = input_encoding;
         this->output_encoding = output_encoding;
     }
+ 
+    // Copy constructor
+    HomomorphicAccumulator(const HomomorphicAccumulator& other){  
+        if (this != &other) { 
+            input_encoding = other.input_encoding;
+            output_encoding = other.output_encoding;
+            boot_acc = other.boot_acc;
+            func_boot_acc = other.func_boot_acc;
+            multivalue_acc = other.multivalue_acc; 
+        }  
+    }
+ 
+
+    // Copy assignment operator
+    HomomorphicAccumulator& operator=(const HomomorphicAccumulator& other) { 
+        if (this != &other) {
+            input_encoding = other.input_encoding;
+            output_encoding = other.output_encoding;
+            boot_acc = other.boot_acc;
+            func_boot_acc = other.func_boot_acc;
+            multivalue_acc = other.multivalue_acc; 
+        }
+        return *this;
+    }
+  
 };
 
 /**

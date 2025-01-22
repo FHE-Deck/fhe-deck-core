@@ -9,10 +9,15 @@
 
 #include "interface/ciphertext.h" 
 #include "interface/plaintext_encoding.h"
+//#include "interface/integers.h"
 #include "fhe/fhe_configuration.h"
 #include "common/enums.h" 
    
 namespace fhe_deck{
+
+/// @brief Forward Declaration of the DigitInteger and CRTInteger class which are defined in interface/integers.h.
+class DigitInteger;
+class CRTInteger;
 
 /**
  * @brief This is the main class of the high level API. It is used to generate the FHE public keys, encrypt and decrypt messages, run functional bootstrapping, and serialize.
@@ -24,7 +29,7 @@ class FHEContext{
     /// @brief The FHE configuration
     std::shared_ptr<FHEConfiguration> config; 
     /// @brief The currently used default plaintext encoding. Its used when we encrypt, decrypt and sometimes bootstrap messages.
-    PlaintextEncoding current_encoding; 
+    //PlaintextEncoding current_encoding; 
 
     /// @brief The default constructor.
     FHEContext(); 
@@ -97,6 +102,16 @@ class FHEContext{
     /// @return Return the decrypted integer.
     int64_t decrypt(const Ciphertext& ct);
 
+    /// @brief Decrypt the input Ciphertext  
+    /// @param ct The input ciphertext
+    /// @return Return the decrypted integer.
+    int64_t decrypt(const DigitInteger& ct);
+
+    /// @brief Decrypt the input Ciphertext  
+    /// @param ct The input ciphertext
+    /// @return Return the decrypted integer.
+    int64_t decrypt(const CRTInteger& ct);
+
     // Getters and setter for default plaintext encoding (requires either secret kor public key)
 
     /// @brief Get the currently used default plaintext encoding
@@ -106,7 +121,7 @@ class FHEContext{
     /// @brief Sets the default plaintext encoding
     /// @param type The enum type of the encoding
     /// @param plaintext_space The sizez of the plaintext space
-    void set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space);
+    //void set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space);
   
     /// @brief Returns the curently set default plaintext space
     /// @return The default plaintext space
@@ -114,15 +129,15 @@ class FHEContext{
 
     /// @brief Set the default plaintext space
     /// @param plaintext_space The size of the plaintext space
-    void set_default_plaintext_space(int64_t plaintext_space);
+    //void set_default_plaintext_space(int64_t plaintext_space);
   
     /// @brief Get the currently used default message encoding
     /// @return The default message encoding
-    PlaintextEncodingType get_default_message_encoding();
+    PlaintextEncodingType get_default_plaintext_encoding_type();
 
     /// @brief Set the default message encoding
     /// @param type The enum type of the encoding
-    void set_default_message_encoding_type(PlaintextEncodingType type);
+    //void set_default_message_encoding_type(PlaintextEncodingType type);
     
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded
@@ -157,13 +172,7 @@ class FHEContext{
     /// @param lut The homomorphic accumulator
     /// @return The bootstrapped ciphertext
     Ciphertext eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut);
-   
-    /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
-    /// @param ct_in The input ciphertext to be bootstrapped.
-    /// @param output_encoding The plaintext encoding (if different from the default one). Input encoding is defined in ct_in.
-    /// @return The bootstrapped ciphertext
-    //Ciphertext eval(const Ciphertext& ct_in, int64_t (*f)(int64_t message, int64_t plaintext_space), PlaintextEncoding output_encoding);
-   
+    
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param output_encoding The plaintext encoding (if different from the default one). Input encoding is defined in ct_in
@@ -253,6 +262,11 @@ class FHEContext{
     /// @return A new ciphertext object
     Ciphertext load_Ciphertext(std::string file_name); 
 };
+
+
+
+ 
+
   
 } /// End of namespace fhe_deck
  

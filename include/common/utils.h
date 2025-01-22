@@ -18,8 +18,15 @@ class Utils{
  
         static void cp(int64_t *out, int64_t *in, int32_t size);
 
-        // Returns the smallest k, s.t. base**k >= x
+        /// Returns the smallest k, s.t. base**k >= x. For x = 0 and x = 1 it returns 1.
+        /// TODO: Note. IN some cases return floor(log2(x)/log2(base))+1; returns a different value than this.
+        /// But if I use return floor(log2(x)/log2(base))+1; then bootstrapp isn't correct. Need to check why. 
+        /// int32_t number_of_digits(int64_t x, int64_t base) give the actuall digit number based on floor(log2(x)/log2(base))+1
+        /// It seems that as some point I'm asking about the log_2(x) where x is a power of two. That is why I get discrepancies, and where use of nomber_of_digits fails. 
+        /// Many decomposition algorithms are specialized for powers of two. 
         static int32_t power_times(int64_t x, int64_t base);
+
+        static int32_t number_of_digits(int64_t x, int64_t base);
 
         static bool is_power_of(int64_t x, int64_t base);
 
