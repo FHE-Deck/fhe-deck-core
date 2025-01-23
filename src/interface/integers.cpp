@@ -3,10 +3,9 @@
 #include "interface/fhe_context.h"
 
 using namespace fhe_deck;
-
-
-DigitConfig::DigitConfig(FHEContext* context, int32_t base, int32_t size){
-    this->context = context; 
+ 
+DigitConfig::DigitConfig(FHEContext& context, int32_t base, int32_t size){
+    this->context = &context; 
     this->base = base; 
     this->size = size;
     init();
@@ -21,6 +20,7 @@ void DigitConfig::init(){
     digit_plaintext_encoding.set_type(PlaintextEncodingType::full_domain);
 }
 
+/*
 void DigitInteger::init(){ 
     bits_base = Utils::power_times(base, 2); 
     bits_in_plaintext_space = bits_base+1;
@@ -28,38 +28,57 @@ void DigitInteger::init(){
     digit_plaintext_encoding.set_plaintext_space(2 * base);
     digit_plaintext_encoding.set_type(PlaintextEncodingType::full_domain);
 }
+*/
 
 
 DigitInteger::DigitInteger(const DigitConfig& config, int64_t message){
+    this->config = config;
+
+    /*
+    this->context = config.context;
+    this->base = config.base;
+    this->size = config.size;
+    this->bits_base = config.bits_base;
+    this->bits_in_plaintext_space = config.bits_in_plaintext_space;
+    this->digit_plaintext_encoding = config.digit_plaintext_encoding;  
+    */
+    std::vector<int64_t> digits_message = int_decomp(message); 
+    if(this->config.size < digits_message.size()){
+        throw std::logic_error("The target siye of the DigitInteger is smaller than the number of digits of the message!");
+    }
+    //this->size = size;
+    encrypted_digits.reserve(this->config.size);
+    if(this->config.context->config->is_secret_key_set){
+        for(int64_t digit: digits_message){
+            encrypted_digits.push_back(this->config.context->encrypt(digit, this->config.digit_plaintext_encoding));
+        } 
+    }else{
+        for(int64_t digit: digits_message){
+            encrypted_digits.push_back(this->config.context->encrypt_public(digit, this->config.digit_plaintext_encoding));
+        } 
+    } 
+    /// NOTE: Here we padd the encrypted digits with zeros.
+    for(int32_t i = digits_message.size(); i < this->config.size; i++){
+        encrypted_digits.push_back(this->config.context->encrypt(0, this->config.digit_plaintext_encoding));
+    }
+}
+
+DigitInteger::DigitInteger(const DigitConfig& config, const std::vector<Ciphertext>& encrypted_digits){ 
+    this->config = config;
+    /*
     this->context = config.context;
     this->base = config.base;
     this->size = config.size;
     this->bits_base = config.bits_base;
     this->bits_in_plaintext_space = config.bits_in_plaintext_space;
     this->digit_plaintext_encoding = config.digit_plaintext_encoding; 
-    std::vector<int64_t> digits_message = int_decomp(message); 
-    if(size < digits_message.size()){
-        throw std::logic_error("The target siye of the DigitInteger is smaller than the number of digits of the message!");
-    }
-    this->size = size;
-    encrypted_digits.reserve(size);
-    if(context->config->is_secret_key_set){
-        for(int64_t digit: digits_message){
-            encrypted_digits.push_back(context->encrypt(digit, digit_plaintext_encoding));
-        } 
-    }else{
-        for(int64_t digit: digits_message){
-            encrypted_digits.push_back(context->encrypt_public(digit, digit_plaintext_encoding));
-        } 
-    } 
-    /// NOTE: Here we padd the encrypted digits with zeros.
-    for(int32_t i = digits_message.size(); i < size; i++){
-        encrypted_digits.push_back(context->encrypt(0, digit_plaintext_encoding));
-    }
+    */ 
+    this->encrypted_digits = encrypted_digits;
 }
 
-DigitInteger::DigitInteger(FHEContext* context, std::vector<Ciphertext> encrypted_digits, int32_t base){
-    this->context = context;
+/*
+DigitInteger::DigitInteger(const FHEContext& context, const std::vector<Ciphertext>& encrypted_digits, int32_t base){
+    this->context = &context;
     this->encrypted_digits = encrypted_digits;
     this->base = base; 
     this->size = encrypted_digits.size();
@@ -67,8 +86,8 @@ DigitInteger::DigitInteger(FHEContext* context, std::vector<Ciphertext> encrypte
     /// TODO: Verify whether plaintext space in encrypted digits is correct.
 }
 
-DigitInteger::DigitInteger(FHEContext* context, int64_t message, int32_t base, int32_t size){ 
-    this->context = context;
+DigitInteger::DigitInteger(const FHEContext& context, int64_t message, int32_t base, int32_t size){ 
+    this->context = &context;
     this->base = base;
     init();
     std::vector<int64_t> digits_message = int_decomp(message); 
@@ -77,32 +96,67 @@ DigitInteger::DigitInteger(FHEContext* context, int64_t message, int32_t base, i
     }
     this->size = size;
     encrypted_digits.reserve(size);
-    if(context->config->is_secret_key_set){
+    if(context.config->is_secret_key_set){
         for(int64_t digit: digits_message){
-            encrypted_digits.push_back(context->encrypt(digit, digit_plaintext_encoding));
+            encrypted_digits.push_back(context.encrypt(digit, digit_plaintext_encoding));
         } 
     }else{
         for(int64_t digit: digits_message){
-            encrypted_digits.push_back(context->encrypt_public(digit, digit_plaintext_encoding));
+            encrypted_digits.push_back(context.encrypt_public(digit, digit_plaintext_encoding));
         } 
     } 
     /// NOTE: Here we padd the encrypted digits with zeros.
     for(int32_t i = digits_message.size(); i < size; i++){
-        encrypted_digits.push_back(context->encrypt(0, digit_plaintext_encoding));
+        encrypted_digits.push_back(context.encrypt(0, digit_plaintext_encoding));
     }
+}
+*/
+
+DigitInteger::DigitInteger(const DigitInteger& other){
+    this->config = other.config;
+    this->encrypted_digits = other.encrypted_digits;
+    /*
+    this->context = other.context;
+    this->base = other.base;
+    this->size = other.size;
+    this->bits_base = other.bits_base;
+    this->bits_in_plaintext_space = other.bits_in_plaintext_space;
+    this->digit_plaintext_encoding = other.digit_plaintext_encoding;
+    */
+}
+
+DigitInteger& DigitInteger::operator=(const DigitInteger& other){
+    if(this == &other){
+        return *this;
+    }
+    this->config = other.config;
+    this->encrypted_digits = other.encrypted_digits;
+    /*
+    this->context = other.context;
+    this->base = other.base;
+    this->size = other.size;
+    this->bits_base = other.bits_base;
+    this->bits_in_plaintext_space = other.bits_in_plaintext_space;
+    this->digit_plaintext_encoding = other.digit_plaintext_encoding;
+    */
+    return *this;
+}
+
+DigitInteger::DigitInteger(const DigitConfig& config, const CRTInteger& other){
+    throw std::logic_error("Not Implemented Yet.");
 }
 
 
 std::vector<int64_t> DigitInteger::int_decomp(int64_t x)const{ 
     std::vector<int64_t> out;
-    int32_t digits = Utils::number_of_digits(x, base); 
+    int32_t digits = Utils::number_of_digits(x, config.base); 
     int64_t shift = 0;
-    int64_t mask = base - 1; 
+    int64_t mask = config.base - 1; 
     out.resize(digits);
     for(int32_t i = 0; i < digits; i++){
-        shift = bits_base * i;
+        shift = config.bits_base * i;
         out[i] = (x & mask) >> shift;  
-        mask = mask << bits_base;
+        mask = mask << config.bits_base;
     }
     return out;
 }
@@ -112,14 +166,14 @@ int64_t DigitInteger::int_comp(const std::vector<int64_t>& in)const{
     int64_t curr = 1;
     for(int32_t i = 0; i < in.size(); i++){
         composed += curr * in[i];
-        curr *= base;
+        curr *= config.base;
     } 
     return composed;
 }
 
 void DigitInteger::verify_ciphertext_vector(const std::vector<Ciphertext>& digits){
     for(Ciphertext ct: digits){
-        if(ct.encoding.get_plaintext_space() != digit_plaintext_encoding.get_plaintext_space()){
+        if(ct.encoding.get_plaintext_space() != config.digit_plaintext_encoding.get_plaintext_space()){
             throw std::logic_error("Plaintext space of the input digits does not match the expected plaintext space!");
         }
     }
@@ -133,52 +187,53 @@ DigitInteger DigitInteger::addition_with_carry(const std::vector<DigitType> digi
     auto digit_extract_0 = [](int32_t m, int32_t bits_base) -> int32_t{
         return m & ((1 << bits_base)-1);
     };
-    std::function<int64_t(int64_t)> digit_extract = std::bind(digit_extract_0, std::placeholders::_1, bits_base);
+    std::function<int64_t(int64_t)> digit_extract = std::bind(digit_extract_0, std::placeholders::_1, config.bits_base);
     auto msb_extract_0 = [](int32_t m, int32_t bits_base) -> int32_t{
         return (m >> bits_base) & ((1 << bits_base)-1);
     };
-    std::function<int64_t(int64_t)> msb_extract = std::bind(msb_extract_0, std::placeholders::_1, bits_base);
+    std::function<int64_t(int64_t)> msb_extract = std::bind(msb_extract_0, std::placeholders::_1, config.bits_base);
  
     std::vector<HomomorphicAccumulator> func_spec;
-    func_spec.push_back(context->setup_function(digit_extract, digit_plaintext_encoding));
-    func_spec.push_back(context->setup_function(msb_extract, digit_plaintext_encoding));
+    func_spec.push_back(config.context->setup_function(digit_extract, config.digit_plaintext_encoding));
+    func_spec.push_back(config.context->setup_function(msb_extract, config.digit_plaintext_encoding));
 
     std::vector<Ciphertext> out;
     out.reserve(this->encrypted_digits.size()+1);
     std::vector<Ciphertext> carries;
     carries.reserve(this->encrypted_digits.size());
-    std::vector<Ciphertext> temp = context->eval(encrypted_digits[0]+digits[0], func_spec);
+    std::vector<Ciphertext> temp = config.context->eval(encrypted_digits[0]+digits[0], func_spec);
     out.push_back(temp[0]);
     carries.push_back(temp[1]);
     for(int32_t i = 1; i < encrypted_digits.size(); ++i){
-        std::vector<Ciphertext> temp = context->eval(encrypted_digits[i]+digits[i], func_spec); 
+        std::vector<Ciphertext> temp = config.context->eval(encrypted_digits[i]+digits[i], func_spec); 
         carries.push_back(temp[1]);
         out.push_back(temp[0] + carries[i-1]);
     }
     out.push_back(carries[encrypted_digits.size()-1]);
-    DigitInteger out_digit(context, out, base);
+    DigitInteger out_digit(config, out);
     return out_digit;
 }
+
 
 DigitInteger DigitInteger::operator+(const DigitInteger& other)const{  
     if(!is_compatible(other)){
         throw std::logic_error("The two DigitIntegers are not compatible! Either different size or base.");
     } 
     DigitInteger out = addition_with_carry(other.encrypted_digits);
-    out.resisze(size);
+    out.resisze(config.size);
     return out; 
 }
  
 DigitInteger DigitInteger::operator+(const int64_t scalar)const{  
     std::vector<int64_t> scalar_decomp = int_decomp(scalar);
-    if(this->size < scalar_decomp.size()){
+    if(this->config.size < scalar_decomp.size()){
         throw std::logic_error("The target size of the DigitInteger is smaller than the number of digits of the scalar!");
     }
-    for(int32_t i = scalar_decomp.size(); i < size; i++){
+    for(int32_t i = scalar_decomp.size(); i < config.size; i++){
         scalar_decomp.push_back(0);
     }
     DigitInteger out = addition_with_carry(scalar_decomp);
-    out.resisze(size);
+    out.resisze(config.size);
     return out; 
 }
 
@@ -191,10 +246,10 @@ DigitInteger DigitInteger::add_with_carry(const DigitInteger& other)const{
 
 DigitInteger DigitInteger::add_with_carry(const int64_t scalar)const{
     std::vector<int64_t> scalar_decomp = int_decomp(scalar);
-    if(this->size < scalar_decomp.size()){
+    if(this->config.size < scalar_decomp.size()){
         throw std::logic_error("The target size of the DigitInteger is smaller than the number of digits of the scalar!");
     }
-    for(int32_t i = scalar_decomp.size(); i < size; i++){
+    for(int32_t i = scalar_decomp.size(); i < config.size; i++){
         scalar_decomp.push_back(0);
     }
     return addition_with_carry(scalar_decomp); 
@@ -210,7 +265,7 @@ DigitInteger DigitInteger::subtraction_with_carry(const std::vector<DigitType> d
             return m;
         }
     };
-    std::function<int64_t(int64_t)> digit_extract = std::bind(digit_extract_0, std::placeholders::_1, bits_base);
+    std::function<int64_t(int64_t)> digit_extract = std::bind(digit_extract_0, std::placeholders::_1, config.bits_base);
     auto msb_extract_0 = [](int32_t m, int32_t bits_base) -> int32_t{
         if(m >= (1<<bits_base)){
             return 1;
@@ -218,27 +273,27 @@ DigitInteger DigitInteger::subtraction_with_carry(const std::vector<DigitType> d
             return 0;
         }
     };
-    std::function<int64_t(int64_t)> msb_extract = std::bind(msb_extract_0, std::placeholders::_1, bits_base);
+    std::function<int64_t(int64_t)> msb_extract = std::bind(msb_extract_0, std::placeholders::_1, config.bits_base);
 
     std::vector<HomomorphicAccumulator> func_spec;
-    func_spec.push_back(context->setup_function(digit_extract, digit_plaintext_encoding));
-    func_spec.push_back(context->setup_function(msb_extract, digit_plaintext_encoding));
+    func_spec.push_back(config.context->setup_function(digit_extract, config.digit_plaintext_encoding));
+    func_spec.push_back(config.context->setup_function(msb_extract, config.digit_plaintext_encoding));
 
     std::vector<Ciphertext> out;
     out.reserve(this->encrypted_digits.size()+1);
     std::vector<Ciphertext> carries;
     carries.reserve(this->encrypted_digits.size());
 
-    std::vector<Ciphertext> temp = context->eval(encrypted_digits[0]-digits[0], func_spec);
+    std::vector<Ciphertext> temp = config.context->eval(encrypted_digits[0]-digits[0], func_spec);
     out.push_back(temp[0]);
     carries.push_back(temp[1]);
     for(int32_t i = 1; i < encrypted_digits.size(); ++i){
-        std::vector<Ciphertext> temp = context->eval(encrypted_digits[i]-digits[i]-carries[i-1], func_spec);
+        std::vector<Ciphertext> temp = config.context->eval(encrypted_digits[i]-digits[i]-carries[i-1], func_spec);
         carries.push_back(temp[1]);
         out.push_back(temp[0]);
     }
     out.push_back(carries[encrypted_digits.size()-1]);
-    DigitInteger out_digit(context, out, base);
+    DigitInteger out_digit(config, out);
     return out_digit;
 }
 
@@ -247,7 +302,7 @@ DigitInteger DigitInteger::operator-(const DigitInteger& other)const{
         throw std::logic_error("The two DigitIntegers are not compatible! Either different size or base.");
     } 
     DigitInteger out = subtraction_with_carry(other.encrypted_digits); 
-    out.resisze(size);
+    out.resisze(config.size);
     return out; 
 }
 
@@ -255,15 +310,15 @@ DigitInteger DigitInteger::operator-(const DigitInteger& other)const{
 
 DigitInteger DigitInteger::operator-(const int64_t scalar)const{  
     std::vector<int64_t> scalar_decomp = int_decomp(scalar); 
-    if(this->size < scalar_decomp.size()){
+    if(this->config.size < scalar_decomp.size()){
         throw std::logic_error("The target size of the DigitInteger is smaller than the number of digits of the scalar!");
     }
     /// Padd with zeros.
-    for(int32_t i = scalar_decomp.size(); i < size; i++){
+    for(int32_t i = scalar_decomp.size(); i < config.size; i++){
         scalar_decomp.push_back(0);
     }
     DigitInteger out = subtraction_with_carry(scalar_decomp); 
-    out.resisze(size);
+    out.resisze(config.size);
     return out; 
 }
 
@@ -276,11 +331,11 @@ DigitInteger DigitInteger::subtract_with_carry(const DigitInteger& other)const{
 
 DigitInteger DigitInteger::subtract_with_carry(const int64_t scalar)const{
     std::vector<int64_t> scalar_decomp = int_decomp(scalar); 
-    if(this->size < scalar_decomp.size()){
+    if(this->config.size < scalar_decomp.size()){
         throw std::logic_error("The target size of the DigitInteger is smaller than the number of digits of the scalar!");
     }
     /// Padd with zeros.
-    for(int32_t i = scalar_decomp.size(); i < size; i++){
+    for(int32_t i = scalar_decomp.size(); i < config.size; i++){
         scalar_decomp.push_back(0);
     }
     return subtraction_with_carry(scalar_decomp);  
@@ -296,30 +351,30 @@ DigitInteger DigitInteger::operator*(const DigitInteger& other)const{
 }
 
 void DigitInteger::resisze(int32_t size){
-    if(this->size == size) return;
+    if(this->config.size == size) return;
     if (size < 0) throw std::logic_error("Size cannot be negative!"); 
-    if(size < this->size){
+    if(size < this->config.size){
         encrypted_digits.resize(size);
-    }else if(context->config->is_secret_key_set){
-        for(int32_t i = this->size; i < size; i++){
-            encrypted_digits.push_back(context->encrypt(0, digit_plaintext_encoding));
+    }else if(config.context->config->is_secret_key_set){
+        for(int32_t i = this->config.size; i < size; i++){
+            encrypted_digits.push_back(config.context->encrypt(0, config.digit_plaintext_encoding));
         }
     }else{
-        for(int32_t i = this->size; i < size; i++){
-            encrypted_digits.push_back(context->encrypt_public(0, digit_plaintext_encoding));
+        for(int32_t i = this->config.size; i < size; i++){
+            encrypted_digits.push_back(config.context->encrypt_public(0, config.digit_plaintext_encoding));
         }
     }
-    for(int32_t i = this->size; i < size; i++){
-        encrypted_digits.push_back(context->encrypt(0, digit_plaintext_encoding));
+    for(int32_t i = this->config.size; i < size; i++){
+        encrypted_digits.push_back(config.context->encrypt(0, config.digit_plaintext_encoding));
     }
-    this->size = size;
+    this->config.size = size;
 }
 
 bool DigitInteger::is_compatible(const DigitInteger& other)const{
-    if(this->size != other.size){
+    if(this->config.size != other.config.size){
         return false;
     }
-    if(this->base != other.base){
+    if(this->config.base != other.config.base){
         return false;
     }
     return true;
@@ -358,6 +413,10 @@ CRTInteger::CRTInteger(std::vector<Ciphertext> cts, const RNSBase& base){
     /// TODO: Perhaps check if the ciphertexts are correct with regard to the base.
 }
 
+CRTInteger::CRTInteger(const CRTInteger& other){
+    this->encrypted_digits = other.encrypted_digits;
+    this->base = other.base;
+}
 
 CRTInteger CRTInteger::operator+(const CRTInteger& other){
     if(this->base.modulus  != other.base.modulus){
@@ -468,8 +527,8 @@ void RNSBase::init(){
     }
 }
 
-RNSBase::RNSBase(FHEContext* context, std::vector<int32_t> crt_base){
-    this->context = context;
+RNSBase::RNSBase(FHEContext& context, std::vector<int32_t> crt_base){
+    this->context = &context;
     this->crt_base = crt_base;
     init();
 }

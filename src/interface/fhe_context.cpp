@@ -1,11 +1,29 @@
 #include "interface/fhe_context.h"
 #include "interface/integers.h"
+#include "interface/ciphertext.h"
 
 using namespace fhe_deck;
  
 FHEContext::FHEContext(){
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration());
 } 
+
+FHEContext::FHEContext(FHENamedParams name){
+    config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration());
+    generate_context(name);
+}
+
+FHEContext::FHEContext(const FHEContext& other){
+    config = other.config; 
+}
+
+FHEContext& FHEContext::operator=(const FHEContext& other){
+    if(this == &other){
+        return *this;
+    }   
+    this->config = other.config;
+    return *this;
+}
   
 void FHEContext::generate_context(FHENamedParams name){    
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration(name));
@@ -13,7 +31,7 @@ void FHEContext::generate_context(FHENamedParams name){
     //current_encoding = config->eval_key.default_encoding;  
 }
 
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type){  
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type)const{  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -22,7 +40,7 @@ Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type){
     return encrypt(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space){
+Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -31,7 +49,7 @@ Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space){
     return encrypt(message, encoding);
 }
  
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int64_t plaintext_space){
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -41,22 +59,22 @@ Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int6
     return encrypt(message, encoding);
 }
  
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncoding encoding){  
+Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncoding encoding)const{  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }        
     std::shared_ptr<LWECT> c(config->secret_key->lwe_sk->encrypt(encoding.encode_message(message)));
-    return Ciphertext(c, encoding, this); 
+    return Ciphertext(c, encoding, *this); 
 }
 
-Ciphertext FHEContext::encrypt(int64_t message){
+Ciphertext FHEContext::encrypt(int64_t message)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key!");
     }
     return encrypt(message, config->eval_key.default_encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type){  
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type)const{  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -65,7 +83,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType typ
     return encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space){
+Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space)const{
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -74,7 +92,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space){
     return encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type, int64_t plaintext_space){
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const{
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
@@ -84,29 +102,29 @@ Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType typ
     return encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncoding encoding){  
+Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncoding encoding)const{  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
     std::shared_ptr<LWECT> c(config->eval_key.encrypt_pk->encrypt(encoding.encode_message(message))); 
-    return Ciphertext(c, encoding, this);
+    return Ciphertext(c, encoding, *this);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message){
+Ciphertext FHEContext::encrypt_public(int64_t message)const{
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }
     return encrypt_public(message, config->eval_key.default_encoding);
 }
 
-int64_t FHEContext::decrypt(const Ciphertext& c_in){
+int64_t FHEContext::decrypt(const Ciphertext& c_in)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }  
     return config->secret_key->lwe_sk->decrypt(*c_in.lwe_c, c_in.encoding);
 }
  
-int64_t FHEContext::decrypt(const DigitInteger& ct){
+int64_t FHEContext::decrypt(const DigitInteger& ct)const{
     std::vector<int64_t> digits;
     for(Ciphertext c: ct.encrypted_digits){
          digits.push_back(decrypt(c));
@@ -114,7 +132,7 @@ int64_t FHEContext::decrypt(const DigitInteger& ct){
     return ct.int_comp(digits);
 }
 
-int64_t FHEContext::decrypt(const CRTInteger& ct){
+int64_t FHEContext::decrypt(const CRTInteger& ct)const{
     std::vector<int32_t> digits;
     for(Ciphertext c: ct.encrypted_digits){
          digits.push_back(decrypt(c));
@@ -122,7 +140,7 @@ int64_t FHEContext::decrypt(const CRTInteger& ct){
     return ct.base.compose(digits);
 }
  
-PlaintextEncoding FHEContext::get_default_plaintext_encoding(){
+PlaintextEncoding FHEContext::get_default_plaintext_encoding()const{
     return config->eval_key.default_encoding;
 }
 
@@ -132,7 +150,7 @@ void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, int6
 }
 */
  
-int64_t FHEContext::get_default_plaintext_space(){
+int64_t FHEContext::get_default_plaintext_space()const{
     return config->eval_key.default_encoding.get_plaintext_space();
 }
 
@@ -142,7 +160,7 @@ void FHEContext::set_default_plaintext_space(int64_t plaintext_space){
 }
 */
 
-PlaintextEncodingType FHEContext::get_default_plaintext_encoding_type(){
+PlaintextEncodingType FHEContext::get_default_plaintext_encoding_type()const{
     return config->eval_key.default_encoding.get_type();
 }
 
@@ -152,7 +170,7 @@ void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){
 }
 */
    
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
+HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding)const{
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -163,15 +181,15 @@ HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)
     return out;  
 }
 
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding){ 
+HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding)const{ 
     return setup_function(f, encoding, encoding);  
 }
   
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f){    
+HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f)const{    
     return setup_function(f, config->eval_key.default_encoding, config->eval_key.default_encoding);
 }
 
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding){
+Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding)const{
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }   
@@ -202,18 +220,18 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
     else{
         throw std::logic_error("Non existend encoding type!");
     }   
-    return Ciphertext(ct_out, output_encoding, this); 
+    return Ciphertext(ct_out, output_encoding, *this); 
 }
   
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut){  
+Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut)const{  
     return this->eval(ct_in, lut, ct_in.encoding); 
 }
    
-std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec){  
+std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const{  
     return this->eval(ct_in, lut_vec, ct_in.encoding);
 }
 
-std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec, PlaintextEncoding output_encoding){
+std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec, PlaintextEncoding output_encoding)const{
    if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }     
@@ -261,31 +279,31 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<Ho
     // Load the LWECT's into the Ciphertext wrapper
     std::vector<Ciphertext> out_vec;
     for(LWECT ct: out_vec_lwe){
-        out_vec.push_back(Ciphertext(std::shared_ptr<LWECT>(ct.clone()), output_encoding, this));
+        out_vec.push_back(Ciphertext(std::shared_ptr<LWECT>(ct.clone()), output_encoding, *this));
     }  
     return out_vec;
 }
  
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding){
+Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding)const{
     HomomorphicAccumulator lut = this->setup_function(f, ct_in.encoding, output_encoding);
     return eval(ct_in, lut, output_encoding);
 }
 
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f){
+Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f)const{
     HomomorphicAccumulator lut = this->setup_function(f, ct_in.encoding, ct_in.encoding);
     return eval(ct_in, lut, ct_in.encoding);
 }
  
-Ciphertext FHEContext::sanitize(const Ciphertext& ct){
+Ciphertext FHEContext::sanitize(const Ciphertext& ct)const{
     if(!config->eval_key.is_sanitization_supported){
         throw std::logic_error("Sanitization is not supported, or sanitization key is not loaded!");
     }
     std::shared_ptr<LWECT> ct_out(new LWECT(ct.lwe_c->param));  
     config->eval_key.sanitization_pk->sanitize(*ct_out, *ct.lwe_c, ct.encoding);
-    return Ciphertext(ct_out, ct.encoding, this); 
+    return Ciphertext(ct_out, ct.encoding, *this); 
 }
 
-Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std::vector<int64_t> scalars, int64_t scalar){    
+Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std::vector<int64_t> scalars, int64_t scalar)const{    
     Ciphertext ct_out =  ct_vec[0] * scalars[0]; 
     for(int32_t i = 1; i < ct_vec.size(); ++i){ 
             ct_out = ct_out + (ct_vec[i] * scalars[i]); 
@@ -360,7 +378,7 @@ void FHEContext::load_public_key(std::string file_name){
     read_public_key(is);
 }
 
-void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct){
+void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }

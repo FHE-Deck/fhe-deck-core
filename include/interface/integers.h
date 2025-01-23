@@ -1,10 +1,8 @@
 #ifndef INTEGERS
 #define INTEGERS
  
-#include "global_headers.h"
-
-#include "interface/ciphertext.h"
-//#include "interface/fhe_context.h"
+#include "global_headers.h" 
+#include "interface/ciphertext.h" 
 
 namespace fhe_deck{
 
@@ -18,7 +16,7 @@ class DigitConfig{
     
     public:
 
-        FHEContext* context;
+        const FHEContext* context;
         int32_t base;
         int32_t size; 
         int32_t bits_base;
@@ -27,7 +25,7 @@ class DigitConfig{
 
         DigitConfig() = default;
   
-        DigitConfig(FHEContext* context, int32_t base, int32_t size);
+        DigitConfig(FHEContext& context, int32_t base, int32_t size);
   
         void init();
 };
@@ -36,25 +34,32 @@ class DigitInteger{
 
     public:
         
-        std::vector<Ciphertext> encrypted_digits;
-        FHEContext* context;
-        int32_t base; 
-        PlaintextEncoding digit_plaintext_encoding;
-        int32_t bits_in_plaintext_space; 
-        int32_t bits_base;
-        int32_t size; 
+        std::vector<Ciphertext> encrypted_digits; 
+        DigitConfig config;
+
+
+        //const FHEContext* context;
+        //int32_t base; 
+        //PlaintextEncoding digit_plaintext_encoding;
+        //int32_t bits_in_plaintext_space; 
+        //int32_t bits_base;
+        //int32_t size; 
 
         DigitInteger() = default;
 
         DigitInteger(const DigitConfig& config, int64_t message);
 
-        DigitInteger(FHEContext* context, std::vector<Ciphertext> encrypted_digits, int32_t base);
+        DigitInteger(const DigitConfig& config, const std::vector<Ciphertext>& encrypted_digits);
 
-        DigitInteger(FHEContext* context, int64_t message, int32_t base, int32_t size);
+        //DigitInteger(const FHEContext& context, const std::vector<Ciphertext>& encrypted_digits, int32_t base);
+
+        //DigitInteger(const FHEContext& context, int64_t message, int32_t base, int32_t size);
  
-        DigitInteger(const CRTInteger& other, int32_t base);
+        DigitInteger(const DigitConfig& config, const CRTInteger& other);
 
         DigitInteger(const DigitInteger& other); 
+
+        DigitInteger& operator=(const DigitInteger& other);
   
         DigitInteger operator+(const DigitInteger& other)const;
 
@@ -115,11 +120,11 @@ class RNSBase{
         std::vector<int64_t> factors;
         std::vector<int64_t> m_list;
         std::vector<int64_t> cofactors;
-        FHEContext* context;
+        const FHEContext* context;
  
         RNSBase() = default;
 
-        RNSBase(FHEContext* context, std::vector<int32_t> crt_base);
+        RNSBase(FHEContext& context, std::vector<int32_t> crt_base);
 
         std::vector<int32_t> decompose(int64_t x)const;
 
@@ -141,9 +146,9 @@ class CRTInteger{
         //FHEContext* context;
         //int64_t modulus;
 
-        std::vector<int64_t> factors;
-        std::vector<int64_t> m_list;
-        std::vector<int64_t> cofactors;
+        //std::vector<int64_t> factors;
+        //std::vector<int64_t> m_list;
+        //std::vector<int64_t> cofactors;
 
         CRTInteger() = default;
  

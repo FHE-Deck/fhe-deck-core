@@ -14,8 +14,9 @@
 #include "math/polynomial.h"
 
 namespace fhe_deck{
-    
-class FHEContext; // Forward declaration
+
+/// @brief Forward Declaration of the FHEContext class which is defined in interface/fhe_context.h.
+class FHEContext;
   
 /**
  * @brief A class representing a ciphertext. This is used by the high level API, the FHEContext.
@@ -35,7 +36,7 @@ class Ciphertext{
         /// @brief The encoding of the plaintext in the ciphertext.
         PlaintextEncoding encoding;
         /// @brief Pointer to the FHE context. Ciphertexts exist within a context. The context object then implements and controls bootstrapping, serialization, etc.
-        FHEContext* context;
+        const FHEContext* context;
         /// @brief Default destructor.
         ~Ciphertext() = default;
         
@@ -46,7 +47,9 @@ class Ciphertext{
         /// @param lwe_c The input LWE Ciphertext 
         /// @param encoding The plaintext encoding
         /// @param context Pointer to the FHEContext, within which this ciphertext exists. 
-        Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding encoding, FHEContext* context);
+        Ciphertext(std::shared_ptr<LWECT> lwe_c, const PlaintextEncoding& encoding, const FHEContext& context);
+
+        Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding& encoding, FHEContext& context);
  
         /// @brief The copy constructor.
         /// @param c The input ciphertext to be copied. 
@@ -55,7 +58,7 @@ class Ciphertext{
         /// @brief The assignment operator.
         /// @param other The object to be copied. 
         /// @return reference to the copied object.
-        Ciphertext& operator=(const Ciphertext other);
+        Ciphertext& operator=(const Ciphertext& other);
  
         /// @brief Adds a ciphertext to this ciphertext. 
         /// @param ct The input ciphertext
