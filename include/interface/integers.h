@@ -36,24 +36,13 @@ class DigitInteger{
         
         std::vector<Ciphertext> encrypted_digits; 
         DigitConfig config;
-
-
-        //const FHEContext* context;
-        //int32_t base; 
-        //PlaintextEncoding digit_plaintext_encoding;
-        //int32_t bits_in_plaintext_space; 
-        //int32_t bits_base;
-        //int32_t size; 
-
+ 
         DigitInteger() = default;
 
         DigitInteger(const DigitConfig& config, int64_t message);
 
         DigitInteger(const DigitConfig& config, const std::vector<Ciphertext>& encrypted_digits);
-
-        //DigitInteger(const FHEContext& context, const std::vector<Ciphertext>& encrypted_digits, int32_t base);
-
-        //DigitInteger(const FHEContext& context, int64_t message, int32_t base, int32_t size);
+ 
  
         DigitInteger(const DigitConfig& config, const CRTInteger& other);
 
@@ -88,12 +77,7 @@ class DigitInteger{
         bool is_compatible(const DigitInteger& other)const;
 
         void resisze(int32_t size);
- 
-        /// There are also operations like:
-        /// Note that some of these operations should perhaps be provided in the Ciphertext class or file.
-        /// Choose one ciphertext depending on the input bit. Choose digits
-        /// Digit compare (basically returns the overflow digit from the subtraction)
-        /// Swap (swap one vector of Ciphertext with another)
+  
 
     private:
 
@@ -142,13 +126,7 @@ class CRTInteger{
     public:
 
         std::vector<Ciphertext> encrypted_digits;
-        RNSBase base;
-        //FHEContext* context;
-        //int64_t modulus;
-
-        //std::vector<int64_t> factors;
-        //std::vector<int64_t> m_list;
-        //std::vector<int64_t> cofactors;
+        RNSBase base; 
 
         CRTInteger() = default;
  
@@ -171,13 +149,7 @@ class CRTInteger{
         CRTInteger operator*(const int64_t scalar);
 
         CRTInteger operator*(const CRTInteger& other);
-
-
-        /// There are also operations like:
-        /// Note that some of these operations should perhaps be provided in the Ciphertext class or file.
-        /// Choose one ciphertext depending on the input bit. Choose digits
-        /// Digit compare (basically returns the overflow digit from the subtraction)
-        /// Swap (swap one vector of Ciphertext with another)
+ 
  
  
 };
