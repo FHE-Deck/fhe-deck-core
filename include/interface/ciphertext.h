@@ -49,7 +49,7 @@ class Ciphertext{
         /// @param context Pointer to the FHEContext, within which this ciphertext exists. 
         Ciphertext(std::shared_ptr<LWECT> lwe_c, const PlaintextEncoding& encoding, const FHEContext& context);
 
-        Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding& encoding, FHEContext& context);
+        //Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding& encoding, FHEContext& context);
  
         /// @brief The copy constructor.
         /// @param c The input ciphertext to be copied. 

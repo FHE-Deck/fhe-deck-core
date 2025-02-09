@@ -170,7 +170,7 @@ class FHEContext{
     /// @param lut The homomorphic accumulator
     /// @return The bootstrapped ciphertext
     /// TODO: input and output encoding should be defined already in HomomorphicAccumulator!
-    Ciphertext eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding)const;
+    //Ciphertext eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut, PlaintextEncoding output_encoding)const;
 
     /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
@@ -206,7 +206,7 @@ class FHEContext{
     /// @param luts The vector of homomorphic accumulators
     /// @param output_encopding Output encoding of a ciphertext. Input encoding is defined in ct_in
     /// @return A vector of ciphertexts correspondng to the accumulator evaluations
-    std::vector<Ciphertext> eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts, PlaintextEncoding output_encopding)const;
+    //std::vector<Ciphertext> eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts, PlaintextEncoding output_encopding)const;
    
     /// @brief Evaluates scalar + Sum_i(scalars[i] * ct_vec[i])
     /// @param ct_vec In input ciphertexts

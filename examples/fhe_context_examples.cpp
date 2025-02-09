@@ -1286,7 +1286,7 @@ void test_full_change_plaintext_space(FHENamedParams param_set){
  
 
     HomomorphicAccumulator lut_fun_add = context.setup_function(fun_add, encoding_1, encoding_2); 
-    Ciphertext ct_out = context.eval(ct_in, lut_fun_add, encoding_2);
+    Ciphertext ct_out = context.eval(ct_in, lut_fun_add);
   
     assert(ct_out.encoding.get_plaintext_space()  == modulus_2);
     std::cout << "ct_out.encoding.get_plaintext_space()  == modulus_1: OK "   << std::endl; 
@@ -1374,7 +1374,7 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
     fun_luts.push_back(context.setup_function(fun_add, encoding_1, encoding_2));
 
     //HomomorphicAccumulator lut_fun_add = context.setup_function(fun_add, encoding_1, encoding_2); 
-    std::vector<Ciphertext> ct_outs = context.eval(ct_in, fun_luts, encoding_2);
+    std::vector<Ciphertext> ct_outs = context.eval(ct_in, fun_luts);
   
     for(Ciphertext ct_out: ct_outs){
         assert(ct_out.encoding.get_plaintext_space()  == modulus_2);
