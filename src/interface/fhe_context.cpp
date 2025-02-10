@@ -27,8 +27,7 @@ FHEContext& FHEContext::operator=(const FHEContext& other){
   
 void FHEContext::generate_context(FHENamedParams name){    
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration(name));
-    config->generate_keys(); 
-    //current_encoding = config->eval_key.default_encoding;  
+    config->generate_keys();  
 }
 
 Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type)const{  
@@ -116,7 +115,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message)const{
     }
     return encrypt_public(message, config->eval_key.default_encoding);
 }
-
+  
 int64_t FHEContext::decrypt(const Ciphertext& c_in)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
@@ -132,7 +131,7 @@ int64_t FHEContext::decrypt(const DigitInteger& ct)const{
     return ct.int_comp(digits);
 }
 
-int64_t FHEContext::decrypt(const CRTInteger& ct)const{
+int64_t FHEContext::decrypt(const RNSInteger& ct)const{
     std::vector<int32_t> digits;
     for(Ciphertext c: ct.encrypted_digits){
          digits.push_back(decrypt(c));
@@ -224,19 +223,6 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
     }   
     return Ciphertext(ct_out, lut.output_encoding, *this); 
 }
-  
-/*
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulator& lut)const{  
-    return this->eval(ct_in, lut); 
-}
-*/
-   
-/*
-std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const{ 
-    /// TODO: Doesn't make sense. Output encoding is defined in the accumulator!!! 
-    return this->eval(ct_in, lut_vec);
-}
-*/
  
 std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const{
     if(lut_vec.empty()) throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: Empty HomomorphicAccumulator Vector!");
@@ -319,7 +305,7 @@ Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std
     return ct_out; 
 }
 
-void FHEContext::send_secret_key(std::ofstream &os){
+void FHEContext::send_secret_key(std::ofstream &os)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }
@@ -332,6 +318,7 @@ void FHEContext::send_secret_key(std::ofstream &os){
 }
 
 void FHEContext::read_secret_key(std::ifstream &is){   
+    if(config->is_secret_key_set) throw std::logic_error("FHEContext::read_secret_key(std::ifstream &is): The secret key is already set.");
     #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is); 
     std::shared_ptr<FHESecretKey> secret_key; 
@@ -343,19 +330,21 @@ void FHEContext::read_secret_key(std::ifstream &is){
     #endif
 }
  
-void FHEContext::save_secret_key(std::string file_name){
+void FHEContext::save_secret_key(std::string file_name)const{ 
+    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_secret_key(std::string file_name): The secret key is already set.");
     std::ofstream os(file_name, std::ios::binary); 
     send_secret_key(os);
     os.close();  
 }
 
 void FHEContext::load_secret_key(std::string file_name){ 
+    if(config->is_secret_key_set) throw std::logic_error("FHEContext::load_secret_key(std::string file_name): The secret key is already set.");
     std::ifstream is(file_name, std::ios::binary);
     read_secret_key(is);
     
 }
 
-void FHEContext::send_public_key(std::ofstream &os){ 
+void FHEContext::send_public_key(std::ofstream &os)const{ 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->eval_key);  
@@ -374,21 +363,21 @@ void FHEContext::read_public_key(std::ifstream &is){
     #endif
 }
  
-void FHEContext::save_public_key(std::string file_name){
+void FHEContext::save_public_key(std::string file_name)const{
+    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): The secret key is already set.");
     std::ofstream os(file_name, std::ios::binary); 
     send_public_key(os);
     os.close();
 }
 
 void FHEContext::load_public_key(std::string file_name){
+    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): The secret key is already set.");
     std::ifstream is(file_name, std::ios::binary);
     read_public_key(is);
 }
 
 void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{
-    if(!config->eval_key.is_encrypt_pk_set){
-        throw std::logic_error("No Public Key Initialized!");
-    }
+    if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("No Public Key Initialized!"); 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os);   
     oarchive(ct.lwe_c); 
@@ -397,7 +386,7 @@ void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{
     #endif
 }
 
-Ciphertext FHEContext::read_Ciphertext(std::ifstream &is){
+Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{
     #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is);  
     std::shared_ptr<LWECT> ct;
@@ -409,12 +398,12 @@ Ciphertext FHEContext::read_Ciphertext(std::ifstream &is){
     #endif
 }
  
-void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct){
+void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct)const{
     std::ofstream os(file_name, std::ios::binary);   
     send_Ciphertext(os, ct);
 }
 
-Ciphertext FHEContext::load_Ciphertext(std::string file_name){
+Ciphertext FHEContext::load_Ciphertext(std::string file_name)const{
     std::ifstream is(file_name, std::ios::binary);
     return read_Ciphertext(is);
 }

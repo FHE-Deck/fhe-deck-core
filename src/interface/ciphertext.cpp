@@ -10,18 +10,7 @@ Ciphertext::Ciphertext(std::shared_ptr<LWECT> lwe_c, const PlaintextEncoding& en
     this->encoding = encoding; 
     this->context = &context; 
 }
- 
-/*
-Ciphertext::Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding& encoding, FHEContext& context){
-    this->lwe_c = lwe_c;
-    this->is_lwe_ct = true; 
-    this->is_init = true;
-    this->encoding = encoding; 
-    this->context = &context; 
-}
-*/
-    
-
+   
 Ciphertext::Ciphertext(const Ciphertext &other){  
     this->encoding = other.encoding; 
     if(other.is_lwe_ct){

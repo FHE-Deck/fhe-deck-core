@@ -10,8 +10,8 @@
  
 #include "ciphertexts/lwe.h"
 #include "common/enums.h"  
-#include "interface/plaintext_encoding.h" 
-#include "math/polynomial.h"
+#include "interface/plaintext_encoding.h"  
+ 
 
 namespace fhe_deck{
 
@@ -36,10 +36,9 @@ class Ciphertext{
         /// @brief The encoding of the plaintext in the ciphertext.
         PlaintextEncoding encoding;
         /// @brief Pointer to the FHE context. Ciphertexts exist within a context. The context object then implements and controls bootstrapping, serialization, etc.
-        const FHEContext* context;
-        /// @brief Default destructor.
-        ~Ciphertext() = default;
         
+        const FHEContext* context;
+  
         /// @brief default constructor
         Ciphertext() = default;
   
@@ -48,9 +47,7 @@ class Ciphertext{
         /// @param encoding The plaintext encoding
         /// @param context Pointer to the FHEContext, within which this ciphertext exists. 
         Ciphertext(std::shared_ptr<LWECT> lwe_c, const PlaintextEncoding& encoding, const FHEContext& context);
-
-        //Ciphertext(std::shared_ptr<LWECT> lwe_c, PlaintextEncoding& encoding, FHEContext& context);
- 
+  
         /// @brief The copy constructor.
         /// @param c The input ciphertext to be copied. 
         Ciphertext(const Ciphertext& c);

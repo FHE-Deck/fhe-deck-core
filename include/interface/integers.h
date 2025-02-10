@@ -2,7 +2,9 @@
 #define INTEGERS
  
 #include "global_headers.h" 
-#include "interface/ciphertext.h" 
+#include "interface/fhe_context.h"
+#include "interface/ciphertext.h"   
+
 
 namespace fhe_deck{
 
@@ -10,13 +12,16 @@ namespace fhe_deck{
 class FHEContext;
 
 /// @brief This class is decalred in the file Integers.h after DigitInteger.
-class CRTInteger;
+class RNSInteger;
+/// @brief This class is decalred in the file Integers.h after DigitConfig.
+class DigitInteger;
 
 class DigitConfig{
     
     public:
+ 
+        FHEContext context;
 
-        const FHEContext* context;
         int32_t base;
         int32_t size; 
         int32_t bits_base;
@@ -30,6 +35,10 @@ class DigitConfig{
         DigitConfig(FHEContext& context, int32_t base, int32_t size);
   
         void init();
+
+        DigitInteger encrypt(int64_t message);
+
+        int64_t decrypt(const DigitInteger& ciphertext);
 };
 
 class DigitInteger{
@@ -41,11 +50,11 @@ class DigitInteger{
  
         DigitInteger() = default;
 
-        DigitInteger(const DigitConfig& config, int64_t message);
+        DigitInteger(int64_t message, const DigitConfig& config);
 
         DigitInteger(const DigitConfig& config, const std::vector<Ciphertext>& encrypted_digits);
   
-        DigitInteger(const DigitConfig& config, const CRTInteger& other);
+        DigitInteger(const DigitConfig& config, const RNSInteger& other);
 
         DigitInteger(const DigitInteger& other); 
 
@@ -99,33 +108,40 @@ class DigitInteger{
         template<typename DigitType>
         DigitInteger subtraction_with_carry(const std::vector<DigitType> digits)const;
  
-        std::vector<Ciphertext> decompose_rns_element(const Ciphertext& in, int64_t modulus, int64_t rns_coef, int32_t size)const;
+        std::vector<Ciphertext> decompose_rns_element(const Ciphertext& in, int64_t modulus, int64_t rns_coef)const;
 
 
 };  
 
 
-class RNSBase{
+class RNSConfig{
 
     public:
     
         int64_t modulus; 
         int64_t size;
+
+        /// TODO: Revisit naming of these lists.
         std::vector<int32_t> crt_base;
         std::vector<int64_t> factors;
         std::vector<int64_t> m_list;
         std::vector<int64_t> cofactors;
-        std::vector<PlaintextEncoding> plaintext_encodings;
-        const FHEContext* context;
  
-        RNSBase() = default;
+        std::vector<PlaintextEncoding> plaintext_encodings;
 
-        RNSBase(FHEContext& context, std::vector<int32_t> crt_base);
+        FHEContext context;
+ 
+        RNSConfig() = default;
+
+        RNSConfig(FHEContext& context, std::vector<int32_t> crt_base);
 
         std::vector<int32_t> decompose(int64_t x)const;
 
         int64_t compose(const std::vector<int32_t>& digits)const;
 
+        RNSInteger encrypt(int64_t message);
+
+        int64_t decrypt(const RNSInteger& ciphertext);
 
     private:
     
@@ -133,34 +149,34 @@ class RNSBase{
 
 };
  
-class CRTInteger{
+class RNSInteger{
  
     public:
 
         std::vector<Ciphertext> encrypted_digits;
-        RNSBase base; 
+        RNSConfig base; 
 
-        CRTInteger() = default;
+        RNSInteger() = default;
  
-        CRTInteger(int64_t message, const RNSBase& base);
+        RNSInteger(int64_t message, const RNSConfig& base);
   
-        CRTInteger(std::vector<Ciphertext> cts, const RNSBase& base);
+        RNSInteger(std::vector<Ciphertext> cts, const RNSConfig& base);
  
-        CRTInteger(const DigitInteger& other, const RNSBase& base);
+        RNSInteger(const DigitInteger& other, const RNSConfig& base);
   
-        CRTInteger(const CRTInteger& other);
+        RNSInteger(const RNSInteger& other);
 
-        CRTInteger operator+(const CRTInteger& other);
+        RNSInteger operator+(const RNSInteger& other);
 
-        CRTInteger operator+(const int64_t scalar);
+        RNSInteger operator+(const int64_t scalar);
 
-        CRTInteger operator-(const CRTInteger& other);
+        RNSInteger operator-(const RNSInteger& other);
 
-        CRTInteger operator-(const int64_t scalar);
+        RNSInteger operator-(const int64_t scalar);
 
-        CRTInteger operator*(const int64_t scalar);
+        RNSInteger operator*(const int64_t scalar);
 
-        CRTInteger operator*(const CRTInteger& other);
+        RNSInteger operator*(const RNSInteger& other);
  
 };
 
