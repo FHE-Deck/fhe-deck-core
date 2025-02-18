@@ -1,6 +1,6 @@
 #include "fhe/ks_functional_bootstrap.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 
 KSFunctionalBootstrapPublicKey::KSFunctionalBootstrapPublicKey(
@@ -26,9 +26,9 @@ void KSFunctionalBootstrapPublicKey::init(){
     this->ms_from_keyswitch_to_par = LWEModSwitcher(this->key_switch_key->destination, this->lwe_par);
 }
   
-void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_ct_out,
+void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT &lwe_ct_out,
                                                                         std::shared_ptr<FunctionSpecification> acc_in,
-                                                                        const fhe_deck::LWECT &lwe_ct_in,
+                                                                        const LWECT &lwe_ct_in,
                                                                         const PlaintextEncoding &input_encoding, 
                                                                         const PlaintextEncoding &output_encoding) {  
     LWECT lwe_c_N(this->key_switch_key->destination);
@@ -80,7 +80,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(fhe_deck::LWECT &lwe_
 
 
 std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
-        std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const fhe_deck::LWECT& lwe_ct_in,
+        std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in,
         const PlaintextEncoding &input_encoding, 
         const PlaintextEncoding &output_encoding) { 
  
@@ -143,7 +143,7 @@ std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
     LWECT tmp_res(lwe_ct_in); 
     RLWECT plus_res(poly_ct_params);
     RLWECT minus_res(poly_ct_params); 
-    for(std::shared_ptr<fhe_deck::FunctionSpecification>& acc_in : acc_in_vec) { 
+    for(std::shared_ptr<FunctionSpecification>& acc_in : acc_in_vec) { 
         std::shared_ptr<KSFunctionSpecification> acc_in_F = std::static_pointer_cast<KSFunctionSpecification>(acc_in); 
         Polynomial a = acc_in_F->poly_msb_1;
         Polynomial b = acc_in_F->poly_msb_0;

@@ -11,7 +11,7 @@
 
 #include "fhe/functional_bootstrap.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
        
 /**
  * The Bootstrapping algorithm from Liu, Micciancio, Polyakov. Large-Precision Homomorphic Sign Evaluation Using FHEW/TFHE Bootstrapping. https://eprint.iacr.org/2021/1337
@@ -58,10 +58,10 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
     #endif 
 };
 
-}
+} /// End of namespace FHEDeck
 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::LMPFunctionalBootstrapPublicKey)
+CEREAL_REGISTER_TYPE(FHEDeck::LMPFunctionalBootstrapPublicKey)
 #endif 
 
 #endif 

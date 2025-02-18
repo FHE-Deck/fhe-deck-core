@@ -1,6 +1,6 @@
 #include "fhe/fhe_configuration.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 
 BasicBootstrapBuilder::BasicBootstrapBuilder(){
@@ -286,11 +286,11 @@ void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
 
 }
 
- std::shared_ptr<fhe_deck::FHESecretKey> BasicBootstrapBuilder::get_secret_key(){
+ std::shared_ptr<FHESecretKey> BasicBootstrapBuilder::get_secret_key(){
     return this->secret_key;
  }
 
-void BasicBootstrapBuilder::get_bootstrap_public_key(fhe_deck::PublicEvaluationKey& eval_key){
+void BasicBootstrapBuilder::get_bootstrap_public_key(PublicEvaluationKey& eval_key){
     if(is_blind_rotation_key_build){
         eval_key.boot_acc_builder = this->boot_acc_builder;
         eval_key.func_boot_acc_builder = this->func_boot_acc_builder;

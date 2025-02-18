@@ -1,6 +1,6 @@
 #include "ciphertexts/lwe.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
   
 LWEParam::LWEParam(int32_t dim, int64_t modulus){
     this->dim = dim;

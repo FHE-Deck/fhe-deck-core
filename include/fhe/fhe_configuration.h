@@ -16,7 +16,7 @@
 #include "fhe/lmp_functional_bootstrap.h"
 #include "fhe/ks_functional_bootstrap.h"
  
-namespace fhe_deck{
+namespace FHEDeck{
   
 enum class FHENamedParams{ 
     tfhe_11_flood, tfhe_11_NTT, tfhe_11_NTT_flood, tfhe_11_NTT_amortized, tfhe_12_NTT_amortized, lmp_12_NTT_amortized, ntrunium_12_NTT, tfhe_11_KS, tfhe_11_KS_amortized
@@ -235,9 +235,9 @@ class BasicBootstrapBuilder{
   
     void transfer_parameters(const BasicBootstrapBuilder& other);
 
-    std::shared_ptr<fhe_deck::FHESecretKey> get_secret_key();
+    std::shared_ptr<FHEDeck::FHESecretKey> get_secret_key();
 
-    void get_bootstrap_public_key(fhe_deck::PublicEvaluationKey& eval_key);
+    void get_bootstrap_public_key(FHEDeck::PublicEvaluationKey& eval_key);
  
 
     /// @brief Sets the pointers to the secret key in other to the key in this, and marks the flag that the secret key is already generated.
@@ -301,10 +301,8 @@ class FHEConfiguration{
 
     void init_tfhe_11_KS_amortized();
  
-};
- 
+}; 
 
-
-}
+} /// End of namespace FHEDeck
 
 #endif

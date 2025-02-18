@@ -1,6 +1,6 @@
 #include "fhe/ciphertext_sanitization.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 DucasStehleWashingMachine::DucasStehleWashingMachine(
             std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk, 

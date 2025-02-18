@@ -15,7 +15,7 @@
 #include "math/fftw_long_engine.h"
 #endif 
 
-using namespace fhe_deck; 
+using namespace FHEDeck; 
 
 void PolynomialMultiplicationEngineBuilder::set_coef_modulus(const int64_t coef_modulus){
     this->coef_modulus = coef_modulus;

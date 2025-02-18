@@ -1,6 +1,6 @@
 #include "ciphertexts/ntru.h" 
 
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, PolynomialArithmetic arithmetic){
     this->coef_modulus = coef_modulus; 

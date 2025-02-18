@@ -1,6 +1,6 @@
 #include "keyswitch/lwe_to_rlwe_keyswitch.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) {
     dest_param = sk_dest->rlwe_sk->param;
@@ -49,7 +49,7 @@ void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LW
     }
 }
 
-void LWEToRLWEKeySwitchKey::eval_auto(fhe_deck::RLWECT& rlwe_ct_out, const fhe_deck::RLWECT& rlwe_ct_in, uint32_t log2_idx) {
+void LWEToRLWEKeySwitchKey::eval_auto(RLWECT& rlwe_ct_out, const RLWECT& rlwe_ct_in, uint32_t log2_idx) {
     /// Then multiply the auto_a part with the automorphism 
     /// Add the authomorphism of b to the output. 
     //// Yep: (0, auto(b)) + Key(auto(s)) * auto(a) 
@@ -62,8 +62,8 @@ void LWEToRLWEKeySwitchKey::eval_auto(fhe_deck::RLWECT& rlwe_ct_out, const fhe_d
     rlwe_ct_out.add(rlwe_ct_out, auto_b);  
 }
 
-void LWEToRLWEKeySwitchKey::eval_auto_poly(fhe_deck::Polynomial& out_poly,
-                                           const fhe_deck::Polynomial& in_poly, uint32_t idx) {
+void LWEToRLWEKeySwitchKey::eval_auto_poly(FHEDeck::Polynomial& out_poly,
+                                           const FHEDeck::Polynomial& in_poly, uint32_t idx) {
     // we know the degree is a power of 2 
     if (idx == out_poly.degree + 1) {
         // N + 1 automorphism just negates odd entries

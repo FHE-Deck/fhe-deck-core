@@ -6,7 +6,7 @@
 #include "interface/ciphertext.h"   
 
 
-namespace fhe_deck{
+namespace FHEDeck{
 
 /// @brief Forward Declaration of the FHEContext class which is defined in interface/fhe_context.h.
 class FHEContext;
@@ -180,9 +180,7 @@ class RNSInteger{
  
 };
 
-
-
-}// End of namespace fhe_deck
+}// End of namespace FHEDeck
 
  
 #endif 

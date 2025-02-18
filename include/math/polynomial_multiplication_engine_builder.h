@@ -10,7 +10,7 @@
 #include "math/polynomial.h"
 
 
-namespace fhe_deck{
+namespace FHEDeck{
    
 /**
  * @brief This class is used to build a PolynomialMultiplicationEngine object.  
@@ -42,6 +42,6 @@ class PolynomialMultiplicationEngineBuilder{
 };
 
 
-}
+} /// End of namespace FHEDeck
  
 #endif

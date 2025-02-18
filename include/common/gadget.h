@@ -11,9 +11,8 @@
 #include "common/sample.h"
 #include "math/vector.h"
   
-namespace fhe_deck{
-
-
+namespace FHEDeck{
+ 
 class Gadget{
 
     public: 
@@ -256,11 +255,11 @@ class DiscreteGaussianSamplingGadget : public Gadget{
   
 };
  
-}/// End namespace fhe_deck
+}/// End namespace FHEDeck
  
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::SignedDecompositionGadget)
-CEREAL_REGISTER_TYPE(fhe_deck::DiscreteGaussianSamplingGadget) 
+CEREAL_REGISTER_TYPE(FHEDeck::SignedDecompositionGadget)
+CEREAL_REGISTER_TYPE(FHEDeck::DiscreteGaussianSamplingGadget) 
 #endif
 
 

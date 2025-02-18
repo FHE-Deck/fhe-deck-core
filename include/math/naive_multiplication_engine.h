@@ -8,7 +8,7 @@
 
 #include "math/polynomial.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
 /**
  * @brief Implementation of PolynomialMultiplicationEngine. The multiplication is naive. 
  */
@@ -47,7 +47,7 @@ class NaiveNegacyclicMultiplicationEngine : public PolynomialMultiplicationEngin
     void mul(int64_t* out, int64_t* in_1, int64_t* in_2);
 };
 
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "fhe_deck.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 int32_t main(){
     

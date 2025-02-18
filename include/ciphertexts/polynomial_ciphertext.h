@@ -12,7 +12,7 @@
  */
 
 
-namespace fhe_deck{
+namespace FHEDeck{
  
 
 /**
@@ -143,6 +143,6 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     #endif 
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

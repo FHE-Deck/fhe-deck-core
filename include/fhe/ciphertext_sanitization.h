@@ -10,7 +10,7 @@
 #include "ciphertexts/lwe.h"
 #include "fhe/functional_bootstrap.h"
  
-namespace fhe_deck{
+namespace FHEDeck{
   
 /**
  * @brief Interface for public keys used to sanitize a ciphertext. Ciphertexts after sanitization look like fresh ciphertexts. Necessary for circuit privacy among others. 
@@ -144,12 +144,12 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
     #endif 
 };
 
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 /// NOTE: Registering the types for serialization with cereal. 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::DucasStehleWashingMachine)
-CEREAL_REGISTER_TYPE(fhe_deck::KluczniakRandomizedBootstrapping)
+CEREAL_REGISTER_TYPE(FHEDeck::DucasStehleWashingMachine)
+CEREAL_REGISTER_TYPE(FHEDeck::KluczniakRandomizedBootstrapping)
 #endif 
 
 #endif 

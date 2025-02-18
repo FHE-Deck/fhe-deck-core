@@ -11,7 +11,7 @@
 #include "common/sample.h"
 #include "interface/plaintext_encoding.h" 
    
-namespace fhe_deck{
+namespace FHEDeck{
   
 /** 
  * @brief LWE Parameters.  
@@ -472,6 +472,6 @@ class LWEPublicKey{
 };
  
 
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 #endif

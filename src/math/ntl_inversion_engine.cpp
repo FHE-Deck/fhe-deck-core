@@ -1,10 +1,7 @@
-#include "math/ntl_inversion_engine.h"
-//#include <cassert>
-//#include <vector>
+#include "math/ntl_inversion_engine.h" 
 
-using namespace fhe_deck;
-  
-
+using namespace FHEDeck;
+   
 NTLInversionEngine::NTLInversionEngine(const int degree, const int64_t coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;

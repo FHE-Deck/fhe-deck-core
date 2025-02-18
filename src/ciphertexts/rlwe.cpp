@@ -1,6 +1,6 @@
 #include "ciphertexts/rlwe.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 RLWECT::RLWECT(std::shared_ptr<RLWEParam> param){
     this->param = param;   

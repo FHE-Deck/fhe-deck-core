@@ -10,9 +10,8 @@
 #include "interface/plaintext_encoding.h"
 #include "math/polynomial.h"
  
-namespace fhe_deck{
-
-
+namespace FHEDeck{
+ 
 /// @brief A class for implementing rotation polynomials. Rotation polynomials are used as homomorphic accumulators in functional bootstrapping.
 /// @details This class is as a builder, that that takes a function specification and constructs a polynomial that embedds the function and is ready to be used for functional bootstrapping.
 class RotationPoly : public Polynomial{
@@ -102,11 +101,8 @@ public:
     /// @details Sets all coefficients to 0. Its used for example in multivalue bootstrapping, where we change only the const term of this polynomial to an encoding of 1. 
     static RotationPoly rot_one(int64_t degree, int64_t ciphertext_modulus); 
    
-};
+}; 
 
-
-
-
-}
+} /// End of namespace FHEDeck
 
 #endif

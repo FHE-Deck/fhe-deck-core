@@ -1,7 +1,7 @@
 
 #include "fhe/lmp_functional_bootstrap.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 LMPFunctionalBootstrapPublicKey::LMPFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par, 

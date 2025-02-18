@@ -1,6 +1,6 @@
 #include "fhe/blind_rotation.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
     
 VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content){
     this->acc_content = acc_content; 

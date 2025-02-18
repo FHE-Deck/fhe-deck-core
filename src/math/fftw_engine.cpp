@@ -1,6 +1,6 @@
 #include "math/fftw_engine.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 FFTPlan::~FFTPlan(){    
     if(is_init == false){

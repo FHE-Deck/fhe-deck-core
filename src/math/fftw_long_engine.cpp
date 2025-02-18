@@ -1,6 +1,6 @@
 #include "math/fftw_long_engine.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 FFTLongPlan::~FFTLongPlan(){    
     if(is_init == false){

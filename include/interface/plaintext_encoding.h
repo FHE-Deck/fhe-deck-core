@@ -10,14 +10,13 @@
 #include "common/enums.h"  
 #include "common/utils.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
  
 /// @brief Class for encoding and decoding plaintext messages used pre-processing and post-processing in LWE-like encryption decryption procedures. 
 class PlaintextEncoding{
 
 public:
-
-
+ 
     /// @brief Default constructor.
     PlaintextEncoding() = default;
 
@@ -109,6 +108,6 @@ public:
   
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

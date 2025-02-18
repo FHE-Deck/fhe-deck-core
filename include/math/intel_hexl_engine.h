@@ -10,7 +10,7 @@
 #include "math/polynomial.h"   
 #include "hexl/hexl.hpp"  
 
-namespace fhe_deck{
+namespace FHEDeck{
    
 /**
  * @brief Implementation of PolynomialMultiplicationEngine using Intel Hexl NTT. Its evaluation from is PolynomialEvalFormLongInteger
@@ -46,6 +46,6 @@ class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
     void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
 };
  
-}
+} /// End of namespace FHEDeck
 
 #endif

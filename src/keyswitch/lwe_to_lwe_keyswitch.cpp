@@ -1,6 +1,6 @@
 #include "keyswitch/lwe_to_lwe_keyswitch.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
      
 LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){
     origin = sk_origin->param; 

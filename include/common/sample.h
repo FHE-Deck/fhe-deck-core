@@ -10,7 +10,7 @@
 
 #include "global_headers.h"
  
-namespace fhe_deck{
+namespace FHEDeck{
  
 class Distribution{
 
@@ -44,6 +44,6 @@ class StandardRoundedGaussianDistribution : public Distribution{
     int64_t next(); 
 };
  
-}
+} /// End of namespace FHEDeck
 
 #endif

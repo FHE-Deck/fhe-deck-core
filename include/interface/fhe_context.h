@@ -11,7 +11,7 @@
 #include "fhe/fhe_configuration.h"
 #include "common/enums.h" 
    
-namespace fhe_deck{
+namespace FHEDeck{
 
 /// @brief Forward Declaration of the Ciphertext class which is defined in interface/ciphertext.h.
 class Ciphertext;
@@ -251,12 +251,12 @@ class FHEContext{
     Ciphertext load_Ciphertext(std::string file_name)const; 
 };
  
-} /// End of namespace fhe_deck
+} /// End of namespace FHEDeck
  
 /// @brief Overload the << operator for the Ciphertext class. Sents the ciphertext to the output stream.
 /// @param out The output stream
 /// @param c The input ciphertext
 /// @return Reference to the output stream, after the ciphertext has been sent.
-std::ostream& operator<<(std::ostream &out, fhe_deck::Ciphertext &c);
+std::ostream& operator<<(std::ostream &out, FHEDeck::Ciphertext &c);
 
 #endif

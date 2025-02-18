@@ -3,7 +3,7 @@
 #include "math/ntl_inversion_engine.h" 
 #include "math/euclidean_inversion_engine.h"
 
-using namespace fhe_deck; 
+using namespace FHEDeck; 
  
 PolynomialInversionEngineBuilder::PolynomialInversionEngineBuilder(int32_t degree, int64_t coef_modulus){
     this->degree = degree;

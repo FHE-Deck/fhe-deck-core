@@ -1,6 +1,6 @@
 #include "interface/rotation_poly.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 RotationPoly::~RotationPoly(){
     if(is_init){ 

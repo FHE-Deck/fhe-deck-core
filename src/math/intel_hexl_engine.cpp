@@ -1,9 +1,7 @@
 #include "math/intel_hexl_engine.h"
 
-using namespace fhe_deck;
- 
-
-
+using namespace FHEDeck;
+   
 IntelHexlNTTEngine::IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus){ 
     this->degree = degree;
     this->coef_modulus = coef_modulus;

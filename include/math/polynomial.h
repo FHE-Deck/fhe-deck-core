@@ -13,7 +13,7 @@
 typedef double Complex[2];
 typedef long double LongComplex[2];
 
-namespace fhe_deck{
+namespace FHEDeck{
       
 /// Forward declaration if the Polynomial class and PolynomialEvalForm class that used by all other classes.
 /// Both are defined in this file.
@@ -660,13 +660,13 @@ class PolynomialArrayEvalFormLongComplex: public PolynomialArrayEvalForm{
 };
 
 
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 /// NOTE: The following lines are used to register the classes for serialization using the Cereal library.   
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormLong)
-CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormComplex)
-CEREAL_REGISTER_TYPE(fhe_deck::PolynomialArrayEvalFormLongComplex)
+CEREAL_REGISTER_TYPE(FHEDeck::PolynomialArrayEvalFormLong)
+CEREAL_REGISTER_TYPE(FHEDeck::PolynomialArrayEvalFormComplex)
+CEREAL_REGISTER_TYPE(FHEDeck::PolynomialArrayEvalFormLongComplex)
 #endif 
   
 #endif

@@ -17,7 +17,7 @@
 #include "ciphertexts/lwe.h"
 #include "interface/plaintext_encoding.h" 
   
-namespace fhe_deck{
+namespace FHEDeck{
  
 /**
  * @brief RLWEParam class is used to store the parameters of the RLWE encryption scheme.
@@ -509,14 +509,14 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
 
 };
  
-}
+} /// End of namesapce FHEDeck
 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWEParam)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWECT)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWESK)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWEGadgetCT)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWEGadgetSK)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWEParam)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWECT)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWESK)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWEGadgetCT)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWEGadgetSK)
 #endif 
  
 #endif

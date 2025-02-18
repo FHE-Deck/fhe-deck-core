@@ -8,9 +8,8 @@
 #include <NTL/ZZ_pX.h>
 #include <NTL/ZZ_p.h> 
 
-namespace fhe_deck{
-     
-   
+namespace FHEDeck{
+      
 class NTLInversionEngine : public PolynomialInversionEngine{
 
     public: 
@@ -37,6 +36,6 @@ class NTLInversionEngine : public PolynomialInversionEngine{
     NTL::ZZ_pX get_ring_poly(RingType ring, int64_t N, int64_t modulus)const;
 };
   
-}
+} /// End of namespace FHEDeck
 
 #endif 

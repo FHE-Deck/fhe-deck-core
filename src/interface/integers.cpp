@@ -2,7 +2,7 @@
 #include "interface/integers.h"
 #include "interface/fhe_context.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 DigitConfig::DigitConfig(FHEContext& context, int32_t base, int32_t size){
     this->context = context; 
@@ -10,8 +10,7 @@ DigitConfig::DigitConfig(FHEContext& context, int32_t base, int32_t size){
     this->size = size;
     init();
 }
-
-
+ 
 void DigitConfig::init(){ 
     bits_base = Utils::power_times(base, 2); 
     bits_in_plaintext_space = bits_base+1;
@@ -60,8 +59,7 @@ DigitInteger::DigitInteger(int64_t message, const DigitConfig& config){
         encrypted_digits.push_back(this->config.context.encrypt(0, this->config.digit_plaintext_encoding));
     }
 }
-
-
+ 
 DigitInteger::DigitInteger(const DigitConfig& config, const std::vector<Ciphertext>& encrypted_digits){ 
     this->config = config; 
     this->encrypted_digits = encrypted_digits;

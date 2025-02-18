@@ -11,7 +11,7 @@
 
 #include "interface/plaintext_encoding.h" 
 
-namespace fhe_deck{
+namespace FHEDeck{
  
 /**
  * @brief Interface for vector ciphertexts. Intended to be used for homomorphic operations on vectors. Example implementations include RLWE and and NTRU.
@@ -187,6 +187,6 @@ class GadgetVectorCTSK{
     
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

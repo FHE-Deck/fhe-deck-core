@@ -9,7 +9,7 @@
  
 #include "common/utils.h"  
   
-namespace fhe_deck{
+namespace FHEDeck{
 
 class Vector{
     
@@ -139,7 +139,7 @@ class VectorArray{
 
 };
 
-}
+} /// End of namespace FHEDeck
 
 
 #endif 

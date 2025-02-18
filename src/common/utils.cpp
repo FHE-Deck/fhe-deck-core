@@ -1,8 +1,7 @@
 #include "common/utils.h"
  
-using namespace fhe_deck;
- 
-
+using namespace FHEDeck;
+  
 void Utils::cp(int64_t *out, int64_t *in, int32_t size){
     for(int32_t i =0; i < size; ++i){
         out[i] = in[i];

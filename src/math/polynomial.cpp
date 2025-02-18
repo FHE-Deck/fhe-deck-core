@@ -1,7 +1,7 @@
 #include "math/polynomial.h"
 
  
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 void PolynomialMultiplicationEngine::mul(Polynomial &out, const Polynomial &in_1, const Polynomial &in_2){   
     std::shared_ptr<PolynomialEvalForm> eval_in_1 = init_polynomial_eval_form();

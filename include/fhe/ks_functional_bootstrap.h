@@ -9,7 +9,7 @@
 
 #include "fhe/functional_bootstrap.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
  
 /** 
  * @brief The new functional bootstrapping key.
@@ -54,6 +54,6 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
  
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

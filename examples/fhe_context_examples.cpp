@@ -6,7 +6,7 @@
 
 #define assertm(exp, msg) assert(((void)msg, exp))
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 void test_for_default_full_domain_encoding(FHENamedParams param_set){
 

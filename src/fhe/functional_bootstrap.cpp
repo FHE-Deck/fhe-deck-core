@@ -1,6 +1,6 @@
 #include "fhe/functional_bootstrap.h" 
 
-using namespace fhe_deck;
+using namespace FHEDeck;
    
 void FunctionalBootstrapPublicKey::bootstrap(LWECT& lwe_ct_out, std::shared_ptr<FunctionSpecification> acc_in, const LWECT& lwe_ct_in){      
     // 1) Key switch to \ZZ_Q^{n+1}    

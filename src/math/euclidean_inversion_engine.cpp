@@ -1,7 +1,6 @@
 #include "math/euclidean_inversion_engine.h"
- 
-
-using namespace fhe_deck;
+  
+using namespace FHEDeck;
 
 EuclideanInversionEngine::EuclideanInversionEngine(const int32_t degree, const int64_t coef_modulus){
     this->degree = degree;

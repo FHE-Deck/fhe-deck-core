@@ -5,7 +5,7 @@
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 int32_t main(){
 

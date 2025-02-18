@@ -1,7 +1,7 @@
 #include "common/sample.h"
  
 
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 
 void Distribution::fill_array(int64_t *in, int32_t length){

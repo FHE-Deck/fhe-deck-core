@@ -9,7 +9,7 @@
 #include "fftw3.h"
 #include "math/polynomial.h" 
 
-namespace fhe_deck{
+namespace FHEDeck{
     
 /**
  * @brief This class is a wrapper around the FFTW library. It is used to compute the FFT of a polynomial in the ring Z[X]/(X^N+1) or Z[X]/(X^N-1)
@@ -113,9 +113,7 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
  
     void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
 };
-
-
-
-}
+ 
+} /// End of namespace FHEDeck
 
 #endif 

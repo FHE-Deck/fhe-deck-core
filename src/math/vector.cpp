@@ -1,6 +1,6 @@
 #include "math/vector.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
 
  
 Vector::~Vector(){

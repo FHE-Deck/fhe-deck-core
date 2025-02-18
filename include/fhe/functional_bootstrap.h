@@ -17,7 +17,7 @@
 #include "keyswitch/lwe_to_lwe_keyswitch.h" 
 #include "keyswitch/lwe_to_rlwe_keyswitch.h" 
  
-namespace fhe_deck{
+namespace FHEDeck{
   
 /**
  * @brief The FunctionalBootstrapPublicKey class. Class is used to implement functional bootstrapping. 
@@ -88,7 +88,7 @@ class FunctionalBootstrapPublicKey{
 };
   
 
-}
+} /// End of namespace FHEDeck
   
 
 #endif

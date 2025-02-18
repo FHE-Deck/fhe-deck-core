@@ -12,7 +12,7 @@
 #include "interface/rotation_poly.h"
 #include "fhe/blind_rotation.h"
  
-namespace fhe_deck{
+namespace FHEDeck{
 
 /**
  * @brief The CGGIBlindRotationKey class. Implements the blind rotation algorithm from https://eprint.iacr.org/2016/870
@@ -72,10 +72,10 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     uint64_t* init_ternary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
 };
  
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::CGGIBlindRotationKey)
+CEREAL_REGISTER_TYPE(FHEDeck::CGGIBlindRotationKey)
 #endif 
 
 #endif

@@ -7,7 +7,7 @@
  */
 
 
-namespace fhe_deck{
+namespace FHEDeck{
 
 enum class RingType {cyclic, negacyclic};
 
@@ -40,6 +40,6 @@ enum class SanitizationAlgorithm{
     ducas_stehle, kluczniak 
 };
 
-}
+} /// End of namesapce FHEDeck
 
 #endif

@@ -14,9 +14,8 @@
 #include "ciphertexts/vector_ciphertext.h"
 #include "interface/rotation_poly.h"
 
-namespace fhe_deck{
-
-
+namespace FHEDeck{
+ 
 /**
  * @brief Common interface to specify functions for functional bootstrapping. 
  */
@@ -516,15 +515,15 @@ class BlindRotationPublicKey{
 
 };
  
-}/// End of namespace fhe_deck
+}/// End of namespace FHEDeck
 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::KSFunctionSpecificationBuilder)
-CEREAL_REGISTER_TYPE(fhe_deck::PolynomialSpecificationBuilder)
-CEREAL_REGISTER_TYPE(fhe_deck::RLWEAccumulatorBuilder)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUAccumulatorBuilder) 
-CEREAL_REGISTER_TYPE(fhe_deck::RLWEBlindRotateOutputBuilder)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUBlindRotateOutputBuilder)
+CEREAL_REGISTER_TYPE(FHEDeck::KSFunctionSpecificationBuilder)
+CEREAL_REGISTER_TYPE(FHEDeck::PolynomialSpecificationBuilder)
+CEREAL_REGISTER_TYPE(FHEDeck::RLWEAccumulatorBuilder)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUAccumulatorBuilder) 
+CEREAL_REGISTER_TYPE(FHEDeck::RLWEBlindRotateOutputBuilder)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUBlindRotateOutputBuilder)
 #endif 
 
 #endif 

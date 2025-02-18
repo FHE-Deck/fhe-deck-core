@@ -11,9 +11,8 @@
 #include "ciphertexts/lwe.h"
 #include "common/enums.h"  
 #include "interface/plaintext_encoding.h"  
- 
-
-namespace fhe_deck{
+  
+namespace FHEDeck{
 
 /// @brief Forward Declaration of the FHEContext class which is defined in interface/fhe_context.h.
 class FHEContext;
@@ -88,24 +87,24 @@ class Ciphertext{
         Ciphertext operator*(int64_t b) const; 
 };
  
-} /// End of namesapce fhe_deck
+} /// End of namesapce FHEDeck
   
 /// @brief Addition operator where we have the int64_t b on the left hand side.
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator+(int64_t b, const fhe_deck::Ciphertext& ct);
+FHEDeck::Ciphertext operator+(int64_t b, const FHEDeck::Ciphertext& ct);
 
 /// @brief Subtraction operator where we have the int64_t b on the left hand side.
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator-(int64_t b, const fhe_deck::Ciphertext& ct);
+FHEDeck::Ciphertext operator-(int64_t b, const FHEDeck::Ciphertext& ct);
 
 /// @brief Multiplication operator where we have the int64_t b on the left hand side.
 /// @param b The input scalar
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
-fhe_deck::Ciphertext operator*(int64_t b, const fhe_deck::Ciphertext& ct);
+FHEDeck::Ciphertext operator*(int64_t b, const FHEDeck::Ciphertext& ct);
 
 #endif

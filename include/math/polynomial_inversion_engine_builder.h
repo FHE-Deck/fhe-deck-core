@@ -10,7 +10,7 @@
 
 #include "math/polynomial.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
     
 /**
  * @brief This class is used to build a PolynomialInversionEngine object.  
@@ -31,6 +31,6 @@ class PolynomialInversionEngineBuilder{
     std::shared_ptr<PolynomialInversionEngine> build(); 
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

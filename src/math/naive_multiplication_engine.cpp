@@ -1,6 +1,6 @@
 #include "math/naive_multiplication_engine.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
 NaiveNegacyclicMultiplicationEngine::NaiveNegacyclicMultiplicationEngine(int32_t degree, int64_t coef_modulus){
     this->degree = degree;

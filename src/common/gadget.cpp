@@ -1,6 +1,6 @@
 #include "common/gadget.h"
  
-using namespace fhe_deck;
+using namespace FHEDeck;
 
  
 SignedDecompositionGadget::SignedDecompositionGadget(int32_t degree, int64_t modulus, int64_t base){

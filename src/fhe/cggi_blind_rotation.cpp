@@ -1,6 +1,6 @@
 #include "fhe/cggi_blind_rotation.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
   
  
 

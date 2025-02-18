@@ -6,7 +6,7 @@
  */
 #include "global_headers.h"
   
-namespace fhe_deck{
+namespace FHEDeck{
 
 class Utils{
 
@@ -108,8 +108,7 @@ class LongIntegerMultipler{
  
     uint64_t mul(uint64_t in_1, uint64_t in_2);
 };
-
-
-}
+ 
+} /// End of namespace FHEDeck
 
 #endif

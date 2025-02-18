@@ -5,7 +5,7 @@
 
 #include "math/polynomial.h"
 
-namespace fhe_deck{
+namespace FHEDeck{
     
 class EuclideanInversionEngine : public PolynomialInversionEngine{
 
@@ -35,6 +35,6 @@ class EuclideanInversionEngine : public PolynomialInversionEngine{
     int64_t modular_inverse(int64_t a, int64_t m) const;
 };
 
-}
+} /// End of namespace FHEDeck
 
 #endif

@@ -2,7 +2,7 @@
 #include "interface/integers.h"
 #include "interface/ciphertext.h"
 
-using namespace fhe_deck;
+using namespace FHEDeck;
  
 FHEContext::FHEContext(){
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration());
@@ -142,33 +142,15 @@ int64_t FHEContext::decrypt(const RNSInteger& ct)const{
 PlaintextEncoding FHEContext::get_default_plaintext_encoding()const{
     return config->eval_key.default_encoding;
 }
-
-/*
-void FHEContext::set_default_plaintext_encoding(PlaintextEncodingType type, int64_t plaintext_space){
-    this->current_encoding = PlaintextEncoding(type, plaintext_space, current_encoding.get_ciphertext_modulus()); 
-}
-*/
  
 int64_t FHEContext::get_default_plaintext_space()const{
     return config->eval_key.default_encoding.get_plaintext_space();
 }
-
-/* 
-void FHEContext::set_default_plaintext_space(int64_t plaintext_space){
-    this->current_encoding = PlaintextEncoding(current_encoding.get_type(), plaintext_space, current_encoding.get_ciphertext_modulus());  
-}
-*/
-
+ 
 PlaintextEncodingType FHEContext::get_default_plaintext_encoding_type()const{
     return config->eval_key.default_encoding.get_type();
 }
-
-/*
-void FHEContext::set_default_message_encoding_type(PlaintextEncodingType type){ 
-    this->current_encoding = PlaintextEncoding(type, current_encoding.get_plaintext_space(), current_encoding.get_ciphertext_modulus());  
-}
-*/
-   
+  
 HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding)const{
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
@@ -192,22 +174,9 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }   
-    if(lut.input_encoding != ct_in.encoding){
-        std::cout << "lut.input_encoding: " << lut.input_encoding.get_plaintext_space() << std::endl;
-        std::cout << "ct_in.encoding: " << ct_in.encoding.get_plaintext_space() << std::endl;
-        std::cout << "lut..get_ciphertext_modulus(): " << lut.input_encoding.get_ciphertext_modulus() << std::endl;
-        std::cout << "ct_in..get_ciphertext_modulus(): " << ct_in.encoding.get_ciphertext_modulus() << std::endl;
-        std::cout << "lut..get_type(): " << (int32_t)lut.input_encoding.get_type() << std::endl;
-        std::cout << "ct_in..get_type(): " << (int32_t)ct_in.encoding.get_type() << std::endl;
+    if(lut.input_encoding != ct_in.encoding){ 
         throw std::logic_error("Input encoding of the accumulator does not match the encoding of the input ciphertext!");
-    }
-    /*
-    if(lut.output_encoding != output_encoding){
-        std::cout << "lut.output_encoding: " << lut.output_encoding.get_plaintext_space() << std::endl;
-        std::cout << "output_encoding: " << output_encoding.get_plaintext_space() << std::endl;
-        throw std::logic_error("Output encoding of the accumulator does not match the output encoding!");
-    }
-    */
+    } 
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
     if(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain){     
         config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding, lut.output_encoding);
@@ -227,8 +196,7 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
 std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const{
     if(lut_vec.empty()) throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: Empty HomomorphicAccumulator Vector!");
     if(!config->eval_key.is_bootstrap_pk_set) throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: No Public Key Initialized!");  
-    
-    
+     
     /// NOTE: We are guaranteed that at least one element exists
     PlaintextEncoding output_encoding = lut_vec[0].output_encoding;
     for(HomomorphicAccumulator& lut: lut_vec){ 

@@ -18,7 +18,7 @@
 #include "math/polynomial_inversion_engine_builder.h"
 #include "math/polynomial_multiplication_engine_builder.h"
  
-namespace fhe_deck{
+namespace FHEDeck{
  
 /**
  * @brief NTRUParam class is used to store the parameters of the NTRU encryption scheme.
@@ -439,14 +439,14 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     std::vector<std::shared_ptr<NTRUCT>> ext_enc(const Polynomial &msg);
 };
  
-} /// End of namespace fhe_deck
+} /// End of namespace FHEDeck
 
 #if defined(USE_CEREAL)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUParam)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUCT)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUSK)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetCT)
-CEREAL_REGISTER_TYPE(fhe_deck::NTRUGadgetSK)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUParam)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUCT)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUSK)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUGadgetCT)
+CEREAL_REGISTER_TYPE(FHEDeck::NTRUGadgetSK)
 #endif 
 
 

@@ -9,7 +9,7 @@
  
 #include "ciphertexts/lwe.h"  
   
-namespace fhe_deck{
+namespace FHEDeck{
   
 class LWEToLWEKeySwitchKey{
 
@@ -97,7 +97,7 @@ class LWEToLWEKeySwitchKey{
 
 }; 
  
-} /// End of nameespace fhe_deck
+} /// End of nameespace FHEDeck
 
 #endif
  
