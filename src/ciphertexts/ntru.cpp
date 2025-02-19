@@ -10,6 +10,7 @@ NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, 
     init_mul_engine();
 }
         
+/*
 NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->size = ring_degree;
     this->coef_modulus = coef_modulus; 
@@ -17,6 +18,7 @@ NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, std::shared_ptr<Polyn
     this->arithmetic = mul_engine->type;
     this->is_mul_engine_init = true;
 }
+*/
 
 NTRUParam::NTRUParam(NTRUParam &other){ 
     throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 

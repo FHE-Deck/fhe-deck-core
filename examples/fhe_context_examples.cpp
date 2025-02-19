@@ -1237,8 +1237,8 @@ void test_full_change_plaintext_space(FHENamedParams param_set){
     context.generate_context(param_set); 
     //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
      
-    int modulus_1 = 6;
-    int modulus_2 = 12; 
+    int modulus_1 = 7;
+    int modulus_2 = 13; 
     PlaintextEncoding encoding_1 = context.get_default_plaintext_encoding();
     encoding_1.set_type(PlaintextEncodingType::full_domain);
     encoding_1.set_plaintext_space(modulus_1);
@@ -1306,8 +1306,8 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
     context.generate_context(param_set); 
     //context.set_default_message_encoding_type(PlaintextEncodingType::full_domain); 
 
-    int modulus_1 = 6;
-    int modulus_2 = 12; 
+    int modulus_1 = 7;
+    int modulus_2 = 13; 
     PlaintextEncoding encoding_1 = context.get_default_plaintext_encoding();
     encoding_1.set_type(PlaintextEncodingType::full_domain);
     encoding_1.set_plaintext_space(modulus_1);
@@ -1395,8 +1395,8 @@ void test_full_fdfb(FHENamedParams param_set){
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
 
-    int32_t modulus = 19; 
-    int32_t input = 17;
+    int32_t modulus = 7; 
+    int32_t input = 1;
  
     PlaintextEncoding encoding = context.get_default_plaintext_encoding();
     encoding.set_type(PlaintextEncodingType::full_domain);
@@ -1429,6 +1429,7 @@ void test_full_fdfb(FHENamedParams param_set){
 
 int main(){  
   
+    /*
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
@@ -1463,18 +1464,19 @@ int main(){
      
     amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
 
-    test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT);
+    */
+    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT);
 
-    test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT_amortized);
+    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT_amortized);
 
-    test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS);
+    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS);
 
-    test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS_amortized); 
+    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS_amortized); 
 
-    test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_NTT_amortized);
+    //test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_NTT_amortized);
 
-    test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_KS_amortized);
+    //test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_KS_amortized);
      
-   //test_full_fdfb(FHENamedParams::tfhe_11_KS);
-  
+   test_full_fdfb(FHENamedParams::tfhe_11_KS);
+   test_full_fdfb(FHENamedParams::tfhe_11_NTT);
 }

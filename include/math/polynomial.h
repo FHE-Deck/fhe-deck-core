@@ -170,7 +170,7 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
     /// TODO: Check if eval_long can be initialized in the constructor (there may be no reason to init it from the outside)
     PolynomialEvalFormLongInteger(int64_t* eval_long, int32_t size, int64_t coef_modulus);
 
-    void zeroize();
+    void zeroize()override;
 
     void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
@@ -205,7 +205,7 @@ class PolynomialEvalFormComplex : public PolynomialEvalForm{
     /// @param coef_modulus The coefficient modulus
     PolynomialEvalFormComplex(Complex* eval, int32_t size);
 
-    void zeroize();
+    void zeroize()override;
 
     void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 
@@ -240,7 +240,7 @@ class PolynomialEvalFormLongComplex : public PolynomialEvalForm{
     /// @param coef_modulus The coefficient modulus
     PolynomialEvalFormLongComplex(LongComplex* eval, int32_t size);
 
-    void zeroize();
+    void zeroize()override;
 
     void add(PolynomialEvalForm &out, const PolynomialEvalForm &other)const override;
 

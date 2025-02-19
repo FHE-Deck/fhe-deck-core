@@ -325,7 +325,6 @@ void FHEContext::read_public_key(std::ifstream &is){
     #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is);  
     iarchive(config->eval_key);    
-    current_encoding = config->eval_key.default_encoding;
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
@@ -345,22 +344,26 @@ void FHEContext::load_public_key(std::string file_name){
 }
 
 void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{
+    /// TODO: Implement (the previous version is deprecated)
     if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("No Public Key Initialized!"); 
     #if defined(USE_CEREAL)
-    cereal::BinaryOutputArchive oarchive(os);   
-    oarchive(ct.lwe_c); 
+    throw std::logic_error("Not implemented!"); 
+    //cereal::BinaryOutputArchive oarchive(os);   
+    //oarchive(ct.lwe_c); 
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
 }
 
 Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{
+    /// TODO: Implement (the previous version is deprecated)
     #if defined(USE_CEREAL)
-    cereal::BinaryInputArchive iarchive(is);  
-    std::shared_ptr<LWECT> ct;
-    iarchive(ct);
-    Ciphertext out(ct, this->current_encoding, this);
-    return out;
+    throw std::logic_error("Not implemented!"); 
+    //cereal::BinaryInputArchive iarchive(is);  
+    //std::shared_ptr<LWECT> ct;
+    //iarchive(ct);
+    //Ciphertext out(ct, this->current_encoding, this);
+    //return out;
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
