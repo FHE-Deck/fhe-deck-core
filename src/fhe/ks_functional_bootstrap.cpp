@@ -30,7 +30,8 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT &lwe_ct_out,
                                                                         std::shared_ptr<FunctionSpecification> acc_in,
                                                                         const LWECT &lwe_ct_in,
                                                                         const PlaintextEncoding &input_encoding, 
-                                                                        const PlaintextEncoding &output_encoding) {  
+                                                                        const PlaintextEncoding &output_encoding) {   
+
     LWECT lwe_c_N(this->key_switch_key->destination);
     key_switch_key->lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in); 
     lwe_c_N.param = ms_from_keyswitch_to_par.to;
@@ -83,7 +84,7 @@ std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
         std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in,
         const PlaintextEncoding &input_encoding, 
         const PlaintextEncoding &output_encoding) { 
- 
+  
     LWECT lwe_c_N(this->key_switch_key->destination);
     key_switch_key->lwe_to_lwe_key_switch(lwe_c_N, lwe_ct_in); 
     lwe_c_N.param = ms_from_keyswitch_to_par.to;
@@ -101,8 +102,7 @@ std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
         skip =  (poly_ct_params->size / input_encoding.get_plaintext_space());    
         ones_in_pad_poly =  (poly_ct_params->size / input_encoding.get_plaintext_space());   
         samples = input_encoding.get_plaintext_space();   
-    }  
-    //std::shared_ptr<VectorCTAccumulator> acc_padding = this->prepared_acc_builder->get_pad_poly(output_encoding);   
+    }     
     Polynomial pad_poly_0(poly_ct_params->size, poly_ct_params->coef_modulus);
     pad_poly_0.zeroize();
     uint64_t scal = output_encoding.get_ciphertext_modulus() / (2 * output_encoding.get_plaintext_space());

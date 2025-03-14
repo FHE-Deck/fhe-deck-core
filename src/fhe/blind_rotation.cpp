@@ -19,41 +19,45 @@ PolynomialSpecification::PolynomialSpecification(RotationPoly rot_poly){
     this->rot_poly = rot_poly;
     this->rot_poly.to_amortization_form(); 
 }
- 
+  
+
 KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, long)> f, long dim,
                                               long coef_modulus, PlaintextEncoding input_encoding){  
+ 
     poly_msb_0 = Polynomial(dim, coef_modulus); 
     poly_msb_0.zeroize(); 
     poly_msb_1 = Polynomial(dim, coef_modulus);
-    poly_msb_1.zeroize(); 
- 
+    poly_msb_1.zeroize();  
+    int32_t two_dim = 2 * dim;            
     if(input_encoding.get_plaintext_space() % 2 == 0){
-        int32_t skip = 2*(dim/input_encoding.get_plaintext_space());
-        int32_t half_plaintext_space = input_encoding.get_plaintext_space() / 2; 
-        for(long i = 0; i < half_plaintext_space; i++) {   
-            poly_msb_0.coefs[skip * i] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space());
-            poly_msb_1.coefs[skip * i] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
-        }
-    }else{
-        int32_t skip = (dim/input_encoding.get_plaintext_space());
+        int32_t skip = (int32_t)round(2*(dim/input_encoding.get_plaintext_space()));
+        int32_t half_plaintext_space = input_encoding.get_plaintext_space() / 2;  
+        for(long i = 0; i < half_plaintext_space; ++i) {    
+            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space());  
+        }   
+        for(long i = half_plaintext_space; i < input_encoding.get_plaintext_space(); ++i) {          
+            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space()); 
+        }   
+    }else{ 
+        int32_t skip = (int32_t)round(dim/input_encoding.get_plaintext_space()); 
+        int32_t two_skip = 2 * skip; 
         /// NOTE: this is the floor of the half of the plaintext space, actually. (One tick is missing)
-        int32_t half_plaintext_space = (input_encoding.get_plaintext_space()-1)/2; 
-        for(long i = 0; i < half_plaintext_space; i+=1) {    
-            poly_msb_0.coefs[skip * (2*i+1)] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space()); 
-            poly_msb_0.coefs[skip * (2*i+2)] = -f(half_plaintext_space - i - 1, input_encoding.get_plaintext_space()); 
-        } 
-        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space());
-        for(long i = 0; i < half_plaintext_space; i+=1) {      
-            poly_msb_1.coefs[skip * 2*i] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
-            poly_msb_1.coefs[skip * 2*i+1] = f(input_encoding.get_plaintext_space() - i - 1, input_encoding.get_plaintext_space());
-        }
-  
-        poly_msb_1.coefs[skip * (2* half_plaintext_space)] = f(half_plaintext_space, input_encoding.get_plaintext_space());
+        int32_t half_plaintext_space = (input_encoding.get_plaintext_space()-1)/2;  
+        for(long i = 0; i < half_plaintext_space; ++i) {   
+            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space()); 
+            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = -f(i, input_encoding.get_plaintext_space()); 
+        }   
+        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space()); 
+        for(long i = half_plaintext_space+1; i < input_encoding.get_plaintext_space(); ++i) {        
+            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space());
+            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = f(i, input_encoding.get_plaintext_space()); 
+        }   
+        poly_msb_1.coefs[dim - skip] = f(half_plaintext_space, input_encoding.get_plaintext_space()); 
     }
     Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
     Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus);  
 }  
-  
+ 
 PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){
     this->degree = degree;
 }

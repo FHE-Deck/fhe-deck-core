@@ -200,6 +200,7 @@ target_sources(fhe_deck PRIVATE
     ${SRC_COMMON} 
     ${SRC_FHE}
 )
+ 
 
 # Target Link libraries 
 target_link_libraries(fhe_deck PUBLIC ${ntl_link} ${fftw_link} ${fftwl_link} ${intelhexl_link})
@@ -208,8 +209,7 @@ get_target_property(deps fhe_deck INTERFACE_LINK_LIBRARIES)
 message(STATUS "Used dependencies for fhe_deck: ${deps}")
  
 
-### Add Subdirectories
-
+### Add Subdirectories 
 set(USE_EXAMPLES FALSE CACHE BOOL "Choose whether to compile examples.")
 message("--- USE_EXAMPLES: " ${USE_EXAMPLES})
 if(USE_EXAMPLES)

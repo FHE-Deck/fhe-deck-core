@@ -178,7 +178,7 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
         throw std::logic_error("Input encoding of the accumulator does not match the encoding of the input ciphertext!");
     } 
     std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
-    if(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain){     
+    if(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain){      
         config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding, lut.output_encoding);
     }else if(ct_in.encoding.get_type() == PlaintextEncodingType::partial_domain){   
         config->eval_key.bootstrap_pk->bootstrap(*ct_out,  lut.boot_acc, *ct_in.lwe_c); 
