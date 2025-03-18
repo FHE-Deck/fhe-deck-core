@@ -29,6 +29,9 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
     poly_msb_1 = Polynomial(dim, coef_modulus);
     poly_msb_1.zeroize();  
     int32_t two_dim = 2 * dim;            
+    //std::cout << "KSFunctionSpecification::KSFunctionSpecification " << std::endl; 
+    //std::cout << "two_dim: " << two_dim << std::endl;
+
     if(input_encoding.get_plaintext_space() % 2 == 0){
         int32_t skip = (int32_t)round(2*(dim/input_encoding.get_plaintext_space()));
         int32_t half_plaintext_space = input_encoding.get_plaintext_space() / 2;  
@@ -40,19 +43,35 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
         }   
     }else{ 
         int32_t skip = (int32_t)round(dim/input_encoding.get_plaintext_space()); 
-        int32_t two_skip = 2 * skip; 
+        int32_t two_skip = 2 * skip;
+        //std::cout << "skip: " << skip << std::endl; 
+        //std::cout << "2 * skip: " << two_skip << std::endl; 
         /// NOTE: this is the floor of the half of the plaintext space, actually. (One tick is missing)
         int32_t half_plaintext_space = (input_encoding.get_plaintext_space()-1)/2;  
         for(long i = 0; i < half_plaintext_space; ++i) {   
+            //std::cout << "poly_msb_0.coefs[" << dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip 
+            //    << "] = -f(" << i << ", input_encoding.get_plaintext_space()) = " << -f(i, input_encoding.get_plaintext_space()) << std::endl; 
+            //std::cout << "poly_msb_0.coefs[" << dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip 
+            //    << "] = -f(" << i << ", input_encoding.get_plaintext_space()) = " << -f(i, input_encoding.get_plaintext_space()) << std::endl;
+
             poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space()); 
             poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = -f(i, input_encoding.get_plaintext_space()); 
-        }   
-        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space()); 
+        }
+           
+        //std::cout << "poly_msb_0.coefs[0] = -f(" << half_plaintext_space << ", input_encoding.get_plaintext_space()); (middle)" << std::endl;
+        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space());  
+        //std::cout << "poly_msb_1.coefs[" << dim - skip << "] = f(" << half_plaintext_space << ", input_encoding.get_plaintext_space()); (middle)" << std::endl;
+        poly_msb_1.coefs[dim - skip] = f(half_plaintext_space, input_encoding.get_plaintext_space()); 
+
         for(long i = half_plaintext_space+1; i < input_encoding.get_plaintext_space(); ++i) {        
+            //std::cout << "poly_msb_1.coefs[" << two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip
+            //<< "] = f(" << i << ", input_encoding.get_plaintext_space()) = " << f(i, input_encoding.get_plaintext_space()) << std::endl; 
+            //std::cout << "poly_msb_1.coefs[" << two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip
+            //<< "] = f(" << i << ", input_encoding.get_plaintext_space()) = " << f(i, input_encoding.get_plaintext_space()) << std::endl; 
+
             poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space());
             poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = f(i, input_encoding.get_plaintext_space()); 
         }   
-        poly_msb_1.coefs[dim - skip] = f(half_plaintext_space, input_encoding.get_plaintext_space()); 
     }
     Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
     Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus);  

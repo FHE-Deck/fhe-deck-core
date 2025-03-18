@@ -20,7 +20,7 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
   
     std::shared_ptr<LWEToRLWEKeySwitchKey> rlwe_ksk;
     std::shared_ptr<RLWEParam> poly_ct_params;
-
+  
     KSFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par,  
         std::shared_ptr<BlindRotationPublicKey> blind_rotation_key, 
@@ -28,6 +28,7 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         std::shared_ptr<LWEToRLWEKeySwitchKey> key_switch_key_rlwe,
         std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder,
         std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder);
+ 
 
     void init();
 
@@ -51,6 +52,15 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
         init();
     } 
     #endif 
+
+    private:
+
+    Polynomial build_pad_poly(int32_t dimension, int64_t coef_modulus, int32_t plaintext_modulus);
+
+    Polynomial build_one_poly(int32_t dimension, int64_t coef_modulus, int64_t value);
+
+    Polynomial build_sign_poly(int32_t dimension, int64_t coef_modulus);
+
  
 };
 
