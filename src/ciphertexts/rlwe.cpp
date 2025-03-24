@@ -277,16 +277,7 @@ void RLWESK::key_gen(){
     this->sk_poly_eval = param->mul_engine->init_polynomial_eval_form();  
     this->sk_poly.to_eval(*this->sk_poly_eval, param->mul_engine); 
 }
-
-RLWESK::RLWESK(const RLWESK &other){
-    throw std::runtime_error("RLWESK::RLWESK(const RLWESK &other): Don't copy the secret key!"); 
-}
-
-RLWESK& RLWESK::operator=(const RLWESK other){  
-    throw std::runtime_error("RLWESK::operator=(const RLWESK other): Don't copy the secret key!"); 
-    return *this;
-}
-  
+ 
 void RLWESK::encrypt(VectorCT &out, const Vector &m){  
     RLWECT& out_cast = static_cast<RLWECT&>(out);
     if(m.size < param->size){
@@ -379,16 +370,7 @@ RLWEGadgetSK::RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWES
     this->vector_ct_param = rlwe_sk->param;
     this->rlwe_sk = rlwe_sk; 
 }
-
-RLWEGadgetSK& RLWEGadgetSK::operator=(const RLWEGadgetSK other){  
-    throw std::runtime_error("RLWEGadgetSK::operator=(const RLWEGadgetSK other): Don't copy the secret key!");
-    return *this;
-}
  
-RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other){ 
-    throw std::runtime_error("RLWEGadgetSK::RLWEGadgetSK(const RLWEGadgetSK &other): Don't copy the secret key!");  
-}
-
 std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Polynomial &msg){
     std::vector<std::shared_ptr<RLWECT>> ext_ct; 
     std::shared_ptr<Polynomial> msg_cpy(msg.clone()); 

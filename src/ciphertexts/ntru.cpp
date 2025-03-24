@@ -9,17 +9,7 @@ NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, 
     this->arithmetic = arithmetic;   
     init_mul_engine();
 }
-        
-/*
-NTRUParam::NTRUParam(int32_t degree, uint64_t ring_degree, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    this->size = ring_degree;
-    this->coef_modulus = coef_modulus; 
-    this->mul_engine = mul_engine; 
-    this->arithmetic = mul_engine->type;
-    this->is_mul_engine_init = true;
-}
-*/
-
+         
 NTRUParam::NTRUParam(NTRUParam &other){ 
     throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 
 }
@@ -199,16 +189,7 @@ void NTRUSK::key_gen(){
         has_inverse = inv_engine->inv(this->inv_sk, this->sk);  
     }while(!has_inverse);      
 }  
-  
-NTRUSK::NTRUSK(const NTRUSK &other){
-    throw std::runtime_error("NTRUSK::NTRUSK(const NTRUSK &other): Don't copy the secret key!"); 
-}
-
-NTRUSK& NTRUSK::operator=(const NTRUSK other){  
-    throw std::runtime_error("NTRUSK::operator=(const NTRUSK other): Don't copy the secret key!"); 
-    return *this;
-}
-  
+   
 void NTRUSK::encrypt(VectorCT &out, const Vector &m){  
     NTRUCT& out_cast = static_cast<NTRUCT&>(out);
     if(m.size < param->size){
@@ -325,16 +306,7 @@ NTRUGadgetSK::NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUS
     this->sk = sk; 
     this->secret_key = sk;
 }
-
-NTRUGadgetSK& NTRUGadgetSK::operator=(const NTRUGadgetSK other){  
-    throw std::runtime_error("NTRUGadgetSK::operator=(const NTRUGadgetSK other): Don't copy the secret key!");
-    return *this;
-}
  
-NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other){ 
-    throw std::runtime_error("NTRUGadgetSK::NTRUGadgetSK(const NTRUGadgetSK &other): Don't copy the secret key!");  
-}
-  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){     
     Polynomial msg_poly(msg.vec, sk->param->size, sk->param->coef_modulus);
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
@@ -369,8 +341,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const uint64_t 
     }
     return kdm_gadget_encrypt(msg_poly);
 } 
- 
-
+  
 std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const Polynomial &msg){      
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
@@ -387,8 +358,7 @@ std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const uint6
     }
     return extended_encrypt(msg_poly);
 }
-
-
+ 
 std::vector<std::shared_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(const Polynomial &msg){
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct;     
     std::shared_ptr<Polynomial> msg_cpy(msg.clone());  

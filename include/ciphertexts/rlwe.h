@@ -32,10 +32,8 @@ class RLWEParam : public PolynomialCTParam{
     /// @brief Indicates the implementation of the multiplication engine. Used to deserialize the RLWEParm object. This way we don't need to serialize the engine itself.
     PolynomialArithmetic arithmetic = PolynomialArithmetic::ntt64;
     /// @brief The polynomial multiplication engine. 
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
-    /// @brief Indicates if the multiplication engine is initialized. Used to avoid multiple initializations.
-  
-
+    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine; 
+   
     ~RLWEParam() = default; 
 
     RLWEParam() = default; 
@@ -357,13 +355,10 @@ class RLWESK : public VectorCTSK{
     /// @param key_type The Key distribution type.
     /// @param noise_stddev The standard deviation of the noise.
     RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, double noise_stddev); 
-  
-    /// @brief Throw an exception.
-    /// @param other 
-    RLWESK(const RLWESK &other);
-
-    /// @brief Throw an exception.
-    RLWESK& operator=(const RLWESK other);
+ 
+    RLWESK(const RLWESK &other) = delete;
+ 
+    RLWESK& operator=(const RLWESK other) = delete;
   
     /// @brief The encryption function. Encrypts the message m, and stores the result in out.
     /// @param out The resulting ciphertext. It is assumed the object is properly initialized.
@@ -454,15 +449,10 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @param gadget The gadget decomposition object.
     /// @param rlwe_sk The RLWE secret key object.
     RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWESK> rlwe_sk);
-
-    /// @brief Throws an exception.
-    /// @param other 
-    RLWEGadgetSK(const RLWEGadgetSK &other);
-
-    /// @brief Throws an exception
-    /// @param other 
-    /// @return 
-    RLWEGadgetSK& operator=(const RLWEGadgetSK other);
+ 
+    RLWEGadgetSK(const RLWEGadgetSK &other) = delete;
+ 
+    RLWEGadgetSK& operator=(const RLWEGadgetSK other) = delete;
        
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.

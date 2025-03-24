@@ -67,7 +67,7 @@ class FHEContext{
     /// @param message The message to be encrypted
     /// @param encoding Use this plaintext encoding instead of the default one. 
     /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt(int64_t message, PlaintextEncoding encoding)const; 
+    Ciphertext encrypt(int64_t message, const PlaintextEncoding& encoding)const; 
 
     /// @brief Encrypts a message using the default plaintext encoding. Requires the secret key.
     /// @param message The message to be encrypted 
@@ -96,7 +96,7 @@ class FHEContext{
     /// @param message The message to be encrypted
     /// @param encoding Use this plaintext encoding instead of the default one. 
     /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt_public(int64_t message, PlaintextEncoding encoding)const; 
+    Ciphertext encrypt_public(int64_t message, const PlaintextEncoding& encoding)const; 
 
     /// @brief Encrypts a message using the default plaintext encoding. Requires the public key.
     /// @param message The message to be encrypted 
@@ -148,20 +148,23 @@ class FHEContext{
     /// @param output_encoding The encoding of the plaintext space for the ciphertext output from a function
     /// @return The homomorphic accumulator
     /// @note Use this function if the intended input and output encodings are different from the current context default.
-    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding)const;
+    HomomorphicAccumulator setup_function(
+        const std::function<int64_t(int64_t)>& f, 
+        const PlaintextEncoding& input_encoding, 
+        const PlaintextEncoding& output_encoding)const;
  
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded
     /// @param encoding The encoding of the plaintext space for the ciphertext input and output to a function
     /// @return The homomorphic accumulator
     /// @note Use this function if the intended input and output encoding is different from the current context default.
-    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding)const;
+    HomomorphicAccumulator setup_function(const std::function<int64_t(int64_t)>& f, const PlaintextEncoding& encoding)const;
 
     /// @brief Generates a homomoprhic Accumulator that embedds the function f
     /// @param f The function to be embedded 
     /// @return The homomorphic accumulator
     /// @note The the fuction uses the default plaintext encoding for both input and output encoding.
-    HomomorphicAccumulator setup_function(std::function<int64_t(int64_t)> f)const;
+    HomomorphicAccumulator setup_function(const std::function<int64_t(int64_t)>& f)const;
  
     /// @brief Evaluate the homomoprhic accumulator on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped.
@@ -173,12 +176,12 @@ class FHEContext{
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param output_encoding The plaintext encoding (if different from the default one). Input encoding is defined in ct_in
     /// @return The bootstrapped ciphertext
-    Ciphertext eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding)const;
+    Ciphertext eval(const Ciphertext& ct_in, const std::function<int64_t(int64_t)>& f, const PlaintextEncoding& output_encoding)const;
   
     /// @brief Evaluate the function on the input ciphertext. This runs the function bootstrapping algorithm.
     /// @param ct_in The input ciphertext to be bootstrapped. 
     /// @return The bootstrapped ciphertext 
-    Ciphertext eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f)const;
+    Ciphertext eval(const Ciphertext& ct_in, const std::function<int64_t(int64_t)>& f)const;
     
     /// @brief Sanitize the input ciphertext.  
     /// @param ct_in The input ciphertext to be sanitized.
@@ -189,18 +192,21 @@ class FHEContext{
     /// @param ct_in The input ciphertext to be bootstrapped.
     /// @param luts The vector of homomorphic accumulators
     /// @return A vector of ciphertexts correspondng to the accumulator evaluations
-    std::vector<Ciphertext> eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> luts)const;
+    std::vector<Ciphertext> eval(const Ciphertext& ct_in, const std::vector<HomomorphicAccumulator>& luts)const;
  
     /// @brief Evaluates scalar + Sum_i(scalars[i] * ct_vec[i])
     /// @param ct_vec In input ciphertexts
     /// @param scalars The vector of scalars
     /// @param scalar The scalar that is added to the inner product
     /// @return A new ciphertext encrypting the result of the computation. 
-    Ciphertext eval_affine_function(std::vector<Ciphertext>& ct_vec, std::vector<int64_t> scalars, int64_t scalar)const;
+    Ciphertext eval_affine_function(
+        const std::vector<Ciphertext>& ct_vec, 
+        const std::vector<int64_t>& scalars, 
+        const int64_t& scalar)const;
     
     /// @brief Serialize the secret key to the output file stream
     /// @param os The output file stream
-    void send_secret_key(std::ofstream &os)const;
+    void send_secret_key(const std::ofstream &os)const;
 
     /// @brief Reads the secret key from the input file stream
     /// @param is The input file stream
@@ -208,7 +214,7 @@ class FHEContext{
  
     /// @brief Store the secret key to the file
     /// @param file_name The name of the file
-    void save_secret_key(std::string file_name)const;
+    void save_secret_key(const std::string file_name)const;
 
     /// @brief Load the secret key from the file
     /// @param file_name The name of the file
@@ -216,7 +222,7 @@ class FHEContext{
     
     /// @brief Serialize the public key to the output file stream
     /// @param os The output file stream
-    void send_public_key(std::ofstream &os)const;
+    void send_public_key(const std::ofstream &os)const;
 
     /// @brief Reads the public key from the input file stream
     /// @param is The input file stream
@@ -224,7 +230,7 @@ class FHEContext{
  
     /// @brief Store the public key to the file
     /// @param file_name The name of the file
-    void save_public_key(std::string file_name)const;
+    void save_public_key(const std::string file_name)const;
 
     /// @brief Reads the public key from the file
     /// @param file_name The name of the file
@@ -233,7 +239,7 @@ class FHEContext{
     /// @brief Serialize the ciphertext to the output file stream
     /// @param os The output file stream
     /// @param ct The input ciphertext
-    void send_Ciphertext(std::ostream &os, Ciphertext &ct)const;
+    void send_Ciphertext(const std::ostream &os, const Ciphertext &ct)const;
 
     /// @brief Read the ciphertext from the input file stream. The ciphertext points to this context.
     /// @param is The input file stream
@@ -243,7 +249,7 @@ class FHEContext{
     /// @brief Same the ciphertext to the file
     /// @param file_name The name of the file
     /// @param ct The input ciphertext
-    void save_Ciphertext(std::string file_name, Ciphertext &ct)const;
+    void save_Ciphertext(const std::string file_name, const Ciphertext &ct)const;
 
     /// @brief Load a ciphertext from a file. The ciphertext points to this context.
     /// @param file_name The name of the file
@@ -253,10 +259,6 @@ class FHEContext{
  
 } /// End of namespace FHEDeck
  
-/// @brief Overload the << operator for the Ciphertext class. Sents the ciphertext to the output stream.
-/// @param out The output stream
-/// @param c The input ciphertext
-/// @return Reference to the output stream, after the ciphertext has been sent.
-std::ostream& operator<<(std::ostream &out, FHEDeck::Ciphertext &c);
+
 
 #endif

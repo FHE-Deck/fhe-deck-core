@@ -201,9 +201,9 @@ class NTRUSK : public VectorCTSK{
     /// NOTE: Depends on NTL need to init a Inversion Engine for that. 
     void key_gen();
   
-    NTRUSK(const NTRUSK &other);
+    NTRUSK(const NTRUSK &other) = delete;
 
-    NTRUSK& operator=(const NTRUSK other);
+    NTRUSK& operator=(const NTRUSK other) = delete;
   
     /// @brief Encrypts the message polynomial m, and stores the result in out.
     /// @param out The output ciphertext. 
@@ -374,9 +374,9 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @param sk The secret key of the NTRU encryption scheme.
     NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUSK> sk);
 
-    NTRUGadgetSK(const NTRUGadgetSK &other);
+    NTRUGadgetSK(const NTRUGadgetSK &other) = delete;
 
-    NTRUGadgetSK& operator=(const NTRUGadgetSK other);
+    NTRUGadgetSK& operator=(const NTRUGadgetSK other) = delete;
 
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.

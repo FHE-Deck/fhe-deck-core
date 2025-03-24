@@ -94,7 +94,7 @@ class HomomorphicAccumulator{
         this->output_encoding = output_encoding;
     }
  
-    // Copy constructor
+    /// @brief Copy constructor
     HomomorphicAccumulator(const HomomorphicAccumulator& other){  
         if (this != &other) { 
             input_encoding = other.input_encoding;
@@ -106,7 +106,7 @@ class HomomorphicAccumulator{
     }
  
 
-    // Copy assignment operator
+    /// @brief Copy assignment operator
     HomomorphicAccumulator& operator=(const HomomorphicAccumulator& other) { 
         if (this != &other) {
             input_encoding = other.input_encoding;
@@ -117,7 +117,31 @@ class HomomorphicAccumulator{
         }
         return *this;
     }
-  
+
+
+    /// @brief Move constructor
+    HomomorphicAccumulator(HomomorphicAccumulator&& other){  
+        if (this != &other) { 
+            input_encoding = other.input_encoding;
+            output_encoding = other.output_encoding;
+            boot_acc = std::move(other.boot_acc);
+            func_boot_acc = std::move(other.func_boot_acc);
+            multivalue_acc = std::move(other.multivalue_acc); 
+        }  
+    }
+ 
+
+    /// @brief Move assignment operator
+    HomomorphicAccumulator& operator=(HomomorphicAccumulator&& other) { 
+        if (this != &other) {
+            input_encoding = other.input_encoding;
+            output_encoding = other.output_encoding;
+            boot_acc = std::move(other.boot_acc);
+            func_boot_acc = std::move(other.func_boot_acc);
+            multivalue_acc = std::move(other.multivalue_acc); 
+        }
+        return *this;
+    } 
 };
 
 /**

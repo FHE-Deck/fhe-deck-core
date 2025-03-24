@@ -20,10 +20,28 @@ Ciphertext& Ciphertext::operator=(const Ciphertext& other){
     {
         return *this;
     }    
-
     encoding = other.encoding;
     lwe_c = std::shared_ptr<LWECT>(other.lwe_c->clone()); 
     context = other.context;   
+    return *this;
+}
+
+Ciphertext::Ciphertext(Ciphertext&& other){
+    lwe_c = std::move(other.lwe_c); 
+    encoding = std::move(other.encoding);
+    context = other.context;   
+    other.context = nullptr;
+}
+
+Ciphertext& Ciphertext::operator=(Ciphertext&& other){
+    if (this == &other)
+    {
+        return *this;
+    }    
+    lwe_c = std::move(other.lwe_c); 
+    encoding = std::move(other.encoding);
+    context = other.context;   
+    other.context = nullptr;
     return *this;
 }
  
@@ -87,3 +105,10 @@ Ciphertext operator-(int64_t b, const Ciphertext& ct){
 Ciphertext operator*(int64_t b, const Ciphertext& ct){ 
     return ct.operator*(b); 
 } 
+ 
+std::ostream& operator<<(std::ostream &out, const Ciphertext &c){ 
+    Ciphertext ct_out(c);
+    c.context->send_Ciphertext(out, ct_out); 
+    return out;
+}
+  

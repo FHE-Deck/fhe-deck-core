@@ -208,16 +208,7 @@ void LWESK::init_key(){
     sk_dist->fill_array(key, param->dim); 
     Utils::array_mod_form(this->key, this->key, param->dim, param->modulus);
 }
-
-LWESK::LWESK(const LWESK &other){
-    std::runtime_error("LWESK::LWESK(const LWESK &other): Don't copy the secret key!"); 
-}
  
-LWESK& LWESK::operator=(const LWESK other){
-    std::runtime_error("LWESK::operator=(const LWESK other): Don't copy the secret key!"); 
-    return *this;
-}
-  
 std::unique_ptr<LWECT> LWESK::encrypt(int64_t m){
     std::unique_ptr<LWECT> out = std::make_unique<LWECT>(param);
     encrypt(*out, m);

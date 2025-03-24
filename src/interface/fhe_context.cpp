@@ -58,7 +58,7 @@ Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int6
     return encrypt(message, encoding);
 }
  
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncoding encoding)const{  
+Ciphertext FHEContext::encrypt(int64_t message, const PlaintextEncoding& encoding)const{  
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }        
@@ -101,7 +101,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType typ
     return encrypt_public(message, encoding);
 }
 
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncoding encoding)const{  
+Ciphertext FHEContext::encrypt_public(int64_t message, const PlaintextEncoding& encoding)const{  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
@@ -151,7 +151,11 @@ PlaintextEncodingType FHEContext::get_default_plaintext_encoding_type()const{
     return config->eval_key.default_encoding.get_type();
 }
   
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding)const{
+HomomorphicAccumulator FHEContext::setup_function(
+    const std::function<int64_t(int64_t)>& f, 
+    const PlaintextEncoding& input_encoding, 
+    const PlaintextEncoding& output_encoding)const{
+
     if(!config->eval_key.is_bootstrap_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     }  
@@ -162,11 +166,11 @@ HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)
     return out;  
 }
 
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f, PlaintextEncoding encoding)const{ 
+HomomorphicAccumulator FHEContext::setup_function(const std::function<int64_t(int64_t)>& f, const PlaintextEncoding& encoding)const{ 
     return setup_function(f, encoding, encoding);  
 }
   
-HomomorphicAccumulator FHEContext::setup_function(std::function<int64_t(int64_t)> f)const{    
+HomomorphicAccumulator FHEContext::setup_function(const std::function<int64_t(int64_t)>& f)const{    
     return setup_function(f, config->eval_key.default_encoding, config->eval_key.default_encoding);
 }
 
@@ -193,13 +197,13 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
     return Ciphertext(ct_out, lut.output_encoding, *this); 
 }
  
-std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const{
+std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, const std::vector<HomomorphicAccumulator>& lut_vec)const{
     if(lut_vec.empty()) throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: Empty HomomorphicAccumulator Vector!");
     if(!config->eval_key.is_bootstrap_pk_set) throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: No Public Key Initialized!");  
      
     /// NOTE: We are guaranteed that at least one element exists
     PlaintextEncoding output_encoding = lut_vec[0].output_encoding;
-    for(HomomorphicAccumulator& lut: lut_vec){ 
+    for(const HomomorphicAccumulator& lut: lut_vec){ 
         if(lut.input_encoding != ct_in.encoding){
             throw std::logic_error("FHEContext::eval(const Ciphertext& ct_in, std::vector<HomomorphicAccumulator> lut_vec)const: Input encoding of the accumulator does not match the encoding of the input ciphertext!");
         } 
@@ -212,7 +216,7 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<Ho
     std::vector<LWECT> out_vec_lwe;   
     if((ct_in.encoding.get_type() == PlaintextEncodingType::full_domain) && !config->eval_key.bootstrap_pk->is_full_domain_bootstrap_function_amortizable){ 
         // Amortization is not supported so lets run sequentially.
-        for(HomomorphicAccumulator& lut: lut_vec){ 
+        for(const HomomorphicAccumulator& lut: lut_vec){ 
             LWECT ct_out(ct_in.lwe_c->param);  
             config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding, output_encoding);
             out_vec_lwe.push_back(ct_out);
@@ -221,7 +225,7 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<Ho
     } else{ 
         // We need to get the VectorCTAccumulator's out of the HomomorphicAccumulator wrapper. 
         std::vector<std::shared_ptr<FunctionSpecification>> accumulator_vec;
-        for(HomomorphicAccumulator& lut: lut_vec){  
+        for(const HomomorphicAccumulator& lut: lut_vec){  
             accumulator_vec.push_back(lut.multivalue_acc); 
         }  
         if(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain){ 
@@ -245,12 +249,16 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, std::vector<Ho
     return out_vec;
 }
  
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f, PlaintextEncoding output_encoding)const{
+Ciphertext FHEContext::eval(
+    const Ciphertext& ct_in, 
+    const std::function<int64_t(int64_t)>& f, 
+    const PlaintextEncoding& output_encoding)const{
+
     HomomorphicAccumulator lut = this->setup_function(f, ct_in.encoding, output_encoding);
     return eval(ct_in, lut);
 }
 
-Ciphertext FHEContext::eval(const Ciphertext& ct_in, std::function<int64_t(int64_t)> f)const{
+Ciphertext FHEContext::eval(const Ciphertext& ct_in, const std::function<int64_t(int64_t)>& f)const{
     HomomorphicAccumulator lut = this->setup_function(f, ct_in.encoding, ct_in.encoding);
     return eval(ct_in, lut);
 }
@@ -264,7 +272,11 @@ Ciphertext FHEContext::sanitize(const Ciphertext& ct)const{
     return Ciphertext(ct_out, ct.encoding, *this); 
 }
 
-Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std::vector<int64_t> scalars, int64_t scalar)const{    
+Ciphertext FHEContext::eval_affine_function(
+        const std::vector<Ciphertext>& ct_vec, 
+        const std::vector<int64_t>& scalars, 
+        const int64_t& scalar)const{    
+    
     Ciphertext ct_out =  ct_vec[0] * scalars[0]; 
     for(int32_t i = 1; i < ct_vec.size(); ++i){ 
             ct_out = ct_out + (ct_vec[i] * scalars[i]); 
@@ -273,7 +285,7 @@ Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std
     return ct_out; 
 }
 
-void FHEContext::send_secret_key(std::ofstream &os)const{
+void FHEContext::send_secret_key(const std::ofstream &os)const{
     if(!config->is_secret_key_set) throw std::logic_error("FHEContext::send_secret_key(std::ofstream &os): No Secret Key Initialized!"); 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
@@ -310,7 +322,7 @@ void FHEContext::load_secret_key(std::string file_name){
     
 }
 
-void FHEContext::send_public_key(std::ofstream &os)const{ 
+void FHEContext::send_public_key(const std::ofstream &os)const{ 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->eval_key);  
@@ -342,7 +354,7 @@ void FHEContext::load_public_key(std::string file_name){
     read_public_key(is);
 }
 
-void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{ 
+void FHEContext::send_Ciphertext(const std::ostream &os, const Ciphertext &ct)const{ 
     if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct): No Public Key Initialized!"); 
     #if defined(USE_CEREAL) 
     cereal::BinaryOutputArchive oarchive(os);   
@@ -365,7 +377,7 @@ Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{
     #endif
 }
  
-void FHEContext::save_Ciphertext(std::string file_name, Ciphertext &ct)const{
+void FHEContext::save_Ciphertext(const std::string file_name, const Ciphertext &ct)const{
     std::ofstream os(file_name, std::ios::binary);   
     send_Ciphertext(os, ct);
 }
@@ -374,12 +386,4 @@ Ciphertext FHEContext::load_Ciphertext(std::string file_name)const{
     std::ifstream is(file_name, std::ios::binary);
     return read_Ciphertext(is);
 }
-
-/// TODO: This should perhaps be in the Ciphertext file, not in context.
-std::ostream& operator<<(std::ostream &out, Ciphertext &c){ 
-    Ciphertext ct_out(c);
-    c.context->send_Ciphertext(out, ct_out); 
-    return out;
-}
-  
-
+ 

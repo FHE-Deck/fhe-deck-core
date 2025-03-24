@@ -220,11 +220,11 @@ class LWESK {
     /// @param key_type Key distribution according to which the key was choosen. 
     LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
  
-    /// @brief Copy Constructor. Returns an exception, so that you are not tempted to copy the secret key around. 
-    LWESK(const LWESK &other);
+    /// @brief Deleted so that you are not tempted to copy the secret key around. 
+    LWESK(const LWESK &other) = delete;
 
-    /// @brief Returns an exception, so that you are not tempted to copy the secret key around. 
-    LWESK& operator=(const LWESK other);
+    /// @brief Deleted so that you are not tempted to copy the secret key around. 
+    LWESK& operator=(const LWESK other)  = delete;
  
     /// @brief Encryption a message m, and returns a pointer to a new LWECT object.
     /// @param m The input message. Should be an integer in the ciphertext modulus range.

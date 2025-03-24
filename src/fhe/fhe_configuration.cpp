@@ -375,16 +375,12 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(8192, 8192);
     builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
+    
     sanitization_builder.sanitization_alg = SanitizationAlgorithm::kluczniak;
     sanitization_builder.transfer_parameters(builder); 
     sanitization_builder.set_gadget_parameters(GadgetType::discrete_gaussian_gadget, 256);
     sanitization_builder.gadget_stddev = 225812; 
-   
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true;
+    
     eval_key.is_sanitization_supported = true;
  
 }  
@@ -400,19 +396,14 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(8192, 8192);
     builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
-
+    
     // Now reset the Gadget to the randomized one   
     sanitization_builder.transfer_parameters(builder);
     sanitization_builder.sanitization_alg = SanitizationAlgorithm::ducas_stehle; 
     sanitization_builder.washing_cycles = 4;
     sanitization_builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 256);
     sanitization_builder.gadget_stddev = 225812; 
-     
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true;
+    
     eval_key.is_sanitization_supported = true;
 } 
  
@@ -427,12 +418,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(3370, 4010391);
     builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
-  
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true;
+    
     eval_key.is_sanitization_supported = false;
 } 
 
@@ -446,12 +432,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(8050, 8192);
     builder.set_default_plaintext_encoding(PlaintextEncodingType::partial_domain, 8);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
-  
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true;
+    
     eval_key.is_sanitization_supported = false;
 } 
  
@@ -466,17 +447,10 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(14936, 16384);
     builder.set_default_plaintext_encoding(PlaintextEncodingType::partial_domain, 16);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
-  
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true; 
+    
     eval_key.is_sanitization_supported = false;
 } 
-
-
-
+ 
 /// TODO: I think this parameter set was only for a paper test. Actually could be derived from the init_tfhe_12_NTT_amortized set.
 void FHEConfiguration::init_lmp_12_NTT_amortized(){  
   
@@ -487,13 +461,8 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(14936, 16384);
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
-  
-    //eval_key.is_encrypt_pk_set = true;
-    //eval_key.is_bootstrap_pk_set = true;
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 32); 
+
     eval_key.is_sanitization_supported = false;
 } 
 
@@ -508,10 +477,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::liu_micciancio_polyakov);
     builder.set_public_key_parameters(8192, 8192);
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 4); 
    
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
@@ -529,10 +495,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
     builder.set_public_key_parameters(3370, 3.19); 
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 31);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 31); 
   
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
@@ -550,10 +513,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     builder.set_blind_rotation_algorithm(BlindRotationAlgorithm::cggi_binary);
     builder.set_full_domain_bootstrap_algorithm(FullDomainBootstrappingAlgorithm::kluczniak_shield_fdfb2);
     builder.set_public_key_parameters(3370, 3.19);
-    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 33);
-    //builder.build(); 
-    //this->secret_key = builder.get_secret_key();
-    //builder.get_bootstrap_public_key(eval_key);  
+    builder.set_default_plaintext_encoding(PlaintextEncodingType::full_domain, 33); 
   
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;

@@ -50,12 +50,22 @@ class Ciphertext{
   
         /// @brief The copy constructor.
         /// @param c The input ciphertext to be copied. 
-        Ciphertext(const Ciphertext& c);
+        Ciphertext(const Ciphertext& other);
   
-        /// @brief The assignment operator.
+        /// @brief The copy assignment operator.
         /// @param other The object to be copied. 
         /// @return reference to the copied object.
         Ciphertext& operator=(const Ciphertext& other);
+
+        /// @brief The move constructor.
+        /// @param c The input ciphertext to be moved. 
+        Ciphertext(Ciphertext&& other);
+
+        /// @brief The move assignment operator.
+        /// @param other The object to be copied. 
+        /// @return reference to the copied object.
+        Ciphertext& operator=(Ciphertext&& other);
+
  
         /// @brief Adds a ciphertext to this ciphertext. 
         /// @param ct The input ciphertext
@@ -124,5 +134,12 @@ FHEDeck::Ciphertext operator-(int64_t b, const FHEDeck::Ciphertext& ct);
 /// @param ct The input ciphertext
 /// @return Returns a new ciphertext object.
 FHEDeck::Ciphertext operator*(int64_t b, const FHEDeck::Ciphertext& ct);
+
+
+/// @brief Overload the << operator for the Ciphertext class. Sents the ciphertext to the output stream.
+/// @param out The output stream
+/// @param c The input ciphertext
+/// @return Reference to the output stream, after the ciphertext has been sent.
+std::ostream& operator<<(std::ostream &out, const FHEDeck::Ciphertext &c);
 
 #endif
