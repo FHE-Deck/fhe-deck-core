@@ -274,9 +274,7 @@ Ciphertext FHEContext::eval_affine_function(std::vector<Ciphertext>& ct_vec, std
 }
 
 void FHEContext::send_secret_key(std::ofstream &os)const{
-    if(!config->is_secret_key_set){
-        throw std::logic_error("No Secret Key Initialized!");
-    }
+    if(!config->is_secret_key_set) throw std::logic_error("FHEContext::send_secret_key(std::ofstream &os): No Secret Key Initialized!"); 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->secret_key); 
@@ -299,7 +297,7 @@ void FHEContext::read_secret_key(std::ifstream &is){
 }
  
 void FHEContext::save_secret_key(std::string file_name)const{ 
-    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_secret_key(std::string file_name): The secret key is already set.");
+    if(!config->is_secret_key_set) throw std::logic_error("FHEContext::save_secret_key(std::string file_name): No secret key set.");
     std::ofstream os(file_name, std::ios::binary); 
     send_secret_key(os);
     os.close();  
@@ -325,45 +323,43 @@ void FHEContext::read_public_key(std::ifstream &is){
     #if defined(USE_CEREAL)
     cereal::BinaryInputArchive iarchive(is);  
     iarchive(config->eval_key);    
+    config->is_eval_key_set = true;
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
 }
  
 void FHEContext::save_public_key(std::string file_name)const{
-    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): The secret key is already set.");
+    if(!config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): No Public Key Initialized!");
     std::ofstream os(file_name, std::ios::binary); 
     send_public_key(os);
     os.close();
 }
 
 void FHEContext::load_public_key(std::string file_name){
-    if(config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): The secret key is already set.");
+    if(config->is_eval_key_set) throw std::logic_error("FHEContext::load_public_key(std::string file_name): The public key is already set.");
     std::ifstream is(file_name, std::ios::binary);
     read_public_key(is);
 }
 
-void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{
-    /// TODO: Implement (the previous version is deprecated)
-    if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("No Public Key Initialized!"); 
-    #if defined(USE_CEREAL)
-    throw std::logic_error("Not implemented!"); 
-    //cereal::BinaryOutputArchive oarchive(os);   
-    //oarchive(ct.lwe_c); 
+void FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct)const{ 
+    if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct): No Public Key Initialized!"); 
+    #if defined(USE_CEREAL) 
+    cereal::BinaryOutputArchive oarchive(os);   
+    oarchive(ct); 
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
 }
 
-Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{
-    /// TODO: Implement (the previous version is deprecated)
+Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{ 
     #if defined(USE_CEREAL)
-    throw std::logic_error("Not implemented!"); 
-    //cereal::BinaryInputArchive iarchive(is);  
-    //std::shared_ptr<LWECT> ct;
-    //iarchive(ct);
-    //Ciphertext out(ct, this->current_encoding, this);
-    //return out;
+    //throw std::logic_error("Not implemented!"); 
+    cereal::BinaryInputArchive iarchive(is);  
+    Ciphertext ct;
+    iarchive(ct);
+    ct.context = this;
+    return ct; 
     #else
     throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
     #endif
@@ -379,6 +375,7 @@ Ciphertext FHEContext::load_Ciphertext(std::string file_name)const{
     return read_Ciphertext(is);
 }
 
+/// TODO: This should perhaps be in the Ciphertext file, not in context.
 std::ostream& operator<<(std::ostream &out, Ciphertext &c){ 
     Ciphertext ct_out(c);
     c.context->send_Ciphertext(out, ct_out); 

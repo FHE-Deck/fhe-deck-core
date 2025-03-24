@@ -260,9 +260,7 @@ class Polynomial: public Vector{
     public:
 
     /// @brief The coefficients of the polynomial (points to the vec array in the Vector class)
-    int64_t* coefs; 
-    /// @brief Indicates if the polynomial has been initialized
-    //bool is_init = false;
+    int64_t* coefs;  
 
     /// @brief The coefficient modulus
     int64_t coef_modulus;

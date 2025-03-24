@@ -340,7 +340,9 @@ FHEConfiguration::FHEConfiguration(FHENamedParams name){
 void FHEConfiguration::generate_keys(){
     builder.build(); 
     this->secret_key = builder.get_secret_key();
+    this->is_secret_key_set = true;
     builder.get_bootstrap_public_key(eval_key);  
+    this->is_eval_key_set = true;
     build_sanitization_key();
 }
 
@@ -381,7 +383,6 @@ void FHEConfiguration::init_tfhe_11_NTT(){
     sanitization_builder.set_gadget_parameters(GadgetType::discrete_gaussian_gadget, 256);
     sanitization_builder.gadget_stddev = 225812; 
    
-    this->is_secret_key_set = true;
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = true;
@@ -409,8 +410,7 @@ void FHEConfiguration::init_tfhe_11_NTT_flood(){
     sanitization_builder.washing_cycles = 4;
     sanitization_builder.set_gadget_parameters(GadgetType::signed_decomposition_gadget, 256);
     sanitization_builder.gadget_stddev = 225812; 
-    
-    this->is_secret_key_set = true;
+     
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = true;
@@ -430,8 +430,7 @@ void FHEConfiguration::init_tfhe_11_flood(){
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
@@ -450,8 +449,7 @@ void FHEConfiguration::init_tfhe_11_NTT_amortized(){
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
@@ -471,8 +469,7 @@ void FHEConfiguration::init_tfhe_12_NTT_amortized(){
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true; 
     eval_key.is_sanitization_supported = false;
@@ -494,8 +491,7 @@ void FHEConfiguration::init_lmp_12_NTT_amortized(){
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     //eval_key.is_encrypt_pk_set = true;
     //eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
@@ -516,8 +512,7 @@ void FHEConfiguration::init_ntrunium_12_NTT(){
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
-  
-    this->is_secret_key_set = true;
+   
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
@@ -538,8 +533,7 @@ void FHEConfiguration::init_tfhe_11_KS() {
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;
@@ -560,8 +554,7 @@ void FHEConfiguration::init_tfhe_11_KS_amortized() {
     //builder.build(); 
     //this->secret_key = builder.get_secret_key();
     //builder.get_bootstrap_public_key(eval_key);  
- 
-    this->is_secret_key_set = true;
+  
     eval_key.is_encrypt_pk_set = true;
     eval_key.is_bootstrap_pk_set = true;
     eval_key.is_sanitization_supported = false;

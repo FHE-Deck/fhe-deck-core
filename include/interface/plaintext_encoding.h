@@ -77,18 +77,7 @@ public:
     void load( Archive & ar )
     {   
         ar(type, plaintext_space, ciphertext_modulus);
-        calculate_ticks();
-        /*
-        if(type == PlaintextEncodingType::full_domain){ 
-            this->ticks =  plaintext_space;
-        }else if(type ==  PlaintextEncodingType::partial_domain){ 
-            this->ticks = 2 * plaintext_space; 
-        }else if(type == PlaintextEncodingType::signed_limied_short_int){ 
-            this->ticks = 4 * plaintext_space;
-        }else{
-            throw std::logic_error("Non existend encoding type!");
-        }  
-        */
+        calculate_ticks(); 
     } 
     #endif 
 

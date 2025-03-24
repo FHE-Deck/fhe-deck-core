@@ -270,6 +270,7 @@ class FHEConfiguration{
     bool is_secret_key_set = false;
     std::shared_ptr<FHESecretKey> secret_key;
  
+    bool is_eval_key_set = false;
     PublicEvaluationKey eval_key;
 
     BasicBootstrapBuilder builder;

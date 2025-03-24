@@ -10,7 +10,6 @@ LWEParam::LWEParam(int32_t dim, int64_t modulus){
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
     this->ct = new int64_t[param->dim+1];
-    this->init = true; 
 }
    
 LWECT::LWECT(const LWECT &c){  
@@ -19,13 +18,10 @@ LWECT::LWECT(const LWECT &c){
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
-    this->init = true;
 }
  
-LWECT::~LWECT(){     
-    if(init){  
-        delete[] ct; 
-    } 
+LWECT::~LWECT(){    
+    delete[] ct; 
 }
  
 void LWECT::mul(LWECT &out, int64_t scalar)const{
@@ -83,21 +79,10 @@ LWECT& LWECT::operator=(const LWECT other){
     {
         return *this;
     }   
-    if(init==false){
-        this->param = other.param;
-        this->ct = new int64_t[param->dim+1]; 
-        for(int32_t i = 0; i < param->dim+1; ++i){
-            this->ct[i] = other.ct[i];
-        }
-        this->init = true;
-    }
-    else if(init && (param->dim == other.param->dim)){ 
-        param = other.param;
-        for(int32_t i = 0; i < param->dim+1; ++i){
-            ct[i] = other.ct[i];
-        }
-    }else{
-        throw std::logic_error("Wrong case in lwe_ct::operator=");
+    this->param = other.param;
+    this->ct = new int64_t[param->dim+1]; 
+    for(int32_t i = 0; i < param->dim+1; ++i){
+        this->ct[i] = other.ct[i];
     } 
     return *this;
 } 
@@ -106,8 +91,7 @@ std::unique_ptr<LWECT> LWECT::clone()const{
     std::unique_ptr<LWECT> out = std::make_unique<LWECT>(param);
     for(int32_t i = 0; i < param->dim+1; ++i){
         out->ct[i] = this->ct[i];
-    }
-    out->init = true;
+    } 
     return out;
 } 
 

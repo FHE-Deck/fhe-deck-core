@@ -47,13 +47,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @param coef_modulus The coefficient modulus.
     /// @param arithmetic The polynomial arithmetic.
     NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, PolynomialArithmetic arithmetic);
-
-    /// @brief Constructs the NTRUParam object. 
-    /// @param ring_degree The degree of the ring.
-    /// @param coef_modulus The coefficient modulus.
-    /// @param mul_engine The polynomial multiplication engine.
-    //NTRUParam(int32_t ring_degree, uint64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-   
+ 
     NTRUParam(NTRUParam &c);
 
     NTRUParam& operator=(NTRUParam other);

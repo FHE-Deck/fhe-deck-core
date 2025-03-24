@@ -20,7 +20,8 @@ class FHEContext;
 /**
  * @brief A class representing a ciphertext. This is used by the high level API, the FHEContext.
  * Its written such that using ciphertexts is as easy as using integers. 
- * So, importantly, iit has all the copy constructors, and operators overloaded.
+ * So, importantly, it has all the copy and move constructors, and operators overloaded.
+ * Furthermore, it keeps track of the message encoding.  
  */
 class Ciphertext{
 
@@ -29,14 +30,14 @@ class Ciphertext{
         /// @brief Pointer to a LWE Ciphertext.
         std::shared_ptr<LWECT> lwe_c;
         /// @brief Flag indicating whether lwe_c is initialized. 
-        bool is_lwe_ct = false;
+        //bool is_lwe_ct = false;
         /// @brief Flag whether this object is initialized. 
-        bool is_init = false;
+        //bool is_init = false;
         /// @brief The encoding of the plaintext in the ciphertext.
         PlaintextEncoding encoding;
+
         /// @brief Pointer to the FHE context. Ciphertexts exist within a context. The context object then implements and controls bootstrapping, serialization, etc.
-        
-        const FHEContext* context;
+        const FHEContext* context = nullptr;
   
         /// @brief default constructor
         Ciphertext() = default;
@@ -85,6 +86,23 @@ class Ciphertext{
     
         /// @brief Multiplies this ciphertext by a scalar.
         Ciphertext operator*(int64_t b) const; 
+
+ 
+        #if defined(USE_CEREAL)
+        template <class Archive>
+        void save( Archive & ar ) const
+        { 
+          ar(lwe_c, encoding);   
+        }
+            
+        template <class Archive>
+        void load( Archive & ar )
+        {  
+            ar(lwe_c, encoding);   
+            context = nullptr;
+        } 
+        #endif 
+
 };
  
 } /// End of namesapce FHEDeck
