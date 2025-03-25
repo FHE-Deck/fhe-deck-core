@@ -18,6 +18,7 @@ int32_t main(){
     std::chrono::_V2::system_clock::time_point start;
     std::chrono::_V2::system_clock::time_point stop;
     
+    PlaintextEncoding encoding = ctx.get_default_plaintext_encoding();
     std::cerr << "Setup functions...";
 
     auto first_bit = [](int64_t m) -> int64_t {
@@ -33,9 +34,9 @@ int32_t main(){
     };  
 
     std::vector<HomomorphicAccumulator> bit_decomp_luts;
-    bit_decomp_luts.push_back(ctx.setup_function(first_bit));
-    bit_decomp_luts.push_back(ctx.setup_function(second_bit));
-    bit_decomp_luts.push_back(ctx.setup_function(third_bit));
+    bit_decomp_luts.push_back(ctx.setup_function(first_bit, encoding));
+    bit_decomp_luts.push_back(ctx.setup_function(second_bit, encoding));
+    bit_decomp_luts.push_back(ctx.setup_function(third_bit, encoding));
 
     std::vector<int64_t> comp = {1, 2, 4}; 
 
@@ -50,7 +51,7 @@ int32_t main(){
     std::cerr << "Testing..." ;
     for(int32_t i = 0; i < test_num; ++i){
         msg = i % 8;
-        ct = ctx.encrypt_public(msg);
+        ct = ctx.encrypt_public(msg, encoding);
         for(int32_t j = 0; j < repetition_num; ++j){  
             start = std::chrono::high_resolution_clock::now(); 
             out_cts = ctx.eval(ct, bit_decomp_luts);   

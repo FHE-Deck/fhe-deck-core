@@ -43,65 +43,18 @@ class FHEContext{
     /// @brief Generates the FHE context given the named parameters.
     /// @param name The named parameters.
     void generate_context(FHENamedParams name);
- 
-    /// @brief Encrypts a message. Requires the secret key.
-    /// @param message The message to be encrypted
-    /// @param type Use this encoding type instead of the default one.
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt(int64_t message, PlaintextEncodingType type)const;  
-
-    /// @brief Encrypts a message. Requires the secret key.
-    /// @param message The message to be encrypted
-    /// @param plaintext_space Use this plaintext space instead of the default one.
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt(int64_t message, int64_t plaintext_space)const;
- 
-    /// @brief Encrypts a message. Requires the secret key.
-    /// @param message The message to be encrypted
-    /// @param type Use this encoding type instead of the default one.
-    /// @param plaintext_space Use this plaintext space instead of the default one.
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const;
-
+  
     /// @brief Encrypts a message. Requires the secret key.
     /// @param message The message to be encrypted
     /// @param encoding Use this plaintext encoding instead of the default one. 
     /// @return Returns a new Ciphertext object.
     Ciphertext encrypt(int64_t message, const PlaintextEncoding& encoding)const; 
 
-    /// @brief Encrypts a message using the default plaintext encoding. Requires the secret key.
-    /// @param message The message to be encrypted 
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt(int64_t message)const;
-
-    /// @brief Encrypts a message using the default plaintext encoding. Requires the public key.
-    /// @param message The message to be encrypted 
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt_public(int64_t message, PlaintextEncodingType type)const;  
-
-    /// @brief Encrypts a message. Requires the public key.
-    /// @param message The message to be encrypted
-    /// @param plaintext_space Use this plaintext space instead of the default one.
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt_public(int64_t message, int64_t plaintext_space)const;
- 
-    /// @brief Encrypts a message. Requires the public key.
-    /// @param message The message to be encrypted
-    /// @param type Use this encoding type instead of the default one.
-    /// @param plaintext_space Use this plaintext space instead of the default one.
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt_public(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const;
-
     /// @brief Encrypts a message. Requires the public key.
     /// @param message The message to be encrypted
     /// @param encoding Use this plaintext encoding instead of the default one. 
     /// @return Returns a new Ciphertext object.
     Ciphertext encrypt_public(int64_t message, const PlaintextEncoding& encoding)const; 
-
-    /// @brief Encrypts a message using the default plaintext encoding. Requires the public key.
-    /// @param message The message to be encrypted 
-    /// @return Returns a new Ciphertext object.
-    Ciphertext encrypt_public(int64_t message)const;
 
     /// @brief Encrypts a integer based on the provided DigitInteger configuration
     /// @param message The integer to be encrypted 

@@ -725,11 +725,11 @@ void basic_Ciphertext_tests(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(param_set);
-    
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
     std::cout << "Encrypt..." << std::endl;
     std::cout << "Testing: lwe_ct c1  = context.encrypt_temp(1);  " << std::endl;
 
-    Ciphertext c1  = context.encrypt(1);  
+    Ciphertext c1  = context.encrypt(1, encoding);  
  
     assertm(context.decrypt(c1) == 1, "Decrypt(c1) == 1");
     std::cout << "context.decrypt(&c1) == 1: OK" << std::endl; 
@@ -997,6 +997,7 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
     context.generate_context(param_set); 
+    PlaintextEncoding encoding = context.get_default_plaintext_encoding();
   
     auto first_bit = [](int64_t m) -> int64_t {
         return m % 2;
@@ -1020,22 +1021,22 @@ void amortized_12_partial_domain_bootstrap_test(FHENamedParams param_set){
     bit_decomp_luts.push_back(context.setup_function(third_bit));
     bit_decomp_luts.push_back(context.setup_function(fourth_bit));
 
-    Ciphertext ct0 = context.encrypt_public(0); 
-    Ciphertext ct1 = context.encrypt_public(1); 
-    Ciphertext ct2 = context.encrypt_public(2);
-    Ciphertext ct3 = context.encrypt_public(3);
-    Ciphertext ct4 = context.encrypt_public(4);
-    Ciphertext ct5 = context.encrypt_public(5);
-    Ciphertext ct6 = context.encrypt_public(6);
-    Ciphertext ct7 = context.encrypt_public(7);
-    Ciphertext ct8 = context.encrypt_public(8);
-    Ciphertext ct9 = context.encrypt_public(9);
-    Ciphertext ct10 = context.encrypt_public(10);
-    Ciphertext ct11 = context.encrypt_public(11);
-    Ciphertext ct12 = context.encrypt_public(12);
-    Ciphertext ct13 = context.encrypt_public(13);
-    Ciphertext ct14 = context.encrypt_public(14);
-    Ciphertext ct15 = context.encrypt_public(15);
+    Ciphertext ct0 = context.encrypt_public(0, encoding); 
+    Ciphertext ct1 = context.encrypt_public(1, encoding); 
+    Ciphertext ct2 = context.encrypt_public(2,encoding);
+    Ciphertext ct3 = context.encrypt_public(3, encoding);
+    Ciphertext ct4 = context.encrypt_public(4, encoding);
+    Ciphertext ct5 = context.encrypt_public(5, encoding);
+    Ciphertext ct6 = context.encrypt_public(6, encoding);
+    Ciphertext ct7 = context.encrypt_public(7, encoding);
+    Ciphertext ct8 = context.encrypt_public(8, encoding);
+    Ciphertext ct9 = context.encrypt_public(9, encoding);
+    Ciphertext ct10 = context.encrypt_public(10, encoding);
+    Ciphertext ct11 = context.encrypt_public(11, encoding);
+    Ciphertext ct12 = context.encrypt_public(12, encoding);
+    Ciphertext ct13 = context.encrypt_public(13, encoding);
+    Ciphertext ct14 = context.encrypt_public(14, encoding);
+    Ciphertext ct15 = context.encrypt_public(15, encoding);
 
 
     int64_t elapsed = 0; 
@@ -1185,12 +1186,13 @@ void serialization_test(){
     try{
         
         first_context.generate_context(FHENamedParams::tfhe_11_NTT); 
+        PlaintextEncoding encoding = first_context.get_default_plaintext_encoding();
         std::cout << "Save Secret Key" << std::endl; 
         first_context.save_secret_key("z_sk.cereal"); 
         std::cout << "Save Public Key" << std::endl;
         first_context.save_public_key("z_pk.cereal");
     
-        FHEContext context; 
+        FHEContext context;  
         std::cout << "Load secret Key..." << std::endl; 
         context.load_secret_key("z_sk.cereal"); 
         std::cout << "Load Public Key..." << std::endl; 
@@ -1200,32 +1202,37 @@ void serialization_test(){
         std::remove("z_pk.cereal"); 
 
 
-        Ciphertext ct0 = context.encrypt_public(1);   
+        Ciphertext ct0 = context.encrypt_public(1, encoding);   
         assert(context.decrypt(ct0) == 1);
-        
-    
+         
         auto id_0 = [](int64_t m, int64_t t) -> int64_t {
             return m % t;
         }; 
         std::function<int64_t(int64_t)> id = std::bind(id_0, std::placeholders::_1, context.get_default_plaintext_space());
         ct0 = context.eval(ct0, id);  
     
+        std::cout << "Save Ciphertext..." << std::endl; 
         context.save_Ciphertext("z_ct.cereal", ct0);  
+        std::cout << "Load Ciphertext..." << std::endl; 
         Ciphertext ct_out = context.load_Ciphertext("z_ct.cereal"); 
+
         assert(context.decrypt(ct_out) == 1);
         std::cout << "Test Eval-Lut/Save and Load Ciphertext: OK" << std::endl;
         
+        std::cout << "Save Ciphertext..." << std::endl; 
         std::ofstream os("z_rlwe_ct.cereal", std::ios::binary);
         os << ct_out; 
         os.close();
+
+        std::cout << "Load Ciphertext..." << std::endl; 
         Ciphertext ct_from_stream = context.load_Ciphertext("z_rlwe_ct.cereal");
         assert(context.decrypt(ct_from_stream) == 1);
-        std::cout << "Test Writa and Save from Stream: OK" << std::endl;
 
+        std::cout << "Test Writa and Save from Stream: OK" << std::endl; 
         std::remove("z_ct.cereal"); 
         std::remove("z_rlwe_ct.cereal");  
     }catch (std::logic_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Serialization_test Error: " << e.what() << std::endl;
     }
 }
 
@@ -1385,41 +1392,64 @@ void test_full_change_plaintext_space_amortized(FHENamedParams param_set){
         std::cout << "ct_out.encoding.get_plaintext_space() == modulus_1: OK "   << std::endl; 
     } 
 }
+ 
 
-
-
-
-void test_full_fdfb(FHENamedParams param_set){
+void test_full_fdfb(FHENamedParams param_set, bool amortized = false){
     std::cout << "=========== test_full_fdfb  =============" << std::endl;
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl; 
     context.generate_context(param_set); 
 
-    int32_t modulus = 7; 
-    int32_t input = 1;
+    int32_t modulus = 15;  
  
     PlaintextEncoding encoding = context.get_default_plaintext_encoding();
     encoding.set_type(PlaintextEncodingType::full_domain);
     encoding.set_plaintext_space(modulus);
+ 
 
-    
-    auto times_in_two_and_square = [](int32_t m, int32_t modulus) -> int32_t{
-        m = Utils::integer_mod_form(m * m, modulus);
-        return Utils::integer_mod_form(m * Utils::mod_inv(4, modulus), modulus);
-    }; 
+    auto times_in_two_and_square = [](int32_t m, int32_t modulus) -> int32_t{ 
+        //return Utils::integer_mod_form(m * m, modulus);
+        return m;
+    };  
     std::function<int64_t(int64_t)> function = std::bind(times_in_two_and_square, std::placeholders::_1, modulus);
-    HomomorphicAccumulator acc = context.setup_function(function, encoding);
 
-    Ciphertext ct_in  = context.encrypt(input, encoding); 
-    
-    Ciphertext ct_out = context.eval(ct_in, acc);
-    if(context.decrypt(ct_out) == times_in_two_and_square(input, modulus)){
+    HomomorphicAccumulator acc = context.setup_function(function, encoding);
+    std::vector<HomomorphicAccumulator> accs;
+    accs.push_back(acc);
+ 
+
+    int32_t tests{10};
+    bool is_correct{true};
+    std::cout << "Run test..." << std::endl;
+    std::cerr << "Testing input: " << 0 ;
+    for(int32_t input{0}; input < modulus; ++input){ 
+        std::cerr << "\rTesting input: " << input ;
+        for(int32_t i{0}; i < tests; ++i){
+            Ciphertext ct_in  = context.encrypt(input, encoding);   
+            int32_t dec{-1};
+            
+            if(amortized){
+                std::vector<Ciphertext> ct_outs = context.eval(ct_in, accs); 
+                dec = context.decrypt(ct_outs[0]);
+            }else{ 
+                Ciphertext ct_out = context.eval(ct_in, acc); 
+                dec = context.decrypt(ct_out);
+            }
+            if(dec != times_in_two_and_square(input, modulus)){
+                std::cerr << std::endl;
+                std::cout << "Test Full Domain Function Bootstrapping: Fail for input: " << input << " at i = " << i << std::endl; 
+                std::cout << "Should be: " << times_in_two_and_square(input, modulus) << std::endl;
+                std::cout << "Is: " << dec << std::endl;
+                is_correct = false;
+                break;
+            }  
+        }
+    }
+    std::cerr << std::endl;
+    if(is_correct){ 
         std::cout << "Test Full Domain Function Bootstrapping: OK" << std::endl;
-    }else{
-        std::cout << "Test Full Domain Function Bootstrapping: Fail" << std::endl;
-        std::cout << "Should be: " << times_in_two_and_square(input, modulus) << std::endl;
-        std::cout << "Is: " << context.decrypt(ct_out) << std::endl;
     } 
+ 
 }
 
 
@@ -1428,16 +1458,15 @@ void test_full_fdfb(FHENamedParams param_set){
 
 
 int main(){  
-  
-    /*
+     
    basic_Ciphertext_tests(FHENamedParams::tfhe_11_NTT);
- 
+  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT);
  
    test_for_partial_domain_encoding(FHENamedParams::tfhe_11_NTT_flood);
- 
+  
     test_for_signed_limied_short_int(FHENamedParams::tfhe_11_NTT);
- 
+  
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT);
 
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_NTT_amortized);
@@ -1445,7 +1474,7 @@ int main(){
     test_for_default_full_domain_encoding(FHENamedParams::tfhe_12_NTT_amortized);
     
     test_for_default_full_domain_encoding(FHENamedParams::ntrunium_12_NTT);
-     
+      
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
  
     amortized_12_partial_domain_bootstrap_test(FHENamedParams::tfhe_12_NTT_amortized); 
@@ -1456,27 +1485,9 @@ int main(){
     
     amortized_partial_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);
 
-    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized); 
-
+    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_NTT_amortized);   
+ 
     serialization_test();  
+ 
 
-    test_for_default_full_domain_encoding(FHENamedParams::tfhe_11_KS);
-     
-    amortized_full_domain_bootstrap_test(FHENamedParams::tfhe_11_KS_amortized); 
-
-    */
-    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT);
-
-    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_NTT_amortized);
-
-    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS);
-
-    //test_full_change_plaintext_space(FHENamedParams::tfhe_11_KS_amortized); 
-
-    //test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_NTT_amortized);
-
-    //test_full_change_plaintext_space_amortized(FHENamedParams::tfhe_11_KS_amortized);
-     
-   test_full_fdfb(FHENamedParams::tfhe_11_KS);
-   test_full_fdfb(FHENamedParams::tfhe_11_NTT);
 }

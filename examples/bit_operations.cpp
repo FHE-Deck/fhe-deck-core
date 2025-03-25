@@ -9,9 +9,7 @@ int32_t main(){
     
     FHEContext context; 
     std::cout << "Generate Keys..." << std::endl;
-    context.generate_context(FHENamedParams::tfhe_11_NTT);
-    //context.set_default_message_encoding_type(PlaintextEncodingType::partial_domain);
-    //context.set_default_plaintext_space(4);
+    context.generate_context(FHENamedParams::tfhe_11_NTT); 
     PlaintextEncoding encoding = context.get_default_plaintext_encoding();
     encoding.set_type(PlaintextEncodingType::partial_domain);
     encoding.set_plaintext_space(4);
@@ -125,25 +123,25 @@ int32_t main(){
         // 0 Nand 0
         ct0 = ct_nand; 
         ct1 = ct_nand; 
-        combined = ct0 + (ct1 * 2);    
+        combined = ct0 + (ct1 * 2);      
         ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 0) == 1");  
     
         ct0 = ct_nand;  
-        ct1 = context.encrypt(0);  
-        combined = ct0 + (ct1 * 2);  
+        ct1 = context.encrypt(0, encoding);  
+        combined = ct0 + (ct1 * 2);   
         ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(0, 1) == 1"); 
 
-        ct0 = context.encrypt(0);  
+        ct0 = context.encrypt(0, encoding);  
         ct1 = ct_nand;  
-        combined = ct0 + (ct1 * 2);  
+        combined = ct0 + (ct1 * 2);   
         ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 1, "ct_nand(1, 0) == 1"); 
     
         ct0 = ct_nand;  
         ct1 = ct_nand;  
-        combined = ct0 + (ct1 * 2);  
+        combined = ct0 + (ct1 * 2);    
         ct_nand = context.eval(combined, lut_fun_nand);  
         assertm(context.decrypt(ct_nand) == 0, "ct_nand(1, 1) == 0");  
     } 

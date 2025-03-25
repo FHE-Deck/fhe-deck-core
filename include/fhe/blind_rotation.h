@@ -352,10 +352,7 @@ class PreparedVectorCTAccumulators{
     #endif  
  
 };
-
-
-
-
+ 
    
 /**
  * @brief Interface for outputs of a blind rotation algorithm.

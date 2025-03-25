@@ -29,34 +29,6 @@ void FHEContext::generate_context(FHENamedParams name){
     config = std::shared_ptr<FHEConfiguration>(new FHEConfiguration(name));
     config->generate_keys();  
 }
-
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type)const{  
-    if(!config->is_secret_key_set){
-        throw std::logic_error("No Secret Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_type(type);
-    return encrypt(message, encoding);
-}
-
-Ciphertext FHEContext::encrypt(int64_t message, int64_t plaintext_space)const{
-    if(!config->is_secret_key_set){
-        throw std::logic_error("No Secret Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_plaintext_space(plaintext_space);
-    return encrypt(message, encoding);
-}
- 
-Ciphertext FHEContext::encrypt(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const{
-    if(!config->is_secret_key_set){
-        throw std::logic_error("No Secret Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_type(type);
-    encoding.set_plaintext_space(plaintext_space);
-    return encrypt(message, encoding);
-}
  
 Ciphertext FHEContext::encrypt(int64_t message, const PlaintextEncoding& encoding)const{  
     if(!config->is_secret_key_set){
@@ -65,42 +37,7 @@ Ciphertext FHEContext::encrypt(int64_t message, const PlaintextEncoding& encodin
     std::shared_ptr<LWECT> c(config->secret_key->lwe_sk->encrypt(encoding.encode_message(message)));
     return Ciphertext(c, encoding, *this); 
 }
-
-Ciphertext FHEContext::encrypt(int64_t message)const{
-    if(!config->is_secret_key_set){
-        throw std::logic_error("No Secret Key!");
-    }
-    return encrypt(message, config->eval_key.default_encoding);
-}
-
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type)const{  
-    if(!config->eval_key.is_encrypt_pk_set){
-        throw std::logic_error("No Public Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_type(type);
-    return encrypt_public(message, encoding);
-}
-
-Ciphertext FHEContext::encrypt_public(int64_t message, int64_t plaintext_space)const{
-    if(!config->eval_key.is_encrypt_pk_set){
-        throw std::logic_error("No Public Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_plaintext_space(plaintext_space);
-    return encrypt_public(message, encoding);
-}
-
-Ciphertext FHEContext::encrypt_public(int64_t message, PlaintextEncodingType type, int64_t plaintext_space)const{
-    if(!config->eval_key.is_encrypt_pk_set){
-        throw std::logic_error("No Public Key Initialized!");
-    }
-    PlaintextEncoding encoding = config->eval_key.default_encoding;
-    encoding.set_type(type);
-    encoding.set_plaintext_space(plaintext_space);
-    return encrypt_public(message, encoding);
-}
-
+ 
 Ciphertext FHEContext::encrypt_public(int64_t message, const PlaintextEncoding& encoding)const{  
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
@@ -108,14 +45,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, const PlaintextEncoding& 
     std::shared_ptr<LWECT> c(config->eval_key.encrypt_pk->encrypt(encoding.encode_message(message))); 
     return Ciphertext(c, encoding, *this);
 }
-
-Ciphertext FHEContext::encrypt_public(int64_t message)const{
-    if(!config->eval_key.is_encrypt_pk_set){
-        throw std::logic_error("No Public Key Initialized!");
-    }
-    return encrypt_public(message, config->eval_key.default_encoding);
-}
-  
+ 
 int64_t FHEContext::decrypt(const Ciphertext& c_in)const{
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
@@ -310,16 +240,23 @@ void FHEContext::read_secret_key(std::ifstream &is){
  
 void FHEContext::save_secret_key(std::string file_name)const{ 
     if(!config->is_secret_key_set) throw std::logic_error("FHEContext::save_secret_key(std::string file_name): No secret key set.");
+    #if defined(USE_CEREAL) 
     std::ofstream os(file_name, std::ios::binary); 
     send_secret_key(os);
     os.close();  
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif
 }
 
 void FHEContext::load_secret_key(std::string file_name){ 
     if(config->is_secret_key_set) throw std::logic_error("FHEContext::load_secret_key(std::string file_name): The secret key is already set.");
+    #if defined(USE_CEREAL) 
     std::ifstream is(file_name, std::ios::binary);
-    read_secret_key(is);
-    
+    read_secret_key(is); 
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif 
 }
 
 void FHEContext::send_public_key(const std::ofstream &os)const{ 
@@ -343,15 +280,23 @@ void FHEContext::read_public_key(std::ifstream &is){
  
 void FHEContext::save_public_key(std::string file_name)const{
     if(!config->is_secret_key_set) throw std::logic_error("FHEContext::save_public_key(std::string file_name): No Public Key Initialized!");
+    #if defined(USE_CEREAL)
     std::ofstream os(file_name, std::ios::binary); 
     send_public_key(os);
     os.close();
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif 
 }
 
 void FHEContext::load_public_key(std::string file_name){
     if(config->is_eval_key_set) throw std::logic_error("FHEContext::load_public_key(std::string file_name): The public key is already set.");
+    #if defined(USE_CEREAL)
     std::ifstream is(file_name, std::ios::binary);
     read_public_key(is);
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif  
 }
 
 void FHEContext::send_Ciphertext(const std::ostream &os, const Ciphertext &ct)const{ 
@@ -365,8 +310,7 @@ void FHEContext::send_Ciphertext(const std::ostream &os, const Ciphertext &ct)co
 }
 
 Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{ 
-    #if defined(USE_CEREAL)
-    //throw std::logic_error("Not implemented!"); 
+    #if defined(USE_CEREAL) 
     cereal::BinaryInputArchive iarchive(is);  
     Ciphertext ct;
     iarchive(ct);
@@ -378,12 +322,20 @@ Ciphertext FHEContext::read_Ciphertext(std::ifstream &is)const{
 }
  
 void FHEContext::save_Ciphertext(const std::string file_name, const Ciphertext &ct)const{
+    #if defined(USE_CEREAL)
     std::ofstream os(file_name, std::ios::binary);   
     send_Ciphertext(os, ct);
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif   
 }
 
 Ciphertext FHEContext::load_Ciphertext(std::string file_name)const{
+    #if defined(USE_CEREAL) 
     std::ifstream is(file_name, std::ios::binary);
     return read_Ciphertext(is);
+    #else
+    throw std::logic_error("Serialization not supported. If you want to use serialization compile FHE-Deck with CEREAL (see the README.md file).");
+    #endif    
 }
  
