@@ -215,9 +215,9 @@ Ciphertext FHEContext::eval_affine_function(
     return ct_out; 
 }
 
-void FHEContext::send_secret_key(const std::ofstream &os)const{
+void FHEContext::send_secret_key(std::ofstream &os)const{
     if(!config->is_secret_key_set) throw std::logic_error("FHEContext::send_secret_key(std::ofstream &os): No Secret Key Initialized!"); 
-    #if defined(USE_CEREAL)
+    #if defined(USE_CEREAL) 
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->secret_key); 
     #else
@@ -259,7 +259,7 @@ void FHEContext::load_secret_key(std::string file_name){
     #endif 
 }
 
-void FHEContext::send_public_key(const std::ofstream &os)const{ 
+void FHEContext::send_public_key(std::ofstream &os)const{ 
     #if defined(USE_CEREAL)
     cereal::BinaryOutputArchive oarchive(os); 
     oarchive(config->eval_key);  
@@ -299,7 +299,7 @@ void FHEContext::load_public_key(std::string file_name){
     #endif  
 }
 
-void FHEContext::send_Ciphertext(const std::ostream &os, const Ciphertext &ct)const{ 
+void FHEContext::send_Ciphertext(std::ostream &os, const Ciphertext &ct)const{ 
     if(!config->eval_key.is_encrypt_pk_set) throw std::logic_error("FHEContext::send_Ciphertext(std::ostream &os, Ciphertext &ct): No Public Key Initialized!"); 
     #if defined(USE_CEREAL) 
     cereal::BinaryOutputArchive oarchive(os);   

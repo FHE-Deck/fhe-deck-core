@@ -159,7 +159,7 @@ class FHEContext{
     
     /// @brief Serialize the secret key to the output file stream
     /// @param os The output file stream
-    void send_secret_key(const std::ofstream &os)const;
+    void send_secret_key(std::ofstream &os)const;
 
     /// @brief Reads the secret key from the input file stream
     /// @param is The input file stream
@@ -167,7 +167,7 @@ class FHEContext{
  
     /// @brief Store the secret key to the file
     /// @param file_name The name of the file
-    void save_secret_key(const std::string file_name)const;
+    void save_secret_key(std::string file_name)const;
 
     /// @brief Load the secret key from the file
     /// @param file_name The name of the file
@@ -175,7 +175,7 @@ class FHEContext{
     
     /// @brief Serialize the public key to the output file stream
     /// @param os The output file stream
-    void send_public_key(const std::ofstream &os)const;
+    void send_public_key(std::ofstream &os)const;
 
     /// @brief Reads the public key from the input file stream
     /// @param is The input file stream
@@ -183,7 +183,7 @@ class FHEContext{
  
     /// @brief Store the public key to the file
     /// @param file_name The name of the file
-    void save_public_key(const std::string file_name)const;
+    void save_public_key(std::string file_name)const;
 
     /// @brief Reads the public key from the file
     /// @param file_name The name of the file
@@ -192,7 +192,7 @@ class FHEContext{
     /// @brief Serialize the ciphertext to the output file stream
     /// @param os The output file stream
     /// @param ct The input ciphertext
-    void send_Ciphertext(const std::ostream &os, const Ciphertext &ct)const;
+    void send_Ciphertext(std::ostream &os, const Ciphertext &ct)const;
 
     /// @brief Read the ciphertext from the input file stream. The ciphertext points to this context.
     /// @param is The input file stream
@@ -202,7 +202,7 @@ class FHEContext{
     /// @brief Same the ciphertext to the file
     /// @param file_name The name of the file
     /// @param ct The input ciphertext
-    void save_Ciphertext(const std::string file_name, const Ciphertext &ct)const;
+    void save_Ciphertext(std::string file_name, const Ciphertext &ct)const;
 
     /// @brief Load a ciphertext from a file. The ciphertext points to this context.
     /// @param file_name The name of the file
