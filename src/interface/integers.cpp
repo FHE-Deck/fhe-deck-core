@@ -418,7 +418,7 @@ RNSInteger::RNSInteger(int64_t message, const RNSConfig& base){
 
 RNSInteger::RNSInteger(std::vector<Ciphertext> cts, const RNSConfig& base){
     this->encrypted_digits = cts; 
-    /// TODO: Perhaps check if the ciphertexts are correct with regard to the base.
+    this->base = base;
 }
 
 RNSInteger::RNSInteger(const RNSInteger& other){

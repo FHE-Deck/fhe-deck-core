@@ -5,7 +5,7 @@
 
 using namespace FHEDeck;
 
-/// @brief The function that demonstrates the saving and loading secret/public key, and ciphertexts. 
+/// @brief The function that demonstrates the serializing, saving and loading secret/public key, and ciphertexts. 
 void serialization_example();
 
 int main(){

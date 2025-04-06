@@ -5,11 +5,32 @@
 
 using namespace FHEDeck;
 
-
+/**
+ * @brief This example show how to use functional bootstrapping with partial domain encoding.  
+ */
 void basic_partial_encoding_example(FHENamedParams param_set);
+
+/**
+ * @brief This example show how to use the FHE-Deck Interface to compute linear functions on ciphertexts and compute arbitrary functions via functional bootstrapping. 
+ */
 void computing_linear_functions_and_boolean_gates(FHENamedParams param_set);
+
+/**
+ * @brief This example show how to use the interface to sanitize a ciphertext. The sanitization process is crucial to achieve circuit privacy. 
+ */
 void sanitization(FHENamedParams param_set);
+
+/**
+ * @brief This example show how to use the function amortization for partial domain bootstrapping. 
+ * Amortization allows to compute multiple functions on the same input ciphertext at the cost of a single bootstrapping invocation.
+ */
 void basic_function_amortization_example(FHENamedParams param_set);
+
+/**
+ * @brief This is another example that shows how to use the function amortization for partial domain bootstrapping.
+ * Here we use a C++ feature to bind variable of a function, so that we can conveniently define various multivariate function for bootstrapping,
+ * without having to define a new function with hardcoded parameterrs. 
+ */
 void advanced_function_amortization(FHENamedParams param_set);
 
 int main(){  
