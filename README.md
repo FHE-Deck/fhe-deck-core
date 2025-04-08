@@ -4,8 +4,7 @@ FHE-Deck
 About
 -----------
 
-FHE-Deck is a C++ library that implements Fully Homomorphic Encryption schemes based on Functional Bootstraping.
-
+FHE-Deck is a C++ library that implements fully homomorphic encryption schemes based on functional bootstrapping.
 
 Compilation
 -----------
@@ -25,7 +24,7 @@ cmake --build build
 
 ## Compilation Options
 
-You can customize the build. In partcicular, you can choose which compute engines and serialization libraries you want to use.
+You can customize the build. In particular, you can choose which compute engines and serialization libraries to use.
 The following CMake flags can be used to configure the build:
 
 ### `INV_ENGINE`
@@ -71,7 +70,9 @@ The following CMake flags can be used to configure the build:
 - **Default**: `FALSE`
 
 
-For example if you do not want to include FFTW and CEREAL as a dependency then configure and build the library as follows:
+For example, if you do not want to include FFTW and CEREAL as dependencies, configure and build the library as follows:
+
+
 ```
 cmake -S . -B build -DFFT_ENGINE=BUILDIN -DFFT_LONG_DOUBLE_ENGINE=BUILDIN -DUSE_CEREAL=FALSE
 cmake --build build
