@@ -77,10 +77,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT &lwe_ct_out,
     this->blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c_N, acc_F); 
     br_out->extract_lwe(lwe_ct_out); 
 }
- 
-
-
-
+  
 std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
     std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT& lwe_ct_in,
     const PlaintextEncoding &input_encoding, 
@@ -143,8 +140,7 @@ std::vector<LWECT> KSFunctionalBootstrapPublicKey::full_domain_bootstrap(
         output.emplace_back(tmp_res);
     }
 
-    return output;
-
+    return output; 
 }
 
 
