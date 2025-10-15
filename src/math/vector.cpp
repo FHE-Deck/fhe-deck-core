@@ -2,12 +2,13 @@
 
 using namespace FHEDeck;
 
- 
+ /*
 Vector::~Vector(){
     if(is_init){ 
         delete[] vec; 
     }
 }
+ */
 
 Vector::Vector(int64_t size, int64_t modulus){
     init(size, modulus);
@@ -16,7 +17,9 @@ Vector::Vector(int64_t size, int64_t modulus){
 void Vector::init(int32_t size, int64_t modulus){
     this->size = size;
     this->modulus = modulus;
-    vec = new int64_t[size];
+    //vec = new int64_t[size];
+    vec = std::vector<int64_t>();
+    vec.resize(size);
     is_init = true;
 }
 
@@ -38,13 +41,14 @@ void Vector::neg(Vector &out){
         out.vec[i] = this->modulus - this->vec[i];   
     }  
 }
- 
+ /*
 VectorArray::~VectorArray(){
     if(is_init){ 
         delete[] vec_array; 
         delete[] vec_array_2d; 
     }
 }
+ */
  
 VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
@@ -55,11 +59,13 @@ void VectorArray::init(const int32_t size, const int64_t modulus, const int32_t 
     this->modulus = modulus;
     this->array_size = array_size; 
     this->full_size = this->array_size * this->size; 
-    this->vec_array = new int64_t[full_size];
+    //this->vec_array = new int64_t[full_size];
+    this->vec_array.resize(full_size);
     this->is_init = true; 
-    init_two_dim_array();
+    ///init_two_dim_array();
 }
 
+/*
 void VectorArray::init_two_dim_array(){
     vec_array_2d = new int64_t*[array_size];  
     // Point the polynomials to the uint64_t tables. 
@@ -67,6 +73,7 @@ void VectorArray::init_two_dim_array(){
         vec_array_2d[i] = &vec_array[i * size];
     } 
 }
+*/
 
 
 void VectorArray::add(VectorArray &out, const VectorArray &other){
@@ -92,4 +99,9 @@ void VectorArray::mul(VectorArray &out, const int64_t scalar){
     for(int32_t i = 0; i < full_size; ++i){
         out.vec_array[i] = Utils::integer_mod_form(vec_array[i] * scalar, this->modulus); 
     }
+}
+
+int64_t* VectorArray::operator[](int32_t j){
+    //return this->vec_array_2d[j];
+    return &vec_array[j];
 }

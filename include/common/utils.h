@@ -4,8 +4,8 @@
 /**
  * @file utils.h
  */
-#include "global_headers.h"
-  
+#include "global_headers.h" 
+
 namespace FHEDeck{
 
 class Utils{
@@ -38,20 +38,30 @@ class Utils{
         static int32_t number_of_bits(int64_t x);
  
         static bool is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in);
-
+  
         static int64_t integer_signed_form(int64_t in, int64_t Q);
  
         static void array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q);
 
+        static void array_signed_form(std::vector<int64_t>& out, const int64_t *in, int32_t sizeof_in, int64_t Q);
+
+        static void array_signed_form(int64_t *out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q);
+
+        static void array_signed_form(std::vector<int64_t>& out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q);
+  
         static int64_t integer_mod_form(int64_t in, int64_t Q);
 
         static void array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q);
+
+        static void array_mod_form(std::vector<int64_t>& out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q);
   
         static std::string to_string(int64_t *poly, int32_t sizeof_poly);
 
         static std::string to_string(double *poly, int32_t sizeof_poly);
 
         static std::string to_string(int32_t *poly, int32_t sizeof_poly);
+
+        static std::string to_string(const std::vector<int64_t>& poly);
 
         //static std::string complex_to_string(fftw_complex* in, int32_t from, int32_t size);
  

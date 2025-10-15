@@ -30,7 +30,7 @@ public:
     bool is_init = false;
 
     /// @brief Frees the coefs array.
-    ~RotationPoly();
+    //~RotationPoly();
 
     /// @brief Default constructor.
     RotationPoly() = default;
@@ -65,6 +65,7 @@ public:
     /// @brief The assignment operator.
     /// @param other The polynomial to be assigned.
     /// @return The assigned polynomial.
+    /// TODO: Get rid of this!!!
     RotationPoly& operator=(const RotationPoly other);
 
     /// @brief Encodes the polynomial using the output_encoding.

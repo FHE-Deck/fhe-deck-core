@@ -18,19 +18,20 @@ std::shared_ptr<PolynomialArrayEvalForm> NaiveNegacyclicMultiplicationEngine::in
 void NaiveNegacyclicMultiplicationEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
         PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
         for(int32_t i = 0; i < degree; ++i){ 
-            out_cast.eval_long[i] = in.coefs[i];
+            out_cast.eval_long[i] = in.vec[i];
         }
 }
     
 void NaiveNegacyclicMultiplicationEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){
     const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
-    int64_t* in_poly;
+    //int64_t* in_poly;
     int64_t* out_poly; 
     for(int32_t i = 0; i < in.array_size; ++i){
-        in_poly = &in.poly_array[i * in.degree];
+        //in_poly = &in.poly_array[i * in.degree];
         out_poly = &out_cast.eval_long[i * out_cast.size];
         for(int32_t j = 0; j < degree; ++j){ 
-            out_poly[j] = in_poly[j];
+            //out_poly[j] = in_poly[j];
+            out_poly[j] = (&in.vec_array[i * in.degree])[j];
         } 
     } 
 }
@@ -38,7 +39,7 @@ void NaiveNegacyclicMultiplicationEngine::to_eval(PolynomialArrayEvalForm &out, 
 void NaiveNegacyclicMultiplicationEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){
     const PolynomialEvalFormLongInteger& in_cast = static_cast<const PolynomialEvalFormLongInteger&>(in);
     for(int32_t i = 0; i < degree; ++i){ 
-            out.coefs[i] = in_cast.eval_long[i];
+            out.vec[i] = in_cast.eval_long[i];
     }
 }
  
@@ -48,9 +49,10 @@ void NaiveNegacyclicMultiplicationEngine::to_coef(PolynomialArrayCoefForm &out, 
     int64_t* out_poly;
     for(int32_t i = 0; i < in.array_size; ++i){
         in_poly = &in_cast.eval_long[i * in.size];
-        out_poly = &out.poly_array[i * out.degree];
+        //out_poly = &out.poly_array[i * out.degree];
         for(int32_t j = 0; j < degree; ++j){ 
-            out_poly[j] = in_poly[j];
+            //out_poly[j] = in_poly[j];
+            out_poly[j] = (&out.vec_array[i * out.degree])[j];
     } 
     } 
 }
@@ -64,14 +66,14 @@ void NaiveNegacyclicMultiplicationEngine::mul(PolynomialEvalForm &out, const Pol
 
 void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
     const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    int64_t* in_1_temp = in_1.poly_array;
+    //int64_t* in_1_temp = in_1.poly_array;
     int64_t* in_2_temp = in_2_cast.eval_long;     
     Polynomial mult(degree, coef_modulus);
-    mul(out.coefs, in_1_temp, in_2_temp);
+    mul(out.vec.data(), &in_1.vec_array[0], in_2_temp);
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
-        in_1_temp = &in_1.poly_array[i * degree]; 
+        //in_1_temp = &in_1.poly_array[i * degree]; 
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];     
-        mul(mult.coefs, in_1_temp, in_2_temp);
+        mul(mult.vec.data(), &in_1.vec_array[i * degree], in_2_temp);
         out.add(out, mult);
     } 
 }
@@ -82,11 +84,11 @@ void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out, const Polyno
     int64_t* in_1_temp = in_1_cast.eval_long;
     int64_t* in_2_temp = in_2_cast.eval_long;     
     Polynomial mult(degree, coef_modulus);
-    mul(out.coefs, in_1_temp, in_2_temp);
+    mul(out.vec.data(), in_1_temp, in_2_temp);
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         in_1_temp = &in_1_cast.eval_long[i * degree]; 
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];     
-        mul(mult.coefs, in_1_temp, in_2_temp);
+        mul(mult.vec.data(), in_1_temp, in_2_temp);
         out.add(out, mult);
     } 
 }
@@ -94,22 +96,22 @@ void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out, const Polyno
 void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
     const PolynomialArrayEvalFormLong& out_in_1_eval_cast = static_cast<const PolynomialArrayEvalFormLong&>(out_in_1_eval);
     for(int32_t i = 0; i < out_in_1_eval.full_size; ++i){
-        out_in_1_eval_cast.eval_long[i] = in_1.poly_array[i];
+        out_in_1_eval_cast.eval_long[i] = in_1.vec_array[i];
     }
     const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    int64_t* in_1_temp = in_1.poly_array;
+    //int64_t* in_1_temp = in_1.poly_array;
     int64_t* in_2_temp = in_2_cast.eval_long;     
     Polynomial mult(degree, coef_modulus);
-    mul(out_multisum.coefs, in_1_temp, in_2_temp);
+    mul(out_multisum.vec.data(), &in_1.vec_array[0], in_2_temp);
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
-        in_1_temp = &in_1.poly_array[i * degree]; 
+        //in_1_temp = &in_1.poly_array[i * degree]; 
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];     
-        mul(mult.coefs, in_1_temp, in_2_temp);
+        mul(mult.vec.data(), &in_1.vec_array[i * degree], in_2_temp);
         out_multisum.add(out_multisum, mult);
     } 
 }
 
-void NaiveNegacyclicMultiplicationEngine::mul(int64_t* out, int64_t* in_1, int64_t* in_2){ 
+void NaiveNegacyclicMultiplicationEngine::mul(int64_t* out, const int64_t* in_1, const int64_t* in_2){ 
     for (int i = 0; i < degree; ++i) { 
         out[i] = 0;
         for (int32_t j = 0; j <= i; ++j) {

@@ -37,7 +37,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @brief The polynomial multiplication engine.
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     /// @brief Flag indicating whether the multiplication engine is initialized.
-    bool is_mul_engine_init = false;
+    //bool is_mul_engine_init = false;
  
     /// @brief Defaukt constructor.
     NTRUParam() = default; 

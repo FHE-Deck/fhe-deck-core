@@ -44,7 +44,7 @@ class NaiveNegacyclicMultiplicationEngine : public PolynomialMultiplicationEngin
 
     private:
 
-    void mul(int64_t* out, int64_t* in_1, int64_t* in_2);
+    void mul(int64_t* out, const int64_t* in_1, const int64_t* in_2);
 };
 
 }/// End of namespace FHEDeck

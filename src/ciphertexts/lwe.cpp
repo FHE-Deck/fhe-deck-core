@@ -9,20 +9,26 @@ LWEParam::LWEParam(int32_t dim, int64_t modulus){
   
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
-    this->ct = new int64_t[param->dim+1];
+    //this->ct = new int64_t[param->dim+1];
+    this->ct = std::vector<int64_t>();
+    ct.resize(param->dim+1);
 }
    
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
-    this->ct = new int64_t[param->dim+1]; 
+    //this->ct = new int64_t[param->dim+1]; 
+    this->ct = std::vector<int64_t>();
+    ct.resize(param->dim+1);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
 }
  
+/*
 LWECT::~LWECT(){    
     delete[] ct; 
 }
+*/
  
 void LWECT::mul(LWECT &out, int64_t scalar)const{
     for(int32_t i = 0; i <= param->dim; ++i){
@@ -80,7 +86,9 @@ LWECT& LWECT::operator=(const LWECT other){
         return *this;
     }   
     this->param = other.param;
-    this->ct = new int64_t[param->dim+1]; 
+    //this->ct = new int64_t[param->dim+1]; 
+    this->ct = std::vector<int64_t>();
+    ct.resize(param->dim+1);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = other.ct[i];
     } 
@@ -169,9 +177,11 @@ void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){
     delete[] scalar_decomposed;  
 }
   
+/*
 LWESK::~LWESK(){ 
     delete[] key; 
 }
+*/
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
@@ -181,7 +191,7 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution k
     init_key(); 
 }
 
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type){
+LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, std::vector<int64_t>& key, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
     this->stddev  = stddev;
     this->key_type = key_type;  
@@ -192,7 +202,9 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, Key
 }
 
 void LWESK::init(){
-    this->key = new int64_t[param->dim];  
+    //this->key = new int64_t[param->dim];  
+    this->key = std::vector<int64_t>();
+    this->key.resize(param->dim);
     unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
     error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
     multiplier = std::unique_ptr<LongIntegerMultipler>(new LongIntegerMultipler(param->modulus)); 
@@ -205,7 +217,8 @@ void LWESK::init_key(){
     }else{ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
     }
-    sk_dist->fill_array(key, param->dim); 
+    //sk_dist->fill_array(key, param->dim); 
+    sk_dist->fill(key);
     Utils::array_mod_form(this->key, this->key, param->dim, param->modulus);
 }
  

@@ -260,7 +260,7 @@ class Polynomial: public Vector{
     public:
 
     /// @brief The coefficients of the polynomial (points to the vec array in the Vector class)
-    int64_t* coefs;  
+    //int64_t* coefs;  
 
     /// @brief The coefficient modulus
     int64_t coef_modulus;
@@ -289,7 +289,8 @@ class Polynomial: public Vector{
     /// @param coefs The coefs array which is going to be copied.
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
-    Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
+    //Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
+    //Polynomial(const std::vector<int64_t>& coefs, int32_t degree, int64_t coef_modulus);
 
     void init_from_vec();
   
@@ -380,7 +381,7 @@ class PolynomialArrayCoefForm : public VectorArray{
  
     /// @brief The array of polynomials. 
     /// @note This is a pointer to a 1d array of coefficients, that stores a 1d array of polynomials. The array will be initialized as new int64_t[size * degree].
-    int64_t* poly_array; 
+    //int64_t* poly_array; 
   
     /// @brief Coefficient Modulus Q
     int64_t coef_modulus;
@@ -439,7 +440,8 @@ class PolynomialArrayCoefForm : public VectorArray{
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<VectorArray>(this));   
-        ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        //ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        ar(vec_array);
     }
         
     template <class Archive>
@@ -447,7 +449,8 @@ class PolynomialArrayCoefForm : public VectorArray{
     {   
         ar(cereal::base_class<VectorArray>(this));   
         init_from_vector();
-        ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        //ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        ar(vec_array);
         is_init = true;
     } 
     #endif 

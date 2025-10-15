@@ -15,10 +15,11 @@ class Vector{
     
     public:
 
-    ~Vector();
+    //~Vector();
 
     /// @brief The coefficients of the polynomial
-    int64_t* vec; 
+    //int64_t* vec; 
+    std::vector<int64_t> vec;
     /// @brief Indicates if the polynomial has been initialized
     bool is_init = false;
 
@@ -55,7 +56,8 @@ class Vector{
 
     { 
         ar(size, modulus);   
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));  
+        //ar(cereal::binary_data(vec, sizeof(int64_t) * size));  
+        ar(vec);
     }
         
     template <class Archive>
@@ -63,7 +65,8 @@ class Vector{
     {  
         ar(size, modulus); 
         init(size, modulus);   
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
+        //ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
+        ar(vec);
     }  
     #endif 
 
@@ -75,10 +78,13 @@ class Vector{
 class VectorArray{
 
     public:
+
+    std::vector<int64_t> vec_array;
+
     /// @brief The continuous block of memory that stores the vectors.
-    int64_t* vec_array;  
+    //int64_t* vec_array;  
     /// @brief The coefficients of the polynomial
-    int64_t** vec_array_2d; 
+    //int64_t** vec_array_2d; 
     /// @brief Indicates if the polynomial has been initialized
     bool is_init = false;
 
@@ -91,7 +97,7 @@ class VectorArray{
     /// @brief full_size = degree * array_size. Initialized in the constructors. 
     int32_t full_size;
 
-    ~VectorArray();
+    //~VectorArray();
 
     VectorArray() = default;
 
@@ -99,7 +105,7 @@ class VectorArray{
 
     void init(int32_t size, int64_t modulus, int32_t array_size);
 
-    void init_two_dim_array();
+    //void init_two_dim_array();
 
     /// @brief Coordinate wise addition of vector arrays
     /// @param out The resulting vector array
@@ -119,6 +125,11 @@ class VectorArray{
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
     void mul(VectorArray &out, int64_t scalar);
+
+    /// @brief Return the pointer to the jth coordinate in the vec_array_2d vector.
+    /// @param j 
+    /// @return int64_t&
+    int64_t* operator[](int32_t j);
 
     #if defined(USE_CEREAL)
     template <class Archive>

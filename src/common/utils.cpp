@@ -127,12 +127,31 @@ int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
     } 
 }
  
+void Utils::array_signed_form(std::vector<int64_t>& out, const int64_t *in, int32_t sizeof_in, int64_t Q){ 
+    for(int32_t i = 0; i < sizeof_in; ++i){ 
+        out[i] =  Utils::integer_signed_form(in[i], Q);
+    }
+}
+
+
 void Utils::array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
     for(int32_t i = 0; i < sizeof_in; ++i){ 
         out[i] =  Utils::integer_signed_form(in[i], Q);
     }
 }
 
+void Utils::array_signed_form(int64_t *out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q){ 
+    for(int32_t i = 0; i < sizeof_in; ++i){ 
+        out[i] =  Utils::integer_signed_form(in[i], Q);
+    }
+}
+
+void Utils::array_signed_form(std::vector<int64_t>& out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q){ 
+    for(int32_t i = 0; i < sizeof_in; ++i){ 
+        out[i] =  Utils::integer_signed_form(in[i], Q);
+    }
+}
+  
 
 int64_t Utils::integer_mod_form(int64_t in, int64_t Q){ 
     if(in >= 0){
@@ -144,6 +163,13 @@ int64_t Utils::integer_mod_form(int64_t in, int64_t Q){
 }
 
 void Utils::array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
+    for(int32_t i = 0; i < sizeof_in; ++i){ 
+        out[i] = Utils::integer_mod_form(in[i], Q);
+    }
+}
+
+
+void Utils::array_mod_form(std::vector<int64_t>& out, const std::vector<int64_t>& in, int32_t sizeof_in, int64_t Q){ 
     for(int32_t i = 0; i < sizeof_in; ++i){ 
         out[i] = Utils::integer_mod_form(in[i], Q);
     }
@@ -192,6 +218,21 @@ std::string Utils::to_string(int32_t *poly, int32_t sizeof_poly){
         str += std::to_string(poly[i]) + ", ";
     }
     str += std::to_string(poly[sizeof_poly-1]) + "]";
+    return str;
+}
+
+std::string Utils::to_string(const std::vector<int64_t>& poly){
+    if(poly.size()==0){
+        return "[]";
+    }
+    if(poly.size()==1){
+        return "[" + std::to_string(poly[0]) + "]" ;
+    }
+    std::string str = "[";
+    for(int32_t i = 0; i < poly.size()-1; ++i){
+        str += std::to_string(poly[i]) + ", ";
+    }
+    str += std::to_string(poly[poly.size()-1]) + "]";
     return str;
 }
 

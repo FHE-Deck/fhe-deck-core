@@ -19,6 +19,8 @@ class Distribution{
     
     void fill_array(int64_t *in, int32_t length); 
 
+    void fill(std::vector<int64_t>& in);
+
 };
  
 class StandardUniformIntegerDistribution : public Distribution{

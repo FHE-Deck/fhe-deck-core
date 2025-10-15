@@ -51,9 +51,11 @@ class LWECT{
   public:
  
     /// @brief Pointer to the LWE parameters.
+    /// @NOTE: It has to be a shared_pointer and not just a reference, because we will use cereal automated shared_pointer tracking when serializing. 
     std::shared_ptr<LWEParam> param;
     /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M. 
-    int64_t *ct = nullptr;
+    /// TODO: This should be a std::vector!!!
+    std::vector<int64_t> ct;
     /// @brief Flag that indicates if the ciphertext is initialized.
     //bool init = false;
 
@@ -61,7 +63,7 @@ class LWECT{
     LWECT() = default;
 
     /// @brief  Frees ct
-    ~LWECT();
+    //~LWECT();
 
     /// @brief Initializes the ciphertext and allocates memory for the ciphertext vector.
     /// @param lwe_par Pointer to the LWE parameters.
@@ -120,24 +122,30 @@ class LWECT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param);  
+      ar(param);   
+      ar(ct);
+      /*
       std::vector<int64_t> ct_arr; 
       for(int32_t i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
       }
       ar(ct_arr);
+      */
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(param);
+      ar(ct);
+      /*
       std::vector<int64_t> ct_arr;
       ar(ct_arr);
       ct = new int64_t[param->dim+1];
       for(int32_t i = 0; i < param->dim+1; ++i){
         ct[i] = ct_arr[i];
       } 
+      */
     } 
     #endif
 };
@@ -197,12 +205,13 @@ class LWESK {
     KeyDistribution key_type;
     /// @brief Standard deviation of the error distribution.
     double stddev;
-    /// @brief The secret key. Initialized in the constructors and freed in the destructor.
-    int64_t *key;   
+    /// @brief The secret key.  
+    std::vector<int64_t> key;
+    //int64_t *key;   
     /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
     std::unique_ptr<LongIntegerMultipler> multiplier;
     /// @brief Free the key.
-    ~LWESK();
+    //~LWESK();
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;
@@ -218,7 +227,8 @@ class LWESK {
     /// @param key Pointer to the secret key. This object will create a copy of the key.
     /// @param stddev Stadard deviation of the error distribution.
     /// @param key_type Key distribution according to which the key was choosen. 
-    LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
+    //LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
+    LWESK(std::shared_ptr<LWEParam> lwe_par, std::vector<int64_t>& key, double stddev, KeyDistribution key_type);
  
     /// @brief Deleted so that you are not tempted to copy the secret key around. 
     LWESK(const LWESK &other) = delete;

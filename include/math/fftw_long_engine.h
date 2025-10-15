@@ -50,26 +50,30 @@ class FFTLongPlan{
     // Long arithmetic 
 
     // Note that we still only support operations on polynomials with 64-bit coefs max. 
-    void to_eval_form_l(fftwl_complex* eval_form, int64_t *poly); 
+    void to_eval_form_l(fftwl_complex* eval_form, const int64_t *poly); 
 
-    void to_eval_form_l(fftwl_complex* eval_form, int32_t *poly);
+    void to_eval_form_l(fftwl_complex* eval_form, const int32_t *poly);
+
+    void to_eval_form_l(fftwl_complex* eval_form, const std::vector<int64_t>& poly);
    
-    void to_eval_form_scale_l(fftwl_complex* eval_form, int64_t *poly);
+    void to_eval_form_scale_l(fftwl_complex* eval_form, const int64_t *poly);
 
      // It divides the coefficients by (plan_size * additional_scale) before computing the FFT
     void to_eval_form_scale_l(fftwl_complex* eval_form, int64_t *poly, long double additional_scale);
    
-    void to_coef_form_l(int64_t *coef_form, fftwl_complex* eval_form);
+    void to_coef_form_l(int64_t *coef_form, const fftwl_complex* eval_form);
 
-    void to_coef_form_l(long double *coef_form, fftwl_complex* eval_form);
+    void to_coef_form_l(long double *coef_form, const fftwl_complex* eval_form);
     
-    void to_coef_form_scale_l(int64_t *coef_form, fftwl_complex* eval_form, long double scale);
+    void to_coef_form_scale_l(int64_t *coef_form, const fftwl_complex* eval_form, long double scale);
 
-    void to_coef_form_scale_l(long double *coef_form, fftwl_complex* eval_form, long double scale);
+    void to_coef_form_scale_l(std::vector<int64_t>& coef_form, const fftwl_complex* eval_form, long double scale);
+
+    void to_coef_form_scale_l(long double *coef_form, const fftwl_complex* eval_form, long double scale);
  
-    void add_eval_form_l(fftwl_complex *sum, fftwl_complex* in_1, fftwl_complex* in_2);
+    void add_eval_form_l(fftwl_complex *sum, const fftwl_complex* in_1, const fftwl_complex* in_2);
 
-    void mul_eval_form_l(fftwl_complex *prod, fftwl_complex* in_1, fftwl_complex* in_2);
+    void mul_eval_form_l(fftwl_complex *prod, const fftwl_complex* in_1, const fftwl_complex* in_2);
 
     private:
 

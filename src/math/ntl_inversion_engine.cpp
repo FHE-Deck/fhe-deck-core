@@ -14,14 +14,14 @@ NTLInversionEngine::NTLInversionEngine(const int degree, const int64_t coef_modu
 
 bool NTLInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
     NTL::ZZ_pX temp_f; 
-    set_polynomial_from_array(temp_f, in.coefs, in.size, coef_modulus);
+    set_polynomial_from_array(temp_f, in.vec, in.size, coef_modulus);
     NTL::ZZ_pX temp_inv_f;  
     int64_t status = NTL::InvModStatus(temp_inv_f, temp_f, ring_poly);   
-    set_array_from_polynomial(out.coefs, out.size, temp_inv_f);    
+    set_array_from_polynomial(out.vec, out.size, temp_inv_f);    
     return (status == 0); 
 }
 
-void NTLInversionEngine::set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f, int32_t sizeof_f, int64_t Q)const{
+void NTLInversionEngine::set_polynomial_from_array(NTL::ZZ_pX &poly, const std::vector<int64_t>& f, int32_t sizeof_f, int64_t Q)const{
     NTL::ZZ_p coef;
     coef.init(NTL::ZZ(Q));
     for(int32_t i = 0; i < sizeof_f; ++i){
@@ -31,7 +31,7 @@ void NTLInversionEngine::set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f,
 }
 
 
-void NTLInversionEngine::set_array_from_polynomial(int64_t *f, int32_t sizeof_array, NTL::ZZ_pX poly)const{ 
+void NTLInversionEngine::set_array_from_polynomial(std::vector<int64_t>& f, int32_t sizeof_array, NTL::ZZ_pX poly)const{ 
     for(int32_t i = 0; i < sizeof_array; ++i){
         f[i] = 0;
     }
@@ -44,7 +44,9 @@ void NTLInversionEngine::set_array_from_polynomial(int64_t *f, int32_t sizeof_ar
 
 NTL::ZZ_pX NTLInversionEngine::get_ring_poly(RingType ring, int64_t N, int64_t modulus)const{
     NTL::ZZ_pX out;
-    int64_t *psi_arr = new long[N+1]; 
+    //int64_t *psi_arr = new long[N+1]; 
+    std::vector<int64_t> psi_arr;
+    psi_arr.resize(N+1);
     psi_arr[N] = 1;
     for(int32_t i=1; i < N; ++i){
             psi_arr[i] = 0;
@@ -55,7 +57,7 @@ NTL::ZZ_pX NTLInversionEngine::get_ring_poly(RingType ring, int64_t N, int64_t m
         psi_arr[0] = 1;
     }
     set_polynomial_from_array(out, psi_arr, N+1, modulus); 
-    delete[] psi_arr;
+    //delete[] psi_arr;
     return out;
 }
  

@@ -29,9 +29,9 @@ class NTLInversionEngine : public PolynomialInversionEngine{
 
     private:
 
-    void set_polynomial_from_array(NTL::ZZ_pX &poly, int64_t *f, int32_t sizeof_f, int64_t Q)const;
+    void set_polynomial_from_array(NTL::ZZ_pX &poly, const std::vector<int64_t>& f, int32_t sizeof_f, int64_t Q)const;
 
-    void set_array_from_polynomial(int64_t *f, int32_t sizeof_array, NTL::ZZ_pX poly)const;
+    void set_array_from_polynomial(std::vector<int64_t>& f, int32_t sizeof_array, NTL::ZZ_pX poly)const;
 
     NTL::ZZ_pX get_ring_poly(RingType ring, int64_t N, int64_t modulus)const;
 };

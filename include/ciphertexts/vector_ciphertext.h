@@ -76,7 +76,8 @@ class VectorCTSK{
 
     public:
 
-    std::shared_ptr<VectorCTParam> vector_ct_param;
+    //std::shared_ptr<VectorCTParam> vector_ct_param;
+    //VectorCTParam& vector_ct_param;
 
     /// @brief Destructor
     virtual ~VectorCTSK() = default;

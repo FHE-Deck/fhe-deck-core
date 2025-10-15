@@ -50,11 +50,13 @@ class FFTPlan{
 
     fftw_complex* init_fft_poly();
  
-    void to_eval_form(fftw_complex* eval_form, int64_t *poly); 
+    void to_eval_form(fftw_complex* eval_form, const int64_t *poly); 
 
-    void to_eval_form(fftw_complex* eval_form, int32_t *poly);
+    void to_eval_form(fftw_complex* eval_form, const std::vector<int64_t>& poly); 
+
+    void to_eval_form(fftw_complex* eval_form, const int32_t *poly);
    
-    // TODO: Delete
+    /// TODO: Delete
     void to_eval_form_scale(fftw_complex* eval_form, int64_t *poly);
 
     // It divides the coefficients by (plan_size * additional_scale) before computing the FFT
@@ -65,6 +67,8 @@ class FFTPlan{
     void to_coef_form(double *coef_form, fftw_complex* eval_form);
 
     void to_coef_form_scale(int64_t *coef_form, fftw_complex* eval_form, double scale);
+
+    void to_coef_form_scale(std::vector<int64_t>& coef_form, fftw_complex* eval_form, double scale);
 
     void to_coef_form_scale(double *coef_form, fftw_complex* eval_form, double scale);
  
