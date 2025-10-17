@@ -116,6 +116,7 @@ RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree,  std::shared_ptr<Poly
     this->arithmetic = mul_engine->type;  
 }
  
+/*
 RLWEParam::RLWEParam(RLWEParam &other){ 
     throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 
 }
@@ -124,6 +125,7 @@ RLWEParam& RLWEParam::operator=(const RLWEParam other){
     throw std::runtime_error("RLWEParam& RLWEParam::operator=(const RLWEParam other)"); 
     return *this;
 }
+*/
 
 void RLWEParam::init_mul_engine(){  
     // Build PolynomialMultiplicationEngine
@@ -222,6 +224,7 @@ void RLWEGadgetCT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::ve
     this->is_init = true;  
 }
  
+/*
 RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other){    
     throw std::runtime_error("RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other)");
 }
@@ -230,6 +233,7 @@ RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other){
     throw std::runtime_error("RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other)");
     return *this;
 }
+*/
   
 void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){ 
     RLWECT& out_ptr = static_cast<RLWECT&>(out);

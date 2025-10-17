@@ -10,6 +10,7 @@ NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, 
     init_mul_engine();
 }
          
+/*
 NTRUParam::NTRUParam(NTRUParam &other){ 
     throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 
 }
@@ -18,6 +19,7 @@ NTRUParam& NTRUParam::operator=(const NTRUParam other){
     throw std::runtime_error("RLWEParam& RLWEParam::operator=(const RLWEParam other)"); 
     return *this;
 }
+*/
 
 void NTRUParam::init_mul_engine(){ 
     // Build PolynomialMultiplicationEngine
@@ -131,14 +133,16 @@ void NTRUGadgetCT::init(std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
     }  
     ntru_param->mul_engine->to_eval(*array_eval_a, array_coef);  
      
-    this->is_init = true; 
+    //this->is_init = true; 
 }
 
+/*
 NTRUGadgetCT::~NTRUGadgetCT(){     
     if(is_init == false){
         return;
     }        
 }
+*/
  
 NTRUGadgetCT::NTRUGadgetCT(const NTRUGadgetCT& other){    
     throw std::runtime_error("NTRUGadgetCT::NTRUGadgetCT(const RLWEGadgetCT& other)");

@@ -48,9 +48,9 @@ class NTRUParam : public PolynomialCTParam{
     /// @param arithmetic The polynomial arithmetic.
     NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, PolynomialArithmetic arithmetic);
  
-    NTRUParam(NTRUParam &c);
+    NTRUParam(NTRUParam &c) = delete;
 
-    NTRUParam& operator=(NTRUParam other);
+    NTRUParam& operator=(NTRUParam other) = delete;
 
     /// @brief Constructs a new VectorCT object implemented as NTRUCT.
     /// @param param The parameters of the NTRU encryption scheme. Usually its the same object. 
@@ -140,7 +140,7 @@ class NTRUCT : public PolynomialCT{
 
     /// @brief Negates this ciphertexts coefficients and stores the result in out.
     /// @param out The output ciphertext.
-    void neg(VectorCT &out);
+    void neg(VectorCT &out) override;
  
     /// @brief Extracts an LWE ciphertext that encodes the constant coefficient. 
     /// @param out The output LWE ciphertext.
@@ -181,7 +181,7 @@ class NTRUSK : public VectorCTSK{
     /// @brief The multiplicative inverse of secret key polynomial.
     Polynomial inv_sk; 
     /// @brief Flag indicating whether the secret key is initialized.
-    bool is_init = false;   
+    //bool is_init = false;   
     /// @brief The error distribution.
     std::shared_ptr<Distribution> error_dist;
     /// @brief The secret key distribution.
@@ -305,12 +305,12 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @brief The decomposition gadget. 
   std::shared_ptr<Gadget> gadget;
   /// @brief Flag indicating whether the gadget is initialized.
-  bool is_init = false;  
+  //bool is_init = false;  
   /// @brief The array evaluation form holding the decomposition of the ciphertext.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;  
  
   /// @brief Free deter_ct_a_dec memory.
-  ~NTRUGadgetCT();
+  //~NTRUGadgetCT();
 
   /// @brief Default constructor.
   NTRUGadgetCT() = default;
@@ -332,9 +332,9 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @brief Multiplies this with the input ct, and stores the result in out.
   /// @param out The output ciphertext.
   /// @param ct The input ciphertext.
-  void mul(VectorCT &out, const VectorCT &ct);
+  void mul(VectorCT &out, const VectorCT &ct) override;
 
-  void mul(VectorCT &out, const Polynomial &scalar);
+  void mul(VectorCT &out, const Polynomial &scalar) override;
 
   #if defined(USE_CEREAL)
   template <class Archive>
@@ -349,7 +349,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
         ar(ntru_param, gadget, array_eval_a);     
-        this->is_init = true;  
+        //this->is_init = true;  
     } 
     #endif
        
@@ -381,13 +381,13 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg); 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) override; 
 
     /// @brief Encrypts the input message array msg, and returns the result.
     /// @param msg The input message array.
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size); 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
 
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
@@ -403,13 +403,13 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Polynomial &msg); 
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Polynomial &msg) override; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size); 
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size) override; 
    
     #if defined(USE_CEREAL)
     template <class Archive>
