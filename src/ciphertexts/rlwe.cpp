@@ -404,6 +404,7 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg){
     return std::make_shared<RLWEGadgetCT>(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
+/*
 std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
     if(size > rlwe_sk->param->size){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
@@ -415,6 +416,7 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const uint64_t *msg
     }
     return gadget_encrypt(msg_poly);
 }
+*/
  
 std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Polynomial &msg){      
     std::vector<std::shared_ptr<RLWECT>> gadget_ct = ext_enc(msg); 

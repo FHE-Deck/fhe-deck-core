@@ -60,6 +60,9 @@ class VectorCTParam{
     /// @brief The size of the vector
     int32_t size; 
 
+    /// @brief The modulus for arithmetic of the vector
+    uint64_t coef_modulus; 
+
     /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space. 
     virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param) = 0;
 
@@ -170,7 +173,7 @@ class GadgetVectorCTSK{
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    //virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
       
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt

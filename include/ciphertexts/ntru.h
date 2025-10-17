@@ -27,7 +27,7 @@ class NTRUParam : public PolynomialCTParam{
 
   public: 
     /// @brief The coefficiant modulus.
-    uint64_t coef_modulus; 
+    //uint64_t coef_modulus; 
     /// @brief The ring type.
     RingType ring;
     /// @brief The modulus type. 
@@ -387,7 +387,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @param msg The input message array.
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
+    //std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
 
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.

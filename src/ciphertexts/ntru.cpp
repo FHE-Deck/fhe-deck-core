@@ -321,6 +321,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 }
  
+/*
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
     if(size > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
@@ -332,6 +333,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const uint64_t *msg
     }
     return gadget_encrypt(msg_poly);
 }
+*/
  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg){
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    

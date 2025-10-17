@@ -25,10 +25,13 @@ void CGGIBlindRotationKey::blind_rotate(VectorCT& out, const LWECT& lwe_ct_in, s
 }
    
 void CGGIBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCTSK> rlwe_gadget_sk, std::shared_ptr<uint64_t[]> ext_s){
-    std::shared_ptr<uint64_t[]> msg(new uint64_t[1]);
+    //std::shared_ptr<uint64_t[]> msg(new uint64_t[1]);
+    
+    std::shared_ptr<Vector> msg = std::make_shared<Vector>(rlwe_gadget_sk->vector_ct_param->size, rlwe_gadget_sk->vector_ct_param->coef_modulus);
     for(int32_t i = 0; i < lwe_par->dim; ++i){    
-        msg[0] = ext_s[i]; 
-        bk.push_back(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1));
+        msg->vec[0] = ext_s[i]; 
+        //bk.push_back(rlwe_gadget_sk->gadget_encrypt(msg.get(), 1));
+        bk.push_back(rlwe_gadget_sk->gadget_encrypt(*msg));
     }      
 }
 

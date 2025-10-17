@@ -26,7 +26,7 @@ class RLWEParam : public PolynomialCTParam{
 
   public: 
     /// @brief The coefficient modulus
-    uint64_t coef_modulus;  
+    //uint64_t coef_modulus;  
     /// @brief The ring type
     RingType ring;
     /// @brief Indicates the implementation of the multiplication engine. Used to deserialize the RLWEParm object. This way we don't need to serialize the engine itself.
@@ -463,7 +463,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
+    //std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
