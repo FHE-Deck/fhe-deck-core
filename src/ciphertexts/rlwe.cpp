@@ -115,18 +115,7 @@ RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree,  std::shared_ptr<Poly
     this->mul_engine = mul_engine; 
     this->arithmetic = mul_engine->type;  
 }
- 
-/*
-RLWEParam::RLWEParam(RLWEParam &other){ 
-    throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 
-}
-
-RLWEParam& RLWEParam::operator=(const RLWEParam other){ 
-    throw std::runtime_error("RLWEParam& RLWEParam::operator=(const RLWEParam other)"); 
-    return *this;
-}
-*/
-
+  
 void RLWEParam::init_mul_engine(){  
     // Build PolynomialMultiplicationEngine
     PolynomialMultiplicationEngineBuilder mul_engine_builder;
@@ -223,17 +212,6 @@ void RLWEGadgetCT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::ve
     
     this->is_init = true;  
 }
- 
-/*
-RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other){    
-    throw std::runtime_error("RLWEGadgetCT::RLWEGadgetCT(const RLWEGadgetCT& other)");
-}
-
-RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other){  
-    throw std::runtime_error("RLWEGadgetCT& RLWEGadgetCT::operator=(RLWEGadgetCT other)");
-    return *this;
-}
-*/
   
 void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){ 
     RLWECT& out_ptr = static_cast<RLWECT&>(out);
@@ -259,8 +237,7 @@ RLWESK::RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, doubl
     key_gen(); 
 }
 
-void RLWESK::init(){ 
-    //this->vector_ct_param = this->param;
+void RLWESK::init(){  
     this->unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->coef_modulus));
     this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
 }
@@ -361,8 +338,7 @@ void RLWESK::extract_lwe_key(int64_t* lwe_key){
     }  
 }
 
-std::shared_ptr<LWESK> RLWESK::extract_lwe_key(){
-    //std::unique_ptr<int64_t[]> extract_key(new int64_t[param->size]);  
+std::shared_ptr<LWESK> RLWESK::extract_lwe_key(){ 
     std::vector<int64_t> extract_key;
     extract_key.resize(param->size);
     extract_lwe_key(extract_key.data());
@@ -398,26 +374,11 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg){
     // Encryptions of - msg * sk * base**i    
     Polynomial msg_x_sk(rlwe_sk->param->size, rlwe_sk->param->coef_modulus);  
     // Multiply msg with sk.s. Result is in msg_x_sk 
-    msg_poly.mul(msg_x_sk, rlwe_sk->sk_poly, rlwe_sk->param->mul_engine);
-    //msg_x_sk.neg(&msg_x_sk); 
+    msg_poly.mul(msg_x_sk, rlwe_sk->sk_poly, rlwe_sk->param->mul_engine); 
     std::vector<std::shared_ptr<RLWECT>> gadget_ct_sk = ext_enc(msg_x_sk);   
     return std::make_shared<RLWEGadgetCT>(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
- 
-/*
-std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
-    if(size > rlwe_sk->param->size){
-        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
-    }
-    Polynomial msg_poly(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
-    msg_poly.zeroize();
-    for(int32_t i = 0; i < size; ++i){
-        msg_poly.vec[i] = msg[i];
-    }
-    return gadget_encrypt(msg_poly);
-}
-*/
- 
+  
 std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Polynomial &msg){      
     std::vector<std::shared_ptr<RLWECT>> gadget_ct = ext_enc(msg); 
     return std::make_shared<ExtendedRLWECT>(rlwe_sk->param, gadget, gadget_ct);

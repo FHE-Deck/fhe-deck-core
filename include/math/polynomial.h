@@ -284,14 +284,7 @@ class Polynomial: public Vector{
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
     Polynomial(int32_t degree, int64_t coef_modulus);
-
-    /// @brief Constructs the polynomial, and allocates memory for the coefs array.
-    /// @param coefs The coefs array which is going to be copied.
-    /// @param degree The degree of the polynomial (size of the coefs array)
-    /// @param coef_modulus The coefficient modulus
-    //Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
-    //Polynomial(const std::vector<int64_t>& coefs, int32_t degree, int64_t coef_modulus);
-
+ 
     void init_from_vec();
   
     /// @brief Copy constructor
@@ -378,10 +371,6 @@ class Polynomial: public Vector{
 class PolynomialArrayCoefForm : public VectorArray{
 
     public:
- 
-    /// @brief The array of polynomials. 
-    /// @note This is a pointer to a 1d array of coefficients, that stores a 1d array of polynomials. The array will be initialized as new int64_t[size * degree].
-    //int64_t* poly_array; 
   
     /// @brief Coefficient Modulus Q
     int64_t coef_modulus;
@@ -408,13 +397,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     /// @param array_size The size of the array
     /// @param mul_engine The polynomial multiplication engine
     PolynomialArrayCoefForm(int32_t degree, int64_t coef_modulus, int32_t array_size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-  
-    /// @brief Initializes the polynomial array. Its used in the constructors.
-    /// @param degree The degree of the polynomials
-    /// @param coef_modulus The coefficient modulus
-    /// @param array_size The size of the array
-    //void init(int32_t degree, int64_t coef_modulus, int32_t array_size);
-
+   
     void init_from_vector();
  
     /// @brief Copy constructor

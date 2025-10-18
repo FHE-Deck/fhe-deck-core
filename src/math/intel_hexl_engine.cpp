@@ -19,8 +19,7 @@ void IntelHexlNTTEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialA
     int64_t* in_poly;
     int64_t* out_poly;
     for(int32_t i = 0; i < in.array_size; ++i){
-        in_poly = &in_cast.eval_long[i * in.size];
-        //out_poly = &out.poly_array[i * out.degree];
+        in_poly = &in_cast.eval_long[i * in.size]; 
         ntt.ComputeInverse((uint64_t*) &out.vec_array[i * out.degree], (uint64_t*) in_poly, 1, 1);  
     } 
 }
@@ -35,21 +34,17 @@ std::shared_ptr<PolynomialArrayEvalForm> IntelHexlNTTEngine::init_polynomial_arr
  
 void IntelHexlNTTEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){  
     const PolynomialEvalFormLongInteger& out_cast = static_cast<const PolynomialEvalFormLongInteger&>(out);
-    // Here we make sure that the coefficients are in propper form.
-    //int64_t* coefs_mod_form = new int64_t[in.degree];
+    // Here we make sure that the coefficients are in propper form. 
     std::vector<int64_t> coefs_mod_form;
     coefs_mod_form.resize(in.degree);
     Utils::array_mod_form(coefs_mod_form, in.vec, in.degree, in.coef_modulus); 
-    ntt.ComputeForward((uint64_t*) out_cast.eval_long, (uint64_t*) coefs_mod_form.data(), 1, 1);  
-    //delete[] coefs_mod_form;
+    ntt.ComputeForward((uint64_t*) out_cast.eval_long, (uint64_t*) coefs_mod_form.data(), 1, 1);   
 }
  
 void IntelHexlNTTEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){  
-    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
-    //int64_t* in_poly;
+    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out); 
     int64_t* out_poly; 
-    for(int32_t i = 0; i < in.array_size; ++i){
-        //in_poly = &in.poly_array[i * in.degree];
+    for(int32_t i = 0; i < in.array_size; ++i){ 
         out_poly = &out_cast.eval_long[i * out_cast.size];
         ntt.ComputeForward((uint64_t*) out_poly, (uint64_t*) &in.vec_array[i * in.degree], 1, 1);   
     } 
@@ -66,16 +61,12 @@ void IntelHexlNTTEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm &
 }
  
 void IntelHexlNTTEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){    
-    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    //int64_t* in_1_temp = in_1.poly_array;
-    //std::vector<int64_t> in_1_temp;
-    //in_1_temp.resize(in_1.degree);
+    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2); 
     int64_t* in_2_temp = in_2_cast.eval_long; 
     int64_t* temp = new int64_t[in_2_cast.size];   
     ntt.ComputeForward((uint64_t*) temp, (uint64_t*) &in_1.vec_array[0], 1, 1);  
     intel::hexl::EltwiseMultMod((uint64_t*) out.vec.data(), (uint64_t*) temp, (uint64_t*) in_2_temp, in_2_cast.size, in_2_cast.coef_modulus, 1); 
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];  
         ntt.ComputeForward((uint64_t*) temp, (uint64_t*) &in_1.vec_array[i * in_1.degree], 1, 1);  
         intel::hexl::EltwiseMultMod((uint64_t*) temp, (uint64_t*) temp, (uint64_t*) in_2_temp, in_2_cast.size, in_2_cast.coef_modulus, 1);
@@ -105,15 +96,13 @@ void IntelHexlNTTEngine::multisum(Polynomial &out, const PolynomialArrayEvalForm
 
 void IntelHexlNTTEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){   
     const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    const PolynomialArrayEvalFormLong& out_in_1_eval_cast = static_cast<const PolynomialArrayEvalFormLong&>(out_in_1_eval);
-    //int64_t* in_1_temp = in_1.poly_array;
+    const PolynomialArrayEvalFormLong& out_in_1_eval_cast = static_cast<const PolynomialArrayEvalFormLong&>(out_in_1_eval); 
     int64_t* in_2_temp = in_2_cast.eval_long; 
     int64_t* temp = new long[in_2_cast.size];  
     int64_t* out_eval = out_in_1_eval_cast.eval_long; 
     ntt.ComputeForward((uint64_t*) out_eval, (uint64_t*) &in_1.vec_array[0], 1, 1);  
     intel::hexl::EltwiseMultMod((uint64_t*) out_multisum.vec.data(), (uint64_t*) out_eval, (uint64_t*) in_2_temp, in_2_cast.size, in_2_cast.coef_modulus, 1); 
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size]; 
         out_eval = &out_in_1_eval_cast.eval_long[i * out_in_1_eval_cast.size]; 
         ntt.ComputeForward((uint64_t*) out_eval, (uint64_t*) &in_1.vec_array[i * in_1.degree], 1, 1);  

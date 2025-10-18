@@ -53,18 +53,12 @@ class LWECT{
     /// @brief Pointer to the LWE parameters.
     /// @NOTE: It has to be a shared_pointer and not just a reference, because we will use cereal automated shared_pointer tracking when serializing. 
     std::shared_ptr<LWEParam> param;
-    /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M. 
-    /// TODO: This should be a std::vector!!!
-    std::vector<int64_t> ct;
-    /// @brief Flag that indicates if the ciphertext is initialized.
-    //bool init = false;
+    /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M.  
+    std::vector<int64_t> ct; 
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWECT() = default;
-
-    /// @brief  Frees ct
-    //~LWECT();
-
+  
     /// @brief Initializes the ciphertext and allocates memory for the ciphertext vector.
     /// @param lwe_par Pointer to the LWE parameters.
     LWECT(std::shared_ptr<LWEParam> lwe_par);
@@ -123,29 +117,14 @@ class LWECT{
     void save( Archive & ar ) const
     { 
       ar(param);   
-      ar(ct);
-      /*
-      std::vector<int64_t> ct_arr; 
-      for(int32_t i = 0; i < param->dim+1; ++i){
-        ct_arr.push_back(ct[i]);
-      }
-      ar(ct_arr);
-      */
+      ar(ct); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(param);
-      ar(ct);
-      /*
-      std::vector<int64_t> ct_arr;
-      ar(ct_arr);
-      ct = new int64_t[param->dim+1];
-      for(int32_t i = 0; i < param->dim+1; ++i){
-        ct[i] = ct_arr[i];
-      } 
-      */
+      ar(ct); 
     } 
     #endif
 };
@@ -206,12 +185,9 @@ class LWESK {
     /// @brief Standard deviation of the error distribution.
     double stddev;
     /// @brief The secret key.  
-    std::vector<int64_t> key;
-    //int64_t *key;   
+    std::vector<int64_t> key; 
     /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
-    std::unique_ptr<LongIntegerMultipler> multiplier;
-    /// @brief Free the key.
-    //~LWESK();
+    std::unique_ptr<LongIntegerMultipler> multiplier; 
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;

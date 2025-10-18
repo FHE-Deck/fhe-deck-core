@@ -14,11 +14,8 @@ namespace FHEDeck{
 class Vector{
     
     public:
-
-    //~Vector();
-
-    /// @brief The coefficients of the polynomial
-    //int64_t* vec; 
+ 
+    /// @brief The coefficients of the polynomial 
     std::vector<int64_t> vec;
     /// @brief Indicates if the polynomial has been initialized
     bool is_init = false;
@@ -55,8 +52,7 @@ class Vector{
     void save( Archive & ar ) const
 
     { 
-        ar(size, modulus);   
-        //ar(cereal::binary_data(vec, sizeof(int64_t) * size));  
+        ar(size, modulus);    
         ar(vec);
     }
         
@@ -64,8 +60,7 @@ class Vector{
     void load( Archive & ar )
     {  
         ar(size, modulus); 
-        init(size, modulus);   
-        //ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
+        init(size, modulus);     
         ar(vec);
     }  
     #endif 

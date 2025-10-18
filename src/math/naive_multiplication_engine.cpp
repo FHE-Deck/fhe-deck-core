@@ -23,14 +23,11 @@ void NaiveNegacyclicMultiplicationEngine::to_eval(PolynomialEvalForm &out, const
 }
     
 void NaiveNegacyclicMultiplicationEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){
-    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
-    //int64_t* in_poly;
+    const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out); 
     int64_t* out_poly; 
-    for(int32_t i = 0; i < in.array_size; ++i){
-        //in_poly = &in.poly_array[i * in.degree];
+    for(int32_t i = 0; i < in.array_size; ++i){ 
         out_poly = &out_cast.eval_long[i * out_cast.size];
-        for(int32_t j = 0; j < degree; ++j){ 
-            //out_poly[j] = in_poly[j];
+        for(int32_t j = 0; j < degree; ++j){  
             out_poly[j] = (&in.vec_array[i * in.degree])[j];
         } 
     } 
@@ -48,10 +45,8 @@ void NaiveNegacyclicMultiplicationEngine::to_coef(PolynomialArrayCoefForm &out, 
     int64_t* in_poly;
     int64_t* out_poly;
     for(int32_t i = 0; i < in.array_size; ++i){
-        in_poly = &in_cast.eval_long[i * in.size];
-        //out_poly = &out.poly_array[i * out.degree];
-        for(int32_t j = 0; j < degree; ++j){ 
-            //out_poly[j] = in_poly[j];
+        in_poly = &in_cast.eval_long[i * in.size]; 
+        for(int32_t j = 0; j < degree; ++j){  
             out_poly[j] = (&out.vec_array[i * out.degree])[j];
     } 
     } 
@@ -65,13 +60,11 @@ void NaiveNegacyclicMultiplicationEngine::mul(PolynomialEvalForm &out, const Pol
 }
 
 void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
-    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    //int64_t* in_1_temp = in_1.poly_array;
+    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2); 
     int64_t* in_2_temp = in_2_cast.eval_long;     
     Polynomial mult(degree, coef_modulus);
     mul(out.vec.data(), &in_1.vec_array[0], in_2_temp);
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
-        //in_1_temp = &in_1.poly_array[i * degree]; 
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){  
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];     
         mul(mult.vec.data(), &in_1.vec_array[i * degree], in_2_temp);
         out.add(out, mult);
@@ -98,13 +91,11 @@ void NaiveNegacyclicMultiplicationEngine::multisum(Polynomial &out_multisum, Pol
     for(int32_t i = 0; i < out_in_1_eval.full_size; ++i){
         out_in_1_eval_cast.eval_long[i] = in_1.vec_array[i];
     }
-    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2);
-    //int64_t* in_1_temp = in_1.poly_array;
+    const PolynomialArrayEvalFormLong& in_2_cast = static_cast<const PolynomialArrayEvalFormLong&>(in_2); 
     int64_t* in_2_temp = in_2_cast.eval_long;     
     Polynomial mult(degree, coef_modulus);
     mul(out_multisum.vec.data(), &in_1.vec_array[0], in_2_temp);
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
-        //in_1_temp = &in_1.poly_array[i * degree]; 
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){  
         in_2_temp = &in_2_cast.eval_long[i * in_2_cast.size];     
         mul(mult.vec.data(), &in_1.vec_array[i * degree], in_2_temp);
         out_multisum.add(out_multisum, mult);
@@ -118,8 +109,7 @@ void NaiveNegacyclicMultiplicationEngine::mul(int64_t* out, const int64_t* in_1,
             __int128 temp = (__int128)in_1[j] * (__int128)in_2[(degree - j + i) % degree];
             out[i] = (out[i] + temp) % coef_modulus;
         }
-        for (int32_t j = i+1; j < degree; ++j) {
-            //out[i] -= in_1[j] * in_2[(degree - j + i) % degree];
+        for (int32_t j = i+1; j < degree; ++j) { 
             __int128 temp = (in_1[j] * in_2[(degree - j + i) % degree]) % coef_modulus;
             out[i] = Utils::integer_mod_form(out[i] - temp, coef_modulus);
         }

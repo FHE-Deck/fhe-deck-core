@@ -25,9 +25,8 @@ namespace FHEDeck{
  */
 class NTRUParam : public PolynomialCTParam{
 
-  public: 
-    /// @brief The coefficiant modulus.
-    //uint64_t coef_modulus; 
+  public:  
+
     /// @brief The ring type.
     RingType ring;
     /// @brief The modulus type. 
@@ -35,9 +34,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @brief The polynomial arithmetic indicates the implementation of the multiplication engine.
     PolynomialArithmetic arithmetic = PolynomialArithmetic::ntt64;
     /// @brief The polynomial multiplication engine.
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
-    /// @brief Flag indicating whether the multiplication engine is initialized.
-    //bool is_mul_engine_init = false;
+    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine; 
  
     /// @brief Defaukt constructor.
     NTRUParam() = default; 
@@ -179,9 +176,7 @@ class NTRUSK : public VectorCTSK{
     /// @brief The secret key polynomial.
     Polynomial sk; 
     /// @brief The multiplicative inverse of secret key polynomial.
-    Polynomial inv_sk; 
-    /// @brief Flag indicating whether the secret key is initialized.
-    //bool is_init = false;   
+    Polynomial inv_sk;  
     /// @brief The error distribution.
     std::shared_ptr<Distribution> error_dist;
     /// @brief The secret key distribution.
@@ -303,15 +298,10 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @brief The parameters of the NTRU encryption scheme.
   std::shared_ptr<NTRUParam> ntru_param;
   /// @brief The decomposition gadget. 
-  std::shared_ptr<Gadget> gadget;
-  /// @brief Flag indicating whether the gadget is initialized.
-  //bool is_init = false;  
+  std::shared_ptr<Gadget> gadget; 
   /// @brief The array evaluation form holding the decomposition of the ciphertext.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;  
- 
-  /// @brief Free deter_ct_a_dec memory.
-  //~NTRUGadgetCT();
-
+   
   /// @brief Default constructor.
   NTRUGadgetCT() = default;
    
@@ -334,6 +324,9 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @param ct The input ciphertext.
   void mul(VectorCT &out, const VectorCT &ct) override;
 
+  /// @brief Multiplies this with the input scalar, and stores the result in out.
+  /// @param out The output ciphertext.
+  /// @param scalar The input scalar.
   void mul(VectorCT &out, const Polynomial &scalar) override;
 
   #if defined(USE_CEREAL)
@@ -348,8 +341,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(ntru_param, gadget, array_eval_a);     
-        //this->is_init = true;  
+        ar(ntru_param, gadget, array_eval_a);      
     } 
     #endif
        
@@ -382,13 +374,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
     std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) override; 
-
-    /// @brief Encrypts the input message array msg, and returns the result.
-    /// @param msg The input message array.
-    /// @param size The size of the input message array.
-    /// @return Creates and returns a new ciphertext.
-    //std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
-
+ 
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.

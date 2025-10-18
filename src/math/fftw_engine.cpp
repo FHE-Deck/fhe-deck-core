@@ -365,8 +365,7 @@ void FFTWNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm
 
 
 void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){   
-    const PolynomialArrayEvalFormComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormComplex&>(in_2);
-    //int64_t* in_1_temp = in_1.poly_array;
+    const PolynomialArrayEvalFormComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormComplex&>(in_2); 
     std::vector<int64_t> in_1_temp;
     in_1_temp.resize(in_1.degree);
     fftw_complex* in_2_temp = in_2_cast.eval;
@@ -377,8 +376,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefFo
     engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         
         Utils::array_signed_form(in_1_temp, &in_1.vec_array[i * in_1.degree], in_1.degree, in_1.coef_modulus); 
@@ -420,8 +418,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEvalFo
    
 void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){   
     const PolynomialArrayEvalFormComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormComplex&>(in_2);
-    PolynomialArrayEvalFormComplex& out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormComplex&>(out_in_1_eval);
-    //int64_t* in_1_temp = in_1.poly_array;
+    PolynomialArrayEvalFormComplex& out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormComplex&>(out_in_1_eval); 
     std::vector<int64_t> in_1_temp;
     in_1_temp.resize(in_1.degree);
     fftw_complex* out_eval = out_in_1_eval_cast.eval;
@@ -433,8 +430,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEva
     engine.to_eval_form(out_eval, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, out_eval, in_2_temp);  
  
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         out_eval = &out_in_1_eval_cast.eval[i * out_in_1_eval_cast.size];
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         

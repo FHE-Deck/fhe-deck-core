@@ -1,17 +1,8 @@
 #include "interface/rotation_poly.h"
  
 using namespace FHEDeck;
-
-/*
-RotationPoly::~RotationPoly(){
-    if(is_init){ 
-        delete[] this->coefs;
-    }
-}
-*/
-
-RotationPoly::RotationPoly(const RotationPoly &poly){ 
-    //this->vec = new int64_t[poly.degree];
+ 
+RotationPoly::RotationPoly(const RotationPoly &poly){  
     this->vec = std::vector<int64_t>();
     this->vec.resize(poly.degree);
     this->output_encoding = poly.output_encoding;
@@ -25,8 +16,7 @@ RotationPoly::RotationPoly(const RotationPoly &poly){
 
 
 RotationPoly& RotationPoly::operator=(const RotationPoly other){
-    if(!this->is_init){  
-        //this->vec = new int64_t[other.degree];
+    if(!this->is_init){   
         this->vec = std::vector<int64_t>();
         this->vec.resize(other.degree);
     }
@@ -45,8 +35,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     this->input_encoding = input_encoding;
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
-    this->is_amortized_form = true;
-    //this->vec = new int64_t[degree];
+    this->is_amortized_form = true; 
     this->vec = std::vector<int64_t>();
     this->vec.resize(degree);
      
@@ -82,8 +71,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t de
     this->input_encoding = output_encoding;
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
-    this->is_amortized_form = is_amortized_form;
-    //vec = new int64_t[degree]; 
+    this->is_amortized_form = is_amortized_form; 
     this->vec = std::vector<int64_t>();
     this->vec.resize(degree);
     PlaintextEncoding in_enc_mod_switch; 
@@ -118,8 +106,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     this->input_encoding = output_encoding;
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
-    this->is_amortized_form = is_amortized_form;
-    //this->vec = new int64_t[degree];
+    this->is_amortized_form = is_amortized_form; 
     this->vec = std::vector<int64_t>();
     this->vec.resize(degree);
      
@@ -218,8 +205,7 @@ void RotationPoly::to_non_amortized_form(){
     But note that this is actually specific to a particular functional bootstrapipng algorithm. Its not used anywhere else. 
 */
 RotationPoly RotationPoly::rot_sgn(int32_t plaintext_space, int64_t degree, int64_t ciphertext_modulus){
-    int64_t delta_Q_t = (int64_t)round((double)ciphertext_modulus/(double)plaintext_space); 
-    //int64_t* acc = new int64_t[degree]; 
+    int64_t delta_Q_t = (int64_t)round((double)ciphertext_modulus/(double)plaintext_space);  
     std::vector<int64_t> acc;
     acc.resize(degree);
     for(int32_t i = 0; i < degree; ++i){
@@ -234,8 +220,7 @@ RotationPoly RotationPoly::rot_sgn(int32_t plaintext_space, int64_t degree, int6
 }
 
 RotationPoly RotationPoly::rot_msb(int32_t plaintext_space, int64_t degree, int64_t ciphertext_modulus){
-    int64_t delta_Q_t = (int64_t)round((double)ciphertext_modulus/(double)(plaintext_space*2)); 
-    //int64_t* acc = new int64_t[degree]; 
+    int64_t delta_Q_t = (int64_t)round((double)ciphertext_modulus/(double)(plaintext_space*2));  
     std::vector<int64_t> acc;
     acc.resize(degree);
     for(int32_t i = 0; i < degree; ++i){
@@ -249,8 +234,7 @@ RotationPoly RotationPoly::rot_msb(int32_t plaintext_space, int64_t degree, int6
     return out;
 }
 
-RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){
-    //int64_t* acc = new int64_t[N]; 
+RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){ 
     std::vector<int64_t> acc;
     acc.resize(N);
     for(int32_t i = 0; i < N; ++i){

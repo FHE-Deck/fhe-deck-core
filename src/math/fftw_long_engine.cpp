@@ -56,16 +56,11 @@ void FFTLongPlan::init_tables(){
     plan_to_coef_form_l = fftwl_plan_dft_c2r_1d(plan_size, out_l, in_l,  FFTW_PATIENT);  
     this->is_init = true;
 }
-
-
-
-
+ 
 fftwl_complex* FFTLongPlan::init_fft_poly_l(){
     return new fftwl_complex[plan_size]; 
 }
-  
-
-
+   
 void FFTLongPlan::to_eval_form_l(fftwl_complex* eval_form_l, const int64_t *poly){ 
     for(int32_t i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i];
@@ -307,13 +302,11 @@ void FFTWLongNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial
 }
  
 void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){
-    PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);
-    //int64_t *in_poly;
+    PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out); 
     fftwl_complex *out_poly;
     std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.degree, in.coef_modulus);
     for (int32_t i = 0; i < in.array_size; ++i)
-    {  
-        //in_poly = &in.poly_array[i * in.degree];
+    {   
         Utils::array_signed_form(input->vec, &in.vec_array[i * in.degree], in.degree, in.coef_modulus);
         out_poly = &out_cast.eval[i * out_cast.size];   
         engine.to_eval_form_l(out_poly, &in.vec_array[i * in.degree]);  
@@ -354,8 +347,7 @@ void FFTWLongNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEval
 }
   
 void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
-    const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2);
-    //int64_t* in_1_temp = in_1.poly_array;
+    const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2); 
     std::vector<int64_t> in_1_temp;
     in_1_temp.resize(in_1.degree);
     fftwl_complex* in_2_temp = in_2_cast.eval;
@@ -366,8 +358,7 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCo
     engine.to_eval_form_l(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         
         Utils::array_signed_form(in_1_temp, &in_1.vec_array[i * in_1.degree], in_1.degree, in_1.coef_modulus); 
@@ -422,8 +413,7 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArra
     engine.to_eval_form_l(out_eval, in_1_temp);   
     engine.mul_eval_form_l(fft_multisum_eval_new, out_eval, in_2_temp);  
  
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        //in_1_temp = &in_1.poly_array[i * in_1.degree];
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
         out_eval = &out_in_1_eval_cast.eval[i * out_in_1_eval_cast.size];
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         

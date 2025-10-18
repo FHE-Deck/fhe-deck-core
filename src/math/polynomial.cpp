@@ -174,37 +174,18 @@ Polynomial::Polynomial(int32_t degree, int64_t coef_modulus){
     this->init(degree, coef_modulus);
     this->init_from_vec();
 }
-
-/*
-Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus){
-    this->init(degree, coef_modulus);
-    this->init_from_vec();
-    Utils::cp(this->coefs, coefs, degree);
-}
-*/
-
-/*
-Polynomial::Polynomial(const std::vector<int64_t>& coefs, int32_t degree, int64_t coef_modulus){
-    this->init(degree, coef_modulus);
-    this->init_from_vec();
-    //Utils::cp(this->coefs, coefs, degree);
-    this->vec = coefs;
-}
-*/
-
+ 
 void Polynomial::init_from_vec(){
     this->degree = size;
     this->coef_modulus = modulus;
-    this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
-    //this->coefs = this->vec;
+    this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2); 
     this->is_init = true;
 }
  
 Polynomial::Polynomial(const Polynomial &other){
     this->init(other.degree, other.coef_modulus); 
     this->init_from_vec();
-    this->vec = other.vec;
-    //Utils::cp(this->coefs, other.coefs, this->degree);  
+    this->vec = other.vec; 
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -216,8 +197,7 @@ Polynomial& Polynomial::operator=(const Polynomial other){
         this->init(other.degree, other.coef_modulus);
         this->init_from_vec();
     }
-    this->vec = other.vec;
-    //Utils::cp(this->coefs, other.coefs, this->degree);  
+    this->vec = other.vec;  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -297,8 +277,7 @@ std::shared_ptr<Polynomial> Polynomial::clone() const{
     }
     if(is_inv_engine_set){
         out->set_inversion_engine(inv_engine);
-    } 
-    //Utils::cp(out->coefs, coefs, degree);
+    }  
     out->vec = vec;
     out->is_init = true;
     return out;
@@ -349,16 +328,14 @@ PolynomialArrayCoefForm::PolynomialArrayCoefForm(int32_t degree, int64_t coef_mo
     is_mul_engine_set = true; 
 }
  
-void PolynomialArrayCoefForm::init_from_vector(){ 
-    //this->poly_array = this->vec_array;
+void PolynomialArrayCoefForm::init_from_vector(){  
     this->degree = this->size;
     this->coef_modulus = this->modulus; 
 }
  
 PolynomialArrayCoefForm::PolynomialArrayCoefForm(const PolynomialArrayCoefForm &other){
     this->init(other.degree, other.coef_modulus, other.array_size); 
-    this->init_from_vector();
-    //Utils::cp(this->poly_array, other.poly_array, this->full_size);  
+    this->init_from_vector();  
     this->vec_array = other.vec_array;
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  
@@ -366,8 +343,7 @@ PolynomialArrayCoefForm::PolynomialArrayCoefForm(const PolynomialArrayCoefForm &
   
 PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArrayCoefForm other){
     this->init(other.degree, other.coef_modulus, other.array_size);
-    this->init_from_vector();
-    //Utils::cp(this->poly_array, other.poly_array, this->full_size);  
+    this->init_from_vector();  
     this->vec_array = other.vec_array;
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  

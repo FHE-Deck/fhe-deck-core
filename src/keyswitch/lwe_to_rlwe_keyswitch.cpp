@@ -24,8 +24,7 @@ void LWEToRLWEKeySwitchKey::init(){
     mask_mod_degree = dest_param->size - 1;  
 }
 
-void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
-    //Polynomial sk_origin_poly(sk_origin->key, sk_dest->rlwe_sk->sk_poly.degree, sk_dest->rlwe_sk->sk_poly.coef_modulus);
+void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) {  
     Polynomial sk_origin_poly(sk_dest->rlwe_sk->sk_poly.degree, sk_dest->rlwe_sk->sk_poly.coef_modulus);
     sk_origin_poly.vec = sk_origin->key;
     Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.degree, sk_dest->rlwe_sk->sk_poly.coef_modulus);  
@@ -37,8 +36,7 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_orig
    
 void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in) { 
     rlwe_ct_out.b.zeroize(); 
-    rlwe_ct_out.b.vec[0] = lwe_ct_in.ct[0];  
-    //Utils::array_mod_form(lwe_ct_in.ct, lwe_ct_in.ct, lwe_ct_in.param->dim  + 1, dest_param->coef_modulus);  
+    rlwe_ct_out.b.vec[0] = lwe_ct_in.ct[0];   
     rlwe_ct_out.a.vec[0] =  lwe_ct_in.ct[1];
     for(int i = 1; i < dest_param->size; ++i){
         rlwe_ct_out.a.vec[dest_param->size - i] = dest_param->coef_modulus - lwe_ct_in.ct[i+1];

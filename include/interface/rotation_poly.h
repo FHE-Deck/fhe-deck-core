@@ -28,10 +28,7 @@ public:
     bool is_amortized_form = false;
     /// @brief Indicates whether the polynomial is initialized or not.
     bool is_init = false;
-
-    /// @brief Frees the coefs array.
-    //~RotationPoly();
-
+ 
     /// @brief Default constructor.
     RotationPoly() = default;
   

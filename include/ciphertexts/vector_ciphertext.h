@@ -78,10 +78,7 @@ class VectorCTParam{
 class VectorCTSK{
 
     public:
-
-    //std::shared_ptr<VectorCTParam> vector_ct_param;
-    //VectorCTParam& vector_ct_param;
-
+ 
     /// @brief Destructor
     virtual ~VectorCTSK() = default;
 
@@ -168,13 +165,7 @@ class GadgetVectorCTSK{
 
     /// @brief Destructor
     virtual ~GadgetVectorCTSK() = default;
-
-    /// @brief Encrypts the msg vector and returns the ciphertext
-    /// @param msg The message to encrypt
-    /// @param size The size of the message
-    /// @return Creates a new ciphertext
-    //virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
-      
+ 
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message

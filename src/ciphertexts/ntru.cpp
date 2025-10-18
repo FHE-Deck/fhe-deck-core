@@ -9,18 +9,7 @@ NTRUParam::NTRUParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, 
     this->arithmetic = arithmetic;   
     init_mul_engine();
 }
-         
-/*
-NTRUParam::NTRUParam(NTRUParam &other){ 
-    throw std::runtime_error("RLWEParam::RLWEParam(RLWEParam &other)"); 
-}
-
-NTRUParam& NTRUParam::operator=(const NTRUParam other){ 
-    throw std::runtime_error("RLWEParam& RLWEParam::operator=(const RLWEParam other)"); 
-    return *this;
-}
-*/
-
+        
 void NTRUParam::init_mul_engine(){ 
     // Build PolynomialMultiplicationEngine
     PolynomialMultiplicationEngineBuilder mul_engine_builder;
@@ -28,8 +17,7 @@ void NTRUParam::init_mul_engine(){
     mul_engine_builder.set_degree(size);
     mul_engine_builder.set_polynomial_arithmetic(arithmetic);
     mul_engine_builder.set_ring_type(ring); 
-    this->mul_engine = mul_engine_builder.build(); 
-    //this->is_mul_engine_init = true;
+    this->mul_engine = mul_engine_builder.build();  
 }
  
 std::shared_ptr<VectorCT> NTRUParam::init_ct(std::shared_ptr<VectorCTParam> param){
@@ -131,18 +119,9 @@ void NTRUGadgetCT::init(std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
     for(int32_t i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, gadget_ct[i]->ct_poly);
     }  
-    ntru_param->mul_engine->to_eval(*array_eval_a, array_coef);  
-     
-    //this->is_init = true; 
+    ntru_param->mul_engine->to_eval(*array_eval_a, array_coef);   
 }
-
-/*
-NTRUGadgetCT::~NTRUGadgetCT(){     
-    if(is_init == false){
-        return;
-    }        
-}
-*/
+ 
  
 NTRUGadgetCT::NTRUGadgetCT(const NTRUGadgetCT& other){    
     throw std::runtime_error("NTRUGadgetCT::NTRUGadgetCT(const RLWEGadgetCT& other)");
@@ -175,8 +154,7 @@ NTRUSK::NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev){
     key_gen(); 
 }
  
-void NTRUSK::init(){
-    //this->vector_ct_param = this->param;
+void NTRUSK::init(){ 
     this->error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, noise_stddev));
     this->sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1)); 
 }
@@ -293,8 +271,7 @@ std::shared_ptr<NTRUCT> NTRUSK::kdm_encode_and_encrypt(const Polynomial& msg, Pl
     return out;
 }
  
-std::shared_ptr<LWESK> NTRUSK::extract_lwe_key(){
-    //std::shared_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
+std::shared_ptr<LWESK> NTRUSK::extract_lwe_key(){ 
     std::vector<int64_t> extract_key;
     extract_key.resize(param->size);
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus)); 
@@ -314,27 +291,12 @@ NTRUGadgetSK::NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUS
 }
  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){     
-    //Polynomial msg_poly(msg.vec, sk->param->size, sk->param->coef_modulus);
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus);
     msg_poly.vec = msg.vec;
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 }
- 
-/*
-std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
-    if(size > sk->param->size){
-        throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
-    }
-    Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
-    msg_poly.zeroize();
-    for(int32_t i = 0; i < size; ++i){
-        msg_poly.vec[i] = msg[i];
-    }
-    return gadget_encrypt(msg_poly);
-}
-*/
- 
+  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg){
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
