@@ -324,13 +324,13 @@ void RLWESK::encode_and_encrypt(VectorCT& out, const Vector& m, PlaintextEncodin
 
 void RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct){   
     if(phase.degree != param->size){
-        throw std::logic_error("RLWESK::phase(Polynomial *phase, RLWECT *ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
+        throw std::logic_error("RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
     if(phase.coef_modulus != param->coef_modulus){
-        throw std::logic_error("RLWESK::phase(Polynomial *phase, RLWECT *ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
+        throw std::logic_error("RRLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
     }
     if(!phase.is_init){
-        throw std::logic_error("RLWESK::phase(Polynomial *phase, RLWECT *ct): Input polynomial is not initialized.");
+        throw std::logic_error("RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct): Input polynomial is not initialized.");
     } 
     ct.a.mul(phase, sk_poly, param->mul_engine);   
     ct.b.add(phase, phase);  
@@ -345,9 +345,10 @@ std::shared_ptr<Vector> RLWESK::decrypt(const VectorCT &ct, PlaintextEncoding en
 void RLWESK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding){
     Polynomial& out_cast = static_cast<Polynomial&>(out);
     const RLWECT& ct_cast = static_cast<const RLWECT&>(ct);
-    this->partial_decrypt(out_cast, ct_cast);   
+    Polynomial partial_dec(this->param->size, this->param->coef_modulus);
+    this->partial_decrypt(partial_dec, ct_cast);   
     for(int32_t i = 0; i < out.size; ++i){
-        out_cast.coefs[i] = encoding.decode_message(out_cast.coefs[i]);
+        out_cast.coefs[i] = encoding.decode_message(partial_dec.coefs[i]);
     }  
 }
 
@@ -372,15 +373,19 @@ RLWEGadgetSK::RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWES
 }
  
 std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Polynomial &msg){
-    std::vector<std::shared_ptr<RLWECT>> ext_ct; 
-    std::shared_ptr<Polynomial> msg_cpy(msg.clone()); 
+    std::vector<std::shared_ptr<RLWECT>> ext_ct;  
+    Polynomial msg_cpy(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
+    msg_cpy.zeroize();
+    for(int32_t i = 0; i < rlwe_sk->param->size; ++i){
+        msg_cpy.coefs[i] = msg.coefs[i];
+    }
     // Encryptions of - msg* base**i    
-    ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(*msg_cpy)));
+    ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg_cpy)));
     for(int32_t i = 1; i < gadget->digits; ++i){
         // Multiply msg by base
-        msg_cpy->mul(*msg_cpy, gadget->base); 
+        msg_cpy.mul(msg_cpy, gadget->base); 
         // Encrypt msg * base**i   
-        ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(*msg_cpy))); 
+        ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg_cpy))); 
     }  
     return ext_ct;
 }

@@ -1,8 +1,8 @@
 build/
 .vscode 
 CMakeFiles/
-external/
-tests/
+external/ 
+Testing/
 docs/
 Makefile
 compile_commands.json

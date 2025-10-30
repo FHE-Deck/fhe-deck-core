@@ -12,11 +12,9 @@ PolynomialInversionEngineBuilder::PolynomialInversionEngineBuilder(int32_t degre
 
 std::shared_ptr<PolynomialInversionEngine> PolynomialInversionEngineBuilder::build(){
  
-#if defined(USE_NTL)
-    std::cout << "Using the NTL Inversion Engine" << std::endl;
+#if defined(USE_NTL) 
     return std::make_shared<NTLInversionEngine>(degree, coef_modulus);
-#else
-    std::cout << "Using the Euclidean (Default) Inversion Engine" << std::endl;
+#else 
     return std::make_shared<EuclideanInversionEngine>(degree, coef_modulus);
 #endif 
  

@@ -253,9 +253,10 @@ std::shared_ptr<Vector> NTRUSK::decrypt(const VectorCT &ct, PlaintextEncoding en
 void NTRUSK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding){   
     const NTRUCT& ct_cast = static_cast<const NTRUCT&>(ct);
     Polynomial& out_cast =  static_cast<Polynomial&>(out);
-    this->partial_decrypt(out_cast, ct_cast);  
+    Polynomial phase(this->param->size, this->param->coef_modulus);
+    this->partial_decrypt(phase, ct_cast);  
     for(int32_t i = 0; i < out_cast.degree; ++i){
-        out_cast.coefs[i] = encoding.decode_message(out_cast.coefs[i]);
+        out_cast.coefs[i] = encoding.decode_message(phase.coefs[i]);
     } 
 }
  

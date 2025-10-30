@@ -49,7 +49,8 @@ target_include_directories(fhe_deck
 set(INV_ENGINE "BUILDIN" CACHE STRING "Choose Polynomial Inversion engine")
 message("--- Use " ${INV_ENGINE} " Inversion Engine")
 if(INV_ENGINE STREQUAL "NTL") 
-    add_definitions(-DUSE_NTL)
+    #add_definitions(-DUSE_NTL)
+    add_compile_definitions(USE_NTL)
     set(ntl_link ntl)
 elseif(INV_ENGINE STREQUAL "BUILDIN") 
     set(ntl_link "")
@@ -71,7 +72,8 @@ message("--- Use " ${NTT_ENGINE} " NTT Engine")
 if(NTT_ENGINE STREQUAL "Hexl")
     
     add_dependencies(fhe_deck intel_hexl)
-    add_definitions(-DUSE_IntelHexl) 
+    #add_definitions(-DUSE_IntelHexl) 
+    add_compile_definitions(USE_IntelHexl)
     include(ExternalProject)  
     ExternalProject_Add(
         intel_hexl
@@ -106,7 +108,8 @@ message("--- Use " ${FFT_ENGINE} " FFT Engine")
 if(FFT_ENGINE STREQUAL "FFTW")
     
     add_dependencies(fhe_deck fftw_lib)
-    add_definitions(-DUSE_FFTW)  
+    #add_definitions(-DUSE_FFTW)  
+    add_compile_definitions(USE_FFTW)
     include(ExternalProject) 
     set(FFTW fftw_lib)
     ExternalProject_Add(
@@ -139,7 +142,8 @@ set(FFT_LONG_DOUBLE_ENGINE "FFTW" CACHE STRING "Choose FFT engine for Long Doubl
 message("--- Use " ${FFT_LONG_DOUBLE_ENGINE} " FFT LONG DOUBLE Engine") 
 if(FFT_LONG_DOUBLE_ENGINE STREQUAL "FFTW")
     add_dependencies(fhe_deck fftwl_lib)
-    add_definitions(-DUSE_FFTWL) 
+    #add_definitions(-DUSE_FFTWL) 
+    add_compile_definitions(USE_FFTWL)
     include(ExternalProject) 
     set(FFTWL fftwl_lib)
     ExternalProject_Add(
@@ -174,7 +178,8 @@ set(USE_CEREAL TRUE CACHE BOOL "Choose whether to support serializartion using c
 message("--- USE_CEREAL: " ${USE_CEREAL}) 
 if(USE_CEREAL) 
     add_dependencies(fhe_deck cereal_lib)
-    add_definitions(-DUSE_CEREAL)
+    #add_definitions(-DUSE_CEREAL)
+    add_compile_definitions(USE_CEREAL)
     include(ExternalProject)  
     ExternalProject_Add(
         cereal_lib
@@ -220,6 +225,7 @@ endif()
 set(USE_TESTS FALSE CACHE BOOL "Choose whether to compile unit tests.") 
 message("--- USE_TESTS: " ${USE_TESTS})
 if(USE_TESTS)
+    enable_testing()
     add_subdirectory(tests) 
 endif()
  

@@ -323,7 +323,7 @@ class Polynomial: public Vector{
     /// @return Return a clone of this polynomial
     std::shared_ptr<Polynomial> clone() const;
 
-    /// @brief Cyclically rotates the coeefficients of this polynomial by rotation
+    /// @brief Cyclically rotates the coefficients of this polynomial by rotation
     /// @param out The output polynomial
     /// @param rotation The rotation size
     void cyclic_rotate(Polynomial &out, int64_t rotation) const;
