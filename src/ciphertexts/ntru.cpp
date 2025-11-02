@@ -101,14 +101,14 @@ void NTRUCT::mul(NTRUCT &out, const Polynomial &x){
 }
  
 std::string NTRUCT::to_string(){
-    std::string out = "[" + Utils::to_string(ct_poly.coefs, param->size) + "]";
+    std::string out = "[" + Utils::to_string(ct_poly.vec, param->size) + "]";
     return out;
 }
   
 void NTRUCT::extract_lwe(LWECT &out){
     out.ct[0] = 0; 
     for(int32_t i = 1; i < out.param->dim+1; ++i){
-        out.ct[i] = ct_poly.coefs[i-1];
+        out.ct[i] = ct_poly[i-1];
     } 
 }
       
@@ -153,14 +153,14 @@ void NTRUGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);
     const NTRUCT& ct_ptr = static_cast<const NTRUCT&>(ct); 
     PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    gadget->sample(deter_ct_a_dec_poly, ct_ptr.ct_poly.coefs);
+    gadget->sample(deter_ct_a_dec_poly, ct_ptr.ct_poly.vec);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
 
 void NTRUGadgetCT::mul(VectorCT &out, const Polynomial &scalar){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);  
     PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    gadget->sample(deter_ct_a_dec_poly, scalar.coefs);
+    gadget->sample(deter_ct_a_dec_poly, scalar.vec);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
  
@@ -184,8 +184,8 @@ void NTRUSK::key_gen(){
     std::shared_ptr<PolynomialInversionEngine> inv_engine = inv_engine_builder.build();
     bool has_inverse = false; 
     do{  
-        sk_dist->fill_array(this->sk.coefs, param->size);    
-        Utils::array_mod_form(this->sk.coefs, this->sk.coefs, param->size, param->coef_modulus);   
+        sk_dist->fill_array(this->sk.vec, param->size);    
+        Utils::array_mod_form(this->sk.vec, this->sk.vec, param->size, param->coef_modulus);   
         has_inverse = inv_engine->inv(this->inv_sk, this->sk);  
     }while(!has_inverse);      
 }  
@@ -203,9 +203,9 @@ void NTRUSK::encrypt(VectorCT &out, const Vector &m){
     }  
     /// NOTE: We compute inv_sk * g + e + msg
     Polynomial g = Polynomial(param->size, param->coef_modulus);
-    sk_dist->fill_array(g.coefs, g.degree);
+    sk_dist->fill_array(g.vec, g.degree);
     Polynomial e = Polynomial(param->size, param->coef_modulus);
-    error_dist->fill_array(e.coefs, e.degree); 
+    error_dist->fill_array(e.vec, e.degree); 
     inv_sk.mul(out_cast.ct_poly, g, param->mul_engine);
     out_cast.ct_poly.add(out_cast.ct_poly, e);
     out_cast.ct_poly.add(out_cast.ct_poly, m);
@@ -226,7 +226,7 @@ std::shared_ptr<VectorCT> NTRUSK::encode_and_encrypt(const Vector &m, PlaintextE
 void NTRUSK::encode_and_encrypt(VectorCT& out, const Vector &m, PlaintextEncoding encoding){ 
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
-        m_scaled.coefs[i] = encoding.encode_message(m.vec[i]);
+        m_scaled[i] = encoding.encode_message(m.vec[i]);
     }
     encrypt(out, m_scaled); 
 }
@@ -256,7 +256,7 @@ void NTRUSK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding
     Polynomial phase(this->param->size, this->param->coef_modulus);
     this->partial_decrypt(phase, ct_cast);  
     for(int32_t i = 0; i < out_cast.degree; ++i){
-        out_cast.coefs[i] = encoding.decode_message(phase.coefs[i]);
+        out_cast.vec[i] = encoding.decode_message(phase.vec[i]);
     } 
 }
  
@@ -275,7 +275,7 @@ void NTRUSK::kdm_encrypt(NTRUCT &out, const Polynomial& msg){
 void NTRUSK::kdm_encode_and_encrypt(NTRUCT &out, const Polynomial& msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
-        m_scaled.coefs[i] = encoding.encode_message(msg.coefs[i]);
+        m_scaled[i] = encoding.encode_message(msg[i]);
     }
     kdm_encrypt(out, m_scaled);  
 }
@@ -283,7 +283,7 @@ void NTRUSK::kdm_encode_and_encrypt(NTRUCT &out, const Polynomial& msg, Plaintex
 std::shared_ptr<NTRUCT> NTRUSK::kdm_encode_and_encrypt(const Polynomial& msg, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
-        m_scaled.coefs[i] = encoding.encode_message(msg.coefs[i]);
+        m_scaled[i] = encoding.encode_message(msg[i]);
     }
     std::shared_ptr<NTRUCT> out = std::make_shared<NTRUCT>(param);
     kdm_encrypt(*out, m_scaled);  
@@ -293,9 +293,9 @@ std::shared_ptr<NTRUCT> NTRUSK::kdm_encode_and_encrypt(const Polynomial& msg, Pl
 std::shared_ptr<LWESK> NTRUSK::extract_lwe_key(){
     std::shared_ptr<int64_t[]> extract_key(new int64_t[param->size]); 
     std::shared_ptr<LWEParam> lwe_param(new LWEParam(param->size, param->coef_modulus)); 
-    extract_key[0] = Utils::integer_mod_form(this->sk.coefs[0], param->coef_modulus);
+    extract_key[0] = Utils::integer_mod_form(this->sk[0], param->coef_modulus);
     for(int32_t i = 1; i <  param->size; ++i){   
-        extract_key[i] = param->coef_modulus-this->sk.coefs[param->size - i];
+        extract_key[i] = param->coef_modulus-this->sk[param->size - i];
     } 
     std::shared_ptr<LWESK> key = std::make_shared<LWESK>(lwe_param, extract_key.get(), this->noise_stddev, KeyDistribution::ternary); 
     return key;
@@ -321,7 +321,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const uint64_t *msg
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
     for(int32_t i = 0; i < size; ++i){
-        msg_poly.coefs[i] = msg[i];
+        msg_poly[i] = msg[i];
     }
     return gadget_encrypt(msg_poly);
 }
@@ -338,7 +338,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const uint64_t 
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
     for(int32_t i = 0; i < size; ++i){
-        msg_poly.coefs[i] = msg[i];
+        msg_poly[i] = msg[i];
     }
     return kdm_gadget_encrypt(msg_poly);
 } 
@@ -355,7 +355,7 @@ std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const uint6
     Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
     msg_poly.zeroize();
     for(int32_t i = 0; i < size; ++i){
-        msg_poly.coefs[i] = msg[i];
+        msg_poly[i] = msg[i];
     }
     return extended_encrypt(msg_poly);
 }

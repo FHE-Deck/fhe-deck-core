@@ -68,7 +68,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT &lwe_ct_out,
         ones_in_pad_poly =  (poly_ct_params->size / input_encoding.get_plaintext_space());    
     } 
     for(int32_t i = 0; i < ones_in_pad_poly; i++) {
-        pad_poly.coefs[i] = 1;
+        pad_poly[i] = 1;
     }
     /// Multiply acc_proto with pad_poly
     acc_proto->mul(*acc_proto, pad_poly); 
@@ -154,7 +154,7 @@ Polynomial KSFunctionalBootstrapPublicKey::build_pad_poly(int32_t dimension, int
     Polynomial pad_poly(dimension, coef_modulus);
     pad_poly.zeroize(); 
     for(long i = 0; i < skip; i++) {
-        pad_poly.coefs[i] = 1;
+        pad_poly[i] = 1;
     }   
     return pad_poly;
 }
@@ -162,7 +162,7 @@ Polynomial KSFunctionalBootstrapPublicKey::build_pad_poly(int32_t dimension, int
 Polynomial KSFunctionalBootstrapPublicKey::build_one_poly(int32_t dimension, int64_t coef_modulus, int64_t value){
     Polynomial one_poly(dimension, coef_modulus);
     one_poly.zeroize(); 
-    one_poly.coefs[0] = value; 
+    one_poly[0] = value; 
     return one_poly;
 }
 
@@ -170,7 +170,7 @@ Polynomial KSFunctionalBootstrapPublicKey::build_sign_poly(int32_t dimension, in
     Polynomial sign_poly(dimension, coef_modulus);
     sign_poly.zeroize();
     for(long i = 0; i < dimension; i++) {
-        sign_poly.coefs[i] = 1;
+        sign_poly[i] = 1;
     }  
     return sign_poly;
 }

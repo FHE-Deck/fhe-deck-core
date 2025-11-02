@@ -57,7 +57,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         iarchive(sk_poly);  
         if(sk->sk_poly.degree != sk_poly.degree || 
         sk->sk_poly.coef_modulus != sk_poly.coef_modulus ||
-        !Utils::is_eq_poly(sk->sk_poly.coefs, sk_poly.coefs, sk->sk_poly.degree)){
+        !Utils::is_eq_poly(sk->sk_poly.vec, sk_poly.vec, sk->sk_poly.degree)){
             FAIL(); 
         } 
         std::remove("poly_test"); 
@@ -77,7 +77,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         iarchive_rlwe_sk(rlwe_sk_2);  
         if(sk->param->size != rlwe_sk_2->param->size || 
         sk->param->coef_modulus != rlwe_sk_2->param->coef_modulus ||
-        !Utils::is_eq_poly(sk->sk_poly.coefs, rlwe_sk_2->sk_poly.coefs, sk->sk_poly.degree)){
+        !Utils::is_eq_poly(sk->sk_poly.vec, rlwe_sk_2->sk_poly.vec, sk->sk_poly.degree)){
             FAIL();  
         } 
         std::remove("rlwe_sk_test"); 
@@ -85,7 +85,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
  
     Polynomial m(rlwe_par->size, plaintext_mod);   
     m.zeroize(); 
-    rand->fill_array(m.coefs, N);
+    rand->fill_array(m.vec, N);
     
     PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_mod, Q); 
     std::shared_ptr<RLWECT> ct = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m, encoding));  
@@ -103,8 +103,8 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         iarchive(ct_test);  
         if(ct->param->size != ct_test->param->size || 
         ct->param->coef_modulus != ct_test->param->coef_modulus ||
-        !Utils::is_eq_poly(ct->a.coefs, ct_test->a.coefs, sk->sk_poly.degree) ||
-        !Utils::is_eq_poly(ct->b.coefs, ct_test->b.coefs, sk->sk_poly.degree)){
+        !Utils::is_eq_poly(ct->a.vec, ct_test->a.vec, sk->sk_poly.degree) ||
+        !Utils::is_eq_poly(ct->b.vec, ct_test->b.vec, sk->sk_poly.degree)){
             FAIL(); 
         } 
         std::remove("ct_test"); 
@@ -113,10 +113,10 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
     Polynomial out(rlwe_par->size, plaintext_mod);
   
     for(int i = 0; i < test_num; ++i){ 
-        rand->fill_array(m.coefs, N); 
+        rand->fill_array(m.vec, N); 
         ct = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m, encoding));  
         sk->decrypt(out, *ct.get(), encoding);  
-        if(!Utils::is_eq_poly(out.coefs, m.coefs, N)){
+        if(!Utils::is_eq_poly(out.vec, m.vec, N)){
             FAIL(); 
         }
     } 
@@ -137,8 +137,8 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
     exp.set_multiplication_engine(ntt_engine);
     exp.zeroize();
     for(int i = 0; i < test_num; ++i){    
-        rand->fill_array(m_1.coefs, rlwe_par->size); 
-        rand->fill_array(m_2.coefs, rlwe_par->size); 
+        rand->fill_array(m_1.vec, rlwe_par->size); 
+        rand->fill_array(m_2.vec, rlwe_par->size); 
         for(int j = 0; j < rlwe_par->size; ++j){ 
             exp.vec[j] = (m_1.vec[j] + m_2.vec[j]) % plaintext_mod;
         }  
@@ -150,15 +150,15 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         ct_1->add(ct_3, *ct_2.get());   
         sk->decrypt(out, ct_3, encoding);    
           
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.coefs, exp.coefs, N)){
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
+        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
             FAIL(); 
         }
     }  
  
     for(int i = 0; i < test_num; ++i){    
-        rand->fill_array(m_1.coefs, rlwe_par->size);    
-        rand->fill_array(m_2.coefs, rlwe_par->size); 
+        rand->fill_array(m_1.vec, rlwe_par->size);    
+        rand->fill_array(m_2.vec, rlwe_par->size); 
         for(int j = 0; j < rlwe_par->size; ++j){ 
             exp.vec[j] = Utils::integer_mod_form(m_1.vec[j] - m_2.vec[j], plaintext_mod);
         }   
@@ -167,14 +167,14 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::shared_ptr<RLWECT> ct_3(new RLWECT(rlwe_par));  
         ct_1->sub(*ct_3.get(), *ct_2.get());   
         sk->decrypt(out, *ct_3.get(), encoding);     
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.coefs, exp.coefs, N)){
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
+        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
             FAIL(); 
         }
     } 
   
     for(int i = 0; i < test_num; ++i){    
-        rand->fill_array(m_1.coefs, rlwe_par->size);  
+        rand->fill_array(m_1.vec, rlwe_par->size);  
         for(int j = 0; j < rlwe_par->size; ++j){ 
             exp.vec[j] = Utils::integer_mod_form(-m_1.vec[j], plaintext_mod);
         }   
@@ -182,8 +182,8 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         RLWECT ct_3(rlwe_par); 
         ct_1->neg(ct_3);
         sk->decrypt(out, ct_3, encoding);     
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.coefs, exp.coefs, N)){
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
+        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
             FAIL(); 
         }
     } 
@@ -191,18 +191,18 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
     std::shared_ptr<Distribution> rot_rand = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 2*N));  
     long rot;
     for(int i = 0; i < test_num; ++i){    
-        rand->fill_array(m_1.coefs, rlwe_par->size);  
+        rand->fill_array(m_1.vec, rlwe_par->size);  
         rot = 2;  
         m_1.negacyclic_rotate(exp, rot);  
-        Utils::array_mod_form(exp.coefs, exp.coefs, N, plaintext_mod);
+        Utils::array_mod_form(exp.vec, exp.vec, N, plaintext_mod);
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding)); 
         RLWECT ct_3(rlwe_par); 
         ct_1->negacyclic_rotate(ct_3, rot);
         sk->decrypt(out, ct_3, encoding);      
-        if(!Utils::is_eq_poly(out.coefs, exp.coefs, N)){ 
-            print_out << "out: " << Utils::to_string(out.coefs, 15) << std::endl;  
-            print_out << "exp: " << Utils::to_string(exp.coefs, 15) << std::endl;  
-            print_out << "m_1: " << Utils::to_string(m_1.coefs, 15) << " ... " << Utils::to_string(m_1.coefs + (N-3), 3) << std::endl;    
+        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){ 
+            print_out << "out: " << Utils::to_string(out.vec, 15) << std::endl;  
+            print_out << "exp: " << Utils::to_string(exp.vec, 15) << std::endl;  
+            print_out << "m_1: " << Utils::to_string(m_1.vec, 15) << " ... " << Utils::to_string(m_1.vec + (N-3), 3) << std::endl;    
             FAIL();
         }
     } 
@@ -213,16 +213,16 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
     scalar.set_multiplication_engine(ntt_engine);
     scalar.zeroize(); 
     for(int i = 0; i < test_num; ++i){ 
-        rand->fill_array(m_1.coefs, N); 
+        rand->fill_array(m_1.vec, N); 
         // NOTE: We are doing a quite sparse polynomial here, because the error may blow up and the test will fail 
-        rand->fill_array(scalar.coefs, N/64);   
+        rand->fill_array(scalar.vec, N/64);   
         m_1.mul(exp, scalar); 
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding)); 
         RLWECT ct_3(rlwe_par);
         ct_1->mul(ct_3, scalar); 
         sk->decrypt(out, ct_3, encoding); 
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_mod); 
-        if(!Utils::is_eq_poly(out.coefs, exp.coefs, N)){
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod); 
+        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
             FAIL(); 
             print_out << "out: " << Utils::to_string(out.vec, 5) << std::endl;  
             print_out << "exp: " << Utils::to_string(exp.vec, 5) << std::endl;   
@@ -274,8 +274,8 @@ void gadget_rlwe_basic_test(int test_num, GadgetMulMode mode, long N, long Q, lo
     exp_poly.zeroize();
  
     for(int i = 0; i < test_num; ++i){ 
-        rand->fill_array(m.coefs, rlwe_par->size); 
-        rand->fill_array(gadget_m.coefs, rlwe_par->size);  
+        rand->fill_array(m.vec, rlwe_par->size); 
+        rand->fill_array(gadget_m.vec, rlwe_par->size);  
         m.mul(exp_poly, gadget_m);
         std::shared_ptr<RLWECT> ct = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m, encoding));
         std::shared_ptr<RLWEGadgetCT> g_ct = std::static_pointer_cast<RLWEGadgetCT>(std::shared_ptr<GadgetVectorCT>(gadget_sk.gadget_encrypt(gadget_m))); 
@@ -284,12 +284,12 @@ void gadget_rlwe_basic_test(int test_num, GadgetMulMode mode, long N, long Q, lo
         g_ct->mul(ct_prod, *ct.get());  
 
         sk->decrypt(out, ct_prod, encoding);
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_mod);
-        if(!Utils::is_eq_poly(out.coefs, exp_poly.coefs, N)){
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);
+        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){
             print_out << "Fail at: " << i << std::endl;
             print_out << "gadget rlwe test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.coefs, 15) << std::endl;  
-            print_out << "exp_poly: " << Utils::to_string(exp_poly.coefs, 15) << std::endl;   
+            print_out << "out: " << Utils::to_string(out.vec, 15) << std::endl;  
+            print_out << "exp_poly: " << Utils::to_string(exp_poly.vec, 15) << std::endl;   
             FAIL();
         } 
     }  
@@ -374,8 +374,8 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
    
     bool test = true; 
     for(int i = 0; i < test_num; ++i){ 
-        rand->fill_array(m.coefs, N); 
-        rand->fill_array(gadget_m.coefs, N); 
+        rand->fill_array(m.vec, N); 
+        rand->fill_array(gadget_m.vec, N); 
         m.mul(exp_poly, gadget_m); 
         std::shared_ptr<RLWECT> ct = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m, encoding));
         std::shared_ptr<RLWEGadgetCT> g_ct_test = std::static_pointer_cast<RLWEGadgetCT>(std::shared_ptr<GadgetVectorCT>(gadget_sk.gadget_encrypt(gadget_m)));   
@@ -397,8 +397,8 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         RLWECT ct_prod(rlwe_par); 
         g_ct->mul(ct_prod, *ct.get()); 
         sk->decrypt(out, ct_prod, encoding);
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_modulus);
-        if(!Utils::is_eq_poly(out.coefs, exp_poly.coefs, N)){ 
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
+        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){ 
             FAIL();
             print_out << "\rFail at: " << i << std::endl;
             print_out << "gadget rlwe test: Fail" << std::endl;
@@ -411,7 +411,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
     test = true; 
     for(int i = 0; i < test_num; ++i){ 
         rand->fill_array(m.vec, N); 
-        rand->fill_array(gadget_m.coefs, N); 
+        rand->fill_array(gadget_m.vec, N); 
         m.mul(exp_poly, gadget_m);
         for(int j = 0; j < N; ++j){
             m.vec[j] = encoding.encode_message(m.vec[j]);
@@ -422,8 +422,8 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         RLWECT ct_prod(rlwe_par); 
         ext_ct_test->mul(ct_prod, m); 
         sk->decrypt(out, ct_prod, encoding);
-        Utils::array_mod_form(out.coefs, out.coefs, N, plaintext_modulus);
-        if(!Utils::is_eq_poly(out.coefs, exp_poly.coefs, N)){ 
+        Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
+        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){ 
             FAIL();
             print_out << "\rFail at: " << i << std::endl;
             print_out << "Extended rlwe test: Fail" << std::endl;

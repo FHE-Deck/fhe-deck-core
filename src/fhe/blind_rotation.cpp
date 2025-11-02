@@ -34,10 +34,10 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
         int32_t skip = (int32_t)round(2*(dim/input_encoding.get_plaintext_space()));
         int32_t half_plaintext_space = input_encoding.get_plaintext_space() / 2;  
         for(long i = 0; i < half_plaintext_space; ++i) {    
-            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space());  
+            poly_msb_0[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space());  
         }   
         for(long i = half_plaintext_space; i < input_encoding.get_plaintext_space(); ++i) {          
-            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space()); 
+            poly_msb_1[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space()); 
         }   
     }else{ 
         int32_t skip = (int32_t)round(dim/input_encoding.get_plaintext_space()); 
@@ -45,20 +45,20 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
         /// NOTE: this is the floor of the half of the plaintext space, actually. (One tick is missing)
         int32_t half_plaintext_space = (input_encoding.get_plaintext_space()-1)/2;  
         for(long i = 0; i < half_plaintext_space; ++i) {    
-            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space()); 
-            poly_msb_0.coefs[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = -f(i, input_encoding.get_plaintext_space()); 
+            poly_msb_0[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = -f(i, input_encoding.get_plaintext_space()); 
+            poly_msb_0[dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = -f(i, input_encoding.get_plaintext_space()); 
         }
            
-        poly_msb_0.coefs[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space());  
-        poly_msb_1.coefs[dim - skip] = f(half_plaintext_space, input_encoding.get_plaintext_space()); 
+        poly_msb_0[0] = -f(half_plaintext_space, input_encoding.get_plaintext_space());  
+        poly_msb_1[dim - skip] = f(half_plaintext_space, input_encoding.get_plaintext_space()); 
 
         for(long i = half_plaintext_space+1; i < input_encoding.get_plaintext_space(); ++i) {        
-            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space());
-            poly_msb_1.coefs[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = f(i, input_encoding.get_plaintext_space()); 
+            poly_msb_1[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - skip] = f(i, input_encoding.get_plaintext_space());
+            poly_msb_1[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = f(i, input_encoding.get_plaintext_space()); 
         }   
     }
-    Utils::array_mod_form(poly_msb_0.coefs, poly_msb_0.coefs, dim, coef_modulus);
-    Utils::array_mod_form(poly_msb_1.coefs, poly_msb_1.coefs, dim, coef_modulus);  
+    Utils::array_mod_form(poly_msb_0.vec, poly_msb_0.vec, dim, coef_modulus);
+    Utils::array_mod_form(poly_msb_1.vec, poly_msb_1.vec, dim, coef_modulus);  
 }  
  
 PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){
@@ -149,7 +149,7 @@ std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_msb(P
   
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_one(PlaintextEncoding output_encoding){ 
     RotationPoly poly = RotationPoly::rot_one(builder->param->size, output_encoding.get_ciphertext_modulus());
-    poly.coefs[1] = output_encoding.encode_message(1);  
+    poly[1] = output_encoding.encode_message(1);  
     return builder->prepare_accumulator(poly);
 }
 
@@ -160,7 +160,7 @@ std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_pad_poly(
     uint64_t skip = 2 * (builder->param->size / (output_encoding.get_plaintext_space()));
     /// NOTE: This is the same as pad poly, but encoded with double the plaintext space... In the paper its \frac{h} 
     for(long i = 0; i < skip; i++) {
-        pad_poly.coefs[i] = scal;
+        pad_poly[i] = scal;
     } 
     return builder->prepare_accumulator(pad_poly);
 }

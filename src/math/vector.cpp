@@ -20,6 +20,14 @@ void Vector::init(int32_t size, int64_t modulus){
     is_init = true;
 }
 
+int64_t& Vector::operator[](int32_t index){
+    return vec[index];
+}
+
+const int64_t& Vector::operator[](int32_t index) const {
+    return vec[index];
+}
+
 void Vector::add(Vector &out, const Vector &other) const{
     for(int32_t i = 0; i < size; ++i){
         out.vec[i] = vec[i] + other.vec[i];

@@ -35,11 +35,11 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_orig
    
 void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in) { 
     rlwe_ct_out.b.zeroize(); 
-    rlwe_ct_out.b.coefs[0] = lwe_ct_in.ct[0];  
+    rlwe_ct_out.b[0] = lwe_ct_in.ct[0];  
     Utils::array_mod_form(lwe_ct_in.ct, lwe_ct_in.ct, lwe_ct_in.param->dim  + 1, dest_param->coef_modulus);  
-    rlwe_ct_out.a.coefs[0] =  lwe_ct_in.ct[1];
+    rlwe_ct_out.a[0] =  lwe_ct_in.ct[1];
     for(int i = 1; i < dest_param->size; ++i){
-        rlwe_ct_out.a.coefs[dest_param->size - i] = dest_param->coef_modulus - lwe_ct_in.ct[i+1];
+        rlwe_ct_out.a[dest_param->size - i] = dest_param->coef_modulus - lwe_ct_in.ct[i+1];
     } 
     rlwe_ct_out.mul(rlwe_ct_out, degree_inv); 
     RLWECT buf(dest_param);
@@ -68,8 +68,8 @@ void LWEToRLWEKeySwitchKey::eval_auto_poly(FHEDeck::Polynomial& out_poly,
     if (idx == out_poly.degree + 1) {
         // N + 1 automorphism just negates odd entries
         for(uint32_t i = 0; i < out_poly.degree; i+=2) {
-            out_poly.coefs[i] = in_poly.coefs[i]; 
-            out_poly.coefs[i+1] = in_poly.coef_modulus - in_poly.coefs[i+1];
+            out_poly[i] = in_poly[i]; 
+            out_poly[i+1] = in_poly.coef_modulus - in_poly[i+1];
         }
     } else { 
         uint32_t perm;
@@ -78,9 +78,9 @@ void LWEToRLWEKeySwitchKey::eval_auto_poly(FHEDeck::Polynomial& out_poly,
             perm = (i * idx) & mask_mod_degree_times_two;
             new_idx = perm & mask_mod_degree; 
             if(perm == new_idx){
-                out_poly.coefs[new_idx] = in_poly.coefs[i];
+                out_poly[new_idx] = in_poly[i];
             }else{ 
-                out_poly.coefs[new_idx] = in_poly.coef_modulus - in_poly.coefs[i];
+                out_poly[new_idx] = in_poly.coef_modulus - in_poly[i];
             }
         }
     }

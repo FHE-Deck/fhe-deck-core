@@ -35,6 +35,16 @@ class Vector{
     /// @param modulus The modulus
     void init(int32_t size, int64_t modulus);
 
+    /// @brief Overload the [] operator to write access to the vector
+    /// @param index Index to be accessed. 
+    /// @return The reference to the accessed element
+    int64_t& operator[](int32_t index);
+
+    /// @brief Overload the [] operator for read only acccess to the vector
+    /// @param index Index to be accessed. 
+    /// @return The reference to the accessed element
+    const int64_t& operator[](int32_t index) const;
+
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 

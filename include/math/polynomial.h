@@ -260,7 +260,7 @@ class Polynomial: public Vector{
     public:
 
     /// @brief The coefficients of the polynomial (points to the vec array in the Vector class)
-    int64_t* coefs;  
+    //int64_t* coefs;  
 
     /// @brief The coefficient modulus
     int64_t coef_modulus;
@@ -318,6 +318,8 @@ class Polynomial: public Vector{
    
     /// @brief Zero all coefficients of the polynomial
     void zeroize();
+
+    
 
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial

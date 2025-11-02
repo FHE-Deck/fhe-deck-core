@@ -178,7 +178,7 @@ Polynomial::Polynomial(int32_t degree, int64_t coef_modulus){
 Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus){
     this->init(degree, coef_modulus);
     this->init_from_vec();
-    Utils::cp(this->coefs, coefs, degree);
+    Utils::cp(this->vec, coefs, degree);
 }
  
 
@@ -186,14 +186,14 @@ void Polynomial::init_from_vec(){
     this->degree = size;
     this->coef_modulus = modulus;
     this->coef_modulus_bit_size = Utils::power_times(coef_modulus, 2);
-    this->coefs = this->vec;
+    //this->coefs = this->vec;
     this->is_init = true;
 }
  
 Polynomial::Polynomial(const Polynomial &other){
     this->init(other.degree, other.coef_modulus); 
     this->init_from_vec();
-    Utils::cp(this->coefs, other.coefs, this->degree);  
+    Utils::cp(this->vec, other.vec, this->degree);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -205,7 +205,7 @@ Polynomial& Polynomial::operator=(const Polynomial other){
         this->init(other.degree, other.coef_modulus);
         this->init_from_vec();
     }
-    Utils::cp(this->coefs, other.coefs, this->degree);  
+    Utils::cp(this->vec, other.vec, this->degree);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
     this->inv_engine = other.inv_engine;
@@ -226,11 +226,11 @@ void Polynomial::set_inversion_engine(std::shared_ptr<PolynomialInversionEngine>
 void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
     int32_t overflow= this->degree - rotation ;  
       for(int32_t i = 0; i < overflow; ++i){   
-            out.coefs[i+rotation] = this->coefs[i];
+            out.vec[i+rotation] = this->vec[i];
             
       }
       for(int32_t i = 0; i < rotation; ++i){ 
-            out.coefs[i] = this->coefs[overflow + i];
+            out.vec[i] = this->vec[overflow + i];
       } 
 }
 
@@ -240,25 +240,25 @@ void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{
     long* temp = new long[this->degree];
     if(rotation >= this->degree){
         for(int32_t i = 0; i < this->degree; ++i){
-            temp[i] = -this->coefs[i];
+            temp[i] = -this->vec[i];
         }
         rotation = rotation - this->degree;
     }else{
         for(int32_t i = 0; i < this->degree; ++i){
-            temp[i] = this->coefs[i];
+            temp[i] = this->vec[i];
         }
     } 
     // NOTE We implement negacyclic rotate actually -> it changes the sign of rot first coefficients
     int32_t overflow=this->degree - rotation ;  
     for(int32_t i = 0; i < overflow; ++i){   
-        out.coefs[i+rotation] = temp[i];
+        out.vec[i+rotation] = temp[i];
     }
     for(int32_t i = 0; i < rotation; ++i){ 
-        out.coefs[i] = -temp[overflow + i];
+        out.vec[i] = -temp[overflow + i];
     }
     delete[] temp;
 
-    Utils::array_mod_form(out.coefs, out.coefs, this->degree, this->coef_modulus);
+    Utils::array_mod_form(out.vec, out.vec, this->degree, this->coef_modulus);
 }
  
 void Polynomial::to_eval(PolynomialEvalForm &out){ 
@@ -271,7 +271,7 @@ void Polynomial::to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMult
  
 void Polynomial::zeroize(){
     for(int32_t i = 0; i < degree; ++i){
-        coefs[i] = 0;
+        vec[i] = 0;
     }
 }
  
@@ -286,7 +286,7 @@ std::shared_ptr<Polynomial> Polynomial::clone() const{
     if(is_inv_engine_set){
         out->set_inversion_engine(inv_engine);
     } 
-    Utils::cp(out->coefs, coefs, degree);
+    Utils::cp(out->vec, vec, degree);
     out->is_init = true;
     return out;
 } 
@@ -300,7 +300,7 @@ void Polynomial::mul(Polynomial &out, int64_t scalar)const{
     } 
     
     for(int32_t j=0; j < this->degree; ++j){ 
-        out.coefs[j] = (int64_t)((__int128_t(coefs[j]) * __int128_t(scalar)) % __int128_t(coef_modulus)); 
+        out.vec[j] = (int64_t)((__int128_t(vec[j]) * __int128_t(scalar)) % __int128_t(coef_modulus)); 
     } 
 }
 
@@ -367,7 +367,7 @@ void PolynomialArrayCoefForm::set_polynomial_at(int32_t i, const Polynomial &pol
         throw std::logic_error("PolynomialArrayCoefForm::set_polynomial_at(int32_t i, Polynomial *poly): coef_moduli are inconsistent.");
     }
     for(int32_t j = 0; j < this->degree; ++j){
-        this->poly_array[i * degree + j] = poly.coefs[j];
+        this->poly_array[i * degree + j] = poly.vec[j];
     }
 }
   

@@ -2,19 +2,21 @@
  
 using namespace FHEDeck;
 
+/*
 RotationPoly::~RotationPoly(){
     if(is_init){ 
         delete[] this->coefs;
     }
 }
+*/
 
 RotationPoly::RotationPoly(const RotationPoly &poly){ 
-    this->coefs = new int64_t[poly.degree];
+    this->vec = new int64_t[poly.degree];
     this->output_encoding = poly.output_encoding;
     this->coef_modulus = poly.coef_modulus;
     this->degree = poly.degree; 
     for(int32_t i = 0; i < this->degree; ++i){   
-        this->coefs[i] = poly.coefs[i]; 
+        this->vec[i] = poly[i]; 
     } 
     this->is_init = true;
 }
@@ -22,13 +24,13 @@ RotationPoly::RotationPoly(const RotationPoly &poly){
 
 RotationPoly& RotationPoly::operator=(const RotationPoly other){
     if(!this->is_init){  
-        this->coefs = new int64_t[other.degree];
+        this->vec = new int64_t[other.degree];
     }
     this->output_encoding = other.output_encoding;
     this->coef_modulus = other.coef_modulus;
     this->degree = other.degree; 
     for(int32_t i = 0; i < this->degree; ++i){   
-        this->coefs[i] = other.coefs[i]; 
+        this->vec[i] = other[i]; 
     } 
     this->is_init = true;
     return *this;
@@ -40,7 +42,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
     this->is_amortized_form = true;
-    this->coefs = new int64_t[degree];
+    this->vec = new int64_t[degree];
      
     //PlaintextEncoding input_encoding; 
     PlaintextEncoding in_enc_mod_switch;
@@ -57,13 +59,13 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     while(in_enc_mod_switch.decode_message(i) == 0){  
             arg = f(in_enc_mod_switch.decode_message(i));  
  
-            coefs[degree-i-1] = output_encoding.encode_message(arg) ; 
+            vec[degree-i-1] = output_encoding.encode_message(arg) ; 
             i--;
     }
     while(i >= 0){  
         arg = f(in_enc_mod_switch.decode_message(i));
      
-        coefs[degree-i-1] = output_encoding.encode_message(-arg);  
+        vec[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
     this->is_init = true;
@@ -75,7 +77,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t de
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
     this->is_amortized_form = is_amortized_form;
-    coefs = new int64_t[degree]; 
+    vec = new int64_t[degree]; 
     PlaintextEncoding in_enc_mod_switch; 
     if(input_encoding.get_type() == PlaintextEncodingType::full_domain){ 
         in_enc_mod_switch = PlaintextEncoding(input_encoding.get_type(), input_encoding.get_plaintext_space(), degree);
@@ -92,12 +94,12 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t,int64_t)> f, int64_t de
     int32_t i = degree-1; 
     while(in_enc_mod_switch.decode_message(i) == 0){ 
             arg = f(in_enc_mod_switch.decode_message(i), in_enc_mod_switch.get_plaintext_space()); 
-            coefs[degree-i-1] = output_encoding.encode_message(arg); 
+            vec[degree-i-1] = output_encoding.encode_message(arg); 
             i--;
     }
     while(i >= 0){ 
         arg = f(in_enc_mod_switch.decode_message(i), in_enc_mod_switch.get_plaintext_space()); 
-        coefs[degree-i-1] = output_encoding.encode_message(-arg);  
+        vec[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
     this->is_init = true;
@@ -109,7 +111,7 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     this->output_encoding = output_encoding;
     this->coef_modulus = output_encoding.get_ciphertext_modulus();
     this->is_amortized_form = is_amortized_form;
-    this->coefs = new int64_t[degree];
+    this->vec = new int64_t[degree];
      
     //PlaintextEncoding input_encoding; 
     PlaintextEncoding in_enc_mod_switch;
@@ -126,13 +128,13 @@ RotationPoly::RotationPoly(std::function<int64_t(int64_t)> f, int64_t degree, Pl
     while(in_enc_mod_switch.decode_message(i) == 0){  
             arg = f(in_enc_mod_switch.decode_message(i));  
  
-            coefs[degree-i-1] = output_encoding.encode_message(arg) ; 
+            vec[degree-i-1] = output_encoding.encode_message(arg) ; 
             i--;
     }
     while(i >= 0){  
         arg = f(in_enc_mod_switch.decode_message(i));
      
-        coefs[degree-i-1] = output_encoding.encode_message(-arg);  
+        vec[degree-i-1] = output_encoding.encode_message(-arg);  
         i--;
     } 
     this->is_init = true;
@@ -160,11 +162,11 @@ void RotationPoly::encode(){
     //PlaintextEncoding input_encoding(output_encoding.type, output_encoding.plaintext_space, 2*degree);
     int32_t i = degree-1; 
     while(in_enc_mod_switch.decode_message(i) == 0){  
-            coefs[degree-i-1] = output_encoding.encode_message(coefs[degree-i-1]); 
+            vec[degree-i-1] = output_encoding.encode_message(vec[degree-i-1]); 
             i--;
     }
     while(i >= 0){ 
-        coefs[degree-i-1] = output_encoding.encode_message(coefs[degree-i-1]); 
+        vec[degree-i-1] = output_encoding.encode_message(vec[degree-i-1]); 
         i--;
     } 
     is_encoded = true;
@@ -175,7 +177,7 @@ void RotationPoly::encode(){
         return;
     }
     for(int32_t i = 0; i < degree; ++i){  
-         this->coefs[i] = output_encoding.decode_message(coefs[i]);
+         this->vec[i] = output_encoding.decode_message(vec[i]);
     } 
     is_encoded = false;
 }
@@ -187,7 +189,7 @@ void RotationPoly::to_amortization_form(){
     if(is_encoded){
         decode();   
     }
-    Utils::array_mod_form(this->coefs, this->coefs, degree, output_encoding.get_ciphertext_modulus()); 
+    Utils::array_mod_form(this->vec, this->vec, degree, output_encoding.get_ciphertext_modulus()); 
     is_amortized_form = true;
 }
 
@@ -195,7 +197,7 @@ void RotationPoly::to_non_amortized_form(){
     if(!is_amortized_form){
         return;
     }
-    Utils::array_signed_form(this->coefs, this->coefs, degree, output_encoding.get_ciphertext_modulus()); 
+    Utils::array_signed_form(this->vec, this->vec, degree, output_encoding.get_ciphertext_modulus()); 
     if(!is_encoded){
         encode();   
     }
@@ -214,7 +216,7 @@ RotationPoly RotationPoly::rot_sgn(int32_t plaintext_space, int64_t degree, int6
     RotationPoly out;
     out.degree = degree;
     out.coef_modulus = ciphertext_modulus;
-    out.coefs = acc;
+    out.vec = acc;
     out.is_init = true;
     return out;
 }
@@ -228,7 +230,7 @@ RotationPoly RotationPoly::rot_msb(int32_t plaintext_space, int64_t degree, int6
     RotationPoly out;
     out.degree = degree;
     out.coef_modulus = ciphertext_modulus;
-    out.coefs = acc;
+    out.vec = acc;
     out.is_init = true;
     return out;
 }
@@ -241,7 +243,7 @@ RotationPoly RotationPoly::rot_one(int64_t N, int64_t Q){
     RotationPoly out;
     out.degree = N; 
     out.coef_modulus = Q;
-    out.coefs = acc;
+    out.vec = acc;
     out.is_init = true;
     return out;
 }

@@ -36,7 +36,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->to_coef(left_poly, *left_eval.get());
         engine_right->to_coef(right_poly, *right_eval.get());
 
-        if(!Utils::is_eq_poly(left_poly.coefs, right_poly.coefs, degree)){
+        if(!Utils::is_eq_poly(left_poly.vec, right_poly.vec, degree)){
             FAIL(); 
             print_out << "Test Eval Equivalence: Fail at " << i << std::endl;
             print_out << "input_poly.coefs: " << Utils::to_string(input_poly.vec, 5) << std::endl;
@@ -102,7 +102,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->to_coef(left_poly, *left_eval_out.get());
         engine_right->to_coef(right_poly, *right_eval_out.get());
 
-        if(!Utils::is_eq_poly(left_poly.coefs, right_poly.coefs, degree)){
+        if(!Utils::is_eq_poly(left_poly.vec, right_poly.vec, degree)){
             FAIL(); 
             print_out << "left_poly.coefs: " << Utils::to_string(left_poly.vec, 5) << std::endl;
             print_out << "right_poly.coefs: " << Utils::to_string(right_poly.vec, 5) << std::endl; 
@@ -136,7 +136,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
  
         engine_right->multisum(right_out, *right_eval_1.get(), *right_eval_2.get()); 
           
-        if(!Utils::is_eq_poly(left_out.coefs, right_out.coefs, degree)){
+        if(!Utils::is_eq_poly(left_out.vec, right_out.vec, degree)){
             FAIL(); 
             print_out << "left_out.coefs: " << Utils::to_string(left_out.vec, 5) << std::endl;
             print_out << "right_out.coefs: " << Utils::to_string(right_out.vec, 5) << std::endl; 
@@ -170,7 +170,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->multisum(left_out, *left_eval_1.get(), poly_array_1, *left_eval_2.get());
         engine_right->multisum(right_out, *right_eval_1.get(), poly_array_1, *right_eval_2.get());
           
-        if(!Utils::is_eq_poly(left_out.coefs, right_out.coefs, degree)){
+        if(!Utils::is_eq_poly(left_out.vec, right_out.vec, degree)){
             FAIL(); 
             print_out << "left_out.coefs: " << Utils::to_string(left_out.vec, 5) << std::endl;
             print_out << "right_out.coefs: " << Utils::to_string(right_out.vec, 5) << std::endl; 

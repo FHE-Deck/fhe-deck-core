@@ -24,10 +24,10 @@ void compare_naive_with_ntl(int32_t degree, int64_t modulus){
     Polynomial poly(degree, modulus);
     Polynomial one(degree, modulus);
     one.zeroize();
-    one.coefs[0] = 1;
+    one[0] = 1;
  
     for(int32_t i = 0; i < 100; ++i){  
-        rand_uni->fill_array(poly.coefs, degree);
+        rand_uni->fill_array(poly.vec, degree);
         Polynomial inv_poly(degree, modulus);
         Polynomial inv_poly_2(degree, modulus);  
         bool has_inverse = ntl_engine.inv(inv_poly, poly);
@@ -38,10 +38,10 @@ void compare_naive_with_ntl(int32_t degree, int64_t modulus){
         if(has_inverse){ 
             Polynomial mul_poly(degree, modulus);  
             mul_engine->mul(mul_poly, poly, inv_poly_2);
-            if(!Utils::is_eq_poly(one.coefs, mul_poly.coefs, degree)){  
+            if(!Utils::is_eq_poly(one.vec, mul_poly.vec, degree)){  
                 print_out << "Inversion Fail "  << std::endl;
-                print_out << "inv_poly: " << Utils::to_string(inv_poly.coefs, 10) << std::endl;
-                print_out << "inv_poly_2: " << Utils::to_string(inv_poly_2.coefs, 10) << std::endl;
+                print_out << "inv_poly: " << Utils::to_string(inv_poly.vec, 10) << std::endl;
+                print_out << "inv_poly_2: " << Utils::to_string(inv_poly_2.vec, 10) << std::endl;
                 FAIL();
             } 
         } 

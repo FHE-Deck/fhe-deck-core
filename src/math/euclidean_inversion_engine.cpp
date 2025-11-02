@@ -14,7 +14,7 @@ bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{
     std::vector<int64_t> a;
     a.resize(in.degree);
     for(int32_t i = 0; i < in.degree; ++i){
-        a[i] = in.coefs[i];
+        a[i] = in[i];
     }
     /// Remove trailing zeros from the remainder
     while (!a.empty() && a.back() == 0) {
@@ -23,7 +23,7 @@ bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{
     auto [g, u, v] = xgcd(a, poly_mod, coef_modulus);  
     out.zeroize();
     for(int i = 0; i < u.size(); ++i){
-        out.coefs[i] = u[i];
+        out[i] = u[i];
     } 
     return !u.empty();
 }

@@ -30,7 +30,7 @@ public:
     bool is_init = false;
 
     /// @brief Frees the coefs array.
-    ~RotationPoly();
+    //~RotationPoly();
 
     /// @brief Default constructor.
     RotationPoly() = default;

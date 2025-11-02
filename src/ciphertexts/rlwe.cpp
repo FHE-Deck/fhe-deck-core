@@ -81,15 +81,15 @@ void RLWECT::mul(RLWECT &out, int64_t x){
 }
  
 std::string RLWECT::to_string(){
-    std::string out = "[" + Utils::to_string(b.coefs, param->size) + ", " + Utils::to_string(a.coefs, param->size) + "]";
+    std::string out = "[" + Utils::to_string(b.vec, param->size) + ", " + Utils::to_string(a.vec, param->size) + "]";
     return out;
 }
  
 void RLWECT::extract_lwe(LWECT &lwe_ct_out){
-    lwe_ct_out.ct[0] = this->b.coefs[0];
-    lwe_ct_out.ct[1] = this->a.coefs[0];
+    lwe_ct_out.ct[0] = this->b[0];
+    lwe_ct_out.ct[1] = this->a[0];
     for(int32_t i = 1; i < this->param->size; ++i){
-        lwe_ct_out.ct[i+1] = -this->a.coefs[this->param->size - i];
+        lwe_ct_out.ct[i+1] = -this->a[this->param->size - i];
     } 
 }
 
@@ -177,7 +177,7 @@ void ExtendedRLWECT::mul(VectorCT &out, const Polynomial &ct){
     RLWECT& out_ptr = static_cast<RLWECT&>(out);    
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
     PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
-    gadget->sample(poly_decomp_coef_form, ct.coefs);   
+    gadget->sample(poly_decomp_coef_form, ct.vec);   
     rlwe_param->mul_engine->multisum(out_ptr.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b);  
     rlwe_param->mul_engine->multisum(out_ptr.a, *poly_decomp_eval_form, *array_eval_a);  
 }
@@ -235,13 +235,13 @@ void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     RLWECT& out_ptr = static_cast<RLWECT&>(out);
     const RLWECT& ct_ptr = static_cast<const RLWECT&>(ct); 
     PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
-    gadget->sample(poly_decomp_coef_form, ct_ptr.a.coefs);   
+    gadget->sample(poly_decomp_coef_form, ct_ptr.a.vec);   
     RLWECT out_minus(rlwe_param); 
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
     rlwe_param->mul_engine->multisum(out_minus.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b_sk);  
     rlwe_param->mul_engine->multisum(out_minus.a, *poly_decomp_eval_form, *array_eval_a_sk);  
    
-    gadget->sample(poly_decomp_coef_form, ct_ptr.b.coefs);  
+    gadget->sample(poly_decomp_coef_form, ct_ptr.b.vec);  
     rlwe_param->mul_engine->multisum(out_ptr.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b);  
     rlwe_param->mul_engine->multisum(out_ptr.a, *poly_decomp_eval_form, *array_eval_a); 
     out.add(out, out_minus);  
@@ -271,8 +271,8 @@ void RLWESK::key_gen(){
     }else if(key_type == KeyDistribution::binary){ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
     }  
-    sk_dist->fill_array(this->sk_poly.coefs, param->size);   
-    Utils::array_mod_form(this->sk_poly.coefs, this->sk_poly.coefs, param->size, param->coef_modulus);
+    sk_dist->fill_array(this->sk_poly.vec, param->size);   
+    Utils::array_mod_form(this->sk_poly.vec, this->sk_poly.vec, param->size, param->coef_modulus);
     /// TODO: sk_poly_eval isn't actually used yet. Need to include it in the implementation of encrypt!  
     this->sk_poly_eval = param->mul_engine->init_polynomial_eval_form();  
     this->sk_poly.to_eval(*this->sk_poly_eval, param->mul_engine); 
@@ -289,11 +289,11 @@ void RLWESK::encrypt(VectorCT &out, const Vector &m){
     if(!m.is_init){
         throw std::logic_error("RLWESK::encrypt(Polynomial *m): Input polynomial m is not initialized!");
     } 
-    unif_dist->fill_array(out_cast.a.coefs, param->size); 
+    unif_dist->fill_array(out_cast.a.vec, param->size); 
     Polynomial noise(param->size, param->coef_modulus);
-    error_dist->fill_array(noise.coefs, param->size); 
+    error_dist->fill_array(noise.vec, param->size); 
     Polynomial message(param->size, param->coef_modulus);
-    Utils::cp(message.coefs, m.vec, param->size); 
+    Utils::cp(message.vec, m.vec, param->size); 
     // Now just need to compute: b = a * s + e + m
     // First we need a poolynomial s in eval form.    
     out_cast.a.mul(out_cast.b, sk_poly, param->mul_engine); 
@@ -317,7 +317,7 @@ std::shared_ptr<VectorCT> RLWESK::encode_and_encrypt(const Vector& m, PlaintextE
 void RLWESK::encode_and_encrypt(VectorCT& out, const Vector& m, PlaintextEncoding encoding){
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
-        m_scaled.coefs[i] = encoding.encode_message(m.vec[i]);
+        m_scaled[i] = encoding.encode_message(m[i]);
     }
     encrypt(out, m_scaled);  
 }
@@ -348,13 +348,13 @@ void RLWESK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding
     Polynomial partial_dec(this->param->size, this->param->coef_modulus);
     this->partial_decrypt(partial_dec, ct_cast);   
     for(int32_t i = 0; i < out.size; ++i){
-        out_cast.coefs[i] = encoding.decode_message(partial_dec.coefs[i]);
+        out_cast[i] = encoding.decode_message(partial_dec[i]);
     }  
 }
 
 void RLWESK::extract_lwe_key(int64_t* lwe_key){  
     for(int32_t i = 0; i < param->size; ++i){  
-        lwe_key[i] = this->sk_poly.coefs[i]; 
+        lwe_key[i] = this->sk_poly[i]; 
     }  
 }
 
@@ -377,7 +377,7 @@ std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Polynomial &msg
     Polynomial msg_cpy(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     msg_cpy.zeroize();
     for(int32_t i = 0; i < rlwe_sk->param->size; ++i){
-        msg_cpy.coefs[i] = msg.coefs[i];
+        msg_cpy[i] = msg[i];
     }
     // Encryptions of - msg* base**i    
     ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg_cpy)));
@@ -409,7 +409,7 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const uint64_t *msg
     Polynomial msg_poly(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     msg_poly.zeroize();
     for(int32_t i = 0; i < size; ++i){
-        msg_poly.coefs[i] = msg[i];
+        msg_poly[i] = msg[i];
     }
     return gadget_encrypt(msg_poly);
 }
@@ -426,7 +426,7 @@ std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const uint6
     Polynomial msg_poly(rlwe_sk->param->size, rlwe_sk->param->coef_modulus);  
     msg_poly.zeroize();
     for(int32_t i = 0; i < size; ++i){
-        msg_poly.coefs[i] = msg[i];
+        msg_poly[i] = msg[i];
     }
     return extended_encrypt(msg_poly);
 }
