@@ -76,8 +76,7 @@ class Vector{
     /// @brief Negates the coefficients of this vector and stores the output in out. 
     /// @param out The output vector
     void neg(Vector &out);
-
-    
+ 
     std::string to_string(int32_t size_of_string);
 
     #if defined(USE_CEREAL)
@@ -154,6 +153,9 @@ class VectorArray{
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
     void mul(VectorArray &out, int64_t scalar);
+
+    /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
+    void normalize();
 
     #if defined(USE_CEREAL)
     template <class Archive>

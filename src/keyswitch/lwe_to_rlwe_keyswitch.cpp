@@ -35,11 +35,15 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_orig
    
 void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in) { 
     rlwe_ct_out.b.zeroize(); 
-    rlwe_ct_out.b[0] = lwe_ct_in.ct[0];  
-    Utils::array_mod_form(lwe_ct_in.ct, lwe_ct_in.ct, lwe_ct_in.param->dim  + 1, dest_param->coef_modulus);  
-    rlwe_ct_out.a[0] =  lwe_ct_in.ct[1];
+    rlwe_ct_out.b[0] = lwe_ct_in.ct[0];   
+    LWECT lwe_ct_in_cp = lwe_ct_in;
+    lwe_ct_in_cp.ct.modulus = dest_param->coef_modulus;
+    lwe_ct_in_cp.ct.normalize();
+    /// TODO: Look: you were doing some dirty tricks with the modulus here. Need to refactor this part. 
+    //Utils::array_mod_form(lwe_ct_in.ct, lwe_ct_in.ct, lwe_ct_in.param->dim  + 1, dest_param->coef_modulus);  
+    rlwe_ct_out.a[0] =  lwe_ct_in_cp.ct[1];
     for(int i = 1; i < dest_param->size; ++i){
-        rlwe_ct_out.a[dest_param->size - i] = dest_param->coef_modulus - lwe_ct_in.ct[i+1];
+        rlwe_ct_out.a[dest_param->size - i] = dest_param->coef_modulus - lwe_ct_in_cp.ct[i+1];
     } 
     rlwe_ct_out.mul(rlwe_ct_out, degree_inv); 
     RLWECT buf(dest_param);

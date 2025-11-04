@@ -181,6 +181,22 @@ Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus){
     Utils::cp(this->vec, coefs, degree);
 }
  
+ 
+Polynomial& Polynomial::operator=(const Vector& other){
+    this->init(other.size, other.modulus); 
+    this->init_from_vec();
+    Utils::cp(this->vec, other.vec, this->size);  
+    return *this;
+}
+
+
+Polynomial::Polynomial(const Vector& other){
+    if(!this->is_init){ 
+        this->init(other.size, other.modulus);
+        this->init_from_vec();
+    }
+    Utils::cp(this->vec, other.vec, this->size);
+}
 
 void Polynomial::init_from_vec(){ 
     this->coef_modulus_bit_size = Utils::power_times(modulus, 2);
@@ -197,7 +213,7 @@ Polynomial::Polynomial(const Polynomial &other){
     this->is_inv_engine_set = other.is_inv_engine_set;
 } 
   
-Polynomial& Polynomial::operator=(const Polynomial other){
+Polynomial& Polynomial::operator=(const Polynomial& other){
     if(!this->is_init){ 
         this->init(other.size, other.modulus);
         this->init_from_vec();
@@ -402,11 +418,7 @@ void PolynomialArrayEvalFormLong::neg(PolynomialArrayEvalForm &out){
         out_cast.eval_long[i] = -this->eval_long[i];
     }
 }
-
-void PolynomialArrayEvalFormLong::mod_reduce(int64_t modulus){
-    Utils::array_mod_form(this->eval_long, this->eval_long, full_size, modulus); 
-}
-
+  
 PolynomialArrayEvalFormComplex::~PolynomialArrayEvalFormComplex(){
     if(this->is_init){
         delete[] eval;

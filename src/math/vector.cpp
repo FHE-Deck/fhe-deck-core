@@ -181,3 +181,10 @@ void VectorArray::mul(VectorArray &out, const int64_t scalar){
         out.vec_array[i] = Utils::integer_mod_form(vec_array[i] * scalar, this->modulus); 
     }
 }
+
+
+void VectorArray::normalize(){
+    for(int32_t i = 0; i < full_size; ++i){ 
+        vec_array[i] = Utils::integer_mod_form(vec_array[i], modulus);
+    }
+}

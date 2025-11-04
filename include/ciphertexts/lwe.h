@@ -53,7 +53,8 @@ class LWECT{
     /// @brief Pointer to the LWE parameters.
     std::shared_ptr<LWEParam> param;
     /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M. 
-    int64_t *ct = nullptr;
+    //int64_t *ct = nullptr;
+    Vector ct;
     /// @brief Flag that indicates if the ciphertext is initialized.
     //bool init = false;
 
@@ -61,7 +62,7 @@ class LWECT{
     LWECT() = default;
 
     /// @brief  Frees ct
-    ~LWECT();
+    //~LWECT();
 
     /// @brief Initializes the ciphertext and allocates memory for the ciphertext vector.
     /// @param lwe_par Pointer to the LWE parameters.
@@ -120,24 +121,29 @@ class LWECT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param);  
+      ar(param, ct);   
+      /*
       std::vector<int64_t> ct_arr; 
       for(int32_t i = 0; i < param->dim+1; ++i){
         ct_arr.push_back(ct[i]);
       }
-      ar(ct_arr);
+      ar(ct_arr);  
+      */
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param);
+      ar(param, ct); 
+      /*
       std::vector<int64_t> ct_arr;
       ar(ct_arr);
-      ct = new int64_t[param->dim+1];
+      //ct = new int64_t[param->dim+1];
+      ct = Vector(param->dim+1, param->modulus);
       for(int32_t i = 0; i < param->dim+1; ++i){
         ct[i] = ct_arr[i];
-      } 
+      }  
+      */
     } 
     #endif
 };

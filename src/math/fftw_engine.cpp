@@ -298,7 +298,8 @@ void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const Polynomia
 void FFTWNegacyclicEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){ 
     const PolynomialEvalFormComplex& in_cast = static_cast<const PolynomialEvalFormComplex&>(in);
     engine.to_coef_form_scale(out.vec, in_cast.eval, in_cast.scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
+    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
+    out.normalize();
 }
   
 void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in){
@@ -308,10 +309,12 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const Polynomia
     for (int32_t i = 0; i < in_cast.array_size; ++i)
     {
         in_poly = &in_cast.eval[i * in_cast.size];
-        out_poly = &out.vec_array[i * out.size];
+        out_poly = &out.vec_array[i * out.size]; 
         engine.to_coef_form_scale(out_poly, in_poly, in_cast.scale);  
-        Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
-    }
+        //Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
+    } 
+    /// NOTE: When you normalize outside of the loop, you sort of defeat the purpose of having a single block of memory storing the polynomials.
+    out.normalize();
 }
 
 void FFTWNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2){
@@ -347,7 +350,8 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefFo
     }  
     double scale = in_2_cast.scale * 2.0;
     engine.to_coef_form_scale(out.vec, fft_multisum_eval_new, scale);
-    Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
+    //Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
+    out.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -371,7 +375,8 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEvalFo
     } 
     double scale = in_1_cast.scale * in_2_cast.scale * 2.0;
     engine.to_coef_form_scale(out.vec, fft_multisum_eval_new, scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
+    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
+    out.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -403,7 +408,8 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEva
     double scale =  in_2_cast.scale * 2.0;
     out_in_1_eval_cast.scale = 1.0;
     engine.to_coef_form_scale(out_multisum.vec, fft_multisum_eval_new, scale);
-    Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.size, out_multisum.modulus); 
+    //Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.size, out_multisum.modulus); 
+    out_multisum.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }

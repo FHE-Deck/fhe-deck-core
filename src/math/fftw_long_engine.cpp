@@ -306,8 +306,8 @@ void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const Polyn
 void FFTWLongNegacyclicEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){
     const PolynomialEvalFormLongComplex& in_cast = static_cast<const PolynomialEvalFormLongComplex&>(in);
     engine.to_coef_form_scale_l(out.vec, in_cast.eval, in_cast.scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
-
+    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
+    out.normalize();
 }
   
 void FFTWLongNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in){
@@ -319,9 +319,11 @@ void FFTWLongNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const Polyn
         in_poly = &in_cast.eval[i * in_cast.size];
         out_poly = &out.vec_array[i * out.size];
         engine.to_coef_form_scale_l(out_poly, in_poly, in_cast.scale);  
-        Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
+        //Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
     }
-
+    /// NOTE: Similar as with fftw_engine, normalizing here destroys data locality.
+    /// Perhpas its better to do it in to_coef_form_scale_l?
+    out.normalize();
 }
 
 void FFTWLongNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2){
@@ -357,7 +359,8 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCo
     }  
     double scale = in_2_cast.scale * 2.0;
     engine.to_coef_form_scale_l(out.vec, fft_multisum_eval_new, scale);
-    Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
+    //Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
+    out.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 
@@ -381,7 +384,8 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEv
     } 
     long double scale = in_1_cast.scale * in_2_cast.scale * 2.0;
     engine.to_coef_form_scale_l(out.vec, fft_multisum_eval_new, scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
+    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
+    out.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 
@@ -413,7 +417,8 @@ void FFTWLongNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArra
     double scale =  in_2_cast.scale * 2.0;
     out_in_1_eval_cast.scale = 1.0;
     engine.to_coef_form_scale_l(out_multisum.vec, fft_multisum_eval_new, scale); 
-    Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.size, out_multisum.modulus); 
+    //Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.size, out_multisum.modulus); 
+    out_multisum.normalize();
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 

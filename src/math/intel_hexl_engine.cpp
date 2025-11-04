@@ -38,6 +38,7 @@ void IntelHexlNTTEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
     // Here we make sure that the coefficients are in propper form.
     //int64_t* coefs_mod_form = new int64_t[in.size];
     //Utils::array_mod_form(coefs_mod_form, in.vec, in.size, in.modulus); 
+    /// TODO: This actually shouldn't be necessary. Polynomials should by default be assumed to be in coef form.
     Polynomial mod_form = in;
     mod_form.normalize();
     ntt.ComputeForward((uint64_t*) out_cast.eval_long, (uint64_t*) mod_form.vec, 1, 1);  

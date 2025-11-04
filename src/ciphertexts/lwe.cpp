@@ -9,20 +9,24 @@ LWEParam::LWEParam(int32_t dim, int64_t modulus){
   
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
     this->param = lwe_param;
-    this->ct = new int64_t[param->dim+1];
+    //this->ct = new int64_t[param->dim+1];
+    this->ct = Vector(param->dim+1, param->modulus);
 }
    
 LWECT::LWECT(const LWECT &c){  
     this->param = c.param;
-    this->ct = new int64_t[param->dim+1]; 
+    //this->ct = new int64_t[param->dim+1]; 
+    this->ct = Vector(param->dim+1, param->modulus);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
 }
  
+/*
 LWECT::~LWECT(){    
     delete[] ct; 
 }
+*/
  
 void LWECT::mul(LWECT &out, int64_t scalar)const{
     for(int32_t i = 0; i <= param->dim; ++i){
@@ -80,7 +84,8 @@ LWECT& LWECT::operator=(const LWECT other){
         return *this;
     }   
     this->param = other.param;
-    this->ct = new int64_t[param->dim+1]; 
+    //this->ct = new int64_t[param->dim+1]; 
+    this->ct = Vector(param->dim+1, param->modulus);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = other.ct[i];
     } 

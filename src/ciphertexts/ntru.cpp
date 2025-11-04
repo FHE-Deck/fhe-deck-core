@@ -312,7 +312,8 @@ NTRUGadgetSK::NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUS
     this->secret_key = sk;
 }
  
-std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){     
+std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){   
+    /// TODO: make sure size and modulus of msg fits then use the copy constructor
     Polynomial msg_poly(msg.vec, sk->param->size, sk->param->coef_modulus);
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);

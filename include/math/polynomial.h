@@ -287,15 +287,24 @@ class Polynomial: public Vector{
     Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
 
     void init_from_vec();
-  
+   
     /// @brief Copy constructor
     /// @param other The polynomail to copy
-    Polynomial(const Polynomial &other);
+    Polynomial(const Vector& other);
 
     /// @brief This is the copy assignment operator
     /// @param other The polynomial to copy
     /// @return Return a reference to the copied polynomial
-    Polynomial& operator=(const Polynomial other);
+    Polynomial& operator=(const Vector& other);
+
+    /// @brief Copy constructor
+    /// @param other The polynomail to copy
+    Polynomial(const Polynomial& other);
+ 
+    /// @brief This is the copy assignment operator
+    /// @param other The polynomial to copy
+    /// @return Return a reference to the copied polynomial
+    Polynomial& operator=(const Polynomial& other);
 
     /// @brief Sets the polynomial multiplication engine
     void set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
@@ -510,9 +519,7 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
     void mul(PolynomialArrayEvalForm &out, int64_t scalar); 
     
     void neg(PolynomialArrayEvalForm &out);
-
-    void mod_reduce(const int64_t modulus); 
-
+  
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const

@@ -395,6 +395,7 @@ std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Polynomial &msg
 }
   
 std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg){  
+    /// TODO: make sure size and modulus of msg fits  then use the copy constructor
     Polynomial msg_poly(msg.vec, rlwe_sk->param->size, rlwe_sk->param->coef_modulus);    
     std::vector<std::shared_ptr<RLWECT>> gadget_ct = ext_enc(msg_poly); 
     // Encryptions of - msg * sk * base**i    

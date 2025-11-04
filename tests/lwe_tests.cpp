@@ -59,13 +59,13 @@ TEST(LWETests, BasicLWETest){
         if(lwe_sk.param->dim != lwe_sk_2.param->dim || 
             lwe_sk.param->modulus != lwe_sk_2.param->modulus || 
             lwe_sk.stddev != lwe_sk_2.stddev || lwe_sk.key_type != lwe_sk_2.key_type){
-                FAIL();
                 print_out << "LWESK Serialization Test: Fail" << std::endl;  
+                FAIL();
         } 
         for(int32_t i{0}; i < lwe_sk.param->dim; ++i){
             if(lwe_sk.key[i] != lwe_sk_2.key[i]){  
-                FAIL();
                 print_out << "LWESK Serialization Test: Fail" << std::endl;  
+                FAIL();
             }
         }
         std::remove("lwe_sk_test");
@@ -97,9 +97,9 @@ TEST(LWETests, BasicLWETest){
         iarchive_ct(ct_test);  
         if(ct->param->dim != ct_test->param->dim || 
             ct->param->modulus != ct_test->param->modulus ||  
-            (ct->ct == ct_test->ct)){
+            (ct->ct != ct_test->ct)){
+                print_out << "LWECT Serialization Test: Fail" << std::endl;  
                 FAIL();
-            print_out << "LWECT Serialization Test: Fail" << std::endl;  
         } 
         std::remove("lwe_ct_test"); 
     }
