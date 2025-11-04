@@ -55,9 +55,9 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::ifstream is("poly_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive(is);  
         iarchive(sk_poly);  
-        if(sk->sk_poly.degree != sk_poly.degree || 
-        sk->sk_poly.coef_modulus != sk_poly.coef_modulus ||
-        !Utils::is_eq_poly(sk->sk_poly.vec, sk_poly.vec, sk->sk_poly.degree)){
+        if(sk->sk_poly.size != sk_poly.size || 
+        sk->sk_poly.modulus != sk_poly.modulus ||
+        sk->sk_poly!=sk_poly){
             FAIL(); 
         } 
         std::remove("poly_test"); 
@@ -77,7 +77,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         iarchive_rlwe_sk(rlwe_sk_2);  
         if(sk->param->size != rlwe_sk_2->param->size || 
         sk->param->coef_modulus != rlwe_sk_2->param->coef_modulus ||
-        !Utils::is_eq_poly(sk->sk_poly.vec, rlwe_sk_2->sk_poly.vec, sk->sk_poly.degree)){
+        sk->sk_poly != rlwe_sk_2->sk_poly){
             FAIL();  
         } 
         std::remove("rlwe_sk_test"); 
@@ -103,8 +103,8 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         iarchive(ct_test);  
         if(ct->param->size != ct_test->param->size || 
         ct->param->coef_modulus != ct_test->param->coef_modulus ||
-        !Utils::is_eq_poly(ct->a.vec, ct_test->a.vec, sk->sk_poly.degree) ||
-        !Utils::is_eq_poly(ct->b.vec, ct_test->b.vec, sk->sk_poly.degree)){
+        ct->a != ct_test->a ||
+        ct->b != ct_test->b){
             FAIL(); 
         } 
         std::remove("ct_test"); 
@@ -116,7 +116,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         rand->fill_array(m.vec, N); 
         ct = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m, encoding));  
         sk->decrypt(out, *ct.get(), encoding);  
-        if(!Utils::is_eq_poly(out.vec, m.vec, N)){
+        if(out != m){
             FAIL(); 
         }
     } 
@@ -151,7 +151,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         sk->decrypt(out, ct_3, encoding);    
           
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     }  
@@ -168,7 +168,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         ct_1->sub(*ct_3.get(), *ct_2.get());   
         sk->decrypt(out, *ct_3.get(), encoding);     
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -183,7 +183,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         ct_1->neg(ct_3);
         sk->decrypt(out, ct_3, encoding);     
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -199,10 +199,10 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         RLWECT ct_3(rlwe_par); 
         ct_1->negacyclic_rotate(ct_3, rot);
         sk->decrypt(out, ct_3, encoding);      
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){ 
-            print_out << "out: " << Utils::to_string(out.vec, 15) << std::endl;  
-            print_out << "exp: " << Utils::to_string(exp.vec, 15) << std::endl;  
-            print_out << "m_1: " << Utils::to_string(m_1.vec, 15) << " ... " << Utils::to_string(m_1.vec + (N-3), 3) << std::endl;    
+        if(out != exp){ 
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp: " << exp.to_string(15) << std::endl;  
+            print_out << "m_1: " << m_1.to_string(15) << std::endl;    
             FAIL();
         }
     } 
@@ -222,10 +222,10 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         ct_1->mul(ct_3, scalar); 
         sk->decrypt(out, ct_3, encoding); 
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod); 
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
-            print_out << "out: " << Utils::to_string(out.vec, 5) << std::endl;  
-            print_out << "exp: " << Utils::to_string(exp.vec, 5) << std::endl;   
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp: " << exp.to_string(15) << std::endl;   
         }
     }  
     #endif 
@@ -285,11 +285,11 @@ void gadget_rlwe_basic_test(int test_num, GadgetMulMode mode, long N, long Q, lo
 
         sk->decrypt(out, ct_prod, encoding);
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_mod);
-        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){
+        if(out != exp_poly){
             print_out << "Fail at: " << i << std::endl;
             print_out << "gadget rlwe test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.vec, 15) << std::endl;  
-            print_out << "exp_poly: " << Utils::to_string(exp_poly.vec, 15) << std::endl;   
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp_poly: " << exp_poly.to_string(15) << std::endl;   
             FAIL();
         } 
     }  
@@ -398,13 +398,13 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         g_ct->mul(ct_prod, *ct.get()); 
         sk->decrypt(out, ct_prod, encoding);
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
-        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){ 
+        if(out != exp_poly){ 
             FAIL();
             print_out << "\rFail at: " << i << std::endl;
             print_out << "gadget rlwe test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.vec, 5) << std::endl;  
-            print_out << "exp_poly: " << Utils::to_string(exp_poly.vec, 5) << std::endl;  
-            print_out << "m: " << Utils::to_string(m.vec, 5) << std::endl;   
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp_poly: " << exp_poly.to_string(15) << std::endl;  
+            print_out << "m: " << m.to_string(15) << std::endl;   
         } 
     }  
 
@@ -423,13 +423,13 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         ext_ct_test->mul(ct_prod, m); 
         sk->decrypt(out, ct_prod, encoding);
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
-        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){ 
+        if(out != exp_poly){ 
             FAIL();
             print_out << "\rFail at: " << i << std::endl;
             print_out << "Extended rlwe test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.vec, 5) << std::endl;  
-            print_out << "exp_poly: " << Utils::to_string(exp_poly.vec, 5) << std::endl;  
-            print_out << "m: " << Utils::to_string(m.vec, 5) << std::endl;   
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp_poly: " << exp_poly.to_string(15) << std::endl;  
+            print_out << "m: " <<  m.to_string(15) << std::endl;   
         } 
     } 
 

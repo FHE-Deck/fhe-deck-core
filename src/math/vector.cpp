@@ -28,6 +28,26 @@ const int64_t& Vector::operator[](int32_t index) const {
     return vec[index];
 }
 
+bool Vector::operator==(const Vector& other) const {
+    if(size != other.size){ return false; }
+
+    if(modulus != other.modulus){ return false; }
+
+    if(modulus != other.modulus){ return false; }
+
+     for(int32_t i = 0; i < size; ++i){
+        if(vec[i] != other[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Vector::operator!=(const Vector& other) const { 
+    return !(*this == other); 
+}
+
+
 void Vector::add(Vector &out, const Vector &other) const{
     for(int32_t i = 0; i < size; ++i){
         out.vec[i] = vec[i] + other.vec[i];
@@ -45,6 +65,21 @@ void Vector::neg(Vector &out){
     for(int32_t i = 0; i < size; ++i){
         out.vec[i] = this->modulus - this->vec[i];   
     }  
+}
+
+std::string Vector::to_string(int32_t size_of_string){
+    if(size_of_string==0){
+        return "[]";
+    }
+    if(size_of_string==1){
+        return "[" + std::to_string(vec[0]) + "]" ;
+    }
+    std::string str = "[";
+    for(int32_t i = 0; i < size_of_string-1; ++i){
+        str += std::to_string(vec[i]) + ", ";
+    }
+    str += std::to_string(vec[size_of_string-1]) + "]";
+    return str;
 }
  
 VectorArray::~VectorArray(){

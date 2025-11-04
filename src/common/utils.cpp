@@ -12,10 +12,7 @@ void Utils::cp(int64_t *out, int64_t *in, int32_t size){
 int32_t Utils::power_times(int64_t x, int64_t base){ 
     if(x <= 1){
         return 1;
-    }
-    //return floor(log2(x)/log2(base))+1;  
-    //int64_t digits = floor(log2(x)/log2(base))+1; 
-    
+    }  
     int64_t base_bits = ceil(log2(base)); 
     int64_t x_bits = ceil(log2(x));  
     int32_t k = ceil((double)x_bits/(double)base_bits);   
@@ -99,8 +96,7 @@ int64_t Utils::mod_inv(int64_t in, int64_t modulus){
     return Utils::integer_mod_form(coeffs.first, modulus);
 } 
  
-
-
+ 
 bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
     for(int32_t i = 0; i < sizeof_in; ++i){
         if(in_1[i] != in_2[i]){
@@ -108,8 +104,8 @@ bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
         }
     }
     return true;
-}
-
+} 
+ 
  
 int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
     int64_t half = Q/2;
@@ -147,67 +143,7 @@ void Utils::array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t
     for(int32_t i = 0; i < sizeof_in; ++i){ 
         out[i] = Utils::integer_mod_form(in[i], Q);
     }
-}
-  
-std::string Utils::to_string(int64_t *poly, int32_t sizeof_poly){
-    if(sizeof_poly==0){
-        return "[]";
-    }
-    if(sizeof_poly==1){
-        return "[" + std::to_string(poly[0]) + "]" ;
-    }
-    std::string str = "[";
-    for(int32_t i = 0; i < sizeof_poly-1; ++i){
-        str += std::to_string(poly[i]) + ", ";
-    }
-    str += std::to_string(poly[sizeof_poly-1]) + "]";
-    return str;
-}
-
-std::string Utils::to_string(double *poly, int32_t sizeof_poly){
-    if(sizeof_poly==0){
-        return "[]";
-    }
-    if(sizeof_poly==1){
-        return "[" + std::to_string(poly[0]) + "]" ;
-    }
-    std::string str = "[";
-    for(int32_t i = 0; i < sizeof_poly-1; ++i){
-        str += std::to_string(poly[i]) + ", ";
-    }
-    str += std::to_string(poly[sizeof_poly-1]) + "]";
-    return str;
-}
-
-
-std::string Utils::to_string(int32_t *poly, int32_t sizeof_poly){
-    if(sizeof_poly==0){
-        return "[]";
-    }
-    if(sizeof_poly==1){
-        return "[" + std::to_string(poly[0]) + "]" ;
-    }
-    std::string str = "[";
-    for(int32_t i = 0; i < sizeof_poly-1; ++i){
-        str += std::to_string(poly[i]) + ", ";
-    }
-    str += std::to_string(poly[sizeof_poly-1]) + "]";
-    return str;
-}
-
-/*
-std::string Utils::complex_to_string(fftw_complex* in, int32_t from, int32_t size){
-    std::string out = "";
-    for(int32_t i = from; i < size; ++i){
-        out += "(";
-        out += std::to_string(in[i][0])  ;
-        out += ", " ;
-        out +=  std::to_string(in[i][1]) ;
-        out += ")";
-    }
-    return out;
-}
-*/
+} 
  
 void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell){
     int64_t mask = basis-1;

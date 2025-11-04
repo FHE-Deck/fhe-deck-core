@@ -17,8 +17,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
     
     #if defined(USE_CEREAL) 
   
-    int32_t plaintext_modulus = 13;
-    //Sampler rand;
+    int32_t plaintext_modulus = 13; 
     std::shared_ptr<Distribution> rand = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, plaintext_modulus-1));
     KeyDistribution rlwe_key_type = KeyDistribution::binary;
     std::shared_ptr<NTRUParam> ntru_par(new NTRUParam(RingType::negacyclic, N, Q, arithmetic));
@@ -87,7 +86,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
          }
 
         sk->decrypt(out, *ct_test.get(), encoding); 
-        if(!Utils::is_eq_poly(out.vec, m.vec, N)){
+        if(out != m){
             FAIL();
         }
     }
@@ -110,7 +109,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         sk->decrypt(out, *ct_3.get(), encoding);    
           
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -128,7 +127,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         ct_1->sub(ct_3, *ct_2.get());   
         sk->decrypt(out, ct_3, encoding);     
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -144,7 +143,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         ct_1->neg(ct_3);
         sk->decrypt(out, ct_3, encoding);     
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -163,7 +162,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         ct_1->negacyclic_rotate(ct_3, rot);
         sk->decrypt(out, ct_3, encoding);     
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);    
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             FAIL(); 
         }
     } 
@@ -188,10 +187,10 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         NTRUCT ct_3(ntru_par);
         ct_1->mul(ct_3, scalar); 
         sk->decrypt(out, ct_3, encoding);  
-        if(!Utils::is_eq_poly(out.vec, exp.vec, N)){
+        if(out != exp){
             print_out << "NTRU MUL test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.vec, 15) << std::endl;  
-            print_out << "exp: " << Utils::to_string(exp.vec, 15) << std::endl;  
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp: " <<  exp.to_string(15) << std::endl;  
             mul_test = false; 
             FAIL();
         }
@@ -219,8 +218,7 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
     
     #if defined(USE_CEREAL) 
     int32_t plaintext_modulus = 5; 
-    PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_modulus, Q);
-    //Sampler rand;
+    PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_modulus, Q); 
     std::shared_ptr<Distribution> rand = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, plaintext_modulus-1)); 
     KeyDistribution rlwe_key_type = KeyDistribution::ternary;
     std::shared_ptr<NTRUParam> ntru_par(new NTRUParam(RingType::negacyclic, N, Q, arithmetic)); 
@@ -290,12 +288,12 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
         g_ct->mul(ct_prod, *ct.get()); 
         sk->decrypt(out, ct_prod, encoding);
         Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
-        if(!Utils::is_eq_poly(out.vec, exp_poly.vec, N)){ 
+        if(out != exp_poly){ 
             print_out << "\rFail at: " << i << std::endl;
             print_out << "gadget ntru test: Fail" << std::endl;
-            print_out << "out: " << Utils::to_string(out.vec, ntru_par->size) << std::endl;  
-            print_out << "exp_poly: " << Utils::to_string(exp_poly.vec, ntru_par->size) << std::endl;  
-            print_out << "m: " << Utils::to_string(m.vec, ntru_par->size) << std::endl;  
+            print_out << "out: " << out.to_string(15) << std::endl;  
+            print_out << "exp_poly: " << exp_poly.to_string(15) << std::endl;  
+            print_out << "m: " << m.to_string(15) << std::endl;  
             test = false; 
             FAIL();
         } 

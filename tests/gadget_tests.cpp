@@ -19,17 +19,16 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
     }else if(type == GadgetType::discrete_gaussian_gadget){ 
         g = std::shared_ptr<Gadget>(new DiscreteGaussianSamplingGadget(N, Q, base, stddev)); 
     }  
-     
-    std::vector<int64_t> poly;
-    poly.resize(N); 
-    PolynomialArrayCoefForm decomp(N, Q, base);
-    unsigned long* result = new unsigned long[N]; 
+      
+    Polynomial poly(N, Q);
+    PolynomialArrayCoefForm decomp(N, Q, base); 
+    Polynomial result(N, Q);
     long temp;
     for(int k = 0; k < test_num; ++k){
         // Choose some random poly 
-        rand->fill_array(poly.data(), poly.size());
+        rand->fill_array(poly.vec, N);
         // Sample
-        g->sample(decomp, poly.data()); 
+        g->sample(decomp, poly.vec); 
         // Compose back modulo Q, and compare to poly
         for(int i = 0; i < N; ++i){
             result[i] = 0;
@@ -42,12 +41,11 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
                 result[i] += temp;
             }
         }
-        Utils::array_mod_form((long*)result, (long*)result, N, Q); 
-        if(!Utils::is_eq_poly((long*)result, poly.data(), N)){   
+        Utils::array_mod_form(result.vec, result.vec, N, Q); 
+        if(result != poly){   
             FAIL();
         } 
-    }  
-    delete[] result;  
+    }   
 }
 
  
@@ -59,19 +57,18 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
         g = std::shared_ptr<Gadget>(new SignedDecompositionGadget(N, Q, base)); 
     }else if(type == GadgetType::discrete_gaussian_gadget){ 
         g = std::shared_ptr<Gadget>(new DiscreteGaussianSamplingGadget(N, Q, base, stddev)); 
-    }   
-    std::vector<int64_t> poly;
-    poly.resize(N); 
+    }    
+    Polynomial poly(N, Q);
     PolynomialArrayCoefForm decomp(N, Q, base);
-    long* signed_decomp = new long[N]; 
-    unsigned long* result = new unsigned long[N]; 
+    long* signed_decomp = new long[N];  
+    Polynomial result(N, Q);
     long* decomp_flat = new long[g->digits * g->degree];
     long temp;
     for(int k = 0; k < test_num; ++k){
         // Choose some random poly 
-        rand->fill_array(poly.data(), poly.size()); 
+        rand->fill_array(poly.vec, N); 
         // Sample
-        g->sample(decomp, poly.data()); 
+        g->sample(decomp, poly.vec); 
         for(int j = 0; j < g->digits; ++j){
             Utils::array_signed_form(signed_decomp, decomp.vec_array_2d[j], N, Q); 
         }
@@ -88,9 +85,9 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
                 result[i] += temp;
             }
         } 
-        Utils::array_mod_form((long*)result, (long*)result, N, Q); 
+        Utils::array_mod_form(result.vec, result.vec, N, Q); 
         
-        if(!Utils::is_eq_poly((long*)result, poly.data(), N)){  
+        if(result != poly){  
             FAIL(); 
         } 
     } 
@@ -103,8 +100,7 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
     long positive = Utils::count_positive(decomp_flat, g->digits * g->degree);
     long negative = Utils::count_negative(decomp_flat, g->digits * g->degree); 
  
-    delete[] decomp_flat;  
-    delete[] result;  
+    delete[] decomp_flat;   
 }
 
 

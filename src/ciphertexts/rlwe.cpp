@@ -81,7 +81,7 @@ void RLWECT::mul(RLWECT &out, int64_t x){
 }
  
 std::string RLWECT::to_string(){
-    std::string out = "[" + Utils::to_string(b.vec, param->size) + ", " + Utils::to_string(a.vec, param->size) + "]";
+    std::string out = "[" +  b.to_string(b.size) + ", " + a.to_string(a.size) + "]";
     return out;
 }
  
@@ -95,7 +95,7 @@ void RLWECT::extract_lwe(LWECT &lwe_ct_out){
 
 void RLWECT::extract_lwe(LWECT &lwe_ct_out, uint32_t position){ 
     RLWECT tmp(*this);
-    tmp.negacyclic_rotate(tmp, (a.degree - position) % a.degree);
+    tmp.negacyclic_rotate(tmp, (a.size - position) % a.size);
     tmp.neg(tmp); 
     tmp.extract_lwe(lwe_ct_out);
 }
@@ -323,10 +323,10 @@ void RLWESK::encode_and_encrypt(VectorCT& out, const Vector& m, PlaintextEncodin
 }
 
 void RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct){   
-    if(phase.degree != param->size){
+    if(phase.size != param->size){
         throw std::logic_error("RLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
-    if(phase.coef_modulus != param->coef_modulus){
+    if(phase.modulus != param->coef_modulus){
         throw std::logic_error("RRLWESK::partial_decrypt(Polynomial &phase, const RLWECT &ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
     }
     if(!phase.is_init){

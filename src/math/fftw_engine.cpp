@@ -274,8 +274,8 @@ std::shared_ptr<PolynomialArrayEvalForm> FFTWNegacyclicEngine::init_polynomial_a
   
 void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
     PolynomialEvalFormComplex& out_cast = static_cast<PolynomialEvalFormComplex&>(out);
-    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.degree, in.coef_modulus);
-    Utils::array_signed_form(input->vec, in.vec, in.degree, in.coef_modulus); 
+    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.size, in.modulus);
+    Utils::array_signed_form(input->vec, in.vec, in.size, in.modulus); 
     engine.to_eval_form(out_cast.eval, input->vec); 
     out_cast.scale = 1.0;
 }
@@ -284,11 +284,11 @@ void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const Polynomia
     PolynomialArrayEvalFormComplex& out_cast = static_cast<PolynomialArrayEvalFormComplex&>(out);
     int64_t *in_poly;
     fftw_complex *out_poly;
-    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.degree, in.coef_modulus);
+    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.size, in.modulus);
     for (int32_t i = 0; i < in.array_size; ++i)
     {  
-        in_poly = &in.poly_array[i * in.degree];
-        Utils::array_signed_form(input->vec, in_poly, in.degree, in.coef_modulus);
+        in_poly = &in.vec_array[i * in.size];
+        Utils::array_signed_form(input->vec, in_poly, in.size, in.modulus);
         out_poly = &out_cast.eval[i * out_cast.size];    
         engine.to_eval_form(out_poly, in_poly);  
     } 
@@ -298,7 +298,7 @@ void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const Polynomia
 void FFTWNegacyclicEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){ 
     const PolynomialEvalFormComplex& in_cast = static_cast<const PolynomialEvalFormComplex&>(in);
     engine.to_coef_form_scale(out.vec, in_cast.eval, in_cast.scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.degree, out.coef_modulus);
+    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
 }
   
 void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in){
@@ -308,9 +308,9 @@ void FFTWNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const Polynomia
     for (int32_t i = 0; i < in_cast.array_size; ++i)
     {
         in_poly = &in_cast.eval[i * in_cast.size];
-        out_poly = &out.poly_array[i * out.degree];
+        out_poly = &out.vec_array[i * out.size];
         engine.to_coef_form_scale(out_poly, in_poly, in_cast.scale);  
-        Utils::array_mod_form(out_poly, out_poly, out.degree, out.coef_modulus);
+        Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
     }
 }
 
@@ -327,27 +327,27 @@ void FFTWNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm
 
 void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){   
     const PolynomialArrayEvalFormComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormComplex&>(in_2);
-    int64_t* in_1_temp = in_1.poly_array;
+    int64_t* in_1_temp = in_1.vec_array;
     fftw_complex* in_2_temp = in_2_cast.eval;
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast.size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast.size]; 
     
-    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.degree, in_1.coef_modulus); 
+    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
     engine.to_eval_form(fft_multisum_eval_new, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
  
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        in_1_temp = &in_1.poly_array[i * in_1.degree];
+        in_1_temp = &in_1.vec_array[i * in_1.size];
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         
-        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.degree, in_1.coef_modulus); 
+        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
         engine.to_eval_form(fft_prod_new, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, fft_prod_new, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
     }  
     double scale = in_2_cast.scale * 2.0;
     engine.to_coef_form_scale(out.vec, fft_multisum_eval_new, scale);
-    Utils::array_mod_form(out.vec, out.vec, in_1.degree, in_1.coef_modulus); 
+    Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -371,7 +371,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEvalFo
     } 
     double scale = in_1_cast.scale * in_2_cast.scale * 2.0;
     engine.to_coef_form_scale(out.vec, fft_multisum_eval_new, scale); 
-    Utils::array_mod_form(out.vec, out.vec, out.degree, out.coef_modulus); 
+    Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }
@@ -380,22 +380,22 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEvalFo
 void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){   
     const PolynomialArrayEvalFormComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormComplex&>(in_2);
     PolynomialArrayEvalFormComplex& out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormComplex&>(out_in_1_eval);
-    int64_t* in_1_temp = in_1.poly_array;
+    int64_t* in_1_temp = in_1.vec_array;
     fftw_complex* out_eval = out_in_1_eval_cast.eval;
     fftw_complex* in_2_temp = in_2_cast.eval;
     fftw_complex* fft_prod_new = new fftw_complex[in_2_cast.size]; 
     fftw_complex* fft_multisum_eval_new = new fftw_complex[in_2_cast.size]; 
     
-    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.degree, in_1.coef_modulus); 
+    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
     engine.to_eval_form(out_eval, in_1_temp);   
     engine.mul_eval_form(fft_multisum_eval_new, out_eval, in_2_temp);  
  
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        in_1_temp = &in_1.poly_array[i * in_1.degree];
+        in_1_temp = &in_1.vec_array[i * in_1.size];
         out_eval = &out_in_1_eval_cast.eval[i * out_in_1_eval_cast.size];
         in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
         
-        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.degree, in_1.coef_modulus); 
+        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
         engine.to_eval_form(out_eval, in_1_temp);  
         engine.mul_eval_form(fft_prod_new, out_eval, in_2_temp); 
         engine.add_eval_form(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
@@ -403,7 +403,7 @@ void FFTWNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEva
     double scale =  in_2_cast.scale * 2.0;
     out_in_1_eval_cast.scale = 1.0;
     engine.to_coef_form_scale(out_multisum.vec, fft_multisum_eval_new, scale);
-    Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.degree, out_multisum.coef_modulus); 
+    Utils::array_mod_form(out_multisum.vec, out_multisum.vec, in_1.size, out_multisum.modulus); 
     delete[] fft_prod_new; 
     delete[] fft_multisum_eval_new; 
 }

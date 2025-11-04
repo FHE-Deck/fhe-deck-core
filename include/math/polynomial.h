@@ -258,16 +258,11 @@ class PolynomialEvalFormLongComplex : public PolynomialEvalForm{
 class Polynomial: public Vector{
 
     public:
-
-    /// @brief The coefficients of the polynomial (points to the vec array in the Vector class)
-    //int64_t* coefs;  
-
-    /// @brief The coefficient modulus
-    int64_t coef_modulus;
+   
     /// @brief The bit size of the coefficient modulus
     int32_t coef_modulus_bit_size;
     /// @brief The degree of the polynomial
-    int32_t degree;
+    //int32_t degree;
     /// @brief The polynomial multiplication engine (optional)
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
@@ -318,9 +313,7 @@ class Polynomial: public Vector{
    
     /// @brief Zero all coefficients of the polynomial
     void zeroize();
-
-    
-
+ 
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial
     std::shared_ptr<Polynomial> clone() const;
@@ -360,6 +353,7 @@ class Polynomial: public Vector{
     /// @param inv_engine The polynomial inversion engine
     void inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine) const; 
 
+
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
@@ -379,16 +373,7 @@ class Polynomial: public Vector{
 class PolynomialArrayCoefForm : public VectorArray{
 
     public:
- 
-    /// @brief The array of polynomials. 
-    /// @note This is a pointer to a 1d array of coefficients, that stores a 1d array of polynomials. The array will be initialized as new int64_t[size * degree].
-    int64_t* poly_array; 
   
-    /// @brief Coefficient Modulus Q
-    int64_t coef_modulus;
-    /// @brief Degree of the polynomials
-    int32_t degree; 
- 
     /// @brief The polynomial multiplication engine (optional)
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
@@ -409,15 +394,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     /// @param array_size The size of the array
     /// @param mul_engine The polynomial multiplication engine
     PolynomialArrayCoefForm(int32_t degree, int64_t coef_modulus, int32_t array_size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-  
-    /// @brief Initializes the polynomial array. Its used in the constructors.
-    /// @param degree The degree of the polynomials
-    /// @param coef_modulus The coefficient modulus
-    /// @param array_size The size of the array
-    //void init(int32_t degree, int64_t coef_modulus, int32_t array_size);
-
-    void init_from_vector();
- 
+    
     /// @brief Copy constructor
     /// @param other The polynomial array to copy
     PolynomialArrayCoefForm(const PolynomialArrayCoefForm &other);
@@ -441,15 +418,14 @@ class PolynomialArrayCoefForm : public VectorArray{
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<VectorArray>(this));   
-        ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        ar(cereal::binary_data(vec_array, sizeof(int64_t) * full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-        ar(cereal::base_class<VectorArray>(this));   
-        init_from_vector();
-        ar(cereal::binary_data(poly_array, sizeof(int64_t) * full_size));  
+        ar(cereal::base_class<VectorArray>(this));    
+        ar(cereal::binary_data(vec_array, sizeof(int64_t) * full_size));  
         is_init = true;
     } 
     #endif 

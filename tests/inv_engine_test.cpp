@@ -38,10 +38,10 @@ void compare_naive_with_ntl(int32_t degree, int64_t modulus){
         if(has_inverse){ 
             Polynomial mul_poly(degree, modulus);  
             mul_engine->mul(mul_poly, poly, inv_poly_2);
-            if(!Utils::is_eq_poly(one.vec, mul_poly.vec, degree)){  
+            if(one != mul_poly){  
                 print_out << "Inversion Fail "  << std::endl;
-                print_out << "inv_poly: " << Utils::to_string(inv_poly.vec, 10) << std::endl;
-                print_out << "inv_poly_2: " << Utils::to_string(inv_poly_2.vec, 10) << std::endl;
+                print_out << "inv_poly: " << inv_poly.to_string(5) << std::endl;
+                print_out << "inv_poly_2: " << inv_poly_2.to_string(5) << std::endl;
                 FAIL();
             } 
         } 

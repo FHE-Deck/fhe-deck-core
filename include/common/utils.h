@@ -45,15 +45,7 @@ class Utils{
 
         static int64_t integer_mod_form(int64_t in, int64_t Q);
 
-        static void array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q);
-  
-        static std::string to_string(int64_t *poly, int32_t sizeof_poly);
-
-        static std::string to_string(double *poly, int32_t sizeof_poly);
-
-        static std::string to_string(int32_t *poly, int32_t sizeof_poly);
-
-        //static std::string complex_to_string(fftw_complex* in, int32_t from, int32_t size);
+        static void array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q); 
  
         static int64_t integer_compose(int64_t *dec_in, int32_t basis, int32_t ell);
 

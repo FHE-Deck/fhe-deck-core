@@ -101,7 +101,7 @@ void NTRUCT::mul(NTRUCT &out, const Polynomial &x){
 }
  
 std::string NTRUCT::to_string(){
-    std::string out = "[" + Utils::to_string(ct_poly.vec, param->size) + "]";
+    std::string out = "[" + ct_poly.to_string(ct_poly.size) + "]";
     return out;
 }
   
@@ -203,9 +203,9 @@ void NTRUSK::encrypt(VectorCT &out, const Vector &m){
     }  
     /// NOTE: We compute inv_sk * g + e + msg
     Polynomial g = Polynomial(param->size, param->coef_modulus);
-    sk_dist->fill_array(g.vec, g.degree);
+    sk_dist->fill_array(g.vec, g.size);
     Polynomial e = Polynomial(param->size, param->coef_modulus);
-    error_dist->fill_array(e.vec, e.degree); 
+    error_dist->fill_array(e.vec, e.size); 
     inv_sk.mul(out_cast.ct_poly, g, param->mul_engine);
     out_cast.ct_poly.add(out_cast.ct_poly, e);
     out_cast.ct_poly.add(out_cast.ct_poly, m);
@@ -232,10 +232,10 @@ void NTRUSK::encode_and_encrypt(VectorCT& out, const Vector &m, PlaintextEncodin
 }
  
 void NTRUSK::partial_decrypt(Polynomial &phase, const NTRUCT &ct){   
-    if(phase.degree != param->size){
+    if(phase.size != param->size){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
-    if(phase.coef_modulus != param->coef_modulus){
+    if(phase.modulus != param->coef_modulus){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
     }
     if(!phase.is_init){
@@ -255,7 +255,7 @@ void NTRUSK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding
     Polynomial& out_cast =  static_cast<Polynomial&>(out);
     Polynomial phase(this->param->size, this->param->coef_modulus);
     this->partial_decrypt(phase, ct_cast);  
-    for(int32_t i = 0; i < out_cast.degree; ++i){
+    for(int32_t i = 0; i < out_cast.size; ++i){
         out_cast.vec[i] = encoding.decode_message(phase.vec[i]);
     } 
 }

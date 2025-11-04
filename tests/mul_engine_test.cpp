@@ -36,12 +36,12 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->to_coef(left_poly, *left_eval.get());
         engine_right->to_coef(right_poly, *right_eval.get());
 
-        if(!Utils::is_eq_poly(left_poly.vec, right_poly.vec, degree)){
+        if(left_poly != right_poly){
             FAIL(); 
             print_out << "Test Eval Equivalence: Fail at " << i << std::endl;
-            print_out << "input_poly.coefs: " << Utils::to_string(input_poly.vec, 5) << std::endl;
-            print_out << "left_poly.coefs: " << Utils::to_string(left_poly.vec, 5) << std::endl;
-            print_out << "right_poly.coefs: " << Utils::to_string(right_poly.vec, 5) << std::endl; 
+            print_out << "input_poly.coefs: " <<  input_poly.to_string(5) << std::endl;
+            print_out << "left_poly.coefs: " << left_poly.to_string(5) << std::endl;
+            print_out << "right_poly.coefs: " << right_poly.to_string(5) << std::endl; 
         }
     } 
 
@@ -51,7 +51,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
     std::shared_ptr<PolynomialArrayEvalForm> right_eval_array(engine_right->init_polynomial_array_eval_form(array_size));
     for(int32_t i = 0; i < tests; ++i){
         PolynomialArrayCoefForm input_array(degree, modulus, array_size);
-        rand_uni->fill_array(input_array.poly_array, input_array.full_size);
+        rand_uni->fill_array(input_array.vec_array, input_array.full_size);
 
         engine_left->to_eval(*left_eval_array.get(), input_array);
         engine_right->to_eval(*right_eval_array.get(), input_array);
@@ -64,11 +64,8 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         if(left_poly_array.full_size != right_poly_array.full_size){
             FAIL(); 
         } 
-        if(!Utils::is_eq_poly(left_poly_array.poly_array, right_poly_array.poly_array, left_poly_array.full_size)){
-            FAIL(); 
-            print_out << "input_array.poly_array: " << Utils::to_string(&input_array.vec_array[0], 5) << std::endl;
-            print_out << "left_poly_array.poly_array: " << Utils::to_string(&left_poly_array.vec_array[0], 5) << std::endl;
-            print_out << "right_poly_array.poly_array: " << Utils::to_string(&right_poly_array.vec_array[0], 5) << std::endl; 
+        if(!Utils::is_eq_poly(left_poly_array.vec_array, right_poly_array.vec_array, left_poly_array.full_size)){
+            FAIL();   
         }
     } 
 
@@ -102,10 +99,10 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->to_coef(left_poly, *left_eval_out.get());
         engine_right->to_coef(right_poly, *right_eval_out.get());
 
-        if(!Utils::is_eq_poly(left_poly.vec, right_poly.vec, degree)){
+        if(left_poly != right_poly){
             FAIL(); 
-            print_out << "left_poly.coefs: " << Utils::to_string(left_poly.vec, 5) << std::endl;
-            print_out << "right_poly.coefs: " << Utils::to_string(right_poly.vec, 5) << std::endl; 
+            print_out << "left_poly.coefs: " << left_poly.to_string(5) << std::endl;
+            print_out << "right_poly.coefs: " << right_poly.to_string(5) << std::endl; 
         }
     } 
 
@@ -136,10 +133,10 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
  
         engine_right->multisum(right_out, *right_eval_1.get(), *right_eval_2.get()); 
           
-        if(!Utils::is_eq_poly(left_out.vec, right_out.vec, degree)){
+        if(left_out != right_out){
             FAIL(); 
-            print_out << "left_out.coefs: " << Utils::to_string(left_out.vec, 5) << std::endl;
-            print_out << "right_out.coefs: " << Utils::to_string(right_out.vec, 5) << std::endl; 
+            print_out << "left_out.coefs: " << left_out.to_string(5) << std::endl;
+            print_out << "right_out.coefs: " <<  right_out.to_string(5) << std::endl; 
         }
     }
  
@@ -170,17 +167,17 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->multisum(left_out, *left_eval_1.get(), poly_array_1, *left_eval_2.get());
         engine_right->multisum(right_out, *right_eval_1.get(), poly_array_1, *right_eval_2.get());
           
-        if(!Utils::is_eq_poly(left_out.vec, right_out.vec, degree)){
+        if(left_out != right_out){
             FAIL(); 
-            print_out << "left_out.coefs: " << Utils::to_string(left_out.vec, 5) << std::endl;
-            print_out << "right_out.coefs: " << Utils::to_string(right_out.vec, 5) << std::endl; 
+            print_out << "left_out.coefs: " <<  left_out.to_string(5) << std::endl;
+            print_out << "right_out.coefs: " << right_out.to_string(5) << std::endl; 
         }
  
         PolynomialArrayCoefForm poly_array_1_left(degree, modulus, array_size);
         PolynomialArrayCoefForm poly_array_1_right(degree, modulus, array_size);
         engine_left->to_coef(poly_array_1_left, *left_eval_1.get());
         engine_right->to_coef(poly_array_1_right, *right_eval_1.get());
-        if(!Utils::is_eq_poly(poly_array_1_left.poly_array, poly_array_1_right.poly_array, poly_array_1_left.full_size)){
+        if(!Utils::is_eq_poly(poly_array_1_left.vec_array, poly_array_1_right.vec_array, poly_array_1_left.full_size)){
             FAIL(); 
         } 
     } 

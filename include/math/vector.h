@@ -45,6 +45,10 @@ class Vector{
     /// @return The reference to the accessed element
     const int64_t& operator[](int32_t index) const;
 
+    bool operator==(const Vector& other) const;
+
+    bool operator!=(const Vector& other) const;
+ 
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
     /// @param other The input vector 
@@ -58,6 +62,9 @@ class Vector{
     /// @brief Negates the coefficients of this vector and stores the output in out. 
     /// @param out The output vector
     void neg(Vector &out);
+
+    
+    std::string to_string(int32_t size_of_string);
 
     #if defined(USE_CEREAL)
     template <class Archive>
