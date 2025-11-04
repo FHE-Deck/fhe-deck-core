@@ -36,10 +36,12 @@ std::shared_ptr<PolynomialArrayEvalForm> IntelHexlNTTEngine::init_polynomial_arr
 void IntelHexlNTTEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){  
     const PolynomialEvalFormLongInteger& out_cast = static_cast<const PolynomialEvalFormLongInteger&>(out);
     // Here we make sure that the coefficients are in propper form.
-    int64_t* coefs_mod_form = new int64_t[in.size];
-    Utils::array_mod_form(coefs_mod_form, in.vec, in.size, in.modulus); 
-    ntt.ComputeForward((uint64_t*) out_cast.eval_long, (uint64_t*) coefs_mod_form, 1, 1);  
-    delete[] coefs_mod_form;
+    //int64_t* coefs_mod_form = new int64_t[in.size];
+    //Utils::array_mod_form(coefs_mod_form, in.vec, in.size, in.modulus); 
+    Polynomial mod_form = in;
+    mod_form.normalize();
+    ntt.ComputeForward((uint64_t*) out_cast.eval_long, (uint64_t*) mod_form.vec, 1, 1);  
+    //delete[] coefs_mod_form;
 }
  
 void IntelHexlNTTEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){  

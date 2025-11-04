@@ -254,8 +254,8 @@ void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{
         out.vec[i] = -temp[overflow + i];
     }
     delete[] temp;
-
-    Utils::array_mod_form(out.vec, out.vec, this->size, this->modulus);
+    out.normalize();
+    //Utils::array_mod_form(out.vec, out.vec, this->size, this->modulus);
 }
  
 void Polynomial::to_eval(PolynomialEvalForm &out){ 
@@ -265,13 +265,7 @@ void Polynomial::to_eval(PolynomialEvalForm &out){
 void Polynomial::to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){ 
     mul_engine->to_eval(out, *this);
 }
- 
-void Polynomial::zeroize(){
-    for(int32_t i = 0; i < size; ++i){
-        vec[i] = 0;
-    }
-}
- 
+  
 std::shared_ptr<Polynomial> Polynomial::clone() const{
     if(!is_init){
         throw std::logic_error("Polynomial::clone: Polynomial is not initialized!");

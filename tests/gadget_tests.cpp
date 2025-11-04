@@ -26,7 +26,8 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
     long temp;
     for(int k = 0; k < test_num; ++k){
         // Choose some random poly 
-        rand->fill_array(poly.vec, N);
+        //rand->fill_array(poly.vec, N);
+        rand->fill(poly);
         // Sample
         g->sample(decomp, poly.vec); 
         // Compose back modulo Q, and compare to poly
@@ -66,7 +67,8 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
     long temp;
     for(int k = 0; k < test_num; ++k){
         // Choose some random poly 
-        rand->fill_array(poly.vec, N); 
+        //rand->fill_array(poly.vec, N); 
+        rand->fill(poly);
         // Sample
         g->sample(decomp, poly.vec); 
         for(int j = 0; j < g->digits; ++j){

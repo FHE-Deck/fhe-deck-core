@@ -206,7 +206,7 @@ void LWESK::init_key(){
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
     }
     sk_dist->fill_array(key, param->dim); 
-    Utils::array_mod_form(this->key, this->key, param->dim, param->modulus);
+    Utils::array_mod_form(this->key, this->key, param->dim, param->modulus); 
 }
  
 std::unique_ptr<LWECT> LWESK::encrypt(int64_t m){

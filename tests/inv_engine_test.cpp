@@ -27,7 +27,8 @@ void compare_naive_with_ntl(int32_t degree, int64_t modulus){
     one[0] = 1;
  
     for(int32_t i = 0; i < 100; ++i){  
-        rand_uni->fill_array(poly.vec, degree);
+        //rand_uni->fill_array(poly.vec, degree);
+        rand_uni->fill(poly);
         Polynomial inv_poly(degree, modulus);
         Polynomial inv_poly_2(degree, modulus);  
         bool has_inverse = ntl_engine.inv(inv_poly, poly);

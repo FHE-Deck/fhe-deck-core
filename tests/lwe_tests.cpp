@@ -58,11 +58,16 @@ TEST(LWETests, BasicLWETest){
         iarchive_lwe_sk(lwe_sk_2);  
         if(lwe_sk.param->dim != lwe_sk_2.param->dim || 
             lwe_sk.param->modulus != lwe_sk_2.param->modulus || 
-            lwe_sk.stddev != lwe_sk_2.stddev || lwe_sk.key_type != lwe_sk_2.key_type ||
-            (Utils::is_eq_poly(lwe_sk.key, lwe_sk_2.key, lwe_sk.param->dim) == false)){
+            lwe_sk.stddev != lwe_sk_2.stddev || lwe_sk.key_type != lwe_sk_2.key_type){
                 FAIL();
                 print_out << "LWESK Serialization Test: Fail" << std::endl;  
         } 
+        for(int32_t i{0}; i < lwe_sk.param->dim; ++i){
+            if(lwe_sk.key[i] != lwe_sk_2.key[i]){  
+                FAIL();
+                print_out << "LWESK Serialization Test: Fail" << std::endl;  
+            }
+        }
         std::remove("lwe_sk_test");
     }
 

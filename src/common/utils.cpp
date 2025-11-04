@@ -96,7 +96,7 @@ int64_t Utils::mod_inv(int64_t in, int64_t modulus){
     return Utils::integer_mod_form(coeffs.first, modulus);
 } 
  
- 
+/*
 bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
     for(int32_t i = 0; i < sizeof_in; ++i){
         if(in_1[i] != in_2[i]){
@@ -105,6 +105,7 @@ bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
     }
     return true;
 } 
+*/
  
  
 int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
@@ -138,12 +139,12 @@ int64_t Utils::integer_mod_form(int64_t in, int64_t Q){
         return (Q + temp) % Q; 
     }
 }
-
+ 
 void Utils::array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
     for(int32_t i = 0; i < sizeof_in; ++i){ 
         out[i] = Utils::integer_mod_form(in[i], Q);
     }
-} 
+}  
  
 void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell){
     int64_t mask = basis-1;

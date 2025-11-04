@@ -48,6 +48,12 @@ class Vector{
     bool operator==(const Vector& other) const;
 
     bool operator!=(const Vector& other) const;
+
+    /// @brief Zero all vector elements  
+    void zeroize();
+
+    /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
+    void normalize();
  
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
@@ -117,6 +123,10 @@ class VectorArray{
     void init(int32_t size, int64_t modulus, int32_t array_size);
 
     void init_two_dim_array();
+
+    bool operator==(const VectorArray& other);
+
+    bool operator!=(const VectorArray& other);
 
     /// @brief Coordinate wise addition of vector arrays
     /// @param out The resulting vector array

@@ -184,8 +184,10 @@ void NTRUSK::key_gen(){
     std::shared_ptr<PolynomialInversionEngine> inv_engine = inv_engine_builder.build();
     bool has_inverse = false; 
     do{  
-        sk_dist->fill_array(this->sk.vec, param->size);    
-        Utils::array_mod_form(this->sk.vec, this->sk.vec, param->size, param->coef_modulus);   
+        //sk_dist->fill_array(this->sk.vec, param->size);    
+        //sk.normalize();
+        sk_dist->fill(sk);    
+        //Utils::array_mod_form(this->sk.vec, this->sk.vec, param->size, param->coef_modulus);   
         has_inverse = inv_engine->inv(this->inv_sk, this->sk);  
     }while(!has_inverse);      
 }  
@@ -203,9 +205,11 @@ void NTRUSK::encrypt(VectorCT &out, const Vector &m){
     }  
     /// NOTE: We compute inv_sk * g + e + msg
     Polynomial g = Polynomial(param->size, param->coef_modulus);
-    sk_dist->fill_array(g.vec, g.size);
+    //sk_dist->fill_array(g.vec, g.size);
+    sk_dist->fill(g);
     Polynomial e = Polynomial(param->size, param->coef_modulus);
-    error_dist->fill_array(e.vec, e.size); 
+    //error_dist->fill_array(e.vec, e.size); 
+    error_dist->fill(e); 
     inv_sk.mul(out_cast.ct_poly, g, param->mul_engine);
     out_cast.ct_poly.add(out_cast.ct_poly, e);
     out_cast.ct_poly.add(out_cast.ct_poly, m);

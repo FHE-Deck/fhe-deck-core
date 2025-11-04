@@ -10,6 +10,13 @@ void Distribution::fill_array(int64_t *in, int32_t length){
     }
 }
 
+void Distribution::fill(Polynomial& in){
+    for(int32_t i = 0; i < in.size; ++i){
+        in[i] = this->next();
+    }
+    in.normalize();
+}
+
 StandardUniformIntegerDistribution::StandardUniformIntegerDistribution(int64_t from, int64_t to){ 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r()};

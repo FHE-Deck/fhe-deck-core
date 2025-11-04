@@ -9,6 +9,7 @@
  */
 
 #include "global_headers.h"
+#include "math/polynomial.h"
  
 namespace FHEDeck{
  
@@ -18,6 +19,8 @@ class Distribution{
     virtual int64_t next() = 0;
     
     void fill_array(int64_t *in, int32_t length); 
+
+    void fill(Polynomial& in); 
 
 };
  

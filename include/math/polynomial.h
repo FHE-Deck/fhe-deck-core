@@ -310,9 +310,6 @@ class Polynomial: public Vector{
     /// @brief Converts the polynomial to evaluation form. Requires to have a polynomial multiplication engine set.
     /// @param out The output polynomial in evaluation form
     void to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
-   
-    /// @brief Zero all coefficients of the polynomial
-    void zeroize();
  
     /// @brief Clone this polynomial
     /// @return Return a clone of this polynomial
@@ -403,7 +400,7 @@ class PolynomialArrayCoefForm : public VectorArray{
     /// @param other The polynomial array to copy
     /// @return The reference to the copied polynomial array
     PolynomialArrayCoefForm& operator=(const PolynomialArrayCoefForm other);
-
+ 
     /// @brief Sets the polynomial multiplication engine
     /// @param mul_engine The polynomial multiplication engine
     void set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);

@@ -189,7 +189,8 @@ void RotationPoly::to_amortization_form(){
     if(is_encoded){
         decode();   
     }
-    Utils::array_mod_form(this->vec, this->vec, size, output_encoding.get_ciphertext_modulus()); 
+    normalize();
+    //Utils::array_mod_form(this->vec, this->vec, size, output_encoding.get_ciphertext_modulus()); 
     is_amortized_form = true;
 }
 

@@ -88,6 +88,19 @@ VectorArray::~VectorArray(){
         delete[] vec_array_2d; 
     }
 }
+
+
+void Vector::zeroize(){
+    for(int32_t i = 0; i < size; ++i){
+        vec[i] = 0;
+    }
+}
+
+void Vector::normalize(){
+    for(int32_t i = 0; i < size; ++i){ 
+        vec[i] = Utils::integer_mod_form(vec[i], modulus);
+    }
+}
  
 VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
@@ -109,6 +122,25 @@ void VectorArray::init_two_dim_array(){
     for(int32_t i = 0; i < array_size; ++i){ 
         vec_array_2d[i] = &vec_array[i * size];
     } 
+}
+
+bool VectorArray::operator==(const VectorArray& other){
+    if(this->size != other.size){ return false; }
+
+    if(this->full_size != other.full_size){ return false; }
+
+    if(this->modulus != other.modulus){ return false; }
+
+    for(int32_t i = 0; i < full_size; ++i){
+        if(vec_array[i] != other.vec_array[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool VectorArray::operator!=(const VectorArray& other){
+return !this->operator==(other);
 }
 
 

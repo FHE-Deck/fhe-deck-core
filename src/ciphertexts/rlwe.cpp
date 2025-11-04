@@ -271,8 +271,10 @@ void RLWESK::key_gen(){
     }else if(key_type == KeyDistribution::binary){ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
     }  
-    sk_dist->fill_array(this->sk_poly.vec, param->size);   
-    Utils::array_mod_form(this->sk_poly.vec, this->sk_poly.vec, param->size, param->coef_modulus);
+    //sk_dist->fill_array(this->sk_poly.vec, param->size);   
+    //sk_poly.normalize();
+    sk_dist->fill(this->sk_poly);  
+    //Utils::array_mod_form(this->sk_poly.vec, this->sk_poly.vec, param->size, param->coef_modulus);
     /// TODO: sk_poly_eval isn't actually used yet. Need to include it in the implementation of encrypt!  
     this->sk_poly_eval = param->mul_engine->init_polynomial_eval_form();  
     this->sk_poly.to_eval(*this->sk_poly_eval, param->mul_engine); 
@@ -289,9 +291,11 @@ void RLWESK::encrypt(VectorCT &out, const Vector &m){
     if(!m.is_init){
         throw std::logic_error("RLWESK::encrypt(Polynomial *m): Input polynomial m is not initialized!");
     } 
-    unif_dist->fill_array(out_cast.a.vec, param->size); 
+    //unif_dist->fill_array(out_cast.a.vec, param->size); 
+    unif_dist->fill(out_cast.a); 
     Polynomial noise(param->size, param->coef_modulus);
-    error_dist->fill_array(noise.vec, param->size); 
+    //error_dist->fill_array(noise.vec, param->size); 
+    error_dist->fill(noise); 
     Polynomial message(param->size, param->coef_modulus);
     Utils::cp(message.vec, m.vec, param->size); 
     // Now just need to compute: b = a * s + e + m

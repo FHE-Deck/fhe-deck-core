@@ -37,7 +37,7 @@ class Utils{
         // Returns the smallest m s.t. 2**m < x. I cannot rely on the log function from the math library due to precision
         static int32_t number_of_bits(int64_t x);
  
-        static bool is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in);
+        //static bool is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in);
 
         static int64_t integer_signed_form(int64_t in, int64_t Q);
  
