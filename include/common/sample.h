@@ -17,10 +17,12 @@ class Distribution{
 
     public: 
     virtual int64_t next() = 0;
+      
+    void fill(std::vector<int64_t>& in); 
     
-    void fill_array(int64_t *in, int32_t length); 
+    void fill(VectorArray& in); 
 
-    void fill(Polynomial& in); 
+    void fill(Vector& in); 
 
 };
  

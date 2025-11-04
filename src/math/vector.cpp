@@ -12,6 +12,19 @@ Vector::~Vector(){
 Vector::Vector(int64_t size, int64_t modulus){
     init(size, modulus);
 }
+ 
+Vector::Vector(const Vector &other){
+    this->init(other.size, other.modulus);  
+    Utils::cp(this->vec, other.vec, this->size);   
+}
+ 
+Vector& Vector::operator=(const Vector other){
+    if(!this->is_init){ 
+        this->init(other.size, other.modulus); 
+    }
+    Utils::cp(this->vec, other.vec, this->size);   
+    return *this;
+}
 
 void Vector::init(int32_t size, int64_t modulus){
     this->size = size;

@@ -25,7 +25,7 @@ void LWEToRLWEKeySwitchKey::init(){
 }
 
 void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
-    Polynomial sk_origin_poly(sk_origin->key, sk_dest->rlwe_sk->sk_poly.size, sk_dest->rlwe_sk->sk_poly.modulus);
+    Polynomial sk_origin_poly(sk_origin->key.vec, sk_dest->rlwe_sk->sk_poly.size, sk_dest->rlwe_sk->sk_poly.modulus);
     Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.size, sk_dest->rlwe_sk->sk_poly.modulus);  
     for(int i = 2; i <= dest_param->size; i *= 2) {
         eval_auto_poly(sk_auto, sk_origin_poly, i+1); 

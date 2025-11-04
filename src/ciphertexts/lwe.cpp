@@ -168,10 +168,11 @@ void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){
     }
     delete[] scalar_decomposed;  
 }
-  
+  /*
 LWESK::~LWESK(){ 
     delete[] key; 
 }
+  */
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
@@ -192,7 +193,9 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, Key
 }
 
 void LWESK::init(){
-    this->key = new int64_t[param->dim];  
+    //this->key = new int64_t[param->dim];  
+    //key.resize(param->dim);
+    key = Vector(param->dim, param->modulus);
     unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
     error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
     multiplier = std::unique_ptr<LongIntegerMultipler>(new LongIntegerMultipler(param->modulus)); 
@@ -205,8 +208,9 @@ void LWESK::init_key(){
     }else{ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
     }
-    sk_dist->fill_array(key, param->dim); 
-    Utils::array_mod_form(this->key, this->key, param->dim, param->modulus); 
+    //sk_dist->fill_array(key, param->dim); 
+    sk_dist->fill(key); 
+    //Utils::array_mod_form(this->key, this->key, param->dim, param->modulus); 
 }
  
 std::unique_ptr<LWECT> LWESK::encrypt(int64_t m){
@@ -236,7 +240,7 @@ void LWESK::encode_and_encrypt(LWECT& in, int64_t m, PlaintextEncoding encoding)
 } 
  
 int64_t LWESK::partial_decrypt(const LWECT& in){ 
-    Utils::array_mod_form(key, key, param->dim, param->modulus); 
+    //Utils::array_mod_form(key, key, param->dim, param->modulus); 
     int64_t phase  = in.ct[0]; 
     for(int32_t i = 1; i < param->dim+1; ++i){ 
         int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);  

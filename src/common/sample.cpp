@@ -2,15 +2,20 @@
  
 
 using namespace FHEDeck;
- 
-
-void Distribution::fill_array(int64_t *in, int32_t length){
-    for(int32_t i = 0; i < length; ++i){
+  
+void Distribution::fill(std::vector<int64_t>& in){
+    for(int32_t i = 0; i < in.size(); ++i){
         in[i] = this->next();
     }
 }
 
-void Distribution::fill(Polynomial& in){
+void Distribution::fill(VectorArray& in){
+    for(int32_t i = 0; i < in.full_size; ++i){
+        in.vec_array[i] = this->next();
+    }  
+}
+
+void Distribution::fill(Vector& in){
     for(int32_t i = 0; i < in.size; ++i){
         in[i] = this->next();
     }

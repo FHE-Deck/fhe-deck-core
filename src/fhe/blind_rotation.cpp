@@ -57,8 +57,10 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
             poly_msb_1[two_dim - (int32_t)round((double)(two_dim * i)/(double)input_encoding.get_plaintext_space()) - two_skip] = f(i, input_encoding.get_plaintext_space()); 
         }   
     }
-    Utils::array_mod_form(poly_msb_0.vec, poly_msb_0.vec, dim, coef_modulus);
-    Utils::array_mod_form(poly_msb_1.vec, poly_msb_1.vec, dim, coef_modulus);  
+    poly_msb_0.normalize();
+    poly_msb_1.normalize();
+    //Utils::array_mod_form(poly_msb_0.vec, poly_msb_0.vec, dim, coef_modulus);
+    //Utils::array_mod_form(poly_msb_1.vec, poly_msb_1.vec, dim, coef_modulus);  
 }  
  
 PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){

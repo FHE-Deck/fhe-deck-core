@@ -29,6 +29,14 @@ class Vector{
 
     Vector(int64_t size, int64_t modulus);
  
+    /// @brief Copy constructor
+    /// @param other The Vector to copy
+    Vector(const Vector &other);
+
+    /// @brief This is the copy assignment operator
+    /// @param other The Vector to copy
+    /// @return Return a reference to the copied Vector
+    Vector& operator=(const Vector other);
     
     /// @brief Called by the constructors to initialize the vector
     /// @param size The size of the vector

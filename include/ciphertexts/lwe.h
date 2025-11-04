@@ -198,11 +198,12 @@ class LWESK {
     /// @brief Standard deviation of the error distribution.
     double stddev;
     /// @brief The secret key. Initialized in the constructors and freed in the destructor.
-    int64_t *key;   
+    //int64_t *key;   
+    Vector key;   
     /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
     std::unique_ptr<LongIntegerMultipler> multiplier;
     /// @brief Free the key.
-    ~LWESK();
+    //~LWESK();
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;

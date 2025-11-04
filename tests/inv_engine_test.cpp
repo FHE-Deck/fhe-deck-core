@@ -72,7 +72,8 @@ void poly_sub_test(int32_t degree, int64_t modulus){
     std::shared_ptr<Distribution> rand_uni = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, modulus)); 
     std::vector<int64_t> poly_1;
     poly_1.resize(degree);
-    rand_uni->fill_array(poly_1.data(), degree); 
+    //rand_uni->fill_array(poly_1.data(), degree); 
+    rand_uni->fill(poly_1); 
     std::vector<int64_t> poly_2 = poly_1;
     std::vector<int64_t> test_poly = euclid_engine.polynomial_subtraction(poly_1, poly_2, modulus); 
 
@@ -113,10 +114,12 @@ void poly_mul_test(int32_t degree, int64_t modulus){
     std::shared_ptr<Distribution> rand_uni = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, modulus)); 
     std::vector<int64_t> poly_1;
     poly_1.resize(degree);
-    rand_uni->fill_array(poly_1.data(), degree); 
+    //rand_uni->fill_array(poly_1.data(), degree); 
+    rand_uni->fill(poly_1); 
     std::vector<int64_t> poly_2;
     poly_2.resize(degree);
-    rand_uni->fill_array(poly_2.data(), degree); 
+    //rand_uni->fill_array(poly_2.data(), degree); 
+    rand_uni->fill(poly_2); 
 
     NTL::ZZ p(modulus);
     NTL::ZZ_p::init(p);
@@ -153,8 +156,10 @@ void div_test(int32_t degree, int64_t modulus){
     NTL::ZZ_pX ntl_reminder;
  
     for(int32_t k = 0; k < 1000; ++k){ 
-        rand_uni->fill_array(poly_1.data(), degree); 
-        rand_uni->fill_array(poly_2.data(), degree);  
+        //rand_uni->fill_array(poly_1.data(), degree); 
+        rand_uni->fill(poly_1); 
+        //rand_uni->fill_array(poly_2.data(), degree);  
+        rand_uni->fill(poly_2);  
         auto [quotient, reminder] = euclid_engine.polynomial_division(poly_1, poly_2, modulus);
 
         for (int i = 0; i < degree; ++i){
