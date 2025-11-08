@@ -5,8 +5,7 @@
  * @file vector.h
  */
 
-#include "global_headers.h"
- 
+#include "global_headers.h" 
 #include "common/utils.h"  
   
 namespace FHEDeck{
@@ -78,6 +77,8 @@ class Vector{
     void neg(Vector &out);
  
     std::string to_string(int32_t size_of_string);
+ 
+    static void array_signed_form(Vector& out, const Vector& in);
 
     #if defined(USE_CEREAL)
     template <class Archive>

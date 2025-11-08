@@ -94,6 +94,16 @@ std::string Vector::to_string(int32_t size_of_string){
     str += std::to_string(vec[size_of_string-1]) + "]";
     return str;
 }
+
+void Vector::array_signed_form(Vector& out, const Vector& in){
+    if(out.size != in.size){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
+
+    if(out.modulus != in.modulus){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
+
+    for(int32_t i = 0; i < out.size; ++i){ 
+        out[i] =  Utils::integer_signed_form(out[i], out.modulus);
+    }
+}
  
 VectorArray::~VectorArray(){
     if(is_init){ 

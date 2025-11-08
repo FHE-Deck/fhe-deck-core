@@ -29,7 +29,7 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
         //rand->fill_array(poly.vec, N);
         rand->fill(poly);
         // Sample
-        g->sample(decomp, poly.vec); 
+        g->sample(decomp, poly); 
         // Compose back modulo Q, and compare to poly
         for(int i = 0; i < N; ++i){
             result[i] = 0;
@@ -70,7 +70,7 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
         //rand->fill_array(poly.vec, N); 
         rand->fill(poly);
         // Sample
-        g->sample(decomp, poly.vec); 
+        g->sample(decomp, poly); 
         for(int j = 0; j < g->digits; ++j){
             Utils::array_signed_form(signed_decomp, decomp.vec_array_2d[j], N, Q); 
         }

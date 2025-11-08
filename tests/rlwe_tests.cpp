@@ -327,7 +327,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
     }else{
         FAIL(); 
     }
- 
+  
     {
         /// Serialize and Deserialize  Gadget
         std::ofstream os("gadget_serialization_test", std::ios::binary); 
@@ -349,6 +349,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         std::remove("gadget_serialization_test"); 
     }
  
+        print_out << "Serialization of gadget SK" << std::endl;
     RLWEGadgetSK gadget_sk_test(deter_gadget, sk);
     RLWEGadgetSK gadget_sk(deter_gadget, sk); 
     {
@@ -383,7 +384,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
     Polynomial exp_poly = Polynomial(rlwe_par->size, plaintext_modulus);
     exp_poly.zeroize();
     exp_poly.set_multiplication_engine(ntt_engine);
-   
+    
     bool test = true; 
     for(int i = 0; i < test_num; ++i){ 
         //rand->fill_array(m.vec, N); 
@@ -421,6 +422,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
             print_out << "m: " << m.to_string(15) << std::endl;   
         } 
     }  
+ 
 
     test = true; 
     for(int i = 0; i < test_num; ++i){ 
@@ -435,8 +437,8 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
          
         std::shared_ptr<ExtendedRLWECT> ext_ct_test = std::static_pointer_cast<ExtendedRLWECT>(std::shared_ptr<ExtendedPolynomialCT>(gadget_sk.extended_encrypt(gadget_m)));   
          
-        RLWECT ct_prod(rlwe_par); 
-        ext_ct_test->mul(ct_prod, m); 
+        RLWECT ct_prod(rlwe_par);  
+        ext_ct_test->mul(ct_prod, m);  
         sk->decrypt(out, ct_prod, encoding);
         //Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
         if(out != exp_poly){ 

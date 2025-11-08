@@ -130,7 +130,18 @@ void Utils::array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int6
     }
 }
 
+/* 
+void Utils::array_signed_form(Vector& out, const Vector& in){
+    if(out.size != in.size){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
 
+    if(out.modulus != in.modulus){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
+
+    for(int32_t i = 0; i < out.size; ++i){ 
+        out[i] =  Utils::integer_signed_form(out[i], out.modulus);
+    }
+}
+*/
+  
 int64_t Utils::integer_mod_form(int64_t in, int64_t Q){ 
     if(in >= 0){
         return in % Q;

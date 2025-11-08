@@ -29,9 +29,9 @@ class Gadget{
     int64_t modulus;
 
     /// @deprecated
-    virtual void sample(int64_t** out, int64_t *in) = 0;
+    virtual void sample(int64_t** out, const Vector& in) = 0;
 
-    virtual void sample(VectorArray& out, int64_t *in) = 0;
+    virtual void sample(VectorArray& out, const Vector& in) = 0;
 
     int64_t* get_gadget_vector();
 
@@ -62,11 +62,11 @@ class SignedDecompositionGadget : public Gadget{
 
     SignedDecompositionGadget(int32_t degree, int64_t modulus, int64_t base);
 
-    void sample(int64_t** out, int64_t *in);
+    void sample(int64_t** out, const Vector& in) override;
 
-    void sample(VectorArray& out, int64_t *in);
+    void sample(VectorArray& out, const  Vector& in) override;
  
-    void decomp(int64_t **d_ct, int64_t* poly);
+    void decomp(int64_t **d_ct, Vector& in);
 
     void init();
 
@@ -131,9 +131,9 @@ class DiscreteGaussianSamplingGadget : public Gadget{
     bool is_precomputed = false;
  
     // Precomputed temp arrays for determinitic decomp 
-    bool is_deter_temp_init = false;
-    int64_t* signed_poly; 
-    int64_t* sign;
+    //bool is_deter_temp_init = false;
+    //Vector signed_poly; 
+    //int64_t* sign;
  
     // Precomputed temp variables for power_of_two Gaussian Sampling   
     bool is_power_of_basis_gaussian_temp_init = false;
@@ -185,9 +185,9 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     DiscreteGaussianSamplingGadget(int32_t degree, int64_t modulus, int64_t base, double stddev);
 
-    void sample(int64_t** out, int64_t *in);
+    void sample(int64_t** out, const Vector& in) override;
  
-    void sample(VectorArray& out, int64_t *in);
+    void sample(VectorArray& out, const Vector& in) override;
 
   #if defined(USE_CEREAL)
     template <class Archive>
@@ -211,15 +211,15 @@ class DiscreteGaussianSamplingGadget : public Gadget{
 
     void setup_type_specific_parameters(); 
 
-    void decomp(int64_t **d_ct, int64_t* poly);
+    void decomp(int64_t **d_ct, Vector& poly);
 
-    void signed_decomp(int64_t **d_ct, int64_t* poly);
+    //void signed_decomp(int64_t **d_ct, Vector& poly);
 
-    void gaussian_sample(int64_t **out, int64_t* in);
+    void gaussian_sample(int64_t **out, const Vector& in);
   
-    void gaussian_sample_modulus_power_of_base(int64_t **out, int64_t* in);
+    void gaussian_sample_modulus_power_of_base(int64_t **out, const Vector& in);
 
-    void gaussian_sample_general_modulus(int64_t **out, int64_t* in);
+    void gaussian_sample_general_modulus(int64_t **out, const Vector& in);
 
     void sample_G(int64_t* out, int64_t in);
 

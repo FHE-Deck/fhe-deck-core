@@ -153,14 +153,14 @@ void NTRUGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);
     const NTRUCT& ct_ptr = static_cast<const NTRUCT&>(ct); 
     PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    gadget->sample(deter_ct_a_dec_poly, ct_ptr.ct_poly.vec);
+    gadget->sample(deter_ct_a_dec_poly, ct_ptr.ct_poly);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
 
 void NTRUGadgetCT::mul(VectorCT &out, const Polynomial &scalar){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);  
     PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
-    gadget->sample(deter_ct_a_dec_poly, scalar.vec);
+    gadget->sample(deter_ct_a_dec_poly, scalar);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
  

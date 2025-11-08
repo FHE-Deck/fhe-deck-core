@@ -1,10 +1,11 @@
- #ifndef UTILS_H
+#ifndef UTILS_H
 #define UTILS_H
   
 /**
  * @file utils.h
  */
-#include "global_headers.h"
+#include "global_headers.h" 
+#include "math/vector.h"
   
 namespace FHEDeck{
 
@@ -43,6 +44,9 @@ class Utils{
  
         static void array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q);
 
+        /// TODO: Think whether this shouldn't be sumply in Vector....
+        //static void array_signed_form(Vector& out, const Vector& in);
+ 
         static int64_t integer_mod_form(int64_t in, int64_t Q);
 
         static void array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q); 

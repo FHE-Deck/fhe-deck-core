@@ -173,11 +173,13 @@ ExtendedRLWECT::~ExtendedRLWECT(){
     }         
 }
    
-void ExtendedRLWECT::mul(VectorCT &out, const Polynomial &ct){ 
+void ExtendedRLWECT::mul(VectorCT &out, const Polynomial &msg){ 
     RLWECT& out_ptr = static_cast<RLWECT&>(out);    
+    /// TODO: Assert what size of OK, and msg modulus isn't bigger, then use copy constructor.
+    Polynomial msg_in(msg.vec, rlwe_param->size, rlwe_param->coef_modulus);
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
     PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
-    gadget->sample(poly_decomp_coef_form, ct.vec);   
+    gadget->sample(poly_decomp_coef_form, msg_in);   
     rlwe_param->mul_engine->multisum(out_ptr.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b);  
     rlwe_param->mul_engine->multisum(out_ptr.a, *poly_decomp_eval_form, *array_eval_a);  
 }
@@ -235,13 +237,13 @@ void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     RLWECT& out_ptr = static_cast<RLWECT&>(out);
     const RLWECT& ct_ptr = static_cast<const RLWECT&>(ct); 
     PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
-    gadget->sample(poly_decomp_coef_form, ct_ptr.a.vec);   
+    gadget->sample(poly_decomp_coef_form, ct_ptr.a);   
     RLWECT out_minus(rlwe_param); 
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
     rlwe_param->mul_engine->multisum(out_minus.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b_sk);  
     rlwe_param->mul_engine->multisum(out_minus.a, *poly_decomp_eval_form, *array_eval_a_sk);  
    
-    gadget->sample(poly_decomp_coef_form, ct_ptr.b.vec);  
+    gadget->sample(poly_decomp_coef_form, ct_ptr.b);  
     rlwe_param->mul_engine->multisum(out_ptr.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b);  
     rlwe_param->mul_engine->multisum(out_ptr.a, *poly_decomp_eval_form, *array_eval_a); 
     out.add(out, out_minus);  
