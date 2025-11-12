@@ -95,19 +95,7 @@ int64_t Utils::mod_inv(int64_t in, int64_t modulus){
     auto [gcd, coeffs] = extended_euclidean_algorithm(in, modulus); 
     return Utils::integer_mod_form(coeffs.first, modulus);
 } 
- 
-/*
-bool Utils::is_eq_poly(int64_t *in_1, int64_t *in_2, int32_t sizeof_in){
-    for(int32_t i = 0; i < sizeof_in; ++i){
-        if(in_1[i] != in_2[i]){
-            return false;
-        }
-    }
-    return true;
-} 
-*/
- 
- 
+  
 int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
     int64_t half = Q/2;
     int64_t minus_half = -half;
@@ -129,19 +117,7 @@ void Utils::array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int6
         out[i] =  Utils::integer_signed_form(in[i], Q);
     }
 }
-
-/* 
-void Utils::array_signed_form(Vector& out, const Vector& in){
-    if(out.size != in.size){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
-
-    if(out.modulus != in.modulus){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
-
-    for(int32_t i = 0; i < out.size; ++i){ 
-        out[i] =  Utils::integer_signed_form(out[i], out.modulus);
-    }
-}
-*/
-  
+ 
 int64_t Utils::integer_mod_form(int64_t in, int64_t Q){ 
     if(in >= 0){
         return in % Q;

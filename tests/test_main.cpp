@@ -9,7 +9,9 @@ int main(int argc, char** argv) {
 
     // Parse your custom verbose flag
     for (int i = 1; i < argc; ++i) {
-        if (std::string(argv[i]) == "--verbose_mode") {
+        if (std::string(argv[i]) == "--verbose") {
+            verbose = true;
+        }else if(std::string(argv[i]) == "-V") {
             verbose = true;
         }
     }

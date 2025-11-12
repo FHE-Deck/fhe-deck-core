@@ -170,29 +170,32 @@ void PolynomialEvalFormLongComplex::neg(PolynomialEvalForm &out)const{
         } 
 }
     
-Polynomial::Polynomial(int32_t degree, int64_t coef_modulus){
-    this->init(degree, coef_modulus);
+Polynomial::Polynomial(int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){
+    //this->init(degree, coef_modulus);
     this->init_from_vec();
 }
 
-Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus){
-    this->init(degree, coef_modulus);
+Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){
+    //this->init(degree, coef_modulus);
     this->init_from_vec();
     Utils::cp(this->vec, coefs, degree);
 }
  
  
 Polynomial& Polynomial::operator=(const Vector& other){
-    this->init(other.size, other.modulus); 
+    //this->init(other.size, other.modulus); 
+    this->size = other.size;
+    this->modulus = other.modulus;
+    init();
     this->init_from_vec();
     Utils::cp(this->vec, other.vec, this->size);  
     return *this;
 }
 
 
-Polynomial::Polynomial(const Vector& other){
-    if(!this->is_init){ 
-        this->init(other.size, other.modulus);
+Polynomial::Polynomial(const Vector& other): Vector(other){
+    if(!this->is_init){  
+        //this->init(other.size, other.modulus);
         this->init_from_vec();
     }
     Utils::cp(this->vec, other.vec, this->size);
@@ -203,8 +206,8 @@ void Polynomial::init_from_vec(){
     this->is_init = true;
 }
  
-Polynomial::Polynomial(const Polynomial &other){
-    this->init(other.size, other.modulus); 
+Polynomial::Polynomial(const Polynomial &other): Vector(other.size, other.modulus){
+    //this->init(other.size, other.modulus); 
     this->init_from_vec();
     Utils::cp(this->vec, other.vec, this->size);  
     this->mul_engine = other.mul_engine;
@@ -215,7 +218,10 @@ Polynomial::Polynomial(const Polynomial &other){
   
 Polynomial& Polynomial::operator=(const Polynomial& other){
     if(!this->is_init){ 
-        this->init(other.size, other.modulus);
+        this->size = other.size;
+        this->modulus = other.modulus;
+        init();
+        //this->init(other.size, other.modulus);
         this->init_from_vec();
     }
     Utils::cp(this->vec, other.vec, this->size);  

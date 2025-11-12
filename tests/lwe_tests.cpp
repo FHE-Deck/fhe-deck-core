@@ -43,7 +43,7 @@ TEST(LWETests, BasicLWETest){
         } 
         std::remove("lweParam_test"); 
     }
-
+    print_out << "Serialization of LWE Param: OK" << std::endl;
     {
         /// Serialize and Deserialize LWE SK 
         std::ofstream os_lwe_sk("lwe_sk_test", std::ios::binary); 
@@ -70,6 +70,7 @@ TEST(LWETests, BasicLWETest){
         }
         std::remove("lwe_sk_test");
     }
+    print_out << "Serialization of LWE SK: OK" << std::endl;
 
     int64_t t = 8;
     PlaintextEncoding encoding(PlaintextEncodingType::full_domain, t, Q);
@@ -103,8 +104,8 @@ TEST(LWETests, BasicLWETest){
         } 
         std::remove("lwe_ct_test"); 
     }
-
     ASSERT_EQ(dec, msg); 
+    print_out << "Serialization of LWE CT: OK" << std::endl;
  
     int64_t scalar = 3; 
     LWECT ct_mul(param); 

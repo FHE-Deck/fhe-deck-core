@@ -9,21 +9,76 @@
 #include "common/utils.h"  
   
 namespace FHEDeck{
+ 
+/// Define a new class Vector that derives from VectorView
+class VectorView{
+    
+    public:
+  
+    /// @brief The coefficients of the polynomial
+    int64_t* vec = nullptr;  
 
-class Vector{
+    int64_t size = 0;
+    int64_t modulus = 0;
+
+    VectorView() = default;
+      
+    /// @brief Takes pointer to external memory, size and the modulus of the vector, and defines a vector intervace that acts on the memory.
+    /// @param vec The raw pointer to external memory. This class doesn't own that memory, and is not responsible for freeing it. 
+    /// @param size The size of the memory block pointed by vec
+    /// @param modulus the modulus of the arithmetic operation that we can perfom on that vector
+    VectorView(int64_t* vec, int64_t size, int64_t modulus);
+     
+    /// @brief Overload the [] operator to write access to the vector
+    /// @param index Index to be accessed. 
+    /// @return The reference to the accessed element
+    int64_t& operator[](int32_t index);
+
+    /// @brief Overload the [] operator for read only acccess to the vector
+    /// @param index Index to be accessed. 
+    /// @return The reference to the accessed element
+    const int64_t& operator[](int32_t index) const;
+
+    bool operator==(const VectorView& other) const;
+
+    bool operator!=(const VectorView& other) const;
+
+    /// @brief Zero all vector elements  
+    void zeroize();
+
+    /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
+    void normalize();
+ 
+    /// @brief Adds other to this vector and stores the output in out.
+    /// @param out The output vector
+    /// @param other The input vector 
+    void add(VectorView &out, const VectorView &other) const;
+  
+    /// @brief Subtracts other from this vector and stores the output in out.
+    /// @param out The output vector
+    /// @param other The input vector 
+    void sub(VectorView &out, const VectorView &other) const;
+  
+    /// @brief Negates the coefficients of this vector and stores the output in out. 
+    /// @param out The output vector
+    void neg(VectorView &out);
+ 
+    std::string to_string(int32_t size_of_string);
+ 
+    static void array_signed_form(VectorView& out, const VectorView& in);
+ 
+};
+
+
+class Vector : public VectorView{
     
     public:
 
-    ~Vector();
+    std::unique_ptr<int64_t[]> vec_memory;
 
-    /// @brief The coefficients of the polynomial
-    int64_t* vec; 
-    /// @brief Indicates if the polynomial has been initialized
+    /// TODO: Most likely we don't need this init here anymore. 
     bool is_init = false;
 
-    int64_t size;
-    int64_t modulus;
-    
     Vector() = default;
 
     Vector(int64_t size, int64_t modulus);
@@ -36,49 +91,10 @@ class Vector{
     /// @param other The Vector to copy
     /// @return Return a reference to the copied Vector
     Vector& operator=(const Vector other);
-    
-    /// @brief Called by the constructors to initialize the vector
-    /// @param size The size of the vector
-    /// @param modulus The modulus
-    void init(int32_t size, int64_t modulus);
 
-    /// @brief Overload the [] operator to write access to the vector
-    /// @param index Index to be accessed. 
-    /// @return The reference to the accessed element
-    int64_t& operator[](int32_t index);
 
-    /// @brief Overload the [] operator for read only acccess to the vector
-    /// @param index Index to be accessed. 
-    /// @return The reference to the accessed element
-    const int64_t& operator[](int32_t index) const;
-
-    bool operator==(const Vector& other) const;
-
-    bool operator!=(const Vector& other) const;
-
-    /// @brief Zero all vector elements  
-    void zeroize();
-
-    /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
-    void normalize();
- 
-    /// @brief Adds other to this vector and stores the output in out.
-    /// @param out The output vector
-    /// @param other The input vector 
-    void add(Vector &out, const Vector &other) const;
-  
-    /// @brief Subtracts other from this vector and stores the output in out.
-    /// @param out The output vector
-    /// @param other The input vector 
-    void sub(Vector &out, const Vector &other) const;
-  
-    /// @brief Negates the coefficients of this vector and stores the output in out. 
-    /// @param out The output vector
-    void neg(Vector &out);
- 
-    std::string to_string(int32_t size_of_string);
- 
-    static void array_signed_form(Vector& out, const Vector& in);
+    /// @brief Called by the constructors to initialize the vector 
+    void init();
 
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -86,17 +102,18 @@ class Vector{
 
     { 
         ar(size, modulus);   
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));  
+        ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(size, modulus); 
-        init(size, modulus);   
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
+        ar(this->size, this->modulus); 
+        init();
+        ar(cereal::binary_data(vec, sizeof(int64_t) * size));    
     }  
     #endif 
+ 
 
 };
 
@@ -155,7 +172,7 @@ class VectorArray{
     /// @param other The input polynomial array
     void mul(VectorArray &out, int64_t scalar);
 
-    /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
+    /// @brief Computes all vector elements modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
     void normalize();
 
     #if defined(USE_CEREAL)
