@@ -273,10 +273,8 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
     exp_poly.set_multiplication_engine(ntt_engine);
    
     bool test = true; 
-    for(int32_t i = 0; i < test_num; ++i){ 
-        //rand->fill_array(m.vec, N); 
-        rand->fill(m);
-        //rand->fill_array(gadget_m.vec, N);  
+    for(int32_t i = 0; i < test_num; ++i){  
+        rand->fill(m); 
         rand->fill(gadget_m);
         m.mul(exp_poly, gadget_m); 
         std::shared_ptr<NTRUCT> ct(sk->kdm_encode_and_encrypt(m, encoding));
@@ -299,8 +297,7 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
 
         NTRUCT ct_prod(ntru_par); 
         g_ct->mul(ct_prod, *ct.get()); 
-        sk->decrypt(out, ct_prod, encoding);
-        //Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
+        sk->decrypt(out, ct_prod, encoding); 
         if(out != exp_poly){ 
             print_out << "\rFail at: " << i << std::endl;
             print_out << "gadget ntru test: Fail" << std::endl;

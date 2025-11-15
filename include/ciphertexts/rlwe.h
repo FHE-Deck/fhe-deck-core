@@ -51,9 +51,9 @@ class RLWEParam : public PolynomialCTParam{
     /// @param mul_engine The multiplication engine.
     RLWEParam(int32_t ring_degree, uint64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
-    RLWEParam(RLWEParam &c);
+    RLWEParam(RLWEParam &c) = delete;
 
-    RLWEParam& operator=(RLWEParam other);
+    RLWEParam& operator=(RLWEParam other) = delete;
 
     /// @brief Constructs a new VectorCT object implemented as RLWECT.
     /// @return Retuns a new VectorCT object.
@@ -236,7 +236,7 @@ class ExtendedRLWECT : public ExtendedPolynomialCT{
   /// @brief Multiplication of this by ct, and store the result in out.
   /// @param out The result of the multiplication.
   /// @param ct The input ciphertext. 
-  void mul(VectorCT &out, const Polynomial &scalar);
+  void mul(VectorCT &out, const Vector &scalar);
    
   #if defined(USE_CEREAL)
     template <class Archive>
@@ -291,9 +291,9 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
   RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk);
 
-  RLWEGadgetCT(const RLWEGadgetCT& other);
+  RLWEGadgetCT(const RLWEGadgetCT& other) = delete;
 
-  RLWEGadgetCT& operator=(const RLWEGadgetCT other);
+  RLWEGadgetCT& operator=(const RLWEGadgetCT other) = delete;
 
   /// @brief Function that initializes deter_ct_a_dec_poly, deter_ct_b_dec_poly, and the pointer tables deter_ct_a_dec and deter_ct_b_dec.
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
@@ -338,9 +338,7 @@ class RLWESK : public VectorCTSK{
     /// @brief The secret key polynomial.
     Polynomial sk_poly; 
     /// @brief The secret key polynomial in evaluation form.
-    std::shared_ptr<PolynomialEvalForm> sk_poly_eval; 
-    /// @brief Indicates if the object is initialized. Used to avoid multiple initializations.
-    bool is_init = false;  
+    std::shared_ptr<PolynomialEvalForm> sk_poly_eval;  
     /// @brief The uniform distribution used to generate the "a" component of the RLWE ciphertext (a, b = a*sk_poly + e + m).
     std::shared_ptr<Distribution> unif_dist;
     /// @brief The noise distribution
@@ -398,11 +396,7 @@ class RLWESK : public VectorCTSK{
     /// @param ct The input ciphertext.
     /// @param encoding The plaintext encoding scheme.
     void decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding)override;
- 
-    /// @brief Extract a LWE key from this secret key. The LWE secret key decrypt LWE ciphertexts extracted from the RLWE ciphertexts for the zero coefficient.
-    /// @param lwe_key An array that stores the LWE secret key.
-    void extract_lwe_key(int64_t* lwe_key);
-
+   
     /// @brief Extract a LWE key from this secret key. The LWE secret key decrypt LWE ciphertexts extracted from the RLWE ciphertexts for the zero coefficient.
     /// @return Creates a new object that stores the LWE secret key. Creates also new LWEParam for this object. 
     std::shared_ptr<LWESK> extract_lwe_key();
@@ -457,24 +451,24 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg); 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg)override; 
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @param size the size of the msg array (should be smaller than the ring size)
+    /// @return Creates a new object that stores the resulting ciphertext. 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg)override;  
+
+    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
+    /// @param msg The input message.
+    /// @return Creates a new object that stores the resulting ciphertext.
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg)override; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size); 
-
-    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
-    /// @param msg The input message.
-    /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Polynomial &msg); 
-
-    /// @brief Encrypts the message msg, and returns the resulting ciphertext.
-    /// @param msg The input message.
-    /// @param size the size of the msg array (should be smaller than the ring size)
-    /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size); 
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg)override;  
 
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -495,7 +489,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
 
   private:
 
-  std::vector<std::shared_ptr<RLWECT>> ext_enc(const Polynomial &msg);
+  std::vector<std::shared_ptr<RLWECT>> ext_enc(Polynomial &msg);
 
 };
  

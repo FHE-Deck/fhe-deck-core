@@ -129,24 +129,7 @@ void NTRUGadgetCT::init(std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
     for(int32_t i = 0; i < gadget->digits; ++i){ 
         array_coef.set_polynomial_at(i, gadget_ct[i]->ct_poly);
     }  
-    ntru_param->mul_engine->to_eval(*array_eval_a, array_coef);  
-     
-    this->is_init = true; 
-}
-
-NTRUGadgetCT::~NTRUGadgetCT(){     
-    if(is_init == false){
-        return;
-    }        
-}
- 
-NTRUGadgetCT::NTRUGadgetCT(const NTRUGadgetCT& other){    
-    throw std::runtime_error("NTRUGadgetCT::NTRUGadgetCT(const RLWEGadgetCT& other)");
-}
-
-NTRUGadgetCT& NTRUGadgetCT::operator=(NTRUGadgetCT other){  
-    throw std::runtime_error("NTRUGadgetCT& NTRUGadgetCT::operator=(NTRUGadgetCT other)");
-    return *this;
+    ntru_param->mul_engine->to_eval(*array_eval_a, array_coef);   
 }
   
 void NTRUGadgetCT::mul(VectorCT &out, const VectorCT &ct){
@@ -157,7 +140,7 @@ void NTRUGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
 
-void NTRUGadgetCT::mul(VectorCT &out, const Polynomial &scalar){
+void NTRUGadgetCT::mul(VectorCT &out, const Vector &scalar){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);  
     PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
     gadget->sample(deter_ct_a_dec_poly, scalar);
@@ -183,32 +166,24 @@ void NTRUSK::key_gen(){
     PolynomialInversionEngineBuilder inv_engine_builder(param->size, param->coef_modulus);  
     std::shared_ptr<PolynomialInversionEngine> inv_engine = inv_engine_builder.build();
     bool has_inverse = false; 
-    do{  
-        //sk_dist->fill_array(this->sk.vec, param->size);    
-        //sk.normalize();
-        sk_dist->fill(sk);    
-        //Utils::array_mod_form(this->sk.vec, this->sk.vec, param->size, param->coef_modulus);   
+    do{   
+        sk_dist->fill(sk);     
         has_inverse = inv_engine->inv(this->inv_sk, this->sk);  
     }while(!has_inverse);      
 }  
    
 void NTRUSK::encrypt(VectorCT &out, const Vector &m){  
     NTRUCT& out_cast = static_cast<NTRUCT&>(out);
-    if(m.size < param->size){
-        throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m, degree is too big!");
+    if(m.size != param->size){
+        throw std::logic_error("NTRUSK::encrypt(VectorCT &out, const Vector &m): Input Vector m, size is too big!");
     }
-    if(m.modulus < param->coef_modulus){
-        throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m, coefficient codulus is too big!");
-    }
-    if(!m.is_init){
-        throw std::logic_error("NTRUSK::encrypt(Polynomial *m): Input polynomial m is not initialized!");
+    if(m.modulus > param->coef_modulus){
+        throw std::logic_error("NTRUSK::encrypt(VectorCT &out, const Vector &m): Input polynomial m, coefficient modulus is too big!");
     }  
     /// NOTE: We compute inv_sk * g + e + msg
-    Polynomial g = Polynomial(param->size, param->coef_modulus);
-    //sk_dist->fill_array(g.vec, g.size);
+    Polynomial g = Polynomial(param->size, param->coef_modulus); 
     sk_dist->fill(g);
-    Polynomial e = Polynomial(param->size, param->coef_modulus);
-    //error_dist->fill_array(e.vec, e.size); 
+    Polynomial e = Polynomial(param->size, param->coef_modulus); 
     error_dist->fill(e); 
     inv_sk.mul(out_cast.ct_poly, g, param->mul_engine);
     out_cast.ct_poly.add(out_cast.ct_poly, e);
@@ -241,9 +216,6 @@ void NTRUSK::partial_decrypt(Polynomial &phase, const NTRUCT &ct){
     }
     if(phase.modulus != param->coef_modulus){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
-    }
-    if(!phase.is_init){
-        throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Input polynomial is not initialized.");
     } 
     sk.mul(phase, ct.ct_poly, param->mul_engine); 
 }
@@ -314,68 +286,72 @@ NTRUGadgetSK::NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUS
  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){   
     /// TODO: make sure size and modulus of msg fits then use the copy constructor
-    Polynomial msg_poly(msg.vec, sk->param->size, sk->param->coef_modulus);
+ 
+    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
+
+    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
+
+    Polynomial msg_poly(msg, sk->param->size, sk->param->coef_modulus);
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 }
  
-std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const uint64_t *msg, int32_t size){
-    if(size > sk->param->size){
+std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const std::vector<int64_t>& msg){
+    if(msg.size() > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
-    Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
-    msg_poly.zeroize();
-    for(int32_t i = 0; i < size; ++i){
-        msg_poly[i] = msg[i];
-    }
+    Polynomial msg_poly(msg, sk->param->size, sk->param->coef_modulus); 
     return gadget_encrypt(msg_poly);
 }
  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg){
-    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
+
+    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): modulus too big"); }
+
+    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): size different"); }
+ 
+    Polynomial msg_poly(msg);
+    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);    
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 } 
 
-std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const uint64_t *msg, int32_t size){
-    if(size > sk->param->size){
+std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const std::vector<int64_t>& msg){
+    if(msg.size() > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
     }
-    Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
-    msg_poly.zeroize();
-    for(int32_t i = 0; i < size; ++i){
-        msg_poly[i] = msg[i];
-    }
+    Polynomial msg_poly(msg, sk->param->size, sk->param->coef_modulus); 
     return kdm_gadget_encrypt(msg_poly);
 } 
   
-std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const Polynomial &msg){      
-    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
+std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const Vector &msg){      
+    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): modulus too big"); }
+
+    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): size different"); }
+ 
+    Polynomial msg_poly(msg);
+    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);     
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 }
  
-std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const uint64_t *msg, int32_t size){
-    if(size > sk->param->size){
+std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const std::vector<int64_t>& msg){
+    if(msg.size() > sk->param->size){
         throw std::logic_error("GadgetVectorCT* NTRUGadgetSK::gadget_encrypt(uint64_t *msg, int32_t size): size of the message array too big.");
-    }
-    Polynomial msg_poly(sk->param->size, sk->param->coef_modulus); 
-    msg_poly.zeroize();
-    for(int32_t i = 0; i < size; ++i){
-        msg_poly[i] = msg[i];
-    }
+    } 
+    Polynomial msg_poly(msg, sk->param->size, sk->param->coef_modulus); 
     return extended_encrypt(msg_poly);
 }
  
-std::vector<std::shared_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(const Polynomial &msg){
-    std::vector<std::shared_ptr<NTRUCT>> gadget_ct;     
-    std::shared_ptr<Polynomial> msg_cpy(msg.clone());  
-    // Encryptions of - msg* base**i    
-    std::dynamic_pointer_cast<NTRUCT>(sk->encrypt(msg));
+std::vector<std::shared_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(Polynomial &msg){
+    std::vector<std::shared_ptr<NTRUCT>> gadget_ct;      
+    /// TODO: Well.... Here perhpas polynomial should have a constructor that changes the modulus?
+    //Polynomial msg_cpy(msg);  
+    // Encryptions of - msg* base**i     
     gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(msg)));
     for(int32_t i = 1; i < gadget->digits; ++i){
         // Multiply msg by base
-        msg_cpy->mul(*msg_cpy, gadget->base); 
+        msg.mul(msg, gadget->base); 
         // Encrypt msg * base**i   
-        gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(*msg_cpy))); 
+        gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(msg))); 
     }    
     return gadget_ct;
 }

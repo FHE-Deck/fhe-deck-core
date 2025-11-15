@@ -35,8 +35,7 @@ RotationPoly::RotationPoly(
      
         vec[size-i-1] = output_encoding.encode_message(-arg);  
         i--;
-    } 
-    this->is_init = true;
+    }  
 }
 
 RotationPoly::RotationPoly(
@@ -72,8 +71,7 @@ RotationPoly::RotationPoly(
         arg = f(in_enc_mod_switch.decode_message(i), in_enc_mod_switch.get_plaintext_space()); 
         vec[size-i-1] = output_encoding.encode_message(-arg);  
         i--;
-    } 
-    this->is_init = true;
+    }  
 }
 
 RotationPoly::RotationPoly(
@@ -109,8 +107,7 @@ RotationPoly::RotationPoly(
      
         vec[size-i-1] = output_encoding.encode_message(-arg);  
         i--;
-    } 
-    this->is_init = true;
+    }  
 }
   
 
@@ -123,12 +120,10 @@ RotationPoly::RotationPoly(const RotationPoly &poly): Polynomial(poly.size, poly
 }
 
 
-RotationPoly& RotationPoly::operator=(const RotationPoly other){
-    if(!this->is_init){  
-        this->size = other.size;
-        this->modulus = other.modulus;
-        init(); 
-    }
+RotationPoly& RotationPoly::operator=(const RotationPoly other){ 
+    this->size = other.size;
+    this->modulus = other.modulus;
+    init();  
     this->output_encoding = other.output_encoding; 
     for(int32_t i = 0; i < this->size; ++i){   
         this->vec[i] = other[i]; 

@@ -260,9 +260,7 @@ class Polynomial: public Vector{
     public:
    
     /// @brief The bit size of the coefficient modulus
-    int32_t coef_modulus_bit_size;
-    /// @brief The degree of the polynomial
-    //int32_t degree;
+    int32_t coef_modulus_bit_size; 
     /// @brief The polynomial multiplication engine (optional)
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
@@ -278,19 +276,20 @@ class Polynomial: public Vector{
     /// @brief Constructs the polynomial, and allocates memory for the coefs array.
     /// @param degree The degree of the polynomial (size of the coefs array)
     /// @param coef_modulus The coefficient modulus
-    Polynomial(int32_t degree, int64_t coef_modulus);
+    Polynomial(int32_t degree, int64_t coef_modulus); 
 
-    /// @brief Constructs the polynomial, and allocates memory for the coefs array.
-    /// @param coefs The coefs array which is going to be copied.
-    /// @param degree The degree of the polynomial (size of the coefs array)
-    /// @param coef_modulus The coefficient modulus
-    Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus);
+    Polynomial(const std::vector<int64_t>& in_vec, int32_t degree, int64_t coef_modulus);
 
     void init_from_vec();
    
     /// @brief Copy constructor
     /// @param other The polynomail to copy
     Polynomial(const Vector& other);
+
+    /// @brief Copy constructor where however only size of the input polynomial is copied (this polynomial will be of this size) and coefficients are reduced modulo modulus.
+    /// @param other The polynomial to copy
+    /// @note If size is bigger then other.size then the remaining coefficients are set to zero.
+    Polynomial(const Polynomial &other, int64_t degree, int64_t coef_modulus);
 
     /// @brief This is the copy assignment operator
     /// @param other The polynomial to copy

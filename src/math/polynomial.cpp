@@ -61,8 +61,7 @@ void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm &out)const{
         out_cast.eval_long[i] = -this->eval_long[i];
     } 
 }
-  
-
+   
 PolynomialEvalFormComplex::~PolynomialEvalFormComplex(){
     if(is_init){
         delete[] eval;
@@ -170,20 +169,19 @@ void PolynomialEvalFormLongComplex::neg(PolynomialEvalForm &out)const{
         } 
 }
     
-Polynomial::Polynomial(int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){
-    //this->init(degree, coef_modulus);
+Polynomial::Polynomial(int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){ 
     this->init_from_vec();
 }
-
-Polynomial::Polynomial(int64_t* coefs, int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){
-    //this->init(degree, coef_modulus);
-    this->init_from_vec();
-    Utils::cp(this->vec, coefs, degree);
+ 
+Polynomial::Polynomial(const std::vector<int64_t>& in_vec, int32_t degree, int64_t coef_modulus): Vector(in_vec, degree, coef_modulus){
+    this->init_from_vec(); 
 }
  
+Polynomial::Polynomial(const Polynomial &other, int64_t degree, int64_t coef_modulus): Vector(other, degree, coef_modulus){
+    this->init_from_vec(); 
+}
  
-Polynomial& Polynomial::operator=(const Vector& other){
-    //this->init(other.size, other.modulus); 
+Polynomial& Polynomial::operator=(const Vector& other){ 
     this->size = other.size;
     this->modulus = other.modulus;
     init();
@@ -193,21 +191,16 @@ Polynomial& Polynomial::operator=(const Vector& other){
 }
 
 
-Polynomial::Polynomial(const Vector& other): Vector(other){
-    if(!this->is_init){  
-        //this->init(other.size, other.modulus);
-        this->init_from_vec();
-    }
+Polynomial::Polynomial(const Vector& other): Vector(other){ 
+    this->init_from_vec(); 
     Utils::cp(this->vec, other.vec, this->size);
 }
 
 void Polynomial::init_from_vec(){ 
-    this->coef_modulus_bit_size = Utils::power_times(modulus, 2);
-    this->is_init = true;
+    this->coef_modulus_bit_size = Utils::power_times(modulus, 2); 
 }
  
-Polynomial::Polynomial(const Polynomial &other): Vector(other.size, other.modulus){
-    //this->init(other.size, other.modulus); 
+Polynomial::Polynomial(const Polynomial &other): Vector(other.size, other.modulus){ 
     this->init_from_vec();
     Utils::cp(this->vec, other.vec, this->size);  
     this->mul_engine = other.mul_engine;
@@ -216,14 +209,11 @@ Polynomial::Polynomial(const Polynomial &other): Vector(other.size, other.modulu
     this->is_inv_engine_set = other.is_inv_engine_set;
 } 
   
-Polynomial& Polynomial::operator=(const Polynomial& other){
-    if(!this->is_init){ 
-        this->size = other.size;
-        this->modulus = other.modulus;
-        init();
-        //this->init(other.size, other.modulus);
-        this->init_from_vec();
-    }
+Polynomial& Polynomial::operator=(const Polynomial& other){ 
+    this->size = other.size;
+    this->modulus = other.modulus;
+    init(); 
+    this->init_from_vec(); 
     Utils::cp(this->vec, other.vec, this->size);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set; 
@@ -276,8 +266,7 @@ void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{
         out.vec[i] = -temp[overflow + i];
     }
     delete[] temp;
-    out.normalize();
-    //Utils::array_mod_form(out.vec, out.vec, this->size, this->modulus);
+    out.normalize(); 
 }
  
 void Polynomial::to_eval(PolynomialEvalForm &out){ 
@@ -288,10 +277,7 @@ void Polynomial::to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMult
     mul_engine->to_eval(out, *this);
 }
   
-std::shared_ptr<Polynomial> Polynomial::clone() const{
-    if(!is_init){
-        throw std::logic_error("Polynomial::clone: Polynomial is not initialized!");
-    }
+std::shared_ptr<Polynomial> Polynomial::clone() const{ 
     std::shared_ptr<Polynomial> out = std::make_shared<Polynomial>(size, modulus);
     if(is_mul_engine_set){
         out->set_multiplication_engine(mul_engine);
@@ -299,8 +285,7 @@ std::shared_ptr<Polynomial> Polynomial::clone() const{
     if(is_inv_engine_set){
         out->set_inversion_engine(inv_engine);
     } 
-    Utils::cp(out->vec, vec, size);
-    out->is_init = true;
+    Utils::cp(out->vec, vec, size); 
     return out;
 } 
    
@@ -336,9 +321,7 @@ void Polynomial::inv(Polynomial &out)const{
 void Polynomial::inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine)const{
     inv_engine->inv(out, *this);
 }
-
-
-   
+ 
 PolynomialArrayCoefForm::PolynomialArrayCoefForm(int32_t degree, int64_t coef_modulus, int32_t array_size){ 
     init(degree, coef_modulus, array_size); 
 }

@@ -93,31 +93,49 @@ void VectorView::normalize(){
 Vector::Vector(int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){ 
     init();
 }
+
+Vector::Vector(const std::vector<int64_t>& in_vec, int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){
+    init();
+    std::size_t min_size = in_vec.size();
+    if(min_size > size){ min_size = size ;}
+
+    for(std::size_t i=0; i < min_size; ++i){
+        vec[i] = in_vec[i];
+    } 
+    normalize();
+}
  
 Vector::Vector(const Vector &other) : VectorView(nullptr, other.size, other.modulus){  
     init();
     Utils::cp(this->vec, other.vec, this->size);   
 }
+
+Vector::Vector(const Vector &other, int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){  
+    init();
+    std::size_t min_size = other.size;
+    if(min_size > size){ min_size = size ;}
+
+    for(std::size_t i=0; i < min_size; ++i){
+        vec[i] = other[i];
+    } 
+    normalize();  
+}
  
  
 Vector& Vector::operator=(const Vector other) { 
     this->size = other.size;
-    this->modulus = other.modulus;
-    if(!this->is_init){  
-        this->init(); 
-    }
+    this->modulus = other.modulus; 
+    this->init();  
     Utils::cp(this->vec, other.vec, this->size);   
     return *this;
 }
  
 void Vector::init(){ 
     this->vec_memory = std::make_unique<int64_t[]>(size);
-    this->vec = vec_memory.get();
-    this->is_init = true;
+    this->vec = vec_memory.get(); 
+    zeroize();
 }
- 
-
-
+  
 VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
 }

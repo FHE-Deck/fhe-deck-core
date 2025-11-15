@@ -121,29 +121,13 @@ class LWECT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param, ct);   
-      /*
-      std::vector<int64_t> ct_arr; 
-      for(int32_t i = 0; i < param->dim+1; ++i){
-        ct_arr.push_back(ct[i]);
-      }
-      ar(ct_arr);  
-      */
+      ar(param, ct);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param, ct); 
-      /*
-      std::vector<int64_t> ct_arr;
-      ar(ct_arr);
-      //ct = new int64_t[param->dim+1];
-      ct = Vector(param->dim+1, param->modulus);
-      for(int32_t i = 0; i < param->dim+1; ++i){
-        ct[i] = ct_arr[i];
-      }  
-      */
+      ar(param, ct);  
     } 
     #endif
 };

@@ -25,14 +25,12 @@ public:
     /// @brief Indicates whether the polynomial is encoded or decoded using the plaintext polynomials. 
     bool is_encoded = true; 
     /// @brief Indicates whether the polynomial is in amortized form (prepared for multi-value bootstraping) or not. 
-    bool is_amortized_form = false;
-    /// @brief Indicates whether the polynomial is initialized or not.
-    bool is_init = false;
+    bool is_amortized_form = false; 
  
     /// @brief Default constructor.
     RotationPoly() = default;
   
-    // @brief Constructs a rotation polynomial.
+    /// @brief Constructs a rotation polynomial.
     /// @param f The function to be embedded in the polynomial.
     /// @param degree The degree of the polynomial.
     /// @param output_encoding The encoding used to encode messages on the input ciphertext.

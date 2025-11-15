@@ -80,8 +80,7 @@ class VectorCTSK{
 
     /// @brief Destructor
     virtual ~VectorCTSK() = default;
-
-
+ 
     /// @brief The encryption function. Encrypts the message m, and stores the result in out.
     /// @param out The resulting ciphertext. It is assumed the object is properly initialized.
     /// @param m Polynomial message to be encrypted.
@@ -169,7 +168,7 @@ class GadgetVectorCTSK{
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg) = 0;  
       
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt

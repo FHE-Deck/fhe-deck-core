@@ -75,17 +75,21 @@ class Vector : public VectorView{
     public:
 
     std::unique_ptr<int64_t[]> vec_memory;
-
-    /// TODO: Most likely we don't need this init here anymore. 
-    bool is_init = false;
-
+ 
     Vector() = default;
 
     Vector(int64_t size, int64_t modulus);
+
+    Vector(const std::vector<int64_t>& in_vec, int64_t size, int64_t modulus);
  
     /// @brief Copy constructor
     /// @param other The Vector to copy
     Vector(const Vector &other);
+
+    /// @brief Copy constructor where however only size of the input vector is copied (this vector will be of this size) and vector elements are reduced modulo modulus.
+    /// @param other The Vector to copy
+    /// @note If size is bigger then other.size then the remaining vector elements are set to zero.
+    Vector(const Vector &other, int64_t size, int64_t modulus);
 
     /// @brief This is the copy assignment operator
     /// @param other The Vector to copy

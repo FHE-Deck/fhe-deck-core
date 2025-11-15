@@ -74,7 +74,7 @@ class ExtendedPolynomialCT{
     /// @brief Multiplies this with ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void mul(VectorCT &out, const Polynomial &scalar) = 0;
+    virtual void mul(VectorCT &out, const Vector &scalar) = 0;
 
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -122,13 +122,13 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Polynomial &msg) = 0; 
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg) = 0; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
-    /// @return Creates a new object that stores the resulting ciphertext.
-    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const uint64_t *msg, int32_t size) = 0; 
+    /// @return Creates a new object that stores the resulting ciphertext. 
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg) = 0;  
     
     #if defined(USE_CEREAL)
     template <class Archive>
