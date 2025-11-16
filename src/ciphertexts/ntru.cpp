@@ -310,8 +310,7 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const Polynomia
 
     if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): size different"); }
  
-    Polynomial msg_poly(msg);
-    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);    
+    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 } 
 
@@ -328,8 +327,7 @@ std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const Vecto
 
     if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): size different"); }
  
-    Polynomial msg_poly(msg);
-    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);     
+    std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
 }
  
@@ -341,17 +339,17 @@ std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const std::
     return extended_encrypt(msg_poly);
 }
  
-std::vector<std::shared_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(Polynomial &msg){
+std::vector<std::shared_ptr<NTRUCT>> NTRUGadgetSK::ext_enc(const Vector &msg){
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct;      
     /// TODO: Well.... Here perhpas polynomial should have a constructor that changes the modulus?
-    //Polynomial msg_cpy(msg);  
+    Polynomial msg_cpy(msg);  
     // Encryptions of - msg* base**i     
     gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(msg)));
     for(int32_t i = 1; i < gadget->digits; ++i){
         // Multiply msg by base
-        msg.mul(msg, gadget->base); 
+        msg_cpy.mul(msg_cpy, gadget->base); 
         // Encrypt msg * base**i   
-        gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(msg))); 
+        gadget_ct.push_back(std::static_pointer_cast<NTRUCT>(sk->encrypt(msg_cpy))); 
     }    
     return gadget_ct;
 }

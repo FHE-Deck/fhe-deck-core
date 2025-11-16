@@ -428,8 +428,11 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     #endif
 
     private:
-  
-    std::vector<std::shared_ptr<NTRUCT>> ext_enc(Polynomial &msg);
+ 
+    /// TODO: Make this non-const (public interfaced will be forced to do compies, and check formal formating, but this is free to change the message.)
+    /// The alternative is, that you copy the message twice, what doesn't make sense. 
+    /// Also, its not publicly available, so the user shoulnd't be affected by this. 
+    std::vector<std::shared_ptr<NTRUCT>> ext_enc(const Vector &msg);
 };
  
 } /// End of namespace FHEDeck

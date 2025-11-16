@@ -489,7 +489,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
 
   private:
 
-  std::vector<std::shared_ptr<RLWECT>> ext_enc(Polynomial &msg);
+  std::vector<std::shared_ptr<RLWECT>> ext_enc(const Vector &msg);
 
 };
  

@@ -352,23 +352,21 @@ RLWEGadgetSK::RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWES
     this->rlwe_sk = rlwe_sk; 
 }
  
-std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg){
+std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(const Vector &msg){
     std::vector<std::shared_ptr<RLWECT>> ext_ct;  
     /// TODO: This should be be done much easier
-    /*
     Polynomial msg_cpy(rlwe_sk->param->size, rlwe_sk->param->coef_modulus); 
     msg_cpy.zeroize();
     for(int32_t i = 0; i < rlwe_sk->param->size; ++i){
         msg_cpy[i] = msg[i];
     }
-    */
     // Encryptions of - msg* base**i    
-    ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg)));
+    ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg_cpy)));
     for(int32_t i = 1; i < gadget->digits; ++i){
         // Multiply msg by base
-        msg.mul(msg, gadget->base); 
+        msg_cpy.mul(msg_cpy, gadget->base); 
         // Encrypt msg * base**i   
-        ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg))); 
+        ext_ct.push_back(std::static_pointer_cast<RLWECT>(rlwe_sk->encrypt(msg_cpy))); 
     }  
     return ext_ct;
 }
@@ -406,8 +404,7 @@ std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Vecto
 
     if(msg.size != rlwe_sk->param->size){ throw std::logic_error("RLWEGadgetSK::extended_encrypt(const Vector &msg): size different"); }
 
-    Polynomial msg_poly(msg);
-    std::vector<std::shared_ptr<RLWECT>> gadget_ct = ext_enc(msg_poly); 
+    std::vector<std::shared_ptr<RLWECT>> gadget_ct = ext_enc(msg); 
     return std::make_shared<ExtendedRLWECT>(rlwe_sk->param, gadget, gadget_ct);
 }
  
