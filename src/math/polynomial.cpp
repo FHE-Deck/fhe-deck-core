@@ -192,8 +192,7 @@ Polynomial& Polynomial::operator=(const Vector& other){
 
 
 Polynomial::Polynomial(const Vector& other): Vector(other){ 
-    this->init_from_vec(); 
-    Utils::cp(this->vec, other.vec, this->size);
+    this->init_from_vec();  
 }
 
 void Polynomial::init_from_vec(){ 

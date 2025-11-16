@@ -442,12 +442,12 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         sk->decrypt(out, ct_prod, encoding);
         //Utils::array_mod_form(out.vec, out.vec, N, plaintext_modulus);
         if(out != exp_poly){ 
-            FAIL();
             print_out << "\rFail at: " << i << std::endl;
             print_out << "Extended rlwe test: Fail" << std::endl;
             print_out << "out: " << out.to_string(15) << std::endl;  
             print_out << "exp_poly: " << exp_poly.to_string(15) << std::endl;  
-            print_out << "m: " <<  m.to_string(15) << std::endl;   
+            print_out << "m: " <<  m.to_string(15) << std::endl;    
+            FAIL();
         } 
     } 
 
