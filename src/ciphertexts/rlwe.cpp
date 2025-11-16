@@ -153,17 +153,9 @@ void ExtendedRLWECT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct){
     for(int32_t i = 0; i < gadget->digits; ++i){
         array_coef.set_polynomial_at(i, gadget_ct[i]->b);
     } 
-    rlwe_param->mul_engine->to_eval(*array_eval_b, array_coef); 
-      
-    this->is_init = true;  
+    rlwe_param->mul_engine->to_eval(*array_eval_b, array_coef);  
 }
-
-ExtendedRLWECT::~ExtendedRLWECT(){     
-    if(is_init == false){
-        return;
-    }         
-}
-   
+  
 void ExtendedRLWECT::mul(VectorCT &out, const Vector &msg){ 
      if(msg.modulus > rlwe_param->coef_modulus){ throw std::logic_error("ExtendedRLWECT::mul(VectorCT &out, const Vector &msg): modulus bigger"); }
 
@@ -216,9 +208,7 @@ void RLWEGadgetCT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::ve
     for(int32_t i = 0; i < gadget->digits; ++i){
         array_coef.set_polynomial_at(i, gadget_ct_sk[i]->b);
     } 
-    rlwe_param->mul_engine->to_eval(*array_eval_b_sk, array_coef);  
-    
-    this->is_init = true;  
+    rlwe_param->mul_engine->to_eval(*array_eval_b_sk, array_coef);   
 }
   
 void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){ 

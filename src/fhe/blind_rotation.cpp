@@ -58,9 +58,7 @@ KSFunctionSpecification::KSFunctionSpecification(const std::function<long(long, 
         }   
     }
     poly_msb_0.normalize();
-    poly_msb_1.normalize();
-    //Utils::array_mod_form(poly_msb_0.vec, poly_msb_0.vec, dim, coef_modulus);
-    //Utils::array_mod_form(poly_msb_1.vec, poly_msb_1.vec, dim, coef_modulus);  
+    poly_msb_1.normalize(); 
 }  
  
 PolynomialSpecificationBuilder::PolynomialSpecificationBuilder(int32_t degree){

@@ -58,8 +58,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, const L
         lwe_ct_out.add_lazy(lwe_ct_out, temp_lwe_ct);
     }  
     lwe_ct_out.ct[0] = lwe_ct_in.ct[0] + lwe_ct_out.ct[0];
-    lwe_ct_out.ct.normalize();
-    //Utils::array_mod_form(lwe_ct_out.ct, lwe_ct_out.ct, destination->dim+1, destination->modulus);   
+    lwe_ct_out.ct.normalize(); 
 }
  
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
@@ -71,8 +70,7 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out,
     }  
     // Add the ``b'' term
     lwe_ct_out.ct[0] = lwe_ct_in.ct[0] + lwe_ct_out.ct[0]; 
-    lwe_ct_out.ct.normalize(); 
-    //Utils::array_mod_form(lwe_ct_out.ct, lwe_ct_out.ct, destination->dim+1, destination->modulus);   
+    lwe_ct_out.ct.normalize();  
 } 
  
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
@@ -83,6 +81,5 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, const 
         lwe_ct_out.add(lwe_ct_out, temp_lwe_ct);
     }  
     lwe_ct_out.ct[0] = lwe_ct_in.ct[0] + lwe_ct_out.ct[0];
-    lwe_ct_out.ct.normalize();
-    //Utils::array_mod_form(lwe_ct_out.ct, lwe_ct_out.ct, destination->dim+1, destination->modulus);  
+    lwe_ct_out.ct.normalize(); 
 }

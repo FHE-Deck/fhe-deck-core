@@ -43,7 +43,7 @@ void KSFunctionalBootstrapPublicKey::full_domain_bootstrap(LWECT &lwe_ct_out,
     std::shared_ptr<BlindRotateOutput> br_out(blind_rotate_output_builder->build()); 
     this->blind_rotation_key->blind_rotate(*br_out->accumulator, lwe_c_N, acc_msb);  
     br_out->extract_lwe(lwe_ct_out); 
-    /// lwe_ct_out contain now the MSB of the input ciphertext
+    /// lwe_ct_out contains now the MSB of the input ciphertext
     lwe_ct_out.add(lwe_ct_out, poly_ct_params->coef_modulus / (2 * output_encoding.get_plaintext_space()));  
     std::shared_ptr<RLWECT> acc_proto = std::make_shared<RLWECT>(poly_ct_params);
     /// acc_proto is a RLWECT that contain the MSB of the input ciphertext

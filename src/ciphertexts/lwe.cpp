@@ -8,26 +8,18 @@ LWEParam::LWEParam(int32_t dim, int64_t modulus){
 }
   
 LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
-    this->param = lwe_param;
-    //this->ct = new int64_t[param->dim+1];
+    this->param = lwe_param; 
     this->ct = Vector(param->dim+1, param->modulus);
 }
    
 LWECT::LWECT(const LWECT &c){  
-    this->param = c.param;
-    //this->ct = new int64_t[param->dim+1]; 
+    this->param = c.param; 
     this->ct = Vector(param->dim+1, param->modulus);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = c.ct[i];
     }
-}
- 
-/*
-LWECT::~LWECT(){    
-    delete[] ct; 
-}
-*/
- 
+} 
+
 void LWECT::mul(LWECT &out, int64_t scalar)const{
     for(int32_t i = 0; i <= param->dim; ++i){
         out.ct[i] = (ct[i] * scalar) % param->modulus;
@@ -83,8 +75,7 @@ LWECT& LWECT::operator=(const LWECT other){
     {
         return *this;
     }   
-    this->param = other.param;
-    //this->ct = new int64_t[param->dim+1]; 
+    this->param = other.param; 
     this->ct = Vector(param->dim+1, param->modulus);
     for(int32_t i = 0; i < param->dim+1; ++i){
         this->ct[i] = other.ct[i];
@@ -172,12 +163,7 @@ void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){
         out_ct.add_lazy(out_ct, temp_ct);  
     }
     delete[] scalar_decomposed;  
-}
-  /*
-LWESK::~LWESK(){ 
-    delete[] key; 
-}
-  */
+} 
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     this->param = lwe_par;  
@@ -197,9 +183,7 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, Key
     }    
 }
 
-void LWESK::init(){
-    //this->key = new int64_t[param->dim];  
-    //key.resize(param->dim);
+void LWESK::init(){ 
     key = Vector(param->dim, param->modulus);
     unif_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, param->modulus));
     error_dist = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));  
@@ -212,10 +196,8 @@ void LWESK::init_key(){
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(0, 1));
     }else{ 
         sk_dist = std::shared_ptr<Distribution>(new StandardUniformIntegerDistribution(-1, 1));
-    }
-    //sk_dist->fill_array(key, param->dim); 
-    sk_dist->fill(key); 
-    //Utils::array_mod_form(this->key, this->key, param->dim, param->modulus); 
+    } 
+    sk_dist->fill(key);  
 }
  
 std::unique_ptr<LWECT> LWESK::encrypt(int64_t m){
@@ -244,8 +226,7 @@ void LWESK::encode_and_encrypt(LWECT& in, int64_t m, PlaintextEncoding encoding)
     encrypt(in, encoding.encode_message(m)); 
 } 
  
-int64_t LWESK::partial_decrypt(const LWECT& in){ 
-    //Utils::array_mod_form(key, key, param->dim, param->modulus); 
+int64_t LWESK::partial_decrypt(const LWECT& in){  
     int64_t phase  = in.ct[0]; 
     for(int32_t i = 1; i < param->dim+1; ++i){ 
         int64_t k = Utils::integer_mod_form(key[i-1], param->modulus);  

@@ -34,8 +34,6 @@ class RLWEParam : public PolynomialCTParam{
     /// @brief The polynomial multiplication engine. 
     std::shared_ptr<PolynomialMultiplicationEngine> mul_engine; 
    
-    ~RLWEParam() = default; 
-
     RLWEParam() = default; 
        
     /// @brief Constructs a new RLWEParam object
@@ -98,8 +96,6 @@ class RLWECT : public PolynomialCT{
     /// @brief The polynomial b, in the RLWE ciphertext (a, b) s.t. b = a*s + e + M.
     Polynomial b;  
     
-    ~RLWECT() = default;
-
     RLWECT() = default;
 
     /// @brief Constructs a new RLWECT object.
@@ -210,15 +206,12 @@ class ExtendedRLWECT : public ExtendedPolynomialCT{
   std::shared_ptr<RLWEParam> rlwe_param;
   /// @brief The gadget decomposition object.
   std::shared_ptr<Gadget> gadget;
-
-  bool is_init = false;  
+ 
   /// @brief Evaluation forms of the polynomials a from the RLWECT(base^i * message) ciphertexts.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;
   /// @brief Evaluation forms of the polynomials b from the RLWECT(base^i * message) ciphertexts.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_b; 
-    
-  /// @brief Frees deter_ct_a_dec and  deter_ct_b_dec
-  ~ExtendedRLWECT();
+     
   /// @brief Default constructor
   ExtendedRLWECT() = default;
   /// @brief Constructs the object. 
@@ -250,8 +243,7 @@ class ExtendedRLWECT : public ExtendedPolynomialCT{
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(rlwe_param, gadget, array_eval_a, array_eval_b);     
-        this->is_init = true;  
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b);    
     }  
   #endif 
   
@@ -271,8 +263,7 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   std::shared_ptr<RLWEParam> rlwe_param;
   /// @brief The gadget decomposition object.
   std::shared_ptr<Gadget> gadget;
-
-  bool is_init = false;  
+ 
   /// @brief Evaluation forms of the polynomials a from the RLWECT(base^i * message) ciphertexts.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;
   /// @brief Evaluation forms of the polynomials b from the RLWECT(base^i * message) ciphertexts.
@@ -317,8 +308,7 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);   
-        this->is_init = true;  
+        ar(rlwe_param, gadget, array_eval_a, array_eval_b, array_eval_a_sk, array_eval_b_sk);    
     } 
     #endif 
     
@@ -343,6 +333,7 @@ class RLWESK : public VectorCTSK{
     std::shared_ptr<Distribution> unif_dist;
     /// @brief The noise distribution
     std::shared_ptr<Distribution> error_dist; 
+    /// @brief The noise standard deviation.  
     double noise_stddev;
    
     /// @brief default destructor

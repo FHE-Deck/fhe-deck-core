@@ -191,9 +191,7 @@ class LWESK {
     //int64_t *key;   
     Vector key;   
     /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
-    std::unique_ptr<LongIntegerMultipler> multiplier;
-    /// @brief Free the key.
-    //~LWESK();
+    std::unique_ptr<LongIntegerMultipler> multiplier; 
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;
