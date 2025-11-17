@@ -128,7 +128,8 @@ class VectorArray{
 
     public:
     /// @brief The continuous block of memory that stores the vectors.
-    int64_t* vec_array;  
+    //int64_t* vec_array;  
+    std::unique_ptr<int64_t[]> vec_array;
     /// @brief The coefficients of the polynomial
     int64_t** vec_array_2d; 
     /// @brief Indicates if the polynomial has been initialized
@@ -152,6 +153,10 @@ class VectorArray{
     void init(int32_t size, int64_t modulus, int32_t array_size);
 
     void init_two_dim_array();
+
+    VectorView operator[](int32_t index);
+
+    const VectorView operator[](int32_t index)const;
 
     bool operator==(const VectorArray& other);
 

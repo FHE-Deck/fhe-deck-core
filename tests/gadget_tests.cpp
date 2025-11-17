@@ -34,7 +34,7 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
         for(int i = 0; i < N; ++i){
             result[i] = 0;
             for(int j = 0; j < g->digits; ++j){
-                temp = decomp.vec_array_2d[j][i];
+                temp = decomp[j][i];
                 for(int k = 0; k < j; ++k){
                     temp *= base;
                     temp %= Q;
@@ -66,20 +66,19 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
     long* decomp_flat = new long[g->digits * g->degree];
     long temp;
     for(int k = 0; k < test_num; ++k){
-        // Choose some random poly 
-        //rand->fill_array(poly.vec, N); 
+        // Choose some random poly  
         rand->fill(poly);
         // Sample
         g->sample(decomp, poly); 
         for(int j = 0; j < g->digits; ++j){
-            Utils::array_signed_form(signed_decomp, decomp.vec_array_2d[j], N, Q); 
+            Utils::array_signed_form(signed_decomp, decomp[j].vec, N, Q); 
         }
         // Compose back modulo Q, and compare to poly
         for(int i = 0; i < N; ++i){
             result[i] = 0;
             for(int j = 0; j < g->digits; ++j){
-                temp = decomp.vec_array_2d[j][i]; 
-                decomp_flat[j * N + i]  = decomp.vec_array_2d[j][i];
+                temp = decomp[j][i]; 
+                decomp_flat[j * N + i]  = decomp[j][i];
                 for(int k = 0; k < j; ++k){
                     temp *= base;
                     temp %= Q;

@@ -36,9 +36,10 @@ void SignedDecompositionGadget::sample(VectorArray& out, const Vector& poly){
     // Adding the signs
     for(int32_t j = 0; j < digits; ++j){
         for(int32_t i = 0; i < degree; ++i){ 
-            out.vec_array_2d[j][i] = out.vec_array_2d[j][i] * sign[i];
+            out[j][i] = out[j][i] * sign[i];
         }
-        Utils::array_mod_form(out.vec_array_2d[j], out.vec_array_2d[j], degree, modulus);
+        out[j].normalize();
+        //Utils::array_mod_form(out[j], out[j], degree, modulus);
     } 
 }
  
@@ -49,7 +50,7 @@ void SignedDecompositionGadget::decomp(VectorArray& d_ct, Vector& in){
         shift = bits_base*i;
         for(int32_t j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
-            d_ct.vec_array_2d[i][j] = (in[j] & mask) >> shift;
+            d_ct[i][j] = (in[j] & mask) >> shift;
         }
         mask = mask << bits_base;
     }
@@ -147,7 +148,7 @@ void DiscreteGaussianSamplingGadget::decomp(VectorArray& d_ct, Vector& poly){
         shift = bits_base*i;
         for(int32_t j=0; j < degree; ++j){
             // The jth coefficients of the ith (decomposed) polynomial
-            d_ct.vec_array_2d[i][j] = (poly[j] & mask) >> shift;
+            d_ct[i][j] = (poly[j] & mask) >> shift;
         }
         mask = mask << bits_base;
     }
@@ -160,7 +161,8 @@ void DiscreteGaussianSamplingGadget::gaussian_sample(VectorArray& out, const Vec
         gaussian_sample_general_modulus(out, in);
     }
     for(int32_t j = 0; j < digits; ++j){ 
-        Utils::array_mod_form(out.vec_array_2d[j], out.vec_array_2d[j], degree, modulus);
+        out[j].normalize();
+        //Utils::array_mod_form(out[j], out[j], degree, modulus);
     }
 }
  
@@ -178,8 +180,8 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_modulus_power_of_base(Vecto
             //gaussians[j] = (int64_t)(gen_gaussian() * sigma) << k;
             gaussians[j] = gen_discrete_gauss(0.0f) << bits_base;
             // The jth coefficients of the ith (decomposed) polynomial 
-            out.vec_array_2d[i][j] = (in[j] & mask) >> shift; 
-            out.vec_array_2d[i][j] += gaussians[j] - prev_gauss; 
+            out[i][j] = (in[j] & mask) >> shift; 
+            out[i][j] += gaussians[j] - prev_gauss; 
             gaussians[j] = gaussians[j] >> bits_base;
         }
         mask = mask << bits_base;
@@ -247,11 +249,11 @@ void DiscreteGaussianSamplingGadget::gaussian_sample_general_modulus(VectorArray
             z[i] = integer + gen_discrete_gauss(floating);
         } 
         // End of sample_D(z, c);   
-        out.vec_array_2d[0][k] = base * z[0] + q_decomp[0] * out_ell_minus_one + u[0]; 
+        out[0][k] = base * z[0] + q_decomp[0] * out_ell_minus_one + u[0]; 
         for(int32_t i = 1; i < ell_minus_one; ++i){ 
-            out.vec_array_2d[i][k] = base * z[i] - z[i-1] + q_decomp[i] * out_ell_minus_one + u[i];  
+            out[i][k] = base * z[i] - z[i-1] + q_decomp[i] * out_ell_minus_one + u[i];  
         } 
-        out.vec_array_2d[ell_minus_one][k] =  q_decomp[ell_minus_one] * out_ell_minus_one -  z[digits-2] + u[ell_minus_one];  
+        out[ell_minus_one][k] =  q_decomp[ell_minus_one] * out_ell_minus_one -  z[digits-2] + u[ell_minus_one];  
     }  
 } 
    

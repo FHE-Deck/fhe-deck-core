@@ -333,14 +333,14 @@ PolynomialArrayCoefForm::PolynomialArrayCoefForm(int32_t degree, int64_t coef_mo
   
 PolynomialArrayCoefForm::PolynomialArrayCoefForm(const PolynomialArrayCoefForm &other){
     this->init(other.size, other.modulus, other.array_size);  
-    Utils::cp(this->vec_array, other.vec_array, this->full_size);  
+    Utils::cp(this->vec_array.get(), other.vec_array.get(), this->full_size);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  
 } 
   
 PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArrayCoefForm other){
     this->init(other.size, other.modulus, other.array_size); 
-    Utils::cp(this->vec_array, other.vec_array, this->full_size);  
+    Utils::cp(this->vec_array.get(), other.vec_array.get(), this->full_size);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  
     return *this;

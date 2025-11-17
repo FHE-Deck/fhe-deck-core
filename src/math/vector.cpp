@@ -139,30 +139,40 @@ void Vector::init(){
 VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
 }
- 
+  
 VectorArray::~VectorArray(){
     if(is_init){ 
-        delete[] vec_array; 
+        //delete[] vec_array; 
         delete[] vec_array_2d; 
     }
-}
+} 
  
 void VectorArray::init(const int32_t size, const int64_t modulus, const int32_t array_size){ 
     this->size = size;
     this->modulus = modulus;
     this->array_size = array_size; 
     this->full_size = this->array_size * this->size; 
-    this->vec_array = new int64_t[full_size];
     this->is_init = true; 
+    this->vec_array = std::make_unique<int64_t[]>(full_size);
     init_two_dim_array();
 }
-
+ 
 void VectorArray::init_two_dim_array(){
     vec_array_2d = new int64_t*[array_size];  
     // Point the polynomials to the uint64_t tables. 
     for(int32_t i = 0; i < array_size; ++i){ 
-        vec_array_2d[i] = &vec_array[i * size];
+        vec_array_2d[i] = &vec_array.get()[i * size];
     } 
+} 
+
+VectorView VectorArray::operator[](int32_t index){
+    int64_t* observer_ptr = vec_array.get(); 
+    return VectorView(&observer_ptr[index * size], size, modulus);
+}
+
+const VectorView VectorArray::operator[](int32_t index)const{
+    int64_t* observer_ptr = vec_array.get(); 
+    return VectorView(&observer_ptr[index * size], size, modulus);
 }
 
 bool VectorArray::operator==(const VectorArray& other){
