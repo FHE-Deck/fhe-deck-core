@@ -137,7 +137,7 @@ ExtendedRLWECT::ExtendedRLWECT(std::shared_ptr<RLWEParam> rlwe_param, std::share
 }
 
 void ExtendedRLWECT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct){     
-    PolynomialArrayCoefForm array_coef(rlwe_param->size,  
+    PolynomialArray array_coef(rlwe_param->size,  
                                             rlwe_param->coef_modulus,  
                                             gadget->digits);  
   
@@ -167,7 +167,7 @@ void ExtendedRLWECT::mul(VectorCT &out, const Vector &msg){
     Polynomial msg_in(msg, rlwe_param->size, rlwe_param->coef_modulus);
 
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
-    PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
+    PolynomialArray poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
     gadget->sample(poly_decomp_coef_form, msg_in);   
     rlwe_param->mul_engine->multisum(out_ptr.b, *poly_decomp_eval_form, poly_decomp_coef_form, *array_eval_b);  
     rlwe_param->mul_engine->multisum(out_ptr.a, *poly_decomp_eval_form, *array_eval_a);  
@@ -180,7 +180,7 @@ RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_pt
 }
 
 void RLWEGadgetCT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk){     
-    PolynomialArrayCoefForm array_coef(rlwe_param->size,  
+    PolynomialArray array_coef(rlwe_param->size,  
                                             rlwe_param->coef_modulus,  
                                             gadget->digits);  
   
@@ -214,7 +214,7 @@ void RLWEGadgetCT::init(std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::ve
 void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){ 
     RLWECT& out_ptr = static_cast<RLWECT&>(out);
     const RLWECT& ct_ptr = static_cast<const RLWECT&>(ct); 
-    PolynomialArrayCoefForm poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
+    PolynomialArray poly_decomp_coef_form(rlwe_param->size, rlwe_param->coef_modulus, gadget->digits);
     gadget->sample(poly_decomp_coef_form, ct_ptr.a);   
     RLWECT out_minus(rlwe_param); 
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));
@@ -268,8 +268,8 @@ void RLWESK::encrypt(VectorCT &out, const Vector &m){
     unif_dist->fill(out_cast.a); 
     Polynomial noise(param->size, param->coef_modulus); 
     error_dist->fill(noise); 
-    Polynomial message(param->size, param->coef_modulus);
-    Utils::cp(message.vec, m.vec, param->size); 
+    Polynomial message(m, param->size, param->coef_modulus);
+    //Utils::cp(message.vec, m.vec, param->size); 
     // Now just need to compute: b = a * s + e + m
     // First we need a poolynomial s in eval form.    
     out_cast.a.mul(out_cast.b, sk_poly, param->mul_engine); 

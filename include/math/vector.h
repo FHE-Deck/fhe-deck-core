@@ -15,8 +15,6 @@ class VectorView{
     
     public:
   
-    /// @brief The coefficients of the polynomial
-    int64_t* vec = nullptr;  
 
     int64_t size = 0;
     int64_t modulus = 0;
@@ -43,11 +41,15 @@ class VectorView{
 
     bool operator!=(const VectorView& other) const;
 
+    int64_t* get() const;
+
     /// @brief Zero all vector elements  
     void zeroize();
 
     /// @brief Computes all vector element modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
     void normalize();
+
+    void signed_form();
  
     /// @brief Adds other to this vector and stores the output in out.
     /// @param out The output vector
@@ -66,6 +68,11 @@ class VectorView{
     std::string to_string(int32_t size_of_string);
  
     static void array_signed_form(VectorView& out, const VectorView& in);
+
+    protected:
+ 
+    /// @brief The coefficients of the polynomial
+    int64_t* vec = nullptr;  
  
 };
 
@@ -84,17 +91,17 @@ class Vector : public VectorView{
  
     /// @brief Copy constructor
     /// @param other The Vector to copy
-    Vector(const Vector &other);
+    Vector(const VectorView &other);
 
     /// @brief Copy constructor where however only size of the input vector is copied (this vector will be of this size) and vector elements are reduced modulo modulus.
     /// @param other The Vector to copy
     /// @note If size is bigger then other.size then the remaining vector elements are set to zero.
-    Vector(const Vector &other, int64_t size, int64_t modulus);
+    Vector(const VectorView &other, int64_t size, int64_t modulus);
 
     /// @brief This is the copy assignment operator
     /// @param other The Vector to copy
     /// @return Return a reference to the copied Vector
-    Vector& operator=(const Vector other);
+    Vector& operator=(const VectorView other);
 
 
     /// @brief Called by the constructors to initialize the vector 
@@ -127,13 +134,8 @@ class Vector : public VectorView{
 class VectorArray{
 
     public:
-    /// @brief The continuous block of memory that stores the vectors.
-    //int64_t* vec_array;  
-    std::unique_ptr<int64_t[]> vec_array;
-    /// @brief The coefficients of the polynomial
-    int64_t** vec_array_2d; 
-    /// @brief Indicates if the polynomial has been initialized
-    bool is_init = false;
+    /// @brief The continuous block of memory that stores the vectors. 
+    std::unique_ptr<int64_t[]> vec_array; 
 
     /// @brief Size of a single vector in the array
     int64_t size;
@@ -143,17 +145,13 @@ class VectorArray{
     int32_t array_size; 
     /// @brief full_size = degree * array_size. Initialized in the constructors. 
     int32_t full_size;
-
-    ~VectorArray();
-
+  
     VectorArray() = default;
 
     VectorArray(int32_t size, int64_t modulus, int32_t array_size);
 
     void init(int32_t size, int64_t modulus, int32_t array_size);
-
-    void init_two_dim_array();
-
+ 
     VectorView operator[](int32_t index);
 
     const VectorView operator[](int32_t index)const;

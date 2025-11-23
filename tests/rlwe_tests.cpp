@@ -144,7 +144,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         //rand->fill_array(m_2.vec, rlwe_par->size); 
         rand->fill(m_2);
         for(int j = 0; j < rlwe_par->size; ++j){ 
-            exp.vec[j] = (m_1.vec[j] + m_2.vec[j]) % plaintext_mod;
+            exp[j] = (m_1[j] + m_2[j]) % plaintext_mod;
         }  
            
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding));
@@ -166,7 +166,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         //rand->fill_array(m_2.vec, rlwe_par->size);
         rand->fill(m_2); 
         for(int j = 0; j < rlwe_par->size; ++j){ 
-            exp.vec[j] = Utils::integer_mod_form(m_1.vec[j] - m_2.vec[j], plaintext_mod);
+            exp[j] = Utils::integer_mod_form(m_1[j] - m_2[j], plaintext_mod);
         }   
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding));
         std::shared_ptr<RLWECT> ct_2 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_2, encoding));  
@@ -183,7 +183,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         //rand->fill_array(m_1.vec, rlwe_par->size);  
         rand->fill(m_1);
         for(int j = 0; j < rlwe_par->size; ++j){ 
-            exp.vec[j] = Utils::integer_mod_form(-m_1.vec[j], plaintext_mod);
+            exp[j] = Utils::integer_mod_form(-m_1[j], plaintext_mod);
         }   
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding)); 
         RLWECT ct_3(rlwe_par); 
@@ -380,7 +380,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
     Polynomial gadget_m = Polynomial(rlwe_par->size, plaintext_modulus);
     gadget_m.set_multiplication_engine(ntt_engine);
     gadget_m.zeroize();
-    gadget_m.vec[0] = 1;
+    gadget_m[0] = 1;
     Polynomial exp_poly = Polynomial(rlwe_par->size, plaintext_modulus);
     exp_poly.zeroize();
     exp_poly.set_multiplication_engine(ntt_engine);
@@ -432,7 +432,7 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
         rand->fill(gadget_m);
         m.mul(exp_poly, gadget_m);
         for(int j = 0; j < N; ++j){
-            m.vec[j] = encoding.encode_message(m.vec[j]);
+            m[j] = encoding.encode_message(m[j]);
         }
          
         std::shared_ptr<ExtendedRLWECT> ext_ct_test = std::static_pointer_cast<ExtendedRLWECT>(std::shared_ptr<ExtendedPolynomialCT>(gadget_sk.extended_encrypt(gadget_m)));   

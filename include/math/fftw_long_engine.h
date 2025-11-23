@@ -24,31 +24,24 @@ class FFTLongPlan{
     uint32_t N; 
     // Plan size is the size of the plan e.g. 2N for (X^N+1) and N for (X^N-1) 
     uint32_t plan_size; 
-    
-    bool is_init = false;
-
+     
     // Long Arithmetic Related
     fftwl_plan plan_to_eval_form_l, plan_to_coef_form_l;
     long double *in_l;
     fftwl_complex *out_l;
-    bool long_arithmetic = false;
- 
+    
     FFTLongPlan() = default;
 
     FFTLongPlan(RingType ring, int32_t N);
+ 
+    FFTLongPlan(const FFTLongPlan& other) = delete;
 
-    FFTLongPlan(RingType ring, int32_t N, bool long_arithmetic);
-
-    FFTLongPlan(const FFTLongPlan& other);
-
-    FFTLongPlan& operator=(FFTLongPlan other);
+    FFTLongPlan& operator=(FFTLongPlan other)  = delete;
 
     ~FFTLongPlan();
   
     fftwl_complex* init_fft_poly_l();
-  
-    // Long arithmetic 
-
+   
     // Note that we still only support operations on polynomials with 64-bit coefs max. 
     void to_eval_form_l(fftwl_complex* eval_form, int64_t *poly); 
 
@@ -82,7 +75,7 @@ class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     public:
  
-    FFTLongPlan engine; 
+    std::unique_ptr<FFTLongPlan> engine; 
 
     int32_t degree;
     int64_t coef_modulus;
@@ -95,19 +88,19 @@ class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
  
     void to_eval(PolynomialEvalForm &out, const Polynomial &in);
  
-    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in);
+    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in);
 
     void to_coef(Polynomial &out, const PolynomialEvalForm &in);
   
-    void to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in);
+    void to_coef(PolynomialArray &out, const PolynomialArrayEvalForm &in);
   
     void mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2);
  
-    void multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 
     void multisum(Polynomial &out, const PolynomialArrayEvalForm &in_1, const PolynomialArrayEvalForm &in_2);
 
-    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 
 };
   

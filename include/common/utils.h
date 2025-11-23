@@ -99,6 +99,51 @@ class LongIntegerMultipler{
  
     uint64_t mul(uint64_t in_1, uint64_t in_2);
 };
+
+
+
+template <class T>
+class Observer {
+public:
+
+    Observer() = default;
+
+    Observer(T* ptr) :  ptr(ptr) {}
+
+    T* get() const { return ptr; }
+
+    T& operator*() const { return *ptr; }
+
+    T* operator->() const noexcept { return ptr; }
+
+private:
+    T* ptr = nullptr;
+};
+
+
+template <class T>
+class Observer<T[]> {
+public:
+
+    Observer() = default;
+ 
+    Observer(T* ptr, std::size_t size): ptr(ptr), size(size) {}
+
+    T* get() const { return ptr; }
+    
+    T& operator[](std::size_t i) {
+        return ptr[i];
+    }
+
+    const T& operator[](std::size_t i) const {
+        return ptr[i];
+    }
+
+private:
+    T* ptr;
+    std::size_t size = 0;
+};
+
  
 } /// End of namespace FHEDeck
 

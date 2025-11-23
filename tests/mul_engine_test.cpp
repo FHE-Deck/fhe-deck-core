@@ -18,8 +18,7 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
 
     bool test_eval_equal = true;
     for(int32_t i = 0; i < tests; ++i){
-        Polynomial input_poly(degree, modulus);
-        //rand_uni->fill_array(input_poly.vec, degree);
+        Polynomial input_poly(degree, modulus); 
         rand_uni->fill(input_poly);
         
         std::shared_ptr<PolynomialEvalForm> left_eval(engine_left->init_polynomial_eval_form()); 
@@ -51,15 +50,14 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
     std::shared_ptr<PolynomialArrayEvalForm> left_eval_array(engine_left->init_polynomial_array_eval_form(array_size));
     std::shared_ptr<PolynomialArrayEvalForm> right_eval_array(engine_right->init_polynomial_array_eval_form(array_size));
     for(int32_t i = 0; i < tests; ++i){
-        PolynomialArrayCoefForm input_array(degree, modulus, array_size);
-        //rand_uni->fill_array(input_array.vec_array, input_array.full_size); 
+        PolynomialArray input_array(degree, modulus, array_size); 
         rand_uni->fill(input_array); 
 
         engine_left->to_eval(*left_eval_array.get(), input_array);
         engine_right->to_eval(*right_eval_array.get(), input_array);
         
-        PolynomialArrayCoefForm left_poly_array(degree, modulus, array_size);
-        PolynomialArrayCoefForm right_poly_array(degree, modulus, array_size);
+        PolynomialArray left_poly_array(degree, modulus, array_size);
+        PolynomialArray right_poly_array(degree, modulus, array_size);
         engine_left->to_coef(left_poly_array, *left_eval_array.get());
         engine_right->to_coef(right_poly_array, *right_eval_array.get());
 
@@ -75,10 +73,8 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
     bool test_mul = true;
     for(int32_t i = 0; i < tests; ++i){
         Polynomial poly_1(degree, modulus);
-        Polynomial poly_2(degree, modulus);
-        //rand_uni->fill_array(poly_1.vec, degree);
-        rand_uni->fill(poly_1);
-        //rand_bound->fill_array(poly_2.vec, degree);
+        Polynomial poly_2(degree, modulus); 
+        rand_uni->fill(poly_1); 
         rand_bound->fill(poly_2);
 
 
@@ -114,11 +110,9 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
     array_size = 10;
     bool test_multisum = true;
     for(int32_t i = 0; i < tests; ++i){
-        PolynomialArrayCoefForm poly_array_1(degree, modulus, array_size);
-        PolynomialArrayCoefForm poly_array_2(degree, modulus, array_size);
-        //rand_uni->fill_array(poly_array_1.vec_array, poly_array_1.full_size);
-        rand_uni->fill(poly_array_1);
-        //rand_bound->fill_array(poly_array_2.vec_array, poly_array_2.full_size);
+        PolynomialArray poly_array_1(degree, modulus, array_size);
+        PolynomialArray poly_array_2(degree, modulus, array_size); 
+        rand_uni->fill(poly_array_1); 
         rand_bound->fill(poly_array_2);
 
         std::shared_ptr<PolynomialArrayEvalForm> left_eval_1(engine_left->init_polynomial_array_eval_form(array_size));
@@ -153,11 +147,9 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
     bool test_multisum_2 = true;
     bool test_eval_2 = true;
     for(int32_t i = 0; i < tests; ++i){
-        PolynomialArrayCoefForm poly_array_1(degree, modulus, array_size);
-        PolynomialArrayCoefForm poly_array_2(degree, modulus, array_size);
-        //rand_uni->fill_array(poly_array_1.vec_array, poly_array_1.full_size);
-        rand_uni->fill(poly_array_1);
-        //rand_bound->fill_array(poly_array_2.vec_array, poly_array_2.full_size);
+        PolynomialArray poly_array_1(degree, modulus, array_size);
+        PolynomialArray poly_array_2(degree, modulus, array_size); 
+        rand_uni->fill(poly_array_1); 
         rand_bound->fill(poly_array_2);
 
         std::shared_ptr<PolynomialArrayEvalForm> left_eval_1(engine_left->init_polynomial_array_eval_form(array_size));
@@ -181,8 +173,8 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
             print_out << "right_out.coefs: " << right_out.to_string(5) << std::endl; 
         }
  
-        PolynomialArrayCoefForm poly_array_1_left(degree, modulus, array_size);
-        PolynomialArrayCoefForm poly_array_1_right(degree, modulus, array_size);
+        PolynomialArray poly_array_1_left(degree, modulus, array_size);
+        PolynomialArray poly_array_1_right(degree, modulus, array_size);
         engine_left->to_coef(poly_array_1_left, *left_eval_1.get());
         engine_right->to_coef(poly_array_1_right, *right_eval_1.get());
         if(poly_array_1_left != poly_array_1_right){

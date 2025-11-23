@@ -23,7 +23,7 @@ TEST(LWEToRLWEKeySwitch, BasicKeySwitchTest){
     auto sk_rlwe = std::make_shared<RLWESK>(rlwe_param, KeyDistribution::ternary, rlwe_stddev);
     auto gadget_sk_rlwe = std::make_shared<RLWEGadgetSK>(rlwe_gadget, sk_rlwe);
 
-    auto sk_lwe = std::make_shared<LWESK>(lwe_param, sk_rlwe->sk_poly.vec, rlwe_stddev, KeyDistribution::ternary);
+    auto sk_lwe = std::make_shared<LWESK>(lwe_param, sk_rlwe->sk_poly.get(), rlwe_stddev, KeyDistribution::ternary);
 
     auto lwe_to_rlwe_key = LWEToRLWEKeySwitchKey(sk_lwe, gadget_sk_rlwe);
 
@@ -36,5 +36,5 @@ TEST(LWEToRLWEKeySwitch, BasicKeySwitchTest){
     Polynomial dec(N, coef_modulus);
     sk_rlwe->partial_decrypt(dec, output);
 
-    ASSERT_EQ(dec.vec[0], message); 
+    ASSERT_EQ(dec[0], message); 
 }

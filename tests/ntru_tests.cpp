@@ -103,7 +103,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         //rand->fill_array(m_2.vec, ntru_par->size);  
         rand->fill(m_2);  
         for(int32_t j = 0; j < ntru_par->size; ++j){ 
-            exp.vec[j] = (m_1.vec[j] + m_2.vec[j]) % plaintext_modulus;
+            exp[j] = (m_1[j] + m_2[j]) % plaintext_modulus;
         }  
         std::shared_ptr<NTRUCT> ct_1 = sk->kdm_encode_and_encrypt(m_1, encoding);
         std::shared_ptr<NTRUCT> ct_2 = sk->kdm_encode_and_encrypt(m_2, encoding);  
@@ -125,7 +125,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         //rand->fill_array(m_2.vec, ntru_par->size);   
         rand->fill(m_2);
         for(int32_t j = 0; j < ntru_par->size; ++j){ 
-            exp.vec[j] = Utils::integer_mod_form(m_1.vec[j] - m_2.vec[j], plaintext_modulus);
+            exp[j] = Utils::integer_mod_form(m_1[j] - m_2[j], plaintext_modulus);
         }   
         std::shared_ptr<NTRUCT> ct_1(sk->kdm_encode_and_encrypt(m_1, encoding));
         std::shared_ptr<NTRUCT> ct_2(sk->kdm_encode_and_encrypt(m_2, encoding));  
@@ -143,7 +143,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         //rand->fill_array(m_1.vec, ntru_par->size); 
         rand->fill(m_1);
         for(int32_t j = 0; j < ntru_par->size; ++j){ 
-            exp.vec[j] = Utils::integer_mod_form(-m_1.vec[j], plaintext_modulus);
+            exp[j] = Utils::integer_mod_form(-m_1[j], plaintext_modulus);
         }   
         std::shared_ptr<NTRUCT> ct_1(sk->kdm_encode_and_encrypt(m_1, encoding)); 
         NTRUCT ct_3(ntru_par); 
@@ -218,7 +218,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
       ct->extract_lwe(lwe_ct); 
       sk->decrypt(out, *ct.get(), encoding); 
       lwe_msg = lwe_sk->decrypt(lwe_ct, encoding); 
-      if(!(out.vec[0] == lwe_msg)){
+      if(!(out[0] == lwe_msg)){
         FAIL(); 
       }
    } 
@@ -268,7 +268,7 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
     Polynomial gadget_m(ntru_par->size, plaintext_modulus);
     gadget_m.set_multiplication_engine(ntt_engine);
     gadget_m.zeroize();
-    gadget_m.vec[0] = 1;
+    gadget_m[0] = 1;
     Polynomial exp_poly(ntru_par->size, plaintext_modulus);
     exp_poly.set_multiplication_engine(ntt_engine);
    
@@ -336,7 +336,7 @@ void extract_and_key_switch_test(int32_t test_num, int64_t N, int64_t Q, Polynom
       ct->extract_lwe(lwe_ct); 
       sk->decrypt(out, *ct.get(), encoding); 
       lwe_msg = lwe_sk->decrypt(lwe_ct, encoding);  
-      if(!(out.vec[0] == lwe_msg)){ 
+      if(!(out[0] == lwe_msg)){ 
         FAIL(); 
       }
    } 
@@ -357,7 +357,7 @@ void extract_and_key_switch_test(int32_t test_num, int64_t N, int64_t Q, Polynom
       ksk->lwe_to_lwe_key_switch(ct_target, lwe_ct); 
       sk->decrypt(out, *ct.get(), encoding); 
       lwe_msg = lwe_sk_target->decrypt(ct_target, encoding); 
-      if(!(out.vec[0] == lwe_msg)){
+      if(!(out[0] == lwe_msg)){
             FAIL(); 
       }
    } 

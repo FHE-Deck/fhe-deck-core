@@ -21,12 +21,10 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
     }  
       
     Polynomial poly(N, Q);
-    PolynomialArrayCoefForm decomp(N, Q, base); 
+    PolynomialArray decomp(N, Q, base); 
     Polynomial result(N, Q);
     long temp;
-    for(int k = 0; k < test_num; ++k){
-        // Choose some random poly 
-        //rand->fill_array(poly.vec, N);
+    for(int k = 0; k < test_num; ++k){ 
         rand->fill(poly);
         // Sample
         g->sample(decomp, poly); 
@@ -42,7 +40,8 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
                 result[i] += temp;
             }
         }
-        Utils::array_mod_form(result.vec, result.vec, N, Q); 
+        result.normalize();
+        //Utils::array_mod_form(result.vec, result.get(), N, Q); 
         if(result != poly){   
             FAIL();
         } 
@@ -60,7 +59,7 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
         g = std::shared_ptr<Gadget>(new DiscreteGaussianSamplingGadget(N, Q, base, stddev)); 
     }    
     Polynomial poly(N, Q);
-    PolynomialArrayCoefForm decomp(N, Q, base);
+    PolynomialArray decomp(N, Q, base);
     long* signed_decomp = new long[N];  
     Polynomial result(N, Q);
     long* decomp_flat = new long[g->digits * g->degree];
@@ -71,7 +70,7 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
         // Sample
         g->sample(decomp, poly); 
         for(int j = 0; j < g->digits; ++j){
-            Utils::array_signed_form(signed_decomp, decomp[j].vec, N, Q); 
+            Utils::array_signed_form(signed_decomp, decomp[j].get(), N, Q); 
         }
         // Compose back modulo Q, and compare to poly
         for(int i = 0; i < N; ++i){
@@ -86,7 +85,8 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
                 result[i] += temp;
             }
         } 
-        Utils::array_mod_form(result.vec, result.vec, N, Q); 
+        result.normalize();
+        //Utils::array_mod_form(result.vec, result.vec, N, Q); 
         
         if(result != poly){  
             FAIL(); 

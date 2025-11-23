@@ -119,7 +119,7 @@ NTRUGadgetCT::NTRUGadgetCT(std::shared_ptr<NTRUParam> ntru_param, std::shared_pt
 }
 
 void NTRUGadgetCT::init(std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){     
-    PolynomialArrayCoefForm array_coef(ntru_param->size,  
+    PolynomialArray array_coef(ntru_param->size,  
                                             ntru_param->coef_modulus,  
                                             gadget->digits);  
   
@@ -135,14 +135,14 @@ void NTRUGadgetCT::init(std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
 void NTRUGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);
     const NTRUCT& ct_ptr = static_cast<const NTRUCT&>(ct); 
-    PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
+    PolynomialArray deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
     gadget->sample(deter_ct_a_dec_poly, ct_ptr.ct_poly);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
 
 void NTRUGadgetCT::mul(VectorCT &out, const Vector &scalar){
     NTRUCT& out_ptr = static_cast<NTRUCT&>(out);  
-    PolynomialArrayCoefForm deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
+    PolynomialArray deter_ct_a_dec_poly(ntru_param->size, ntru_param->coef_modulus, gadget->digits); 
     gadget->sample(deter_ct_a_dec_poly, scalar);
     ntru_param->mul_engine->multisum(out_ptr.ct_poly, deter_ct_a_dec_poly, *array_eval_a);
 }
@@ -205,7 +205,7 @@ std::shared_ptr<VectorCT> NTRUSK::encode_and_encrypt(const Vector &m, PlaintextE
 void NTRUSK::encode_and_encrypt(VectorCT& out, const Vector &m, PlaintextEncoding encoding){ 
     Polynomial m_scaled(param->size, param->coef_modulus); 
     for(int32_t i = 0; i < param->size; ++i){ 
-        m_scaled[i] = encoding.encode_message(m.vec[i]);
+        m_scaled[i] = encoding.encode_message(m[i]);
     }
     encrypt(out, m_scaled); 
 }
@@ -232,7 +232,7 @@ void NTRUSK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding
     Polynomial phase(this->param->size, this->param->coef_modulus);
     this->partial_decrypt(phase, ct_cast);  
     for(int32_t i = 0; i < out_cast.size; ++i){
-        out_cast.vec[i] = encoding.decode_message(phase.vec[i]);
+        out_cast[i] = encoding.decode_message(phase[i]);
     } 
 }
  

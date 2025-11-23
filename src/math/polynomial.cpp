@@ -181,17 +181,17 @@ Polynomial::Polynomial(const Polynomial &other, int64_t degree, int64_t coef_mod
     this->init_from_vec(); 
 }
  
-Polynomial& Polynomial::operator=(const Vector& other){ 
+Polynomial& Polynomial::operator=(const VectorView& other){ 
     this->size = other.size;
     this->modulus = other.modulus;
     init();
     this->init_from_vec();
-    Utils::cp(this->vec, other.vec, this->size);  
+    Utils::cp(this->vec, other.get(), this->size);  
     return *this;
 }
 
 
-Polynomial::Polynomial(const Vector& other): Vector(other){ 
+Polynomial::Polynomial(const VectorView& other): Vector(other){ 
     this->init_from_vec();  
 }
 
@@ -243,8 +243,7 @@ void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
 }
 
 void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{   
-    /// TODO: That implementation is not the best.   
-
+    /// TODO: That implementation is not the best.    
     long* temp = new long[this->size];
     if(rotation >= this->size){
         for(int32_t i = 0; i < this->size; ++i){
@@ -321,24 +320,24 @@ void Polynomial::inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine>
     inv_engine->inv(out, *this);
 }
  
-PolynomialArrayCoefForm::PolynomialArrayCoefForm(int32_t degree, int64_t coef_modulus, int32_t array_size){ 
+PolynomialArray::PolynomialArray(int32_t degree, int64_t coef_modulus, int32_t array_size){ 
     init(degree, coef_modulus, array_size); 
 }
  
-PolynomialArrayCoefForm::PolynomialArrayCoefForm(int32_t degree, int64_t coef_modulus, int32_t array_size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){ 
+PolynomialArray::PolynomialArray(int32_t degree, int64_t coef_modulus, int32_t array_size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){ 
     init(degree, coef_modulus, array_size); 
     this->mul_engine = mul_engine;
     is_mul_engine_set = true; 
 }
   
-PolynomialArrayCoefForm::PolynomialArrayCoefForm(const PolynomialArrayCoefForm &other){
+PolynomialArray::PolynomialArray(const PolynomialArray &other){
     this->init(other.size, other.modulus, other.array_size);  
     Utils::cp(this->vec_array.get(), other.vec_array.get(), this->full_size);  
     this->mul_engine = other.mul_engine;
     this->is_mul_engine_set = other.is_mul_engine_set;  
 } 
   
-PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArrayCoefForm other){
+PolynomialArray& PolynomialArray::operator=(const PolynomialArray other){
     this->init(other.size, other.modulus, other.array_size); 
     Utils::cp(this->vec_array.get(), other.vec_array.get(), this->full_size);  
     this->mul_engine = other.mul_engine;
@@ -346,35 +345,28 @@ PolynomialArrayCoefForm& PolynomialArrayCoefForm::operator=(const PolynomialArra
     return *this;
 }
 
-void PolynomialArrayCoefForm::set_polynomial_at(int32_t i, const Polynomial &poly){
+void PolynomialArray::set_polynomial_at(int32_t i, const Polynomial &poly){
     if(poly.size != this->size){
-        throw std::logic_error("PolynomialArrayCoefForm::set_polynomial_at(int32_t i, Polynomial *poly): degrees are inconsistent.");
+        throw std::logic_error("PolynomialArray::set_polynomial_at(int32_t i, Polynomial *poly): degrees are inconsistent.");
     }
     if(poly.modulus != this->modulus){
-        throw std::logic_error("PolynomialArrayCoefForm::set_polynomial_at(int32_t i, Polynomial *poly): coef_moduli are inconsistent.");
+        throw std::logic_error("PolynomialArray::set_polynomial_at(int32_t i, Polynomial *poly): coef_moduli are inconsistent.");
     }
     for(int32_t j = 0; j < this->size; ++j){
-        this->vec_array[i * size + j] = poly.vec[j];
+        this->vec_array[i * size + j] = poly[j];
     }
 }
-  
-void PolynomialArrayCoefForm::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
+ 
+void PolynomialArray::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
     this->mul_engine = mul_engine;
 }
-    
-PolynomialArrayEvalFormLong::~PolynomialArrayEvalFormLong(){
-    if(this->is_init){
-        delete[] eval_long;
-    } 
-}
-
+     
 PolynomialArrayEvalFormLong::PolynomialArrayEvalFormLong(int32_t array_size, int64_t degree, int64_t coef_modulus){
     this->array_size = array_size;
     this->size = degree;
     this->coef_modulus = coef_modulus;
-    this->full_size = array_size * this->size;
-    this->eval_long = new int64_t[full_size];
-    this->is_init = true; 
+    this->full_size = array_size * this->size; 
+    this->eval_long = std::make_unique<int64_t[]>(full_size); 
 }
 
 void PolynomialArrayEvalFormLong::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
@@ -406,19 +398,20 @@ void PolynomialArrayEvalFormLong::neg(PolynomialArrayEvalForm &out){
         out_cast.eval_long[i] = -this->eval_long[i];
     }
 }
-  
-PolynomialArrayEvalFormComplex::~PolynomialArrayEvalFormComplex(){
-    if(this->is_init){
-        delete[] eval;
-    }
-}   
+ 
+Observer<int64_t[]> PolynomialArrayEvalFormLong::operator[](std::size_t i){
+    return Observer<int64_t[]>(&eval_long[i * size], size);
+}
 
+const Observer<int64_t[]> PolynomialArrayEvalFormLong::operator[](std::size_t i) const{
+    return Observer<int64_t[]>(&eval_long[i * size], size);
+}
+   
 PolynomialArrayEvalFormComplex::PolynomialArrayEvalFormComplex(int32_t size, int32_t array_size){ 
     this->array_size = array_size; 
     this->size = size; 
-    this->full_size = this->size * array_size; 
-    this->eval = new Complex[full_size];   
-    this->is_init = true;
+    this->full_size = this->size * array_size;   
+    this->eval = std::make_unique<Complex[]>(full_size); 
 }
 
 void PolynomialArrayEvalFormComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
@@ -454,19 +447,20 @@ void PolynomialArrayEvalFormComplex::neg(PolynomialArrayEvalForm &out){
             out_cast.eval[i][1] = -this->eval[i][1];
         } 
 }
-  
-PolynomialArrayEvalFormLongComplex::~PolynomialArrayEvalFormLongComplex(){
-    if(this->is_init){
-        delete[] eval;
-    }
+
+Observer<Complex[]> PolynomialArrayEvalFormComplex::operator[](std::size_t i){
+    return Observer<Complex[]>(&eval[i * size], size);
 }
 
+const Observer<Complex[]> PolynomialArrayEvalFormComplex::operator[](std::size_t i) const{
+    return Observer<Complex[]>(&eval[i * size], size);
+}
+   
 PolynomialArrayEvalFormLongComplex::PolynomialArrayEvalFormLongComplex(int32_t size, int32_t array_size){ 
     this->array_size = array_size; 
     this->size = size; 
-    this->full_size = this->size * array_size; 
-    this->eval = new LongComplex[full_size];  
-    this->is_init = true;
+    this->full_size = this->size * array_size;  
+    this->eval = std::make_unique<LongComplex[]>(full_size); 
 }
 
 void PolynomialArrayEvalFormLongComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
@@ -502,7 +496,14 @@ void PolynomialArrayEvalFormLongComplex::neg(PolynomialArrayEvalForm &out){
         out_cast.eval[i][1] = -this->eval[i][1];
     } 
 }
+ 
+Observer<LongComplex[]> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i){
+    return Observer<LongComplex[]>(&eval[i * size], size);
+}
 
+const Observer<LongComplex[]> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i) const{
+    return Observer<LongComplex[]>(&eval[i * size], size);
+}
 
 
  

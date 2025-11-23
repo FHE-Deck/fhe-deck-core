@@ -31,19 +31,19 @@ class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
  
     void to_eval(PolynomialEvalForm &out, const Polynomial &in); 
 
-    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in);
+    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in);
 
     void to_coef(Polynomial &out, const PolynomialEvalForm &in);
 
-    void to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in);
+    void to_coef(PolynomialArray &out, const PolynomialArrayEvalForm &in);
  
     void mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2);
     
-    void multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 
     void multisum(Polynomial &out, const PolynomialArrayEvalForm &in_1, const PolynomialArrayEvalForm &in_2);
 
-    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 };
  
 } /// End of namespace FHEDeck

@@ -2,47 +2,18 @@
  
 using namespace FHEDeck;
  
-FFTLongPlan::~FFTLongPlan(){    
-    if(is_init == false){
-        return;
-    } 
-        fftwl_destroy_plan(plan_to_eval_form_l);
-        fftwl_destroy_plan(plan_to_coef_form_l);
-        fftwl_free(in_l); 
-        fftwl_free(out_l);  
+FFTLongPlan::~FFTLongPlan(){     
+    fftwl_destroy_plan(plan_to_eval_form_l);
+    fftwl_destroy_plan(plan_to_coef_form_l);
+    fftwl_free(in_l); 
+    fftwl_free(out_l);  
 }
   
 FFTLongPlan::FFTLongPlan(RingType ring, int32_t N){   
     this->ring = ring;
     this->N = N; 
     init_tables(); 
-}
- 
-FFTLongPlan::FFTLongPlan(RingType ring, int32_t N, bool long_arithmetic){   
-    this->ring = ring;
-    this->N = N;
-    this->long_arithmetic = long_arithmetic;
-    init_tables();   
-}
- 
-FFTLongPlan::FFTLongPlan(const FFTLongPlan& other){ 
-    this->ring = other.ring;
-    this->N = other.N;
-    this->long_arithmetic = other.long_arithmetic;
-    init_tables();
-}
-
-FFTLongPlan& FFTLongPlan::operator=(FFTLongPlan other){ 
-    if (this == &other)
-    { 
-        return *this;
-    } 
-    this->ring = other.ring;
-    this->N = other.N;
-    this->long_arithmetic = other.long_arithmetic;
-    init_tables();
-    return *this;
-}
+} 
 
 void FFTLongPlan::init_tables(){
     if(ring == RingType::cyclic){ 
@@ -53,19 +24,13 @@ void FFTLongPlan::init_tables(){
     in_l = (long double*) fftw_malloc(sizeof(long double) * plan_size);
     out_l = (fftwl_complex*) fftw_malloc(sizeof(fftwl_complex) *  plan_size);
     plan_to_eval_form_l = fftwl_plan_dft_r2c_1d(plan_size, in_l, out_l,  FFTW_PATIENT);
-    plan_to_coef_form_l = fftwl_plan_dft_c2r_1d(plan_size, out_l, in_l,  FFTW_PATIENT);  
-    this->is_init = true;
+    plan_to_coef_form_l = fftwl_plan_dft_c2r_1d(plan_size, out_l, in_l,  FFTW_PATIENT);   
 }
-
-
-
-
+ 
 fftwl_complex* FFTLongPlan::init_fft_poly_l(){
     return new fftwl_complex[plan_size]; 
 }
-  
-
-
+   
 void FFTLongPlan::to_eval_form_l(fftwl_complex* eval_form_l, int64_t *poly){ 
     for(int32_t i = 0; i < N; ++i){ 
         in_l[i] = (long double)poly[i];
@@ -101,8 +66,7 @@ void FFTLongPlan::to_eval_form_l(fftwl_complex* eval_form_l, int32_t *poly){
         eval_form_l[i][1] = out_l[i][1];
     } 
 }
-    
-
+     
 void FFTLongPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, int64_t *poly){ 
     long double scale = (double)plan_size;
     for(int32_t i = 0; i < N; ++i){ 
@@ -121,8 +85,7 @@ void FFTLongPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, int64_t *poly
         eval_form_l[i][1] = out_l[i][1];
     } 
 }
-
-
+ 
 void FFTLongPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, int64_t *poly, long double additional_scale){ 
     long double scale = (long double)(plan_size * additional_scale) ;
     for(int32_t i = 0; i < N; ++i){ 
@@ -141,8 +104,7 @@ void FFTLongPlan::to_eval_form_scale_l(fftwl_complex* eval_form_l, int64_t *poly
         eval_form_l[i][1] = out_l[i][1];
     } 
 }
-  
-
+   
 void FFTLongPlan::to_coef_form_l(int64_t *coef_form_l, fftwl_complex* eval_form_l){
     for(int32_t i = 0; i < plan_size; ++i){
         out_l[i][0] = eval_form_l[i][0];
@@ -163,8 +125,7 @@ void FFTLongPlan::to_coef_form_l(int64_t *coef_form_l, fftwl_complex* eval_form_
         coef_form_l[i] = in_l[i];
     }
 }
-
-
+ 
 void FFTLongPlan::to_coef_form_l(long double *coef_form, fftwl_complex* eval_form){
     for(int32_t i = 0; i < plan_size; ++i){
         out_l[i][0] = eval_form[i][0];
@@ -181,8 +142,7 @@ void FFTLongPlan::to_coef_form_l(long double *coef_form, fftwl_complex* eval_for
         coef_form[i] = in_l[i];
     }
 }
-
-
+ 
 void FFTLongPlan::to_coef_form_scale_l(int64_t *coef_form, fftwl_complex* eval_form, long double additional_scale){
     long double scale = (long double)(plan_size * additional_scale);
     for(int32_t i = 0; i < plan_size; ++i){
@@ -262,164 +222,126 @@ void FFTLongPlan::mul_eval_form_l(fftwl_complex *prod_l, fftwl_complex* in_1_l, 
         } 
     }   
 } 
-
-
+ 
 FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_modulus){ 
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
-    engine = FFTLongPlan(RingType::negacyclic, degree, true);  
+    engine = std::make_unique<FFTLongPlan>(RingType::negacyclic, degree);  
     this->type = PolynomialArithmetic::long_double_fft;
 }
   
 std::shared_ptr<PolynomialEvalForm> FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
-    return std::make_shared<PolynomialEvalFormLongComplex>(engine.init_fft_poly_l(), engine.plan_size);
+    return std::make_shared<PolynomialEvalFormLongComplex>(engine->init_fft_poly_l(), engine->plan_size);
 }
 
 std::shared_ptr<PolynomialArrayEvalForm> FFTWLongNegacyclicEngine::init_polynomial_array_eval_form(int32_t size){
-    return std::make_shared<PolynomialArrayEvalFormLongComplex>(this->engine.plan_size, size);
+    return std::make_shared<PolynomialArrayEvalFormLongComplex>(this->engine->plan_size, size);
 }
  
 void FFTWLongNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
-    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.size, in.modulus);
-    Utils::array_signed_form(input->vec, in.vec, in.size, in.modulus); 
-    engine.to_eval_form_l(out_cast.eval, input->vec); 
-    out_cast.scale = 1.0;
- 
+    Polynomial input = in; 
+    input.signed_form();
+    engine->to_eval_form_l(out_cast.eval, input.get()); 
+    out_cast.scale = 1.0; 
 }
  
-void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in){
-    PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);
-    int64_t *in_poly;
-    fftwl_complex *out_poly;
-    std::shared_ptr<Polynomial> input = std::make_shared<Polynomial>(in.size, in.modulus);
+void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in){
+    PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);  
     for (int32_t i = 0; i < in.array_size; ++i)
-    {  
-        in_poly = &in.vec_array.get()[i * in.size];
-        Utils::array_signed_form(input->vec, in_poly, in.size, in.modulus);
-        out_poly = &out_cast.eval[i * out_cast.size];   
-        engine.to_eval_form_l(out_poly, in_poly);  
+    {   
+        VectorView in_poly = in[i];   
+        engine->to_eval_form_l(out_cast[i].get(), in_poly.get());  
     } 
     out_cast.scale = 1.0;
 } 
 
 void FFTWLongNegacyclicEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){
     const PolynomialEvalFormLongComplex& in_cast = static_cast<const PolynomialEvalFormLongComplex&>(in);
-    engine.to_coef_form_scale_l(out.vec, in_cast.eval, in_cast.scale); 
-    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus);
+    engine->to_coef_form_scale_l(out.get(), in_cast.eval, in_cast.scale);  
     out.normalize();
 }
   
-void FFTWLongNegacyclicEngine::to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in){
-    const PolynomialArrayEvalFormLongComplex& in_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in);
-    int64_t *out_poly;
-    fftwl_complex *in_poly;
+void FFTWLongNegacyclicEngine::to_coef(PolynomialArray &out, const PolynomialArrayEvalForm &in){
+    const PolynomialArrayEvalFormLongComplex& in_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in);  
     for (int32_t i = 0; i < in_cast.array_size; ++i)
-    {
-        in_poly = &in_cast.eval[i * in_cast.size];
-        out_poly = &out.vec_array.get()[i * out.size];
-        engine.to_coef_form_scale_l(out_poly, in_poly, in_cast.scale);  
-        //Utils::array_mod_form(out_poly, out_poly, out.size, out.modulus);
-    }
-    /// NOTE: Similar as with fftw_engine, normalizing here destroys data locality.
-    /// Perhpas its better to do it in to_coef_form_scale_l?
-    out.normalize();
+    { 
+        VectorView out_poly = out[i];
+        engine->to_coef_form_scale_l(out_poly.get(), in_cast[i].get(), in_cast.scale);   
+        out_poly.normalize();
+    } 
 }
 
 void FFTWLongNegacyclicEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2){
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
     const PolynomialEvalFormLongComplex& in_1_cast = static_cast<const PolynomialEvalFormLongComplex&>(in_1);
     const PolynomialEvalFormLongComplex& in_2_cast = static_cast<const PolynomialEvalFormLongComplex&>(in_2); 
-    engine.mul_eval_form_l(out_cast.eval, 
+    engine->mul_eval_form_l(out_cast.eval, 
             in_1_cast.eval, 
             in_2_cast.eval);  
     out_cast.scale = 2.0 * (in_1_cast.scale * in_2_cast.scale);
 
 }
   
-void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
+void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2){
     const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2);
-    int64_t* in_1_temp = in_1.vec_array.get();
-    fftwl_complex* in_2_temp = in_2_cast.eval;
-    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast.size]; 
-    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast.size]; 
+    Vector in_1_temp = in_1[0]; 
+    std::unique_ptr<fftwl_complex[]> fft_prod_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
+    std::unique_ptr<fftwl_complex[]> fft_multisum_eval_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
     
-    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
-    engine.to_eval_form_l(fft_multisum_eval_new, in_1_temp);   
-    engine.mul_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, in_2_temp);  
+    in_1_temp.signed_form();
+    engine->to_eval_form_l(fft_multisum_eval_new.get(), in_1_temp.get());   
+    engine->mul_eval_form_l(fft_multisum_eval_new.get(), fft_multisum_eval_new.get(), in_2_cast[0].get());  
  
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        in_1_temp = &in_1.vec_array.get()[i * in_1.size];
-        in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
-        
-        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
-        engine.to_eval_form_l(fft_prod_new, in_1_temp);  
-        engine.mul_eval_form_l(fft_prod_new, fft_prod_new, in_2_temp); 
-        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
+        Vector in_1_temp = in_1[i]; 
+        in_1_temp.signed_form();
+        engine->to_eval_form_l(fft_prod_new.get(), in_1_temp.get());  
+        engine->mul_eval_form_l(fft_prod_new.get(), fft_prod_new.get(), in_2_cast[i].get()); 
+        engine->add_eval_form_l(fft_multisum_eval_new.get(), fft_multisum_eval_new.get(), fft_prod_new.get()); 
     }  
     double scale = in_2_cast.scale * 2.0;
-    engine.to_coef_form_scale_l(out.vec, fft_multisum_eval_new, scale);
-    //Utils::array_mod_form(out.vec, out.vec, in_1.size, in_1.modulus); 
-    out.normalize();
-    delete[] fft_prod_new; 
-    delete[] fft_multisum_eval_new; 
-
+    engine->to_coef_form_scale_l(out.get(), fft_multisum_eval_new.get(), scale); 
+    out.normalize(); 
 }
 
 void FFTWLongNegacyclicEngine::multisum(Polynomial &out, const PolynomialArrayEvalForm &in_1, const PolynomialArrayEvalForm &in_2){
     const PolynomialArrayEvalFormLongComplex& in_1_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_1);
-    const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2);
-    fftwl_complex* in_1_temp = in_1_cast.eval;
-    fftwl_complex* in_2_temp = in_2_cast.eval;
-    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast.size]; 
-    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast.size]; 
+    const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2); 
+    std::unique_ptr<fftwl_complex[]> fft_prod_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
+    std::unique_ptr<fftwl_complex[]> fft_multisum_eval_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
       
-    engine.mul_eval_form_l(fft_multisum_eval_new, in_1_temp, in_2_temp);   
-    for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        in_1_temp = &in_1_cast.eval[i * in_1_cast.size];
-        in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
-         
-        engine.mul_eval_form_l(fft_prod_new, in_1_temp, in_2_temp); 
-        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
+    engine->mul_eval_form_l(fft_multisum_eval_new.get(), in_1_cast[0].get(), in_2_cast[0].get());   
+    for(int32_t i = 1; i < in_2_cast.array_size; ++i){ 
+        engine->mul_eval_form_l(fft_prod_new.get(), in_1_cast[i].get(), in_2_cast[i].get()); 
+        engine->add_eval_form_l(fft_multisum_eval_new.get(), fft_multisum_eval_new.get(), fft_prod_new.get()); 
     } 
     long double scale = in_1_cast.scale * in_2_cast.scale * 2.0;
-    engine.to_coef_form_scale_l(out.vec, fft_multisum_eval_new, scale); 
-    //Utils::array_mod_form(out.vec, out.vec, out.size, out.modulus); 
-    out.normalize();
-    delete[] fft_prod_new; 
-    delete[] fft_multisum_eval_new; 
-
+    engine->to_coef_form_scale_l(out.get(), fft_multisum_eval_new.get(), scale);  
+    out.normalize(); 
 }
 
-void FFTWLongNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2){
+void FFTWLongNegacyclicEngine::multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2){
     const PolynomialArrayEvalFormLongComplex& in_2_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(in_2);
     PolynomialArrayEvalFormLongComplex& out_in_1_eval_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out_in_1_eval);
-    int64_t* in_1_temp = in_1.vec_array.get();
-    fftwl_complex* out_eval = out_in_1_eval_cast.eval;
-    fftwl_complex* in_2_temp = in_2_cast.eval;
-    fftwl_complex* fft_prod_new = new fftwl_complex[in_2_cast.size]; 
-    fftwl_complex* fft_multisum_eval_new = new fftwl_complex[in_2_cast.size]; 
+    Vector in_1_temp = in_1[0]; 
+    std::unique_ptr<fftwl_complex[]> fft_prod_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
+    std::unique_ptr<fftwl_complex[]> fft_multisum_eval_new = std::make_unique<fftwl_complex[]>(in_2_cast.size);
     
-    Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
-    engine.to_eval_form_l(out_eval, in_1_temp);   
-    engine.mul_eval_form_l(fft_multisum_eval_new, out_eval, in_2_temp);  
+    in_1_temp.signed_form();
+    engine->to_eval_form_l(out_in_1_eval_cast[0].get(), in_1_temp.get());   
+    engine->mul_eval_form_l(fft_multisum_eval_new.get(), out_in_1_eval_cast[0].get(), in_2_cast[0].get());  
  
     for(int32_t i = 1; i < in_2_cast.array_size; ++i){
-        in_1_temp = &in_1.vec_array.get()[i * in_1.size];
-        out_eval = &out_in_1_eval_cast.eval[i * out_in_1_eval_cast.size];
-        in_2_temp = &in_2_cast.eval[i * in_2_cast.size];
-        
-        Utils::array_signed_form(in_1_temp, in_1_temp, in_1.size, in_1.modulus); 
-        engine.to_eval_form_l(out_eval, in_1_temp);  
-        engine.mul_eval_form_l(fft_prod_new, out_eval, in_2_temp); 
-        engine.add_eval_form_l(fft_multisum_eval_new, fft_multisum_eval_new, fft_prod_new); 
+        in_1_temp = in_1[i];
+        in_1_temp.signed_form(); 
+        engine->to_eval_form_l(out_in_1_eval_cast[i].get(), in_1_temp.get());  
+        engine->mul_eval_form_l(fft_prod_new.get(), out_in_1_eval_cast[i].get(), in_2_cast[i].get()); 
+        engine->add_eval_form_l(fft_multisum_eval_new.get(), fft_multisum_eval_new.get(), fft_prod_new.get()); 
     } 
     double scale =  in_2_cast.scale * 2.0;
     out_in_1_eval_cast.scale = 1.0;
-    engine.to_coef_form_scale_l(out_multisum.vec, fft_multisum_eval_new, scale);  
-    out_multisum.normalize();
-    delete[] fft_prod_new; 
-    delete[] fft_multisum_eval_new; 
-
+    engine->to_coef_form_scale_l(out_multisum.get(), fft_multisum_eval_new.get(), scale);  
+    out_multisum.normalize(); 
 }
    

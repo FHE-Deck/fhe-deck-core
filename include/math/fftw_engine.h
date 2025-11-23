@@ -28,23 +28,13 @@ class FFTPlan{
     fftw_complex *out;
     fftw_plan plan_to_eval_form, plan_to_coef_form;
     
-    bool is_init = false;
-
-    // Long Arithmetic Related
-    fftwl_plan plan_to_eval_form_l, plan_to_coef_form_l;
-    long double *in_l;
-    fftwl_complex *out_l;
-    bool long_arithmetic = false;
- 
     FFTPlan() = default;
 
     FFTPlan(RingType ring, int32_t N);
 
-    FFTPlan(RingType ring, int32_t N, bool long_arithmetic);
+    FFTPlan(const FFTPlan& other) = delete;
 
-    FFTPlan(const FFTPlan& other);
-
-    FFTPlan& operator=(FFTPlan other);
+    FFTPlan& operator=(FFTPlan other) = delete;
 
     ~FFTPlan();
 
@@ -53,10 +43,7 @@ class FFTPlan{
     void to_eval_form(fftw_complex* eval_form, int64_t *poly); 
 
     void to_eval_form(fftw_complex* eval_form, int32_t *poly);
-   
-    // TODO: Delete
-    void to_eval_form_scale(fftw_complex* eval_form, int64_t *poly);
-
+    
     // It divides the coefficients by (plan_size * additional_scale) before computing the FFT
     void to_eval_form_scale(fftw_complex* eval_form, int64_t *poly, double additional_scale);
  
@@ -87,7 +74,7 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     public:
  
-    FFTPlan engine;  
+    std::unique_ptr<FFTPlan> engine;  
     int32_t degree;
     int64_t coef_modulus;
 
@@ -99,19 +86,19 @@ class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
 
     void to_eval(PolynomialEvalForm &out, const Polynomial &in);
     
-    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArrayCoefForm &in);
+    void to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in);
 
     void to_coef(Polynomial &out, const PolynomialEvalForm &in);
  
-    void to_coef(PolynomialArrayCoefForm &out, const PolynomialArrayEvalForm &in);
+    void to_coef(PolynomialArray &out, const PolynomialArrayEvalForm &in);
   
     void mul(PolynomialEvalForm &out, const PolynomialEvalForm &in_1, const PolynomialEvalForm &in_2);
 
-    void multisum(Polynomial &out, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 
     void multisum(Polynomial &out, const PolynomialArrayEvalForm &in_1, const PolynomialArrayEvalForm &in_2);
  
-    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArrayCoefForm &in_1, const PolynomialArrayEvalForm &in_2);
+    void multisum(Polynomial &out_multisum, PolynomialArrayEvalForm &out_in_1_eval, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2);
 };
  
 } /// End of namespace FHEDeck

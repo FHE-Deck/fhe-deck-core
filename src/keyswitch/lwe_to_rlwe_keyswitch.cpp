@@ -25,7 +25,8 @@ void LWEToRLWEKeySwitchKey::init(){
 }
 
 void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
-
+    /// TODO: Try to just copy the key here, instead of calling with size and modulus
+    /// TODO: perhaps copying isn't needed at all? 
     Polynomial sk_origin_poly(sk_origin->key, sk_dest->rlwe_sk->sk_poly.size, sk_dest->rlwe_sk->sk_poly.modulus); 
     Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.size, sk_dest->rlwe_sk->sk_poly.modulus);  
     for(int i = 2; i <= dest_param->size; i *= 2) {

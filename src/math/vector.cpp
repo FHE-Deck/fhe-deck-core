@@ -76,8 +76,11 @@ void VectorView::array_signed_form(VectorView& out, const VectorView& in){
         out[i] =  Utils::integer_signed_form(out[i], out.modulus);
     }
 }
- 
 
+int64_t* VectorView::get() const{
+    return vec;
+}
+  
 void VectorView::zeroize(){
     for(int32_t i = 0; i < size; ++i){
         vec[i] = 0;
@@ -87,6 +90,12 @@ void VectorView::zeroize(){
 void VectorView::normalize(){
     for(int32_t i = 0; i < size; ++i){ 
         vec[i] = Utils::integer_mod_form(vec[i], modulus);
+    }
+}
+  
+void VectorView::signed_form(){
+        for(int32_t i = 0; i < size; ++i){ 
+        vec[i] =  Utils::integer_signed_form(vec[i], modulus);
     }
 }
   
@@ -105,12 +114,12 @@ Vector::Vector(const std::vector<int64_t>& in_vec, int64_t size, int64_t modulus
     normalize();
 }
  
-Vector::Vector(const Vector &other) : VectorView(nullptr, other.size, other.modulus){  
+Vector::Vector(const VectorView &other) : VectorView(nullptr, other.size, other.modulus){  
     init();
-    Utils::cp(this->vec, other.vec, this->size);   
+    Utils::cp(this->vec, other.get(), this->size);   
 }
 
-Vector::Vector(const Vector &other, int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){  
+Vector::Vector(const VectorView &other, int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){  
     init();
     std::size_t min_size = other.size;
     if(min_size > size){ min_size = size ;}
@@ -122,11 +131,11 @@ Vector::Vector(const Vector &other, int64_t size, int64_t modulus): VectorView(n
 }
  
  
-Vector& Vector::operator=(const Vector other) { 
+Vector& Vector::operator=(const VectorView other) { 
     this->size = other.size;
     this->modulus = other.modulus; 
     this->init();  
-    Utils::cp(this->vec, other.vec, this->size);   
+    Utils::cp(this->vec, other.get(), this->size);   
     return *this;
 }
  
@@ -139,32 +148,15 @@ void Vector::init(){
 VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
     init(size, modulus, array_size);  
 }
-  
-VectorArray::~VectorArray(){
-    if(is_init){ 
-        //delete[] vec_array; 
-        delete[] vec_array_2d; 
-    }
-} 
- 
+   
 void VectorArray::init(const int32_t size, const int64_t modulus, const int32_t array_size){ 
     this->size = size;
     this->modulus = modulus;
     this->array_size = array_size; 
-    this->full_size = this->array_size * this->size; 
-    this->is_init = true; 
-    this->vec_array = std::make_unique<int64_t[]>(full_size);
-    init_two_dim_array();
+    this->full_size = this->array_size * this->size;  
+    this->vec_array = std::make_unique<int64_t[]>(full_size); 
 }
- 
-void VectorArray::init_two_dim_array(){
-    vec_array_2d = new int64_t*[array_size];  
-    // Point the polynomials to the uint64_t tables. 
-    for(int32_t i = 0; i < array_size; ++i){ 
-        vec_array_2d[i] = &vec_array.get()[i * size];
-    } 
-} 
-
+  
 VectorView VectorArray::operator[](int32_t index){
     int64_t* observer_ptr = vec_array.get(); 
     return VectorView(&observer_ptr[index * size], size, modulus);
