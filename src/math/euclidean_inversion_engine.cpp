@@ -12,8 +12,8 @@ EuclideanInversionEngine::EuclideanInversionEngine(const int32_t degree, const i
 
 bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
     std::vector<int64_t> a;
-    a.resize(in.size);
-    for(int32_t i = 0; i < in.size; ++i){
+    a.resize(in.size());
+    for(int32_t i = 0; i < in.size(); ++i){
         a[i] = in[i];
     }
     /// Remove trailing zeros from the remainder

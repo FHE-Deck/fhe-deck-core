@@ -61,9 +61,6 @@ void mul_test(int32_t tests, std::shared_ptr<PolynomialMultiplicationEngine> eng
         engine_left->to_coef(left_poly_array, *left_eval_array.get());
         engine_right->to_coef(right_poly_array, *right_eval_array.get());
 
-        if(left_poly_array.full_size != right_poly_array.full_size){
-            FAIL(); 
-        } 
         if(left_poly_array != right_poly_array){
             FAIL();   
         }

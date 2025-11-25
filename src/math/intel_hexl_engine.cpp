@@ -6,7 +6,7 @@ IntelHexlNTTEngine::IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus){
     this->degree = degree;
     this->coef_modulus = coef_modulus;
     this->ntt = intel::hexl::NTT(degree, coef_modulus);
-    this->type = PolynomialArithmetic::ntt64;
+    this->m_type = PolynomialArithmetic::ntt64;
 }
   
 void IntelHexlNTTEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){ 
@@ -16,12 +16,12 @@ void IntelHexlNTTEngine::to_coef(Polynomial &out, const PolynomialEvalForm &in){
   
 void IntelHexlNTTEngine::to_coef(PolynomialArray &out, const PolynomialArrayEvalForm &in){ 
     const PolynomialArrayEvalFormLong& in_cast = static_cast<const PolynomialArrayEvalFormLong&>(in);
-    int64_t* in_poly;
-    int64_t* out_poly;
+    //int64_t* in_poly;
+    //int64_t* out_poly;
     for(int32_t i = 0; i < in.array_size; ++i){
-        in_poly = &in_cast.eval_long[i * in.size];
-        out_poly = &out.vec_array.get()[i * out.size];
-        ntt.ComputeInverse((uint64_t*) out_poly, (uint64_t*) in_poly, 1, 1);  
+        //in_poly = &in_cast.eval_long[i * in.size];
+        //out_poly = &out.vec_array.get()[i * out.size];
+        ntt.ComputeInverse((uint64_t*) out[i].get(), (uint64_t*) in_cast[i].get(), 1, 1);  
     } 
 }
 
@@ -40,7 +40,7 @@ void IntelHexlNTTEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in){
  
 void IntelHexlNTTEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in){  
     const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);  
-    for(int32_t i = 0; i < in.array_size; ++i){ 
+    for(int32_t i = 0; i < in.size(); ++i){ 
         VectorView in_poly = in[i]; 
         ntt.ComputeForward((uint64_t*) out_cast[i].get(), (uint64_t*) in_poly.get(), 1, 1);   
     } 
@@ -53,7 +53,7 @@ void IntelHexlNTTEngine::mul(PolynomialEvalForm &out, const PolynomialEvalForm &
     intel::hexl::EltwiseMultMod((uint64_t*) out_cast.eval_long, 
                 (uint64_t*) in_1_cast.eval_long, 
                 (uint64_t*) in_2_cast.eval_long, 
-                out_cast.size, out_cast.coef_modulus, 1); 
+                out_cast.size(), out_cast.coef_modulus, 1); 
 }
  
 void IntelHexlNTTEngine::multisum(Polynomial &out, const PolynomialArray &in_1, const PolynomialArrayEvalForm &in_2){    

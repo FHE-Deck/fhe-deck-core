@@ -227,7 +227,7 @@ FFTWLongNegacyclicEngine::FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
     engine = std::make_unique<FFTLongPlan>(RingType::negacyclic, degree);  
-    this->type = PolynomialArithmetic::long_double_fft;
+    this->m_type = PolynomialArithmetic::long_double_fft;
 }
   
 std::shared_ptr<PolynomialEvalForm> FFTWLongNegacyclicEngine::init_polynomial_eval_form(){
@@ -248,7 +248,7 @@ void FFTWLongNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial
  
 void FFTWLongNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in){
     PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);  
-    for (int32_t i = 0; i < in.array_size; ++i)
+    for (int32_t i = 0; i < in.size(); ++i)
     {   
         VectorView in_poly = in[i];   
         engine->to_eval_form_l(out_cast[i].get(), in_poly.get());  

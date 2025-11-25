@@ -3,25 +3,25 @@
 using namespace FHEDeck;
 
 
-VectorView::VectorView(int64_t* vec, int64_t size, int64_t modulus): vec(vec), size(size), modulus(modulus){}
+VectorView::VectorView(int64_t* vec, int64_t size, int64_t modulus): m_vec(vec), m_size(size), m_modulus(modulus){}
 
 int64_t& VectorView::operator[](int32_t index){
-    return vec[index];
+    return m_vec[index];
 }
 
 const int64_t& VectorView::operator[](int32_t index) const {
-    return vec[index];
+    return m_vec[index];
 }
 
 bool VectorView::operator==(const VectorView& other) const {
-    if(size != other.size){ return false; }
+    if(m_size != other.m_size){ return false; }
 
-    if(modulus != other.modulus){ return false; }
+    if(m_modulus != other.m_modulus){ return false; }
 
-    if(modulus != other.modulus){ return false; }
+    if(m_modulus != other.m_modulus){ return false; }
 
-     for(int32_t i = 0; i < size; ++i){
-        if(vec[i] != other[i]){
+     for(int32_t i = 0; i < m_size; ++i){
+        if(m_vec[i] != other[i]){
             return false;
         }
     }
@@ -34,21 +34,21 @@ bool VectorView::operator!=(const VectorView& other) const {
 
 
 void VectorView::add(VectorView &out, const VectorView &other) const{
-    for(int32_t i = 0; i < size; ++i){
-        out.vec[i] = vec[i] + other.vec[i];
-        out.vec[i] %= this->modulus; 
+    for(int32_t i = 0; i < m_size; ++i){
+        out.m_vec[i] = m_vec[i] + other.m_vec[i];
+        out.m_vec[i] %= m_modulus; 
     }
 }
   
 void VectorView::sub(VectorView &out, const VectorView &other) const{ 
-    for(int32_t i = 0; i < size; ++i){
-        out.vec[i] =  Utils::integer_mod_form(this->vec[i] - other.vec[i], this->modulus);      
+    for(int32_t i = 0; i < m_size; ++i){
+        out.m_vec[i] =  Utils::integer_mod_form(m_vec[i] - other.m_vec[i], m_modulus);      
     } 
 }
   
 void VectorView::neg(VectorView &out){
-    for(int32_t i = 0; i < size; ++i){
-        out.vec[i] = this->modulus - this->vec[i];   
+    for(int32_t i = 0; i < m_size; ++i){
+        out.m_vec[i] = m_modulus - m_vec[i];   
     }  
 }
 
@@ -57,45 +57,53 @@ std::string VectorView::to_string(int32_t size_of_string){
         return "[]";
     }
     if(size_of_string==1){
-        return "[" + std::to_string(vec[0]) + "]" ;
+        return "[" + std::to_string(m_vec[0]) + "]" ;
     }
     std::string str = "[";
     for(int32_t i = 0; i < size_of_string-1; ++i){
-        str += std::to_string(vec[i]) + ", ";
+        str += std::to_string(m_vec[i]) + ", ";
     }
-    str += std::to_string(vec[size_of_string-1]) + "]";
+    str += std::to_string(m_vec[size_of_string-1]) + "]";
     return str;
 }
 
 void VectorView::array_signed_form(VectorView& out, const VectorView& in){
-    if(out.size != in.size){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
+    if(out.m_size != in.m_size){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
 
-    if(out.modulus != in.modulus){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
+    if(out.m_modulus != in.m_modulus){ throw std::logic_error("Utils::array_signed_form(Vector& out, Vector& in): Vector sizes do not match."); }
 
-    for(int32_t i = 0; i < out.size; ++i){ 
-        out[i] =  Utils::integer_signed_form(out[i], out.modulus);
+    for(int32_t i = 0; i < out.m_size; ++i){ 
+        out[i] =  Utils::integer_signed_form(out[i], out.m_modulus);
     }
 }
 
 int64_t* VectorView::get() const{
-    return vec;
+    return m_vec;
+}
+
+int64_t VectorView::size() const{
+    return m_size;
+}
+
+int64_t VectorView::modulus() const{
+    return m_modulus;
 }
   
 void VectorView::zeroize(){
-    for(int32_t i = 0; i < size; ++i){
-        vec[i] = 0;
+    for(int32_t i = 0; i < m_size; ++i){
+        m_vec[i] = 0;
     }
 }
 
 void VectorView::normalize(){
-    for(int32_t i = 0; i < size; ++i){ 
-        vec[i] = Utils::integer_mod_form(vec[i], modulus);
+    for(int32_t i = 0; i < m_size; ++i){ 
+        m_vec[i] = Utils::integer_mod_form(m_vec[i], m_modulus);
     }
 }
   
 void VectorView::signed_form(){
-        for(int32_t i = 0; i < size; ++i){ 
-        vec[i] =  Utils::integer_signed_form(vec[i], modulus);
+        for(int32_t i = 0; i < m_size; ++i){ 
+        m_vec[i] =  Utils::integer_signed_form(m_vec[i], m_modulus);
     }
 }
   
@@ -109,39 +117,39 @@ Vector::Vector(const std::vector<int64_t>& in_vec, int64_t size, int64_t modulus
     if(min_size > size){ min_size = size ;}
 
     for(std::size_t i=0; i < min_size; ++i){
-        vec[i] = in_vec[i];
+        m_vec[i] = in_vec[i];
     } 
     normalize();
 }
  
-Vector::Vector(const VectorView &other) : VectorView(nullptr, other.size, other.modulus){  
+Vector::Vector(const VectorView &other) : VectorView(nullptr, other.size(), other.modulus()){  
     init();
-    Utils::cp(this->vec, other.get(), this->size);   
+    Utils::cp(this->m_vec, other.get(), m_size);   
 }
 
 Vector::Vector(const VectorView &other, int64_t size, int64_t modulus): VectorView(nullptr, size, modulus){  
     init();
-    std::size_t min_size = other.size;
+    std::size_t min_size = other.size();
     if(min_size > size){ min_size = size ;}
 
     for(std::size_t i=0; i < min_size; ++i){
-        vec[i] = other[i];
+        m_vec[i] = other[i];
     } 
     normalize();  
 }
  
  
 Vector& Vector::operator=(const VectorView other) { 
-    this->size = other.size;
-    this->modulus = other.modulus; 
+    m_size = other.size();
+    m_modulus = other.modulus(); 
     this->init();  
-    Utils::cp(this->vec, other.get(), this->size);   
+    Utils::cp(m_vec, other.get(), m_size);   
     return *this;
 }
  
 void Vector::init(){ 
-    this->vec_memory = std::make_unique<int64_t[]>(size);
-    this->vec = vec_memory.get(); 
+    m_vec_memory = std::make_unique<int64_t[]>(m_size);
+    m_vec = m_vec_memory.get(); 
     zeroize();
 }
   
@@ -150,32 +158,32 @@ VectorArray::VectorArray(int32_t size, int64_t modulus, int32_t array_size){
 }
    
 void VectorArray::init(const int32_t size, const int64_t modulus, const int32_t array_size){ 
-    this->size = size;
-    this->modulus = modulus;
-    this->array_size = array_size; 
-    this->full_size = this->array_size * this->size;  
-    this->vec_array = std::make_unique<int64_t[]>(full_size); 
+    m_vector_size = size;
+    m_modulus = modulus;
+    m_array_size = array_size; 
+    m_full_size = m_array_size * m_vector_size;  
+    m_vec_array = std::make_unique<int64_t[]>(m_full_size); 
 }
   
 VectorView VectorArray::operator[](int32_t index){
-    int64_t* observer_ptr = vec_array.get(); 
-    return VectorView(&observer_ptr[index * size], size, modulus);
+    int64_t* observer_ptr = m_vec_array.get(); 
+    return VectorView(&observer_ptr[index * m_vector_size], m_vector_size, m_modulus);
 }
 
 const VectorView VectorArray::operator[](int32_t index)const{
-    int64_t* observer_ptr = vec_array.get(); 
-    return VectorView(&observer_ptr[index * size], size, modulus);
+    int64_t* observer_ptr = m_vec_array.get(); 
+    return VectorView(&observer_ptr[index * m_vector_size], m_vector_size, m_modulus);
 }
 
 bool VectorArray::operator==(const VectorArray& other){
-    if(this->size != other.size){ return false; }
+    if(m_vector_size != other.m_vector_size){ return false; }
 
-    if(this->full_size != other.full_size){ return false; }
+    if(m_full_size != other.m_full_size){ return false; }
 
-    if(this->modulus != other.modulus){ return false; }
+    if(m_modulus != other.m_modulus){ return false; }
 
-    for(int32_t i = 0; i < full_size; ++i){
-        if(vec_array[i] != other.vec_array[i]){
+    for(int32_t i = 0; i < m_full_size; ++i){
+        if(m_vec_array[i] != other.m_vec_array[i]){
             return false;
         }
     }
@@ -187,32 +195,44 @@ bool VectorArray::operator!=(const VectorArray& other){
 }
  
 void VectorArray::add(VectorArray &out, const VectorArray &other){
-    for(int32_t i = 0; i < full_size; ++i){
-        out.vec_array[i] = vec_array[i] + other.vec_array[i];
-        out.vec_array[i] %= this->modulus;
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out.m_vec_array[i] = m_vec_array[i] + other.m_vec_array[i];
+        out.m_vec_array[i] %= m_modulus;
     }
 }
   
 void VectorArray::sub(VectorArray &out, const VectorArray &other){
-    for(int32_t i = 0; i < full_size; ++i){
-        out.vec_array[i] = Utils::integer_mod_form(this->vec_array[i] - other.vec_array[i], this->modulus);     
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out.m_vec_array[i] = Utils::integer_mod_form(m_vec_array[i] - other.m_vec_array[i], m_modulus);     
     } 
 }
   
 void VectorArray::neg(VectorArray &out){
-    for(int32_t i = 0; i < full_size; ++i){
-        out.vec_array[i] = this->modulus - this->vec_array[i];
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out.m_vec_array[i] = m_modulus - m_vec_array[i];
     } 
 }
   
 void VectorArray::mul(VectorArray &out, const int64_t scalar){
-    for(int32_t i = 0; i < full_size; ++i){
-        out.vec_array[i] = Utils::integer_mod_form(vec_array[i] * scalar, this->modulus); 
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out.m_vec_array[i] = Utils::integer_mod_form(m_vec_array[i] * scalar, m_modulus); 
     }
 }
  
 void VectorArray::normalize(){
-    for(int32_t i = 0; i < full_size; ++i){ 
-        vec_array[i] = Utils::integer_mod_form(vec_array[i], modulus);
+    for(int32_t i = 0; i < m_full_size; ++i){ 
+        m_vec_array[i] = Utils::integer_mod_form(m_vec_array[i], m_modulus);
     }
+}
+
+int32_t VectorArray::size() const {
+    return m_array_size;
+}
+
+int64_t VectorArray::vector_size() const{
+    return m_vector_size;
+}
+  
+int32_t VectorArray::full_size() const{
+    return m_full_size;
 }

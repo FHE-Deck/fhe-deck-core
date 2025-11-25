@@ -14,10 +14,10 @@ NTLInversionEngine::NTLInversionEngine(const int degree, const int64_t coef_modu
 
 bool NTLInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
     NTL::ZZ_pX temp_f; 
-    set_polynomial_from_array(temp_f, in.get(), in.size, coef_modulus);
+    set_polynomial_from_array(temp_f, in.get(), in.size(), coef_modulus);
     NTL::ZZ_pX temp_inv_f;  
     int64_t status = NTL::InvModStatus(temp_inv_f, temp_f, ring_poly);   
-    set_array_from_polynomial(out.get(), out.size, temp_inv_f);    
+    set_array_from_polynomial(out.get(), out.size(), temp_inv_f);    
     return (status == 0); 
 }
 

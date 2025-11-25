@@ -101,7 +101,7 @@ void NTRUCT::mul(NTRUCT &out, const Polynomial &x){
 }
  
 std::string NTRUCT::to_string(){
-    std::string out = "[" + ct_poly.to_string(ct_poly.size) + "]";
+    std::string out = "[" + ct_poly.to_string(ct_poly.size()) + "]";
     return out;
 }
   
@@ -174,10 +174,10 @@ void NTRUSK::key_gen(){
    
 void NTRUSK::encrypt(VectorCT &out, const Vector &m){  
     NTRUCT& out_cast = static_cast<NTRUCT&>(out);
-    if(m.size != param->size){
+    if(m.size() != param->size){
         throw std::logic_error("NTRUSK::encrypt(VectorCT &out, const Vector &m): Input Vector m, size is too big!");
     }
-    if(m.modulus > param->coef_modulus){
+    if(m.modulus() > param->coef_modulus){
         throw std::logic_error("NTRUSK::encrypt(VectorCT &out, const Vector &m): Input polynomial m, coefficient modulus is too big!");
     }  
     /// NOTE: We compute inv_sk * g + e + msg
@@ -211,10 +211,10 @@ void NTRUSK::encode_and_encrypt(VectorCT& out, const Vector &m, PlaintextEncodin
 }
  
 void NTRUSK::partial_decrypt(Polynomial &phase, const NTRUCT &ct){   
-    if(phase.size != param->size){
+    if(phase.size() != param->size){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Dimension of the input polynomial differs from the the RLWE polynomials.");
     }
-    if(phase.modulus != param->coef_modulus){
+    if(phase.modulus() != param->coef_modulus){
         throw std::logic_error("NTRUSK::phase(Polynomial *phase, RLWECT *ct): Coefficient modulus of the input polynomial differs from the the RLWE polynomials.");
     } 
     sk.mul(phase, ct.ct_poly, param->mul_engine); 
@@ -231,7 +231,7 @@ void NTRUSK::decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding
     Polynomial& out_cast =  static_cast<Polynomial&>(out);
     Polynomial phase(this->param->size, this->param->coef_modulus);
     this->partial_decrypt(phase, ct_cast);  
-    for(int32_t i = 0; i < out_cast.size; ++i){
+    for(int32_t i = 0; i < out_cast.size(); ++i){
         out_cast[i] = encoding.decode_message(phase[i]);
     } 
 }
@@ -287,9 +287,9 @@ NTRUGadgetSK::NTRUGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<NTRUS
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const Vector &msg){   
     /// TODO: make sure size and modulus of msg fits then use the copy constructor
  
-    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
+    if(msg.modulus() > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
 
-    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
+    if(msg.size() != sk->param->size){ throw std::logic_error("NTRUGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
 
     Polynomial msg_poly(msg, sk->param->size, sk->param->coef_modulus);
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg_poly);   
@@ -306,9 +306,9 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::gadget_encrypt(const std::vector<i
  
 std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg){
 
-    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): modulus too big"); }
+    if(msg.modulus() > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): modulus too big"); }
 
-    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): size different"); }
+    if(msg.size() != sk->param->size){ throw std::logic_error("NTRUGadgetSK::kdm_gadget_encrypt(const Polynomial &msg): size different"); }
  
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);    
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);
@@ -323,9 +323,9 @@ std::shared_ptr<GadgetVectorCT> NTRUGadgetSK::kdm_gadget_encrypt(const std::vect
 } 
   
 std::shared_ptr<ExtendedPolynomialCT> NTRUGadgetSK::extended_encrypt(const Vector &msg){      
-    if(msg.modulus > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): modulus too big"); }
+    if(msg.modulus() > sk->param->coef_modulus){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): modulus too big"); }
 
-    if(msg.size != sk->param->size){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): size different"); }
+    if(msg.size() != sk->param->size){ throw std::logic_error("NTRUGadgetSK::extended_encrypt(const Polynomial &msg): size different"); }
  
     std::vector<std::shared_ptr<NTRUCT>> gadget_ct = ext_enc(msg);     
     return std::make_shared<NTRUGadgetCT>(sk->param, gadget, gadget_ct);

@@ -47,7 +47,7 @@ class RLWEParam : public PolynomialCTParam{
     /// @param ring_degree The degree of the ring.
     /// @param coef_modulus The coefficient modulus.
     /// @param mul_engine The multiplication engine.
-    RLWEParam(int32_t ring_degree, uint64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
+    //RLWEParam(int32_t ring_degree, uint64_t coef_modulus, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
    
     RLWEParam(RLWEParam &c) = delete;
 

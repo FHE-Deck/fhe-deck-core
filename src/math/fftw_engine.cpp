@@ -206,7 +206,7 @@ FFTWNegacyclicEngine::FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus)
     this->degree = degree;
     this->coef_modulus = coef_modulus; 
     engine = std::make_unique<FFTPlan>(RingType::negacyclic, degree);  
-    this->type = PolynomialArithmetic::double_fft;
+    this->m_type = PolynomialArithmetic::double_fft;
 }
 
 std::shared_ptr<PolynomialEvalForm> FFTWNegacyclicEngine::init_polynomial_eval_form(){
@@ -227,7 +227,7 @@ void FFTWNegacyclicEngine::to_eval(PolynomialEvalForm &out, const Polynomial &in
  
 void FFTWNegacyclicEngine::to_eval(PolynomialArrayEvalForm &out, const PolynomialArray &in){ 
     PolynomialArrayEvalFormComplex& out_cast = static_cast<PolynomialArrayEvalFormComplex&>(out);  
-    for (int32_t i = 0; i < in.array_size; ++i)
+    for (int32_t i = 0; i < in.size(); ++i)
     {   
         const VectorView in_poly = in[i];    
         engine->to_eval_form(out_cast[i].get(), in_poly.get());  

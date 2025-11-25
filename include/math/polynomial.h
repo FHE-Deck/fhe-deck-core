@@ -29,9 +29,12 @@ class PolynomialArrayEvalForm;
  */
 class PolynomialMultiplicationEngine{
 
-    public: 
+    protected:
+    
     /// @brief Type of the polynomial arithmetic
-    PolynomialArithmetic type;
+    PolynomialArithmetic m_type;
+
+    public: 
 
     /// @brief Initialialilzes a new PolynomialEvalForm object
     /// @return A pointer to the new PolynomialEvalForm object
@@ -115,11 +118,15 @@ class PolynomialInversionEngine{
  */
 class PolynomialEvalForm{
 
-    public:
- 
+    protected:
+
     /// @brief The size of the evaluation form (not that this may differ from the degree of the polynomial)
-    int32_t size; 
- 
+    int32_t m_size; 
+
+    public:
+
+    int32_t size() const;
+  
     /// @brief Default destructor
     virtual ~PolynomialEvalForm() = default;
 
@@ -423,14 +430,14 @@ class PolynomialArray : public VectorArray{
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<VectorArray>(this));   
-        ar(cereal::binary_data(vec_array, sizeof(int64_t) * full_size));  
+        ar(cereal::binary_data(m_vec_array, sizeof(int64_t) * m_full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
         ar(cereal::base_class<VectorArray>(this));    
-        ar(cereal::binary_data(vec_array, sizeof(int64_t) * full_size));   
+        ar(cereal::binary_data(m_vec_array, sizeof(int64_t) * m_full_size));   
     } 
     #endif 
      

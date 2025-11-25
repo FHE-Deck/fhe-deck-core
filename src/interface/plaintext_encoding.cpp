@@ -92,13 +92,13 @@ int64_t PlaintextEncoding::decode_message(int64_t encoded_message)const{
 
  
 void PlaintextEncoding::encode_message(Vector& out, const Vector& message)const{ 
-    for(int32_t i = 0; i < message.size; ++i){
+    for(int32_t i = 0; i < message.size(); ++i){
         out[i] = encode_message(message[i]);
     }
 }
  
 void PlaintextEncoding::decode_message(Vector& out, const Vector& encoded_message)const{
-    for(int32_t i = 0; i < encoded_message.size; ++i){
+    for(int32_t i = 0; i < encoded_message.size(); ++i){
         out[i] = decode_message(encoded_message[i]);
     }
 }

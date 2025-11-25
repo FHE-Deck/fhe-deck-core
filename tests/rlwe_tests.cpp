@@ -55,8 +55,8 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::ifstream is("poly_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive(is);  
         iarchive(sk_poly);  
-        if(sk->sk_poly.size != sk_poly.size || 
-        sk->sk_poly.modulus != sk_poly.modulus ||
+        if(sk->sk_poly.size() != sk_poly.size() || 
+        sk->sk_poly.modulus() != sk_poly.modulus() ||
         sk->sk_poly!=sk_poly){
             FAIL(); 
         } 

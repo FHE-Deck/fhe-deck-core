@@ -52,17 +52,11 @@ class LWECT{
  
     /// @brief Pointer to the LWE parameters.
     std::shared_ptr<LWEParam> param;
-    /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M. 
-    //int64_t *ct = nullptr;
-    Vector ct;
-    /// @brief Flag that indicates if the ciphertext is initialized.
-    //bool init = false;
+    /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M.  
+    Vector ct; 
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
-    LWECT() = default;
-
-    /// @brief  Frees ct
-    //~LWECT();
+    LWECT() = default; 
 
     /// @brief Initializes the ciphertext and allocates memory for the ciphertext vector.
     /// @param lwe_par Pointer to the LWE parameters.

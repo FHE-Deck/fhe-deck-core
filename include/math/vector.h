@@ -12,12 +12,17 @@ namespace FHEDeck{
  
 /// Define a new class Vector that derives from VectorView
 class VectorView{
-    
-    public:
-  
+     
+    protected:
+ 
+    /// @brief The coefficients of the polynomial
+    int64_t* m_vec = nullptr;   
+    /// @brief the size of the vector
+    int64_t m_size = 0;
+    /// @brief The modulus for the modular arithmetic of the vector elements
+    int64_t m_modulus = 0;
 
-    int64_t size = 0;
-    int64_t modulus = 0;
+    public: 
 
     VectorView() = default;
       
@@ -42,6 +47,10 @@ class VectorView{
     bool operator!=(const VectorView& other) const;
 
     int64_t* get() const;
+
+    int64_t size() const;
+
+    int64_t modulus() const;
 
     /// @brief Zero all vector elements  
     void zeroize();
@@ -69,19 +78,17 @@ class VectorView{
  
     static void array_signed_form(VectorView& out, const VectorView& in);
 
-    protected:
- 
-    /// @brief The coefficients of the polynomial
-    int64_t* vec = nullptr;  
  
 };
 
 
 class Vector : public VectorView{
     
-    public:
+    protected:
 
-    std::unique_ptr<int64_t[]> vec_memory;
+    std::unique_ptr<int64_t[]> m_vec_memory;
+
+    public:
  
     Vector() = default;
 
@@ -112,20 +119,19 @@ class Vector : public VectorView{
     void save( Archive & ar ) const
 
     { 
-        ar(size, modulus);   
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));   
+        ar(m_size, m_modulus);   
+        ar(cereal::binary_data(m_vec, sizeof(int64_t) * m_size));   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(this->size, this->modulus); 
+        ar(m_size, m_modulus); 
         init();
-        ar(cereal::binary_data(vec, sizeof(int64_t) * size));    
+        ar(cereal::binary_data(m_vec, sizeof(int64_t) * m_size));    
     }  
     #endif 
  
-
 };
 
 /**
@@ -133,19 +139,22 @@ class Vector : public VectorView{
  */
 class VectorArray{
 
-    public:
+    protected:
+
     /// @brief The continuous block of memory that stores the vectors. 
-    std::unique_ptr<int64_t[]> vec_array; 
+    std::unique_ptr<int64_t[]> m_vec_array; 
 
     /// @brief Size of a single vector in the array
-    int64_t size;
+    int64_t m_vector_size;
     /// @brief The modulus
-    int64_t modulus;  
+    int64_t m_modulus;  
     /// @brief Size of the array
-    int32_t array_size; 
+    int32_t m_array_size; 
     /// @brief full_size = degree * array_size. Initialized in the constructors. 
-    int32_t full_size;
-  
+    int32_t m_full_size;
+
+    public:
+     
     VectorArray() = default;
 
     VectorArray(int32_t size, int64_t modulus, int32_t array_size);
@@ -182,20 +191,26 @@ class VectorArray{
     /// @brief Computes all vector elements modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
     void normalize();
 
+    int32_t size() const;
+
+    int64_t vector_size() const;
+  
+    int32_t full_size() const;
+
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(size, modulus, array_size);   
-        ar(cereal::binary_data(vec_array, sizeof(int64_t) * size));  
+        ar(m_vector_size, m_modulus, m_array_size);   
+        ar(cereal::binary_data(m_vec_array, sizeof(int64_t) * m_vector_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(size, modulus, array_size);   
-        init(size, modulus, array_size);   
-        ar(cereal::binary_data(vec_array, sizeof(int64_t) * size));   
+        ar(m_vector_size, m_modulus, m_array_size);   
+        init(m_vector_size, m_modulus, m_array_size);   
+        ar(cereal::binary_data(m_vec_array, sizeof(int64_t) * m_vector_size));   
     }  
     #endif 
 

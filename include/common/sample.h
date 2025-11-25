@@ -22,7 +22,7 @@ class Distribution{
     
     void fill(VectorArray& in); 
 
-    void fill(Vector& in); 
+    void fill(VectorView& in); 
 
 };
  
