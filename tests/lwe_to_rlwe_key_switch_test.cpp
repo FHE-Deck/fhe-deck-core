@@ -21,14 +21,14 @@ TEST(LWEToRLWEKeySwitch, BasicKeySwitchTest){
 
     auto rlwe_gadget = std::make_shared<SignedDecompositionGadget>(N,coef_modulus,1 << 4);
     auto sk_rlwe = std::make_shared<RLWESK>(rlwe_param, KeyDistribution::ternary, rlwe_stddev);
-    auto gadget_sk_rlwe = std::make_shared<RLWEGadgetSK>(rlwe_gadget, sk_rlwe);
+    RLWEGadgetSK gadget_sk_rlwe(rlwe_gadget, sk_rlwe);
 
-    auto sk_lwe = std::make_shared<LWESK>(lwe_param, sk_rlwe->sk_poly.get(), rlwe_stddev, KeyDistribution::ternary);
+    LWESK sk_lwe(lwe_param, sk_rlwe->sk_poly.get(), rlwe_stddev, KeyDistribution::ternary);
 
     auto lwe_to_rlwe_key = LWEToRLWEKeySwitchKey(sk_lwe, gadget_sk_rlwe);
 
     long message = rand() % (1 << 10);
-    auto test_input = sk_lwe->encrypt(message);
+    auto test_input = sk_lwe.encrypt(message);
     RLWECT output(rlwe_param);
 
     lwe_to_rlwe_key.lwe_to_rlwe_key_switch(output, *test_input);

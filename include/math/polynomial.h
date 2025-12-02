@@ -4,6 +4,7 @@
 /**
  * @file polynomial.h
  */
+
 #include "global_headers.h"
   
 #include "common/enums.h"
@@ -159,23 +160,20 @@ class PolynomialEvalForm{
  */
 class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
 
-    public:
+    protected:
     /// @brief The evaluation form of the polynomial
-    int64_t* eval_long; 
-    /// @brief Indicates if eval_long has been initialized
-    bool is_init = false;
+    std::unique_ptr<int64_t[]> m_eval_long;  
     /// @brief The coefficient modulus
-    int64_t coef_modulus;
+    int64_t m_modulus; 
 
-    /// @brief Default destructor
-    ~PolynomialEvalFormLongInteger();
+    public:
+    
 
     /// @brief Constructor
     /// @param eval_long Takes the evaluation form of the polynomial. The constructed object is now the owner of eval_long.
     /// @param size The size of the evaluation form
-    /// @param coef_modulus The coefficient modulus
-    /// TODO: Check if eval_long can be initialized in the constructor (there may be no reason to init it from the outside)
-    PolynomialEvalFormLongInteger(int64_t* eval_long, int32_t size, int64_t coef_modulus);
+    /// @param coef_modulus The coefficient modulus 
+    PolynomialEvalFormLongInteger(int32_t size, int64_t coef_modulus);
 
     void zeroize()override;
 
@@ -186,6 +184,14 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
     void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
     void neg(PolynomialEvalForm &out)const override;
+
+    int64_t operator[](std::size_t index) const; 
+
+    int64_t& operator[](std::size_t index); 
+
+    int64_t* get()const;
+
+    int64_t modulus()const;
  
 };
 
@@ -194,23 +200,21 @@ class PolynomialEvalFormLongInteger : public PolynomialEvalForm{
  */
 class PolynomialEvalFormComplex : public PolynomialEvalForm{
 
-    public:
-    
+    protected:
+ 
     /// @brief The evaluation form of the polynomial
-    Complex* eval;
-    /// @brief Indicates if eval_fftw has been initialized
-    bool is_init = false;
+    std::unique_ptr<Complex[]> m_eval; 
+
     /// @brief Indicates current scale, that is used in to_coef
-    double scale = 1.0;
+    double m_scale = 1.0;
 
-    /// @brief Default destructor
-    ~PolynomialEvalFormComplex();	
-
+    public:
+     
     /// @brief Constructor
     /// @param eval Takes the evaluation form of the polynomial. The constructed object is now the owner of eval.
     /// @param size The size of the evaluation form
     /// @param coef_modulus The coefficient modulus
-    PolynomialEvalFormComplex(Complex* eval, int32_t size);
+    PolynomialEvalFormComplex(int32_t size);
 
     void zeroize()override;
 
@@ -221,7 +225,12 @@ class PolynomialEvalFormComplex : public PolynomialEvalForm{
     void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
     void neg(PolynomialEvalForm &out)const override;
+
+    Complex* get()const;
  
+    void scale(double scale);
+
+    double scale()const;
 };
 
 /**
@@ -229,23 +238,20 @@ class PolynomialEvalFormComplex : public PolynomialEvalForm{
  */
 class PolynomialEvalFormLongComplex : public PolynomialEvalForm{
 
+    protected:
+
+    /// @brief The evaluation form of the polynomial
+    std::unique_ptr<LongComplex[]> m_eval; 
+
+    long double m_scale = 1.0;
+
     public:
  
-    /// @brief The evaluation form of the polynomial
-    LongComplex* eval;
-    /// @brief Indicates if eval_fftwl has been initialized
-    bool is_init = false;
-
-    long double scale = 1.0;
-
-    /// @brief Default destructor
-    ~PolynomialEvalFormLongComplex();	
-
     /// @brief Constructor
     /// @param eval Takes the evaluation form of the polynomial. The constructed object is now the owner of eval.
     /// @param size The size of the evaluation form
     /// @param coef_modulus The coefficient modulus
-    PolynomialEvalFormLongComplex(LongComplex* eval, int32_t size);
+    PolynomialEvalFormLongComplex(int32_t size);
 
     void zeroize()override;
 
@@ -256,6 +262,12 @@ class PolynomialEvalFormLongComplex : public PolynomialEvalForm{
     void mul(PolynomialEvalForm &out, int64_t scalar)const override;
 
     void neg(PolynomialEvalForm &out)const override;
+
+    LongComplex* get()const;
+
+    void scale(long double scale);
+
+    long double scale()const;
  
 };
 
@@ -264,19 +276,21 @@ class PolynomialEvalFormLongComplex : public PolynomialEvalForm{
  */
 class Polynomial: public Vector{
 
-    public:
-   
+    protected:
+
     /// @brief The bit size of the coefficient modulus
-    int32_t coef_modulus_bit_size; 
+    int32_t m_coef_modulus_bit_size; 
     /// @brief The polynomial multiplication engine (optional)
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
+    std::shared_ptr<PolynomialMultiplicationEngine> m_mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
-    bool is_mul_engine_set = false;
+    bool m_is_mul_engine_set = false;
     /// @brief The polynomial inversion engine (optional)
-    std::shared_ptr<PolynomialInversionEngine> inv_engine;
+    std::shared_ptr<PolynomialInversionEngine> m_inv_engine;
     /// @brief Indicates if the polynomial inversion engine has been set
-    bool is_inv_engine_set = false;
-  
+    bool m_is_inv_engine_set = false;
+
+    public:
+    
     /// @brief Default constructor
     Polynomial() = default;
 
@@ -325,11 +339,7 @@ class Polynomial: public Vector{
     /// @brief Converts the polynomial to evaluation form. Requires to have a polynomial multiplication engine set.
     /// @param out The output polynomial in evaluation form
     void to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine);
- 
-    /// @brief Clone this polynomial
-    /// @return Return a clone of this polynomial
-    std::shared_ptr<Polynomial> clone() const;
-
+  
     /// @brief Cyclically rotates the coefficients of this polynomial by rotation
     /// @param out The output polynomial
     /// @param rotation The rotation size
@@ -364,8 +374,7 @@ class Polynomial: public Vector{
     /// @param out The output polynomial
     /// @param inv_engine The polynomial inversion engine
     void inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine) const; 
-
-
+ 
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
@@ -384,13 +393,15 @@ class Polynomial: public Vector{
    
 class PolynomialArray : public VectorArray{
 
-    public:
-  
+    protected:
+ 
     /// @brief The polynomial multiplication engine (optional)
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
+    std::shared_ptr<PolynomialMultiplicationEngine> m_mul_engine;
     /// @brief Indicates if the polynomial multiplication engine has been set
-    bool is_mul_engine_set = false;
-      
+    bool m_is_mul_engine_set = false;
+
+    public:
+   
     /// @brief Default constructor
     PolynomialArray() = default;
 
@@ -448,19 +459,18 @@ class PolynomialArray : public VectorArray{
  */
 class PolynomialArrayEvalForm{
 
-    public: 
+    protected:
 
     /// @brief The number of polynomials in the array
-    int32_t array_size;
+    int32_t m_array_size;
     
     /// @brief The size of the evaluation form. May differ from the degree of the polynomial (e.g. due to padding)
-    int32_t size;
+    int32_t m_eval_form_size;
 
     /// @brief  full_size = size * array_size
-    int32_t full_size;
-    
-    /// @brief Default destructor
-    virtual ~PolynomialArrayEvalForm() = default; 
+    int32_t m_full_size;
+
+    public: 
   
     /// @brief Adds other to this polynomial array and stores the output in out.
     /// @param out The output polynomial array
@@ -480,19 +490,23 @@ class PolynomialArrayEvalForm{
     /// @brief Negates the polynomials in this array. 
     /// @param out The output polynomial array
     virtual void neg(PolynomialArrayEvalForm &out) = 0; 
-   
+
+    int32_t eval_form_size()const;
+
+    int32_t size()const;
+  
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-        ar(size, array_size);  
+        ar(m_eval_form_size, m_array_size);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-        ar(size, array_size);   
-        full_size = size * array_size;
+        ar(m_eval_form_size, m_array_size);   
+        m_full_size = m_eval_form_size * m_array_size;
     }    
     #endif 
 
@@ -503,12 +517,14 @@ class PolynomialArrayEvalForm{
  */
 class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
 
+    protected:
+
+    std::unique_ptr<int64_t[]> m_eval_long;
+ 
+    int64_t m_coef_modulus;
+
     public:
-  
-    std::unique_ptr<int64_t[]> eval_long;
- 
-    int64_t coef_modulus;
- 
+    
     PolynomialArrayEvalFormLong() = default;
  
     PolynomialArrayEvalFormLong(int32_t array_size, int64_t degree, int64_t coef_modulus);
@@ -521,27 +537,29 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
     
     void neg(PolynomialArrayEvalForm &out);
  
-    Observer<int64_t[]> operator[](std::size_t i);
+    std::span<int64_t> operator[](std::size_t i);
 
-    const Observer<int64_t[]> operator[](std::size_t i) const;
+    const std::span<int64_t> operator[](std::size_t i) const;
+
+    int64_t modulus()const;
   
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
-        ar(coef_modulus); 
-        ar(cereal::binary_data(eval_long.get(), sizeof(int64_t) * full_size));  
+        ar(m_coef_modulus); 
+        ar(cereal::binary_data(m_eval_long.get(), sizeof(int64_t) * m_full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));  
-        ar(coef_modulus); 
-        full_size = size * array_size; 
-        this->eval_long = std::make_unique<int64_t[]>(full_size);
-        ar(cereal::binary_data(eval_long.get(), sizeof(int64_t) * full_size));   
+        ar(m_coef_modulus); 
+        m_full_size = m_eval_form_size * m_array_size; 
+        m_eval_long = std::make_unique<int64_t[]>(m_full_size);
+        ar(cereal::binary_data(m_eval_long.get(), sizeof(int64_t) * m_full_size));   
     }    
     #endif 
 
@@ -553,12 +571,14 @@ class PolynomialArrayEvalFormLong: public PolynomialArrayEvalForm{
  */
 class PolynomialArrayEvalFormComplex: public PolynomialArrayEvalForm{
 
-    public:
-   
-    std::unique_ptr<Complex[]> eval;
+    protected:
+
+    std::unique_ptr<Complex[]> m_eval;
  
-    double scale = 1.0;
-  
+    double m_scale = 1.0;
+
+    public:
+    
     PolynomialArrayEvalFormComplex() = default;
 
     PolynomialArrayEvalFormComplex(int32_t size, int32_t array_size);
@@ -571,25 +591,29 @@ class PolynomialArrayEvalFormComplex: public PolynomialArrayEvalForm{
     
     void neg(PolynomialArrayEvalForm &out);
  
-    Observer<Complex[]> operator[](std::size_t i);
+    std::span<Complex> operator[](std::size_t i);
 
-    const Observer<Complex[]> operator[](std::size_t i) const;
+    const std::span<Complex> operator[](std::size_t i) const;
+
+    double scale()const;
+
+    void scale(double scale);
   
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));     
-        ar(cereal::binary_data(eval.get(), sizeof(Complex) * full_size));  
+        ar(cereal::binary_data(m_eval.get(), sizeof(Complex) * m_full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
-        full_size = size * array_size; 
-        eval = std::make_unique<Complex[]>(full_size);
-        ar(cereal::binary_data(eval.get(), sizeof(Complex) * full_size));   
+        m_full_size = m_eval_form_size * m_array_size; 
+        m_eval = std::make_unique<Complex[]>(m_full_size);
+        ar(cereal::binary_data(m_eval.get(), sizeof(Complex) * m_full_size));   
     }    
     #endif 
 
@@ -600,12 +624,14 @@ class PolynomialArrayEvalFormComplex: public PolynomialArrayEvalForm{
  */
 class PolynomialArrayEvalFormLongComplex: public PolynomialArrayEvalForm{
 
+    protected:
+
+    std::unique_ptr<LongComplex[]> m_eval;
+  
+    long double m_scale = 1.0;
+
     public:
     
-    std::unique_ptr<LongComplex[]> eval;
-  
-    long double scale = 1.0;
- 
     PolynomialArrayEvalFormLongComplex() = default;
  
     PolynomialArrayEvalFormLongComplex(int32_t size, int32_t array_size);
@@ -618,25 +644,29 @@ class PolynomialArrayEvalFormLongComplex: public PolynomialArrayEvalForm{
   
     void neg(PolynomialArrayEvalForm &out);
    
-    Observer<LongComplex[]> operator[](std::size_t i);
+    std::span<LongComplex> operator[](std::size_t i);
 
-    const Observer<LongComplex[]> operator[](std::size_t i) const;
+    const std::span<LongComplex> operator[](std::size_t i) const;
+
+    long double scale()const;
+
+    void scale(long double scale);
 
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
-        ar(cereal::binary_data(eval.get(), sizeof(LongComplex) * full_size));  
+        ar(cereal::binary_data(m_eval.get(), sizeof(LongComplex) * m_full_size));  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<PolynomialArrayEvalForm>(this));    
-        full_size = size * array_size; 
-        eval = std::make_unique<LongComplex[]>(full_size);
-        ar(cereal::binary_data(eval.get(), sizeof(LongComplex) * full_size));   
+        m_full_size = m_eval_form_size * m_array_size; 
+        m_eval = std::make_unique<LongComplex[]>(m_full_size);
+        ar(cereal::binary_data(m_eval.get(), sizeof(LongComplex) * m_full_size));   
     }    
     #endif 
 };

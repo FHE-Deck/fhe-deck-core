@@ -168,13 +168,13 @@ class GadgetVectorCTSK{
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg) = 0;  
+    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg) const = 0;  
       
     /// @brief Encrypts the msg vector and returns the ciphertext
     /// @param msg The message to encrypt
     /// @param size The size of the message
     /// @return Creates a new ciphertext
-    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) = 0;  
+    virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) const = 0;  
 
     #if defined(USE_CEREAL)
     template <class Archive>

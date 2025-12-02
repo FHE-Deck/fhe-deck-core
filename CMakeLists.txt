@@ -5,6 +5,9 @@ message("------- Configuring FHE-Deck ")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
  
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
 if(NOT DEFINED CMAKE_BUILD_TYPE)  
     message("--- CMAKE_BUILD_TYPE not defined. Set to detault Release type.")
     set(CMAKE_BUILD_TYPE "Release") 

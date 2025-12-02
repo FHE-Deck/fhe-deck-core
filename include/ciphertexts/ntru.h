@@ -29,9 +29,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @brief The coefficiant modulus.
     uint64_t coef_modulus; 
     /// @brief The ring type.
-    RingType ring;
-    /// @brief The modulus type. 
-    //ModulusType mod_type;   
+    RingType ring; 
     /// @brief The polynomial arithmetic indicates the implementation of the multiplication engine.
     PolynomialArithmetic arithmetic = PolynomialArithmetic::ntt64;
     /// @brief The polynomial multiplication engine.
@@ -303,9 +301,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @brief The parameters of the NTRU encryption scheme.
   std::shared_ptr<NTRUParam> ntru_param;
   /// @brief The decomposition gadget. 
-  std::shared_ptr<Gadget> gadget;
-  /// @brief Flag indicating whether the gadget is initialized.
-  //bool is_init = false;  
+  std::shared_ptr<Gadget> gadget; 
   /// @brief The array evaluation form holding the decomposition of the ciphertext.
   std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;  
   
@@ -378,37 +374,35 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) override; 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg)const override; 
 
     /// @brief Encrypts the input message array msg, and returns the result.
     /// @param msg The input message array.
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg) override; 
-    //std::shared_ptr<GadgetVectorCT> gadget_encrypt(const uint64_t *msg, int32_t size) override; 
-    
-
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg)const override;  
+     
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> kdm_gadget_encrypt(const Polynomial &msg); 
+    std::shared_ptr<GadgetVectorCT> kdm_gadget_encrypt(const Polynomial &msg)const; 
 
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> kdm_gadget_encrypt(const std::vector<int64_t>& msg);  
+    std::shared_ptr<GadgetVectorCT> kdm_gadget_encrypt(const std::vector<int64_t>& msg)const;  
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg) override; 
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg)const override; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg) override;  
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg)const override;  
    
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -432,7 +426,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// TODO: Make this non-const (public interfaced will be forced to do compies, and check formal formating, but this is free to change the message.)
     /// The alternative is, that you copy the message twice, what doesn't make sense. 
     /// Also, its not publicly available, so the user shoulnd't be affected by this. 
-    std::vector<std::shared_ptr<NTRUCT>> ext_enc(const Vector &msg);
+    std::vector<std::shared_ptr<NTRUCT>> ext_enc(const Vector &msg)const;
 };
  
 } /// End of namespace FHEDeck

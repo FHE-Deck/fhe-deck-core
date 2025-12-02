@@ -16,6 +16,7 @@
 #include <string> 
 #include <math.h>    
 #include <complex>
+#include <span>
 
 /**
  * Third party headers 

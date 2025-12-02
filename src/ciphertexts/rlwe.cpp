@@ -108,16 +108,7 @@ RLWEParam::RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus, 
     this->arithmetic = arithmetic;   
     init_mul_engine(); 
 }
-        
-/*
-RLWEParam::RLWEParam(int32_t degree, uint64_t ring_degree,  std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    this->size = ring_degree;
-    this->coef_modulus = coef_modulus; 
-    this->mul_engine = mul_engine; 
-    this->arithmetic = mul_engine->m_type;  
-}
-*/
-   
+       
 void RLWEParam::init_mul_engine(){  
     // Build PolynomialMultiplicationEngine
     PolynomialMultiplicationEngineBuilder mul_engine_builder;
@@ -163,9 +154,7 @@ void ExtendedRLWECT::mul(VectorCT &out, const Vector &msg){
 
     if(msg.size() != rlwe_param->size){ throw std::logic_error("ExtendedRLWECT::mul(VectorCT &out, const Vector &msg): size different"); }
 
-    RLWECT& out_ptr = static_cast<RLWECT&>(out);    
-    /// TODO: Assert what size of OK, and msg modulus isn't bigger, then use copy constructor.
-    //Polynomial msg_in(msg.vec, rlwe_param->size, rlwe_param->coef_modulus);
+    RLWECT& out_ptr = static_cast<RLWECT&>(out);     
     Polynomial msg_in(msg, rlwe_param->size, rlwe_param->coef_modulus);
 
     std::shared_ptr<PolynomialArrayEvalForm> poly_decomp_eval_form = std::shared_ptr<PolynomialArrayEvalForm>(rlwe_param->mul_engine->init_polynomial_array_eval_form(gadget->digits));  
@@ -270,8 +259,7 @@ void RLWESK::encrypt(VectorCT &out, const Vector &m){
     unif_dist->fill(out_cast.a); 
     Polynomial noise(param->size, param->coef_modulus); 
     error_dist->fill(noise); 
-    Polynomial message(m, param->size, param->coef_modulus);
-    //Utils::cp(message.vec, m.vec, param->size); 
+    Polynomial message(m, param->size, param->coef_modulus); 
     // Now just need to compute: b = a * s + e + m
     // First we need a poolynomial s in eval form.    
     out_cast.a.mul(out_cast.b, sk_poly, param->mul_engine); 
@@ -344,7 +332,7 @@ RLWEGadgetSK::RLWEGadgetSK(std::shared_ptr<Gadget> gadget, std::shared_ptr<RLWES
     this->rlwe_sk = rlwe_sk; 
 }
  
-std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg){
+std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg)const{
 
     if(msg.modulus() != rlwe_sk->param->coef_modulus){ throw std::logic_error("RLWEGadgetSK::ext_enc(Polynomial &msg): modulus differs"); }
 
@@ -362,7 +350,7 @@ std::vector<std::shared_ptr<RLWECT>> RLWEGadgetSK::ext_enc(Polynomial &msg){
     return ext_ct;
 }
   
-std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg){   
+std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg)const{   
     if(msg.modulus() > rlwe_sk->param->coef_modulus){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
 
     if(msg.size() != rlwe_sk->param->size){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
@@ -378,7 +366,7 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const Vector &msg){
     return std::make_shared<RLWEGadgetCT>(rlwe_sk->param, gadget, gadget_ct, gadget_ct_sk);
 }
  
-std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const std::vector<int64_t>& msg){
+std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const std::vector<int64_t>& msg)const{
     if(msg.size() > rlwe_sk->param->size){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }
@@ -387,7 +375,7 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt(const std::vector<i
     return gadget_encrypt(msg_poly);
 }
  
-std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Vector &msg){    
+std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Vector &msg)const{    
     
     if(msg.modulus() > rlwe_sk->param->coef_modulus){ throw std::logic_error("RLWEGadgetSK::extended_encrypt(const Vector &msg): modulus bigger"); }
 
@@ -398,7 +386,7 @@ std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const Vecto
     return std::make_shared<ExtendedRLWECT>(rlwe_sk->param, gadget, gadget_ct);
 }
  
-std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const std::vector<int64_t>& msg){
+std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const std::vector<int64_t>& msg)const{
     if(msg.size() > rlwe_sk->param->size){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }

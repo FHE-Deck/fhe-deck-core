@@ -40,8 +40,7 @@ void gadget_sampling_correctness_test(int test_num, int N, long Q, int base, dou
                 result[i] += temp;
             }
         }
-        result.normalize();
-        //Utils::array_mod_form(result.vec, result.get(), N, Q); 
+        result.normalize(); 
         if(result != poly){   
             FAIL();
         } 
@@ -59,19 +58,16 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
         g = std::shared_ptr<Gadget>(new DiscreteGaussianSamplingGadget(N, Q, base, stddev)); 
     }    
     Polynomial poly(N, Q);
-    PolynomialArray decomp(N, Q, base);
-    long* signed_decomp = new long[N];  
-    Polynomial result(N, Q);
-    long* decomp_flat = new long[g->digits * g->degree];
+    PolynomialArray decomp(N, Q, base); 
+    Polynomial result(N, Q); 
+    std::vector<int64_t> decomp_flat;
+    decomp_flat.resize(g->digits * g->degree);
     long temp;
     for(int k = 0; k < test_num; ++k){
         // Choose some random poly  
         rand->fill(poly);
         // Sample
-        g->sample(decomp, poly); 
-        for(int j = 0; j < g->digits; ++j){
-            Utils::array_signed_form(signed_decomp, decomp[j].get(), N, Q); 
-        }
+        g->sample(decomp, poly);  
         // Compose back modulo Q, and compare to poly
         for(int i = 0; i < N; ++i){
             result[i] = 0;
@@ -85,23 +81,12 @@ void printing_outcome(int test_num, int N, long Q, int base, double stddev, Gadg
                 result[i] += temp;
             }
         } 
-        result.normalize();
-        //Utils::array_mod_form(result.vec, result.vec, N, Q); 
-        
+        result.normalize(); 
         if(result != poly){  
             FAIL(); 
         } 
     } 
-  
-    double mean = Utils::mean(decomp_flat, g->digits * g->degree);
-    long max = Utils::max(decomp_flat, g->digits * g->degree);
-    long min = Utils::min(decomp_flat, g->digits * g->degree); 
-    long var = Utils::variance(decomp_flat, g->digits * g->degree, mean);
-    long s = Utils::standard_deviation(decomp_flat, g->digits * g->degree, mean);
-    long positive = Utils::count_positive(decomp_flat, g->digits * g->degree);
-    long negative = Utils::count_negative(decomp_flat, g->digits * g->degree); 
- 
-    delete[] decomp_flat;   
+    
 }
 
 

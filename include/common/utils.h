@@ -16,9 +16,7 @@ class Utils{
         static std::pair<int64_t, std::pair<int64_t, int64_t>> extended_euclidean_algorithm(int64_t a, int64_t b);
   
         static int64_t mod_inv(int64_t in, int64_t modulus);
- 
-        static void cp(int64_t *out, int64_t *in, int32_t size);
-
+  
         /// Returns the smallest k, s.t. base**k >= x. For x = 0 and x = 1 it returns 1.
         /// TODO: Note. IN some cases return floor(log2(x)/log2(base))+1; returns a different value than this.
         /// But if I use return floor(log2(x)/log2(base))+1; then bootstrapp isn't correct. Need to check why. 
@@ -39,39 +37,35 @@ class Utils{
         static int32_t number_of_bits(int64_t x);
   
         static int64_t integer_signed_form(int64_t in, int64_t Q);
- 
-        static void array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q);
- 
+  
         static int64_t integer_mod_form(int64_t in, int64_t Q);
+  
+        static std::vector<int64_t> integer_decomp(int64_t in , int32_t basis, int32_t k, int32_t ell);
 
-        static void array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q); 
- 
-        static int64_t integer_compose(int64_t *dec_in, int32_t basis, int32_t ell);
-
-        static void integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell);
+        static int64_t integer_compose(const std::vector<int64_t>& dec_in, int32_t basis, int32_t ell);
  
         // Some stuff for statistics
-        static int64_t max(long* in, int32_t N);
+        static int64_t max(const std::vector<int64_t>& in);
 
-        static int64_t min(long* in, int32_t N);
+        static int64_t min(const std::vector<int64_t>& in);
 
-        static double mean(long* in, int32_t N);
+        static double mean(const std::vector<int64_t>& in);
 
-        static double variance(long* in, int32_t N);
+        static double variance(const std::vector<int64_t>& in);
 
-        static double variance(long* in, int32_t N, double mean);
+        static double variance(const std::vector<int64_t>& in, double mean);
 
-        static double standard_deviation(long* in, int32_t N);
+        static double standard_deviation(const std::vector<int64_t>& in);
 
-        static double standard_deviation(long* in, int32_t N, double mean);
+        static double standard_deviation(const std::vector<int64_t>& in, double mean);
 
-        static int64_t infinity_norm(long* in, int32_t N);
+        static int64_t infinity_norm(const std::vector<int64_t>& in);
 
-        static long* count_occurences(long* in, int32_t N);
+        static long* count_occurences(const std::vector<int64_t>& in);
 
-        static int64_t count_positive(long* in, int32_t N);
+        static int64_t count_positive(const std::vector<int64_t>& in);
 
-        static int64_t count_negative(long* in, int32_t N);
+        static int64_t count_negative(const std::vector<int64_t>& in);
 
 };
 
@@ -91,59 +85,13 @@ class LongIntegerMultipler{
     /// @brief Number of bits of the decomposition base
     uint64_t bits_base;
     /// @brief Modulus_log_base = Log_(base)(modulus)
-    uint32_t modulus_log_base;
-    /// @brief Table for digit decomposition
-    std::unique_ptr<long[]> decomp;
+    uint32_t modulus_log_base; 
 
     LongIntegerMultipler(uint64_t modulus);
  
     uint64_t mul(uint64_t in_1, uint64_t in_2);
 };
-
-
-
-template <class T>
-class Observer {
-public:
-
-    Observer() = default;
-
-    Observer(T* ptr) :  ptr(ptr) {}
-
-    T* get() const { return ptr; }
-
-    T& operator*() const { return *ptr; }
-
-    T* operator->() const noexcept { return ptr; }
-
-private:
-    T* ptr = nullptr;
-};
-
-
-template <class T>
-class Observer<T[]> {
-public:
-
-    Observer() = default;
  
-    Observer(T* ptr, std::size_t size): ptr(ptr), size(size) {}
-
-    T* get() const { return ptr; }
-    
-    T& operator[](std::size_t i) {
-        return ptr[i];
-    }
-
-    const T& operator[](std::size_t i) const {
-        return ptr[i];
-    }
-
-private:
-    T* ptr;
-    std::size_t size = 0;
-};
-
  
 } /// End of namespace FHEDeck
 

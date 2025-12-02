@@ -2,21 +2,12 @@
 
 using namespace FHEDeck;
 
-LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) {
-    dest_param = sk_dest->rlwe_sk->param;
+LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(const LWESK& sk_origin, const RLWEGadgetSK& sk_dest) {
+    dest_param = sk_dest.rlwe_sk->param;
     init();
     key_switching_key_gen(sk_origin, sk_dest);
 }
-
-LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(const LWEToRLWEKeySwitchKey &other){
-    throw std::runtime_error("LWEToRLWEKeySwitchKey::LWEToRLWEKeySwitchKey(const LWEToRLWEKeySwitchKey &other)");
-}
-
-LWEToRLWEKeySwitchKey& LWEToRLWEKeySwitchKey::operator=(const LWEToRLWEKeySwitchKey other){
-    throw std::runtime_error("LWEToRLWEKeySwitchKey& LWEToRLWEKeySwitchKey::operator=(const LWEToRLWEKeySwitchKey other)");
-    return *this;
-}
-
+ 
 void LWEToRLWEKeySwitchKey::init(){
     degree_inv = Utils::mod_inv(dest_param->size, dest_param->coef_modulus); 
     bits_degree = Utils::number_of_bits(dest_param->size) - 1;
@@ -24,14 +15,12 @@ void LWEToRLWEKeySwitchKey::init(){
     mask_mod_degree = dest_param->size - 1;  
 }
 
-void LWEToRLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<RLWEGadgetSK> sk_dest) { 
-    /// TODO: Try to just copy the key here, instead of calling with size and modulus
-    /// TODO: perhaps copying isn't needed at all? 
-    Polynomial sk_origin_poly(sk_origin->key, sk_dest->rlwe_sk->sk_poly.size(), sk_dest->rlwe_sk->sk_poly.modulus()); 
-    Polynomial sk_auto(sk_dest->rlwe_sk->sk_poly.size(), sk_dest->rlwe_sk->sk_poly.modulus());  
+void LWEToRLWEKeySwitchKey::key_switching_key_gen(const LWESK& sk_origin, const RLWEGadgetSK& sk_dest) {  
+    Polynomial sk_origin_poly = sk_origin.key; 
+    Polynomial sk_auto(dest_param->size, dest_param->coef_modulus);  
     for(int i = 2; i <= dest_param->size; i *= 2) {
         eval_auto_poly(sk_auto, sk_origin_poly, i+1); 
-        ext_key_content.push_back(sk_dest->extended_encrypt(sk_auto)); 
+        ext_key_content.push_back(sk_dest.extended_encrypt(sk_auto)); 
     }
 }
    

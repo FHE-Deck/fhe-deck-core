@@ -2,13 +2,6 @@
  
 using namespace FHEDeck;
   
-void Utils::cp(int64_t *out, int64_t *in, int32_t size){
-    for(int32_t i =0; i < size; ++i){
-        out[i] = in[i];
-    }
-}
-
-
 int32_t Utils::power_times(int64_t x, int64_t base){ 
     if(x <= 1){
         return 1;
@@ -111,13 +104,7 @@ int64_t Utils::integer_signed_form(int64_t in, int64_t Q){
         return in+Q;
     } 
 }
- 
-void Utils::array_signed_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
-    for(int32_t i = 0; i < sizeof_in; ++i){ 
-        out[i] =  Utils::integer_signed_form(in[i], Q);
-    }
-}
- 
+  
 int64_t Utils::integer_mod_form(int64_t in, int64_t Q){ 
     if(in >= 0){
         return in % Q;
@@ -126,14 +113,10 @@ int64_t Utils::integer_mod_form(int64_t in, int64_t Q){
         return (Q + temp) % Q; 
     }
 }
- 
-void Utils::array_mod_form(int64_t *out, int64_t *in, int32_t sizeof_in, int64_t Q){ 
-    for(int32_t i = 0; i < sizeof_in; ++i){ 
-        out[i] = Utils::integer_mod_form(in[i], Q);
-    }
-}  
- 
-void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t k, int32_t ell){
+  
+std::vector<int64_t> Utils::integer_decomp(int64_t in , int32_t basis, int32_t k, int32_t ell){
+    std::vector<int64_t> dec_out;
+    dec_out.resize(ell);
     int64_t mask = basis-1;
     int64_t shift;
     for(int32_t i = 0; i < ell; ++i){
@@ -141,9 +124,10 @@ void Utils::integer_decomp(int64_t *dec_out, int64_t in , int32_t basis, int32_t
         dec_out[i] = (in & mask) >> shift; 
         mask = mask << k;
     }
-}
-
-int64_t Utils::integer_compose(int64_t *dec_in, int32_t basis, int32_t ell){
+    return dec_out;
+} 
+ 
+int64_t Utils::integer_compose(const std::vector<int64_t>& dec_in, int32_t basis, int32_t ell){
     int64_t out = dec_in[0];
     int64_t temp_basis = 1;
     for(int32_t i = 1; i < ell; ++i){
@@ -151,11 +135,11 @@ int64_t Utils::integer_compose(int64_t *dec_in, int32_t basis, int32_t ell){
         out += dec_in[i] * temp_basis;
     }
     return out;
-} 
+}  
  
-int64_t Utils::max(long* in, int32_t N){
+int64_t Utils::max(const std::vector<int64_t>& in){
     int64_t max = in[0];
-    for(int32_t i = 1; i < N; ++i){
+    for(int32_t i = 1; i < in.size(); ++i){
         if(max < in[i]){
             max = in[i];
         }
@@ -163,9 +147,9 @@ int64_t Utils::max(long* in, int32_t N){
     return max;
 }
 
-int64_t Utils::min(long* in, int32_t N){
+int64_t Utils::min(const std::vector<int64_t>& in){
     int64_t max = in[0];
-    for(int32_t i = 1; i < N; ++i){
+    for(int32_t i = 1; i < in.size(); ++i){
         if(max > in[i]){
             max = in[i];
         }
@@ -173,51 +157,51 @@ int64_t Utils::min(long* in, int32_t N){
     return max;
 }
 
-double Utils::mean(long* in, int32_t N){
+double Utils::mean(const std::vector<int64_t>& in){
     double sum = 0;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         sum += (double)in[i];
     }
-    return sum / (double)N;
+    return sum / (double)in.size();
 }
 
-double Utils::variance(long* in, int32_t N){
-    double m = mean(in, N); 
+double Utils::variance(const std::vector<int64_t>& in){
+    double m = mean(in); 
     double sum = 0.0;
     double square = 0.0;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         square = in[i] - m;
         square *= square;
         sum += square;
     } 
-    return sum/(double)N;
+    return sum/(double)in.size();
 }
 
-double Utils::variance(long* in, int32_t N, double mean){
+double Utils::variance(const std::vector<int64_t>& in, double mean){
     double m = mean;
     double sum = 0.0;
     double square = 0.0;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         square = in[i] - m;
         square *= square;
         sum += square;
     } 
-    return sum/(double)N;
+    return sum/(double)in.size();
 }
 
-double Utils::standard_deviation(long* in, int32_t N){ 
-    return sqrt(Utils::variance(in, N)); 
+double Utils::standard_deviation(const std::vector<int64_t>& in){ 
+    return sqrt(Utils::variance(in, in.size())); 
 }
 
  
-double Utils::standard_deviation(long* in, int32_t N, double mean){ 
-    return sqrt(Utils::variance(in, N, mean)); 
+double Utils::standard_deviation(const std::vector<int64_t>& in, double mean){ 
+    return sqrt(Utils::variance(in, mean)); 
 }
 
-int64_t Utils::infinity_norm(long* in, int32_t N){
+int64_t Utils::infinity_norm(const std::vector<int64_t>& in){
     int64_t out = 0 ;
     int64_t curr;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         curr = Utils::abs(in[i]);
         if(curr > out){
             out = curr;
@@ -226,23 +210,23 @@ int64_t Utils::infinity_norm(long* in, int32_t N){
     return out;
 }
 
-long* Utils::count_occurences(long* in, int32_t N){
-    int64_t max = Utils::max(in, N);
-    int64_t min = Utils::min(in, N);
+long* Utils::count_occurences(const std::vector<int64_t>& in){
+    int64_t max = Utils::max(in);
+    int64_t min = Utils::min(in);
     int32_t size = max - min + 1;
     long* occurences = new long[size];
     for(int32_t i = 0; i < size; ++i){
         occurences[i] = 0;
     }
-    for(int32_t i = 0; i < N; ++i){ 
+    for(int32_t i = 0; i < in.size(); ++i){ 
         occurences[in[i]-min] += 1;
     } 
     return occurences;
 }
 
-int64_t Utils::count_positive(long* in, int32_t N){
+int64_t Utils::count_positive(const std::vector<int64_t>& in){
     int64_t out = 0;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         if(in[i] > 0){
             out++;
         }
@@ -250,9 +234,9 @@ int64_t Utils::count_positive(long* in, int32_t N){
     return out;
 }
 
-int64_t Utils::count_negative(long* in, int32_t N){
+int64_t Utils::count_negative(const std::vector<int64_t>& in){
     int64_t out = 0;
-    for(int32_t i = 0; i < N; ++i){
+    for(int32_t i = 0; i < in.size(); ++i){
         if(in[i] < 0){
             out++;
         }
@@ -266,12 +250,11 @@ LongIntegerMultipler::LongIntegerMultipler(unsigned long modulus){
     unsigned long bits_modulus = Utils::power_times(modulus, 2);  
     this->bits_base = 63 - bits_modulus; 
     this->base = Utils::pow(bits_base, 2); 
-    this->modulus_log_base = Utils::power_times(modulus, base);  
-    this->decomp = std::unique_ptr<long[]>(new long[modulus_log_base]); 
+    this->modulus_log_base = Utils::power_times(modulus, base);   
 }
 
-unsigned long LongIntegerMultipler::mul(unsigned long in_1, unsigned long in_2){  
-    Utils::integer_decomp(decomp.get(), in_2, base, bits_base, modulus_log_base);   
+unsigned long LongIntegerMultipler::mul(unsigned long in_1, unsigned long in_2){   
+    std::vector<int64_t> decomp  = Utils::integer_decomp(in_2, base, bits_base, modulus_log_base);   
     unsigned long out = (in_1 * decomp[modulus_log_base - 1]) % modulus;   
     for(int32_t i = 1; i < modulus_log_base; ++i){  
         out = (out * base) % modulus; 

@@ -141,28 +141,24 @@ LWEGadgetCT::LWEGadgetCT(std::shared_ptr<LWEParam> lwe_param, int64_t base){
     this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]);  
 }
 
-void LWEGadgetCT::gadget_mul(LWECT& out_ct, int64_t scalar){ 
-    int64_t *scalar_decomposed = new int64_t[digits]; 
-    Utils::integer_decomp(scalar_decomposed, scalar, base, bits_base, digits);
+void LWEGadgetCT::gadget_mul(LWECT& out_ct, int64_t scalar){  
+    std::vector<int64_t> scalar_decomposed = Utils::integer_decomp(scalar, base, bits_base, digits);
     LWECT temp_ct(lwe_param); 
     ct_content[0]->mul(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < digits; ++i){
         ct_content[i]->mul(temp_ct, scalar_decomposed[i]);
         out_ct.add(out_ct, temp_ct);  
-    }
-    delete[] scalar_decomposed;  
+    } 
 } 
     
-void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){ 
-    int64_t *scalar_decomposed = new int64_t[digits]; 
-    Utils::integer_decomp(scalar_decomposed, scalar, base, bits_base, digits);
+void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){  
+    std::vector<int64_t> scalar_decomposed = Utils::integer_decomp(scalar, base, bits_base, digits);
     LWECT temp_ct(lwe_param); 
     ct_content[0]->mul_lazy(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < digits; ++i){
         ct_content[i]->mul_lazy(temp_ct, scalar_decomposed[i]);
         out_ct.add_lazy(out_ct, temp_ct);  
-    }
-    delete[] scalar_decomposed;  
+    } 
 } 
   
 LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){

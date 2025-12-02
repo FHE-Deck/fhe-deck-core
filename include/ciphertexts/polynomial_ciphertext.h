@@ -10,11 +10,9 @@
 /**
  * @file polynomial_ciphertext.h
  */
-
-
-namespace FHEDeck{
  
-
+namespace FHEDeck{
+  
 /**
  * @brief Interface for vector ciphertext parameters. Example implementations include RLWEParam and NTRUParam.
  */
@@ -122,13 +120,13 @@ class GadgetPolynomialCTSK : public GadgetVectorCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg) = 0; 
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg) const = 0; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext. 
-    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg) = 0;  
+    virtual std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg) const = 0;  
     
     #if defined(USE_CEREAL)
     template <class Archive>

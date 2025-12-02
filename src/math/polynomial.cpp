@@ -12,27 +12,20 @@ void PolynomialMultiplicationEngine::mul(Polynomial &out, const Polynomial &in_1
     mul(*eval_out, *eval_in_1, *eval_in_2);  
     to_coef(out, *eval_out);  
 }
-   
-PolynomialEvalFormLongInteger::~PolynomialEvalFormLongInteger(){
-    if(is_init){
-        delete[] eval_long;
-    }
-}
-
+  
 int32_t PolynomialEvalForm::size() const{ 
     return m_size;
 }
 
-PolynomialEvalFormLongInteger::PolynomialEvalFormLongInteger(int64_t* eval_long, int32_t size, int64_t coef_modulus){
-    this->eval_long = eval_long;
-    this->coef_modulus = coef_modulus;
-    this->is_init = true; 
+PolynomialEvalFormLongInteger::PolynomialEvalFormLongInteger(int32_t size, int64_t coef_modulus){ 
+    m_eval_long = std::make_unique<int64_t[]>(size);
+    this->m_modulus = coef_modulus; 
     this->m_size = size;
 }
 
 void PolynomialEvalFormLongInteger::zeroize(){ 
     for(int32_t i = 0; i < m_size; ++i){
-        this->eval_long[i] = 0;
+        m_eval_long[i] = 0;
     }
 }
 
@@ -40,7 +33,7 @@ void PolynomialEvalFormLongInteger::add(PolynomialEvalForm &out, const Polynomia
     const PolynomialEvalFormLongInteger& other_cast = static_cast<const PolynomialEvalFormLongInteger&>(other);
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval_long[i] = this->eval_long[i] + other_cast.eval_long[i];
+        out_cast.m_eval_long[i] = m_eval_long[i] + other_cast.m_eval_long[i];
     }
 }
 
@@ -48,40 +41,49 @@ void PolynomialEvalFormLongInteger::sub(PolynomialEvalForm &out, const Polynomia
     const PolynomialEvalFormLongInteger& other_cast = static_cast<const PolynomialEvalFormLongInteger&>(other);
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval_long[i] = this->eval_long[i] - other_cast.eval_long[i];
+        out_cast.m_eval_long[i] = m_eval_long[i] - other_cast.m_eval_long[i];
     }  
 }
 
 void PolynomialEvalFormLongInteger::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval_long[i] = this->eval_long[i] * scalar;
+        out_cast.m_eval_long[i] = m_eval_long[i] * scalar;
     } 
 }
  
 void PolynomialEvalFormLongInteger::neg(PolynomialEvalForm &out)const{
     PolynomialEvalFormLongInteger& out_cast = static_cast<PolynomialEvalFormLongInteger&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval_long[i] = -this->eval_long[i];
+        out_cast.m_eval_long[i] = -m_eval_long[i];
     } 
 }
-   
-PolynomialEvalFormComplex::~PolynomialEvalFormComplex(){
-    if(is_init){
-        delete[] eval;
-    }
+
+int64_t PolynomialEvalFormLongInteger::operator[](std::size_t index) const{
+    return m_eval_long[index];
+} 
+
+int64_t& PolynomialEvalFormLongInteger::operator[](std::size_t index){
+    return m_eval_long.get()[index];
 }
- 
-PolynomialEvalFormComplex::PolynomialEvalFormComplex(Complex* eval, int32_t size){
-    this->eval = eval; 
-    this->is_init = true; 
+
+int64_t* PolynomialEvalFormLongInteger::get()const{
+    return m_eval_long.get();
+}
+
+int64_t PolynomialEvalFormLongInteger::modulus()const{
+    return m_modulus;
+}
+    
+PolynomialEvalFormComplex::PolynomialEvalFormComplex(int32_t size){
+    m_eval = std::make_unique<Complex[]>(size); 
     this->m_size = size; 
 }
 
 void PolynomialEvalFormComplex::zeroize(){
     for(int32_t i = 0; i < m_size; ++i){
-        this->eval[i][0] = 0;
-        this->eval[i][1] = 0;
+        m_eval[i][0] = 0;
+        m_eval[i][1] = 0;
     }
 }
 
@@ -89,8 +91,8 @@ void PolynomialEvalFormComplex::add(PolynomialEvalForm &out, const PolynomialEva
     const PolynomialEvalFormComplex& other_cast = static_cast<const PolynomialEvalFormComplex&>(other);
     const PolynomialEvalFormComplex& out_cast = static_cast<const PolynomialEvalFormComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] + other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] + other_cast.eval[i][1];
+        out_cast.m_eval[i][0] = m_eval[i][0] + other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = m_eval[i][1] + other_cast.m_eval[i][1];
     } 
 }
 
@@ -98,44 +100,48 @@ void PolynomialEvalFormComplex::sub(PolynomialEvalForm &out, const PolynomialEva
     const PolynomialEvalFormComplex& other_cast = static_cast<const PolynomialEvalFormComplex&>(other);
     const PolynomialEvalFormComplex& out_cast = static_cast<const PolynomialEvalFormComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] - other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] - other_cast.eval[i][1];
+        out_cast.m_eval[i][0] = m_eval[i][0] - other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = m_eval[i][1] - other_cast.m_eval[i][1];
     } 
 }
 
 void PolynomialEvalFormComplex::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormComplex& out_cast = static_cast<PolynomialEvalFormComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] * scalar;
-        out_cast.eval[i][1] = this->eval[i][1] * scalar;
+        out_cast.m_eval[i][0] = m_eval[i][0] * scalar;
+        out_cast.m_eval[i][1] = m_eval[i][1] * scalar;
     }  
 }
  
 void PolynomialEvalFormComplex::neg(PolynomialEvalForm &out)const{ 
     PolynomialEvalFormComplex& out_cast = static_cast<PolynomialEvalFormComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval[i][0] = -this->eval[i][0];
-        out_cast.eval[i][1] = -this->eval[i][1];
+        out_cast.m_eval[i][0] = -m_eval[i][0];
+        out_cast.m_eval[i][1] = -m_eval[i][1];
     } 
 }
- 
 
-PolynomialEvalFormLongComplex::~PolynomialEvalFormLongComplex(){
-    if(is_init){
-        delete[] eval;
-    }
+Complex* PolynomialEvalFormComplex::get()const{
+    return m_eval.get();
+}
+
+void PolynomialEvalFormComplex::scale(double scale){
+    m_scale = scale;
+}
+
+double PolynomialEvalFormComplex::scale()const{
+    return m_scale;
 }
   
-PolynomialEvalFormLongComplex::PolynomialEvalFormLongComplex(LongComplex* eval, int32_t size){
-    this->eval = eval; 
-    this->is_init = true; 
-    this->m_size = size; 
+PolynomialEvalFormLongComplex::PolynomialEvalFormLongComplex(int32_t size){
+    m_eval = std::make_unique<LongComplex[]>(size); 
+    m_size = size; 
 }
 
 void PolynomialEvalFormLongComplex::zeroize(){
     for(int32_t i = 0; i < m_size; ++i){
-        this->eval[i][0] = 0;
-        this->eval[i][1] = 0;
+        m_eval[i][0] = 0;
+        m_eval[i][1] = 0;
     }
 }
 
@@ -143,8 +149,8 @@ void PolynomialEvalFormLongComplex::add(PolynomialEvalForm &out, const Polynomia
     const PolynomialEvalFormLongComplex& other_cast = static_cast<const PolynomialEvalFormLongComplex&>(other);
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
     for(int32_t i = 0; i < m_size; ++ i){
-        out_cast.eval[i][0] = this->eval[i][0] + other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] + other_cast.eval[i][1];
+        out_cast.m_eval[i][0] = this->m_eval[i][0] + other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = this->m_eval[i][1] + other_cast.m_eval[i][1];
     }       
 }
  
@@ -152,25 +158,37 @@ void PolynomialEvalFormLongComplex::sub(PolynomialEvalForm &out, const Polynomia
     const PolynomialEvalFormLongComplex& other_cast = static_cast<const PolynomialEvalFormLongComplex&>(other);
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] - other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] - other_cast.eval[i][1];
+        out_cast.m_eval[i][0] = m_eval[i][0] - other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = m_eval[i][1] - other_cast.m_eval[i][1];
     } 
 }
 
 void PolynomialEvalFormLongComplex::mul(PolynomialEvalForm &out, int64_t scalar)const{
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-            out_cast.eval[i][0] = this->eval[i][0] * scalar;
-            out_cast.eval[i][1] = this->eval[i][1] * scalar;
+            out_cast.m_eval[i][0] = m_eval[i][0] * scalar;
+            out_cast.m_eval[i][1] = m_eval[i][1] * scalar;
         } 
 }
  
 void PolynomialEvalFormLongComplex::neg(PolynomialEvalForm &out)const{
     PolynomialEvalFormLongComplex& out_cast = static_cast<PolynomialEvalFormLongComplex&>(out);
     for(int32_t i = 0; i < m_size; ++i){
-            out_cast.eval[i][0] = -this->eval[i][0];
-            out_cast.eval[i][1] = -this->eval[i][1];
+            out_cast.m_eval[i][0] = -m_eval[i][0];
+            out_cast.m_eval[i][1] = -m_eval[i][1];
         } 
+}
+
+LongComplex* PolynomialEvalFormLongComplex::get()const{
+    return m_eval.get();
+}
+
+void PolynomialEvalFormLongComplex::scale(long double scale){
+    m_scale = scale;
+}
+
+long double PolynomialEvalFormLongComplex::scale()const{
+    return m_scale;
 }
     
 Polynomial::Polynomial(int32_t degree, int64_t coef_modulus): Vector(degree, coef_modulus){ 
@@ -190,26 +208,26 @@ Polynomial& Polynomial::operator=(const VectorView& other){
     m_modulus = other.modulus();
     init();
     this->init_from_vec();
-    Utils::cp(m_vec, other.get(), m_size);  
+    for(std::size_t i{0}; i < m_size; ++i){
+        m_vec[i] = other[i];
+    } 
     return *this;
 }
 
 
 Polynomial::Polynomial(const VectorView& other): Vector(other){ 
-    this->init_from_vec();  
+    init_from_vec();  
 }
 
 void Polynomial::init_from_vec(){ 
-    this->coef_modulus_bit_size = Utils::power_times(m_modulus, 2); 
+    m_coef_modulus_bit_size = Utils::power_times(m_modulus, 2); 
 }
  
-Polynomial::Polynomial(const Polynomial &other): Vector(other.size(), other.modulus()){ 
-    this->init_from_vec();
-    Utils::cp(m_vec, other.m_vec, m_size);  
-    this->mul_engine = other.mul_engine;
-    this->is_mul_engine_set = other.is_mul_engine_set; 
-    this->inv_engine = other.inv_engine;
-    this->is_inv_engine_set = other.is_inv_engine_set;
+Polynomial::Polynomial(const Polynomial &other): Polynomial(other, other.size(), other.modulus()){  
+    m_mul_engine = other.m_mul_engine;
+    m_is_mul_engine_set = other.m_is_mul_engine_set; 
+    m_inv_engine = other.m_inv_engine;
+    m_is_inv_engine_set = other.m_is_inv_engine_set;
 } 
   
 Polynomial& Polynomial::operator=(const Polynomial& other){ 
@@ -217,22 +235,24 @@ Polynomial& Polynomial::operator=(const Polynomial& other){
     m_modulus = other.modulus();
     init(); 
     this->init_from_vec(); 
-    Utils::cp(m_vec, other.m_vec, m_size);  
-    this->mul_engine = other.mul_engine;
-    this->is_mul_engine_set = other.is_mul_engine_set; 
-    this->inv_engine = other.inv_engine;
-    this->is_inv_engine_set = other.is_inv_engine_set;
+    for(std::size_t i{0}; i < m_size; ++i){
+        m_vec[i] = other[i];
+    }  
+    m_mul_engine = other.m_mul_engine;
+    m_is_mul_engine_set = other.m_is_mul_engine_set; 
+    m_inv_engine = other.m_inv_engine;
+    m_is_inv_engine_set = other.m_is_inv_engine_set;
     return *this;
 }
  
 void Polynomial::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    this->mul_engine = mul_engine;
-    this->is_mul_engine_set = true; 
+    m_mul_engine = mul_engine;
+    m_is_mul_engine_set = true; 
 }
 
 void Polynomial::set_inversion_engine(std::shared_ptr<PolynomialInversionEngine> inv_engine){
-    this->inv_engine = inv_engine;
-    this->is_inv_engine_set = true; 
+    m_inv_engine = inv_engine;
+    m_is_inv_engine_set = true; 
 }
 
 void Polynomial::cyclic_rotate(Polynomial &out, int64_t rotation)const{
@@ -272,24 +292,12 @@ void Polynomial::negacyclic_rotate(Polynomial &out, int64_t rotation)const{
 }
  
 void Polynomial::to_eval(PolynomialEvalForm &out){ 
-    mul_engine->to_eval(out, *this);
+    m_mul_engine->to_eval(out, *this);
 }
 
 void Polynomial::to_eval(PolynomialEvalForm &out, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){ 
     mul_engine->to_eval(out, *this);
 }
-  
-std::shared_ptr<Polynomial> Polynomial::clone() const{ 
-    std::shared_ptr<Polynomial> out = std::make_shared<Polynomial>(m_size, m_modulus);
-    if(is_mul_engine_set){
-        out->set_multiplication_engine(mul_engine);
-    }
-    if(is_inv_engine_set){
-        out->set_inversion_engine(inv_engine);
-    } 
-    Utils::cp(out->m_vec, m_vec, m_size); 
-    return out;
-} 
    
 void Polynomial::mul(Polynomial &out, int64_t scalar)const{ 
     if(m_size != out.size()){
@@ -305,8 +313,8 @@ void Polynomial::mul(Polynomial &out, int64_t scalar)const{
 }
 
 void Polynomial::mul(Polynomial &out, const Polynomial &other)const{   
-    if(this->is_mul_engine_set){ 
-        this->mul(out, other, this->mul_engine); 
+    if(m_is_mul_engine_set){ 
+        mul(out, other, m_mul_engine); 
     }else{
         throw std::logic_error("Polynomial::mul(Polynomial *out, Polynomial *other): No multiplication engin set!");
     }
@@ -317,7 +325,7 @@ void Polynomial::mul(Polynomial &out, const Polynomial &other, std::shared_ptr<P
 }
   
 void Polynomial::inv(Polynomial &out)const{
-    this->inv_engine->inv(out, *this);
+    m_inv_engine->inv(out, *this);
 }
 
 void Polynomial::inv(Polynomial &out, std::shared_ptr<PolynomialInversionEngine> inv_engine)const{
@@ -330,22 +338,26 @@ PolynomialArray::PolynomialArray(int32_t degree, int64_t coef_modulus, int32_t a
  
 PolynomialArray::PolynomialArray(int32_t degree, int64_t coef_modulus, int32_t array_size, std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){ 
     init(degree, coef_modulus, array_size); 
-    this->mul_engine = mul_engine;
-    is_mul_engine_set = true; 
+    m_mul_engine = mul_engine;
+    m_is_mul_engine_set = true; 
 }
   
 PolynomialArray::PolynomialArray(const PolynomialArray &other){
-    this->init(other.m_vector_size, other.m_modulus, other.m_array_size);  
-    Utils::cp(m_vec_array.get(), other.m_vec_array.get(), this->m_full_size);  
-    this->mul_engine = other.mul_engine;
-    this->is_mul_engine_set = other.is_mul_engine_set;  
+    this->init(other.m_vector_size, other.m_modulus, other.m_array_size);     
+    for(std::size_t i{0}; i < m_full_size; ++i){
+        m_vec_array[i] = other.m_vec_array[i];
+    }
+    m_mul_engine = other.m_mul_engine;
+    m_is_mul_engine_set = other.m_is_mul_engine_set;  
 } 
   
 PolynomialArray& PolynomialArray::operator=(const PolynomialArray other){
-    this->init(other.m_vector_size, other.m_modulus, other.m_array_size); 
-    Utils::cp(this->m_vec_array.get(), other.m_vec_array.get(), this->m_full_size);  
-    this->mul_engine = other.mul_engine;
-    this->is_mul_engine_set = other.is_mul_engine_set;  
+    this->init(other.m_vector_size, other.m_modulus, other.m_array_size);  
+    for(std::size_t i{0}; i < m_full_size; ++i){
+        m_vec_array[i] = other.m_vec_array[i];
+    }
+    m_mul_engine = other.m_mul_engine;
+    m_is_mul_engine_set = other.m_is_mul_engine_set;  
     return *this;
 }
 
@@ -362,152 +374,179 @@ void PolynomialArray::set_polynomial_at(int32_t i, const Polynomial &poly){
 }
  
 void PolynomialArray::set_multiplication_engine(std::shared_ptr<PolynomialMultiplicationEngine> mul_engine){
-    this->mul_engine = mul_engine;
+    m_mul_engine = mul_engine;
 }
      
 PolynomialArrayEvalFormLong::PolynomialArrayEvalFormLong(int32_t array_size, int64_t degree, int64_t coef_modulus){
-    this->array_size = array_size;
-    this->size = degree;
-    this->coef_modulus = coef_modulus;
-    this->full_size = array_size * this->size; 
-    this->eval_long = std::make_unique<int64_t[]>(full_size); 
+    m_array_size = array_size;
+    m_eval_form_size = degree;
+    m_coef_modulus = coef_modulus;
+    m_full_size = m_array_size * m_eval_form_size; 
+    m_eval_long = std::make_unique<int64_t[]>(m_full_size); 
 }
 
+int32_t PolynomialArrayEvalForm::eval_form_size()const{
+    return m_eval_form_size;
+}
+
+int32_t PolynomialArrayEvalForm::size()const{
+    return m_array_size;
+}
+ 
 void PolynomialArrayEvalFormLong::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     const PolynomialArrayEvalFormLong& other_cast = static_cast<const PolynomialArrayEvalFormLong&>(other);
     const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-         out_cast.eval_long[i] = this->eval_long[i] + other_cast.eval_long[i];
+    for(int32_t i = 0; i < m_full_size; ++i){
+         out_cast.m_eval_long[i] = m_eval_long[i] + other_cast.m_eval_long[i];
     }
 }
 
 void PolynomialArrayEvalFormLong::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     const PolynomialArrayEvalFormLong& other_cast = static_cast<const PolynomialArrayEvalFormLong&>(other);
     const PolynomialArrayEvalFormLong& out_cast = static_cast<const PolynomialArrayEvalFormLong&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-         out_cast.eval_long[i] = this->eval_long[i] - other_cast.eval_long[i];
+    for(int32_t i = 0; i < m_full_size; ++i){
+         out_cast.m_eval_long[i] = m_eval_long[i] - other_cast.m_eval_long[i];
     }
 }
  
 void PolynomialArrayEvalFormLong::mul(PolynomialArrayEvalForm &out, int64_t scalar){
     PolynomialArrayEvalFormLong& out_cast = static_cast<PolynomialArrayEvalFormLong&>(out); 
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval_long[i] = this->eval_long[i] * scalar;
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval_long[i] = m_eval_long[i] * scalar;
     }
 }
 
 void PolynomialArrayEvalFormLong::neg(PolynomialArrayEvalForm &out){
     PolynomialArrayEvalFormLong& out_cast = static_cast<PolynomialArrayEvalFormLong&>(out); 
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval_long[i] = -this->eval_long[i];
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval_long[i] = -m_eval_long[i];
     }
 }
  
-Observer<int64_t[]> PolynomialArrayEvalFormLong::operator[](std::size_t i){
-    return Observer<int64_t[]>(&eval_long[i * size], size);
+std::span<int64_t> PolynomialArrayEvalFormLong::operator[](std::size_t i){
+    return std::span<int64_t>(&m_eval_long[i * m_eval_form_size], m_eval_form_size);
 }
 
-const Observer<int64_t[]> PolynomialArrayEvalFormLong::operator[](std::size_t i) const{
-    return Observer<int64_t[]>(&eval_long[i * size], size);
+const std::span<int64_t> PolynomialArrayEvalFormLong::operator[](std::size_t i) const{
+    return std::span<int64_t>(&m_eval_long[i * m_eval_form_size], m_eval_form_size);
+}
+
+int64_t PolynomialArrayEvalFormLong::modulus()const{
+    return m_coef_modulus;
 }
    
 PolynomialArrayEvalFormComplex::PolynomialArrayEvalFormComplex(int32_t size, int32_t array_size){ 
-    this->array_size = array_size; 
-    this->size = size; 
-    this->full_size = this->size * array_size;   
-    this->eval = std::make_unique<Complex[]>(full_size); 
+    m_array_size = array_size; 
+    m_eval_form_size = size; 
+    m_full_size = m_eval_form_size * array_size;   
+    m_eval = std::make_unique<Complex[]>(m_full_size); 
 }
 
 void PolynomialArrayEvalFormComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     const PolynomialArrayEvalFormComplex& other_cast = static_cast<const PolynomialArrayEvalFormComplex&>(other);
     const PolynomialArrayEvalFormComplex& out_cast = static_cast<const PolynomialArrayEvalFormComplex&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-            out_cast.eval[i][0] = this->eval[i][0] + other_cast.eval[i][0];
-            out_cast.eval[i][1] = this->eval[i][1] + other_cast.eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+            out_cast.m_eval[i][0] = m_eval[i][0] + other_cast.m_eval[i][0];
+            out_cast.m_eval[i][1] = m_eval[i][1] + other_cast.m_eval[i][1];
         } 
 }
 
 void PolynomialArrayEvalFormComplex::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     const PolynomialArrayEvalFormComplex& other_cast = static_cast<const PolynomialArrayEvalFormComplex&>(other);
     const PolynomialArrayEvalFormComplex& out_cast = static_cast<const PolynomialArrayEvalFormComplex&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-            out_cast.eval[i][0] = this->eval[i][0] - other_cast.eval[i][0];
-            out_cast.eval[i][1] = this->eval[i][1] - other_cast.eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+            out_cast.m_eval[i][0] = m_eval[i][0] - other_cast.m_eval[i][0];
+            out_cast.m_eval[i][1] = m_eval[i][1] - other_cast.m_eval[i][1];
         } 
 }
 
 void PolynomialArrayEvalFormComplex::mul(PolynomialArrayEvalForm &out, int64_t scalar){
     PolynomialArrayEvalFormComplex& out_cast = static_cast<PolynomialArrayEvalFormComplex&>(out);
-     for(int32_t i = 0; i < full_size; ++i){
-            out_cast.eval[i][0] = this->eval[i][0] * scalar;
-            out_cast.eval[i][1] = this->eval[i][1] * scalar;
+     for(int32_t i = 0; i < m_full_size; ++i){
+            out_cast.m_eval[i][0] = m_eval[i][0] * scalar;
+            out_cast.m_eval[i][1] = m_eval[i][1] * scalar;
         } 
 }
 
 void PolynomialArrayEvalFormComplex::neg(PolynomialArrayEvalForm &out){
     PolynomialArrayEvalFormComplex& out_cast = static_cast<PolynomialArrayEvalFormComplex&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-            out_cast.eval[i][0] = -this->eval[i][0];
-            out_cast.eval[i][1] = -this->eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+            out_cast.m_eval[i][0] = -m_eval[i][0];
+            out_cast.m_eval[i][1] = -m_eval[i][1];
         } 
 }
 
-Observer<Complex[]> PolynomialArrayEvalFormComplex::operator[](std::size_t i){
-    return Observer<Complex[]>(&eval[i * size], size);
+std::span<Complex> PolynomialArrayEvalFormComplex::operator[](std::size_t i){
+    return std::span<Complex>(&m_eval[i * m_eval_form_size], m_eval_form_size);
 }
 
-const Observer<Complex[]> PolynomialArrayEvalFormComplex::operator[](std::size_t i) const{
-    return Observer<Complex[]>(&eval[i * size], size);
+const std::span<Complex> PolynomialArrayEvalFormComplex::operator[](std::size_t i) const{
+    return std::span<Complex>(&m_eval[i * m_eval_form_size], m_eval_form_size);
+}
+
+double PolynomialArrayEvalFormComplex::scale()const{
+    return m_scale;
+}
+
+void PolynomialArrayEvalFormComplex::scale(double scale){
+    m_scale = scale;
 }
    
-PolynomialArrayEvalFormLongComplex::PolynomialArrayEvalFormLongComplex(int32_t size, int32_t array_size){ 
-    this->array_size = array_size; 
-    this->size = size; 
-    this->full_size = this->size * array_size;  
-    this->eval = std::make_unique<LongComplex[]>(full_size); 
+PolynomialArrayEvalFormLongComplex::PolynomialArrayEvalFormLongComplex(int32_t eval_form_size, int32_t array_size){ 
+    m_array_size = array_size; 
+    m_eval_form_size = eval_form_size; 
+    m_full_size = m_eval_form_size * array_size;  
+    m_eval = std::make_unique<LongComplex[]>(m_full_size); 
 }
 
 void PolynomialArrayEvalFormLongComplex::add(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     const PolynomialArrayEvalFormLongComplex& out_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(out);
     const PolynomialArrayEvalFormLongComplex& other_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(other);
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] + other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] + other_cast.eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval[i][0] = m_eval[i][0] + other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = m_eval[i][1] + other_cast.m_eval[i][1];
     } 
 }
 
 void PolynomialArrayEvalFormLongComplex::sub(PolynomialArrayEvalForm &out, const PolynomialArrayEvalForm &other){
     PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);
     const PolynomialArrayEvalFormLongComplex& other_cast = static_cast<const PolynomialArrayEvalFormLongComplex&>(other);
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] - other_cast.eval[i][0];
-        out_cast.eval[i][1] = this->eval[i][1] - other_cast.eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval[i][0] = m_eval[i][0] - other_cast.m_eval[i][0];
+        out_cast.m_eval[i][1] = m_eval[i][1] - other_cast.m_eval[i][1];
     } 
 }
 
 void PolynomialArrayEvalFormLongComplex::mul(PolynomialArrayEvalForm &out, int64_t scalar){
     PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval[i][0] = this->eval[i][0] * scalar;
-        out_cast.eval[i][1] = this->eval[i][1] * scalar;
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval[i][0] = m_eval[i][0] * scalar;
+        out_cast.m_eval[i][1] = m_eval[i][1] * scalar;
     }
 }
 
 void PolynomialArrayEvalFormLongComplex::neg(PolynomialArrayEvalForm &out){
     PolynomialArrayEvalFormLongComplex& out_cast = static_cast<PolynomialArrayEvalFormLongComplex&>(out);
-    for(int32_t i = 0; i < full_size; ++i){
-        out_cast.eval[i][0] = -this->eval[i][0];
-        out_cast.eval[i][1] = -this->eval[i][1];
+    for(int32_t i = 0; i < m_full_size; ++i){
+        out_cast.m_eval[i][0] = -m_eval[i][0];
+        out_cast.m_eval[i][1] = -m_eval[i][1];
     } 
 }
  
-Observer<LongComplex[]> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i){
-    return Observer<LongComplex[]>(&eval[i * size], size);
+std::span<LongComplex> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i){
+    return std::span<LongComplex>(&m_eval[i * m_eval_form_size], m_eval_form_size);
 }
 
-const Observer<LongComplex[]> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i) const{
-    return Observer<LongComplex[]>(&eval[i * size], size);
+const std::span<LongComplex> PolynomialArrayEvalFormLongComplex::operator[](std::size_t i) const{
+    return std::span<LongComplex>(&m_eval[i * m_eval_form_size], m_eval_form_size);
+}
+ 
+long double PolynomialArrayEvalFormLongComplex::scale()const{
+    return m_scale;
 }
 
+void PolynomialArrayEvalFormLongComplex::scale(long double scale){
+    m_scale = scale;
+}
 
  

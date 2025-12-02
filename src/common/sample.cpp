@@ -9,8 +9,7 @@ void Distribution::fill(std::vector<int64_t>& in){
     }
 }
 
-void Distribution::fill(VectorArray& in){ 
-    /// TODO: Change the Vector fill, to VectorView fill, and use the fill here. 
+void Distribution::fill(VectorArray& in){  
     for(int32_t i = 0; i < in.size(); ++i){
         VectorView v = in[i];
         fill(v); 

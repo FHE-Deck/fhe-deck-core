@@ -15,7 +15,7 @@ class VectorView{
      
     protected:
  
-    /// @brief The coefficients of the polynomial
+    /// @brief The coefficients of the polynomial. This is a oberver non-owning pointer.
     int64_t* m_vec = nullptr;   
     /// @brief the size of the vector
     int64_t m_size = 0;
@@ -40,7 +40,7 @@ class VectorView{
     /// @brief Overload the [] operator for read only acccess to the vector
     /// @param index Index to be accessed. 
     /// @return The reference to the accessed element
-    const int64_t& operator[](int32_t index) const;
+    int64_t operator[](int32_t index) const;
 
     bool operator==(const VectorView& other) const;
 
@@ -77,7 +77,6 @@ class VectorView{
     std::string to_string(int32_t size_of_string);
  
     static void array_signed_form(VectorView& out, const VectorView& in);
-
  
 };
 
@@ -165,28 +164,28 @@ class VectorArray{
 
     const VectorView operator[](int32_t index)const;
 
-    bool operator==(const VectorArray& other);
+    bool operator==(const VectorArray& other)const;
 
-    bool operator!=(const VectorArray& other);
+    bool operator!=(const VectorArray& other)const;
 
     /// @brief Coordinate wise addition of vector arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void add(VectorArray &out, const VectorArray &other);
+    void add(VectorArray &out, const VectorArray &other)const;
   
     /// @brief Coordinate wise subtraction of vectors arrays
     /// @param out The resulting vector array
     /// @param other The input vector array
-    void sub(VectorArray &out, const VectorArray &other);
+    void sub(VectorArray &out, const VectorArray &other)const;
   
     /// @brief Coordinate negation of vectors in this arrays
     /// @param out The resulting vector array 
-    void neg(VectorArray &out);
+    void neg(VectorArray &out)const;
   
     /// @brief Coordinate wise scalar multiplication of polynomials in thie arrays
     /// @param out The resulting polynomial array
     /// @param other The input polynomial array
-    void mul(VectorArray &out, int64_t scalar);
+    void mul(VectorArray &out, int64_t scalar)const;
 
     /// @brief Computes all vector elements modulo the modulus. This is used, when for instance, setting the coefficient vector to positive and negative integers.
     void normalize();

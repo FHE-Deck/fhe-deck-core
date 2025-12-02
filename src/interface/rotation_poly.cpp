@@ -185,8 +185,8 @@ void RotationPoly::to_amortization_form(){
 void RotationPoly::to_non_amortized_form(){
     if(!is_amortized_form){
         return;
-    }
-    Utils::array_signed_form(m_vec, m_vec, m_size, output_encoding.get_ciphertext_modulus()); 
+    } 
+    signed_form(); 
     if(!is_encoded){
         encode();   
     }

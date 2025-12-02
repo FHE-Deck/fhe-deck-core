@@ -269,7 +269,7 @@ void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
             std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk =  std::static_pointer_cast<RLWEGadgetSK>(secret_key->gadget_sk); 
             std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, lwe_to_rlwe_decomp_base));
             std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe_gadget_sk->rlwe_sk));
-            rlwe_ksk = std::make_shared<LWEToRLWEKeySwitchKey>(this->secret_key->lwe_sk, rlwe_gadget_sk_rksk);
+            rlwe_ksk = std::make_shared<LWEToRLWEKeySwitchKey>(*this->secret_key->lwe_sk, *rlwe_gadget_sk_rksk);
         }else{
             throw std::logic_error(" BasicBootstrapBuilder::build(): kluczniak_shield_fdfb2 doesn't support the given vector_encyption_type");
         }  
