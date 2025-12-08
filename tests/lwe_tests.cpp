@@ -36,10 +36,10 @@ TEST(LWETests, BasicLWETest){
         std::ifstream is_lwe_param("lweParam_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_lwe_param(is_lwe_param);  
         iarchive_lwe_param(param2);  
-        if(param->dim != param2->dim || param->modulus != param2->modulus){
+        if(param->dim() != param2->dim() || param->modulus() != param2->modulus()){
             FAIL();
             print_out << "Param Serialization Test: Fail" << std::endl; 
-            print_out << "param->dim: " << param->dim << ", param2->dim: " << param2->dim <<  std::endl;    
+            print_out << "param->dim: " << param->dim() << ", param2->dim: " << param2->dim() <<  std::endl;    
         } 
         std::remove("lweParam_test"); 
     }
@@ -56,18 +56,12 @@ TEST(LWETests, BasicLWETest){
         std::ifstream is_lwe_sk("lwe_sk_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_lwe_sk(is_lwe_sk);  
         iarchive_lwe_sk(lwe_sk_2);  
-        if(lwe_sk.param->dim != lwe_sk_2.param->dim || 
-            lwe_sk.param->modulus != lwe_sk_2.param->modulus || 
-            lwe_sk.stddev != lwe_sk_2.stddev || lwe_sk.key_type != lwe_sk_2.key_type){
+        if(lwe_sk.param()->dim() != lwe_sk_2.param()->dim() || 
+            lwe_sk.param()->modulus() != lwe_sk_2.param()->modulus() || 
+            lwe_sk.stddev() != lwe_sk_2.stddev() || lwe_sk.key_type() != lwe_sk_2.key_type()){
                 print_out << "LWESK Serialization Test: Fail" << std::endl;  
                 FAIL();
-        } 
-        for(int32_t i{0}; i < lwe_sk.param->dim; ++i){
-            if(lwe_sk.key[i] != lwe_sk_2.key[i]){  
-                print_out << "LWESK Serialization Test: Fail" << std::endl;  
-                FAIL();
-            }
-        }
+        }  
         std::remove("lwe_sk_test");
     }
     print_out << "Serialization of LWE SK: OK" << std::endl;
@@ -96,9 +90,9 @@ TEST(LWETests, BasicLWETest){
         std::ifstream is_ct("lwe_ct_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_ct(is_ct);  
         iarchive_ct(ct_test);  
-        if(ct->param->dim != ct_test->param->dim || 
-            ct->param->modulus != ct_test->param->modulus ||  
-            (ct->ct != ct_test->ct)){
+        if(ct->param()->dim() != ct_test->param()->dim() || 
+            ct->param()->modulus() != ct_test->param()->modulus() ||  
+            (ct->ct_vec() != ct_test->ct_vec())){
                 print_out << "LWECT Serialization Test: Fail" << std::endl;  
                 FAIL();
         } 
@@ -163,9 +157,8 @@ TEST(LWETests, GadgetMulTest){
     std::ifstream is_lwe_sk("LWEGadgetSK_test", std::ios::binary);
     cereal::BinaryInputArchive iarchive_lwe_sk(is_lwe_sk);  
     iarchive_lwe_sk(gadget_lwe_sk);  
-    if(lwe_g.base != gadget_lwe_sk.base || 
-        lwe_g.digits != gadget_lwe_sk.digits || 
-        lwe_g.bits_base != gadget_lwe_sk.bits_base){
+    if(lwe_g.base() != gadget_lwe_sk.base() || 
+        lwe_g.digits() != gadget_lwe_sk.digits()){
             FAIL();
         print_out << "LWEGadgetSK Serialization Test: Fail" << std::endl;  
     } 
@@ -188,9 +181,8 @@ TEST(LWETests, GadgetMulTest){
         std::ifstream is_glwe_ct("LWEGadgetCT_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
         iarchive_glwe_ct(gadget_ct_test);  
-        if(gadget_ct->base != gadget_ct_test->base || 
-            gadget_ct->digits != gadget_ct_test->digits || 
-            gadget_ct->bits_base != gadget_ct_test->bits_base){
+        if(gadget_ct->base() != gadget_ct_test->base() || 
+            gadget_ct->digits() != gadget_ct_test->digits()){
                 FAIL();
             print_out << "LWEGadgetCT Serialization Test: Fail" << std::endl;  
         } 

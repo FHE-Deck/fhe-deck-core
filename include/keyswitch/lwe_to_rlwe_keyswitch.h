@@ -16,13 +16,17 @@ namespace FHEDeck{
     protected:
  
     /// @brief inverse of the ring degree
-    int64_t degree_inv;
+    int64_t m_degree_inv;
     /// @brief bit size of the ring degree
-    int64_t bits_degree;
+    int64_t m_bits_degree;
     /// @brief mask for modulus reduction by dest_param->size * 2 
-    uint32_t mask_mod_degree_times_two;
+    uint32_t m_mask_mod_degree_times_two;
     /// @brief mask for modulus reduction by dest_param->size
-    uint32_t mask_mod_degree;
+    uint32_t m_mask_mod_degree; 
+    /// @brief The content of the key switching key (all its ciphertexts) 
+    std::vector<std::shared_ptr<ExtendedPolynomialCT>> m_ext_key_content;
+    /// @brief The parameters of the destination RLWE ciphertext.
+    std::shared_ptr<RLWEParam> m_dest_param;
 
     void key_switching_key_gen(const LWESK& sk_origin, const RLWEGadgetSK& sk_dest);
 
@@ -33,10 +37,6 @@ namespace FHEDeck{
     void init();
 
     public:
-        /// @brief The content of the key switching key (all its ciphertexts) 
-        std::vector<std::shared_ptr<ExtendedPolynomialCT>> ext_key_content;
-        /// @brief The parameters of the destination RLWE ciphertext.
-        std::shared_ptr<RLWEParam> dest_param;
           
         LWEToRLWEKeySwitchKey(const LWESK& sk_origin, const RLWEGadgetSK& sk_dest);
  
@@ -45,18 +45,20 @@ namespace FHEDeck{
         LWEToRLWEKeySwitchKey& operator=(const LWEToRLWEKeySwitchKey other) = delete;
  
         void lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in);
+
+        std::shared_ptr<RLWEParam> dest_param()const;
  
     #if defined(USE_CEREAL)
         template <class Archive>
         void save( Archive & ar ) const
         { 
-            ar(ext_key_content, dest_param);   
+            ar(m_ext_key_content, m_dest_param);   
         }
             
         template <class Archive>
         void load( Archive & ar )
         {  
-            ar(ext_key_content, dest_param);   
+            ar(m_ext_key_content, m_dest_param);   
             init(); 
         }    
     #endif 

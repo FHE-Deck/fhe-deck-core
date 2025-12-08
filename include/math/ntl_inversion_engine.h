@@ -12,13 +12,16 @@ namespace FHEDeck{
       
 class NTLInversionEngine : public PolynomialInversionEngine{
 
+    protected: 
+
+    std::vector<int64_t> m_poly_mod;
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
+    NTL::ZZ_pX m_ring_poly;
+
     public: 
     
-    std::vector<int64_t> poly_mod;
-    int32_t degree;
-    int64_t coef_modulus;
-
-    NTL::ZZ_pX ring_poly;
 
     NTLInversionEngine(const int32_t degree, const int64_t coef_modulus);
   

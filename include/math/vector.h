@@ -72,9 +72,9 @@ class VectorView{
   
     /// @brief Negates the coefficients of this vector and stores the output in out. 
     /// @param out The output vector
-    void neg(VectorView &out);
+    void neg(VectorView &out)const;
  
-    std::string to_string(int32_t size_of_string);
+    std::string to_string(int32_t size_of_string)const;
  
     static void array_signed_form(VectorView& out, const VectorView& in);
  

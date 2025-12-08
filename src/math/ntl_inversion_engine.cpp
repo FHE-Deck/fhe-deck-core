@@ -3,20 +3,20 @@
 using namespace FHEDeck;
    
 NTLInversionEngine::NTLInversionEngine(const int degree, const int64_t coef_modulus){
-    this->degree = degree;
-    this->coef_modulus = coef_modulus;
-    poly_mod = std::vector<int64_t>(degree+1, 0);
-    poly_mod[0] = 1;
-    poly_mod[degree] = 1;
-    ring_poly = get_ring_poly(RingType::negacyclic, degree, coef_modulus);
+    m_degree = degree;
+    m_coef_modulus = coef_modulus;
+    m_poly_mod = std::vector<int64_t>(degree+1, 0);
+    m_poly_mod[0] = 1;
+    m_poly_mod[degree] = 1;
+    m_ring_poly = get_ring_poly(RingType::negacyclic, degree, coef_modulus);
 }
 
 
 bool NTLInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
     NTL::ZZ_pX temp_f; 
-    set_polynomial_from_array(temp_f, in.get(), in.size(), coef_modulus);
+    set_polynomial_from_array(temp_f, in.get(), in.size(), m_coef_modulus);
     NTL::ZZ_pX temp_inv_f;  
-    int64_t status = NTL::InvModStatus(temp_inv_f, temp_f, ring_poly);   
+    int64_t status = NTL::InvModStatus(temp_inv_f, temp_f, m_ring_poly);   
     set_array_from_polynomial(out.get(), out.size(), temp_inv_f);    
     return (status == 0); 
 }

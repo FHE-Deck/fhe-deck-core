@@ -38,8 +38,7 @@ void SignedDecompositionGadget::sample(VectorArray& out, const Vector& poly){
         for(int32_t i = 0; i < degree; ++i){ 
             out[j][i] = out[j][i] * sign[i];
         }
-        out[j].normalize();
-        //Utils::array_mod_form(out[j], out[j], degree, modulus);
+        out[j].normalize(); 
     } 
 }
  

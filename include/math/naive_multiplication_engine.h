@@ -14,12 +14,13 @@ namespace FHEDeck{
  */
 class NaiveNegacyclicMultiplicationEngine : public PolynomialMultiplicationEngine{
 
-    public:
-  
-    
-    int32_t degree;
-    int64_t coef_modulus;
+    protected: 
 
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
+    public: 
+    
     NaiveNegacyclicMultiplicationEngine(int32_t degree, int64_t coef_modulus); 
     
     std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form(); 

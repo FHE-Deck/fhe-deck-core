@@ -24,18 +24,22 @@ namespace FHEDeck{
  * @brief NTRUParam class is used to store the parameters of the NTRU encryption scheme.
  */
 class NTRUParam : public PolynomialCTParam{
+ 
+    protected: 
+
+      /// @brief The coefficiant modulus.
+    uint64_t m_coef_modulus; 
+    /// @brief The ring type.
+    RingType m_ring; 
+    /// @brief The polynomial arithmetic indicates the implementation of the multiplication engine.
+    PolynomialArithmetic m_arithmetic = PolynomialArithmetic::ntt64;
+    /// @brief The polynomial multiplication engine.
+    std::shared_ptr<PolynomialMultiplicationEngine> m_mul_engine;
+    /// @brief Flag indicating whether the multiplication engine is initialized.
+    //bool m_is_mul_engine_init = false;
 
   public: 
-    /// @brief The coefficiant modulus.
-    uint64_t coef_modulus; 
-    /// @brief The ring type.
-    RingType ring; 
-    /// @brief The polynomial arithmetic indicates the implementation of the multiplication engine.
-    PolynomialArithmetic arithmetic = PolynomialArithmetic::ntt64;
-    /// @brief The polynomial multiplication engine.
-    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine;
-    /// @brief Flag indicating whether the multiplication engine is initialized.
-    bool is_mul_engine_init = false;
+
  
     /// @brief Defaukt constructor.
     NTRUParam() = default; 
@@ -55,19 +59,25 @@ class NTRUParam : public PolynomialCTParam{
     /// @return Retuns a new VectorCT object.
     std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param);
          
+    uint64_t modulus()const;
+    
+    std::shared_ptr<PolynomialMultiplicationEngine> mul_engine()const; 
+
+    RingType ring()const;
+
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
       ar(cereal::base_class<PolynomialCTParam>(this));   
-      ar(ring, size, coef_modulus, arithmetic);  
+      ar(m_ring, m_size, m_coef_modulus, m_arithmetic);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
       ar(cereal::base_class<PolynomialCTParam>(this));   
-      ar(ring, size, coef_modulus, arithmetic);   
+      ar(m_ring, m_size, m_coef_modulus, m_arithmetic);   
       init_mul_engine(); 
     } 
     #endif
@@ -78,19 +88,25 @@ class NTRUParam : public PolynomialCTParam{
  
 class NTRUCT : public PolynomialCT{
 
-    public:
-  
-    /// @brief The parameters of the NTRU encryption scheme.
-    std::shared_ptr<NTRUParam> param;  
-    /// @brief The ciphertext polynomial.
-    Polynomial ct_poly; 
+    protected: 
 
+      /// @brief The parameters of the NTRU encryption scheme.
+    std::shared_ptr<NTRUParam> m_param;  
+    /// @brief The ciphertext polynomial.
+    Polynomial m_ct_poly; 
+
+    public:
+   
     /// @brief Default constructor.
     NTRUCT() = default;
 
     /// @brief Constructs the NTRUCT object.
     /// @param param The parameters of the NTRU encryption scheme.
     NTRUCT(std::shared_ptr<NTRUParam> param);
+ 
+    NTRUCT(std::shared_ptr<NTRUParam> param, const Polynomial& ct_poly);
+
+    NTRUCT(std::shared_ptr<NTRUParam> param, Polynomial&& ct_poly);
  
     NTRUCT(const NTRUCT &other);
    
@@ -99,68 +115,70 @@ class NTRUCT : public PolynomialCT{
     /// @brief Negacyclic rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void negacyclic_rotate(NTRUCT &out, int32_t rot);
+    void negacyclic_rotate(NTRUCT &out, int32_t rot)const;
 
     /// @brief Cyclical rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void cyclic_rotate(NTRUCT &out, int32_t rot);
+    void cyclic_rotate(NTRUCT &out, int32_t rot)const;
 
     /// @brief Negacyclic rotation of the ciphertext polynomial.
     /// @param out The output ciphertext.
     /// @param rot The rotation amount.
-    void homomorphic_rotate(VectorCT &out, int32_t rot);
+    void homomorphic_rotate(VectorCT &out, int32_t rot)const override;
 
     /// @brief Adds this ciphertext to ct and store the result in out.
     /// @param out The output ciphertext.
     /// @param ct The input ciphertext.
-    void add(VectorCT &out, const VectorCT &ct)override;
+    void add(VectorCT &out, const VectorCT &ct)const override;
  
     /// @brief Adds x to this ciphertext, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void add(NTRUCT &out, const Polynomial &x);
+    void add(NTRUCT &out, const Polynomial &x)const;
 
     /// @brief Subtracts ct from this ciphertext, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param ct The input ciphertext.
-    void sub(VectorCT &out, const VectorCT &ct)override;
+    void sub(VectorCT &out, const VectorCT &ct)const override;
  
     /// @brief Subtracts x from this ciphertext, and stores the result in out. 
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void sub(NTRUCT &out, const Polynomial &x); 
+    void sub(NTRUCT &out, const Polynomial &x)const; 
  
     /// @brief Multiplies this ciphertexts with x, and stores the result in out.
     /// @param out The output ciphertext.
     /// @param x The input polynomial.
-    void mul(NTRUCT &out, const Polynomial &x);
+    void mul(NTRUCT &out, const Polynomial &x)const;
 
     /// @brief Negates this ciphertexts coefficients and stores the result in out.
     /// @param out The output ciphertext.
-    void neg(VectorCT &out)override;
+    void neg(VectorCT &out)const override;
  
     /// @brief Extracts an LWE ciphertext that encodes the constant coefficient. 
     /// @param out The output LWE ciphertext.
-    void extract_lwe(LWECT &out);
+    void extract_lwe(LWECT &out)const;
  
     /// @brief Produces a string representation of this object. 
     /// @return The string representation.
-    std::string to_string();
+    std::string to_string()const;
+
+    const Polynomial& ct_poly()const;
     
   #if defined(USE_CEREAL)
   template <class Archive>
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<PolynomialCT>(this));   
-        ar(param, ct_poly); 
+        ar(m_param, m_ct_poly); 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
         ar(cereal::base_class<PolynomialCT>(this));   
-        ar(param, ct_poly); 
+        ar(m_param, m_ct_poly); 
     }  
     #endif
 };
@@ -170,23 +188,25 @@ class NTRUCT : public PolynomialCT{
  */
 class NTRUSK : public VectorCTSK{
 
-    public:
+    protected:
 
     /// @brief  The parameters of the NTRU encryption scheme.
-    std::shared_ptr<NTRUParam> param;   
+    std::shared_ptr<NTRUParam> m_param;   
     /// @brief The secret key polynomial.
-    Polynomial sk; 
+    Polynomial m_sk; 
     /// @brief The multiplicative inverse of secret key polynomial.
-    Polynomial inv_sk; 
+    Polynomial m_inv_sk; 
     /// @brief Flag indicating whether the secret key is initialized.
-    bool is_init = false;   
+    //bool m_is_init = false;   
     /// @brief The error distribution.
-    std::shared_ptr<Distribution> error_dist;
+    std::shared_ptr<Distribution> m_error_dist;
     /// @brief The secret key distribution.
-    std::shared_ptr<Distribution> sk_dist;
+    std::shared_ptr<Distribution> m_sk_dist;
     /// @brief The noise standard deviation.
-    double noise_stddev;
-   
+    double m_noise_stddev;
+ 
+    public:
+ 
     /// @brief Default constructor.
     NTRUSK() = default;
   
@@ -267,20 +287,22 @@ class NTRUSK : public VectorCTSK{
     /// @brief Extracts the LWE key.
     /// @return Creates and returns a new LWE key, with a newly created LWEParam object.
     std::shared_ptr<LWESK> extract_lwe_key();
+
+    std::shared_ptr<NTRUParam> param()const;
    
    #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<VectorCTSK>(this));   
-        ar(param, sk, inv_sk, noise_stddev);  
+        ar(m_param, m_sk, m_inv_sk, m_noise_stddev);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {    
       ar(cereal::base_class<VectorCTSK>(this));   
-      ar(param, sk, inv_sk, noise_stddev);   
+      ar(m_param, m_sk, m_inv_sk, m_noise_stddev);   
       init();
     }  
     #endif
@@ -296,16 +318,17 @@ class NTRUSK : public VectorCTSK{
  */
 class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{ 
 
-  public:
-  
-  /// @brief The parameters of the NTRU encryption scheme.
-  std::shared_ptr<NTRUParam> ntru_param;
-  /// @brief The decomposition gadget. 
-  std::shared_ptr<Gadget> gadget; 
-  /// @brief The array evaluation form holding the decomposition of the ciphertext.
-  std::shared_ptr<PolynomialArrayEvalForm> array_eval_a;  
-  
+  protected: 
 
+    /// @brief The parameters of the NTRU encryption scheme.
+  std::shared_ptr<NTRUParam> m_ntru_param;
+  /// @brief The decomposition gadget. 
+  std::shared_ptr<Gadget> m_gadget; 
+  /// @brief The array evaluation form holding the decomposition of the ciphertext.
+  std::shared_ptr<PolynomialArrayEvalForm> m_array_eval_a;  
+
+  public:
+   
   /// @brief Default constructor.
   NTRUGadgetCT() = default;
    
@@ -335,14 +358,14 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
     void save( Archive & ar ) const
     {  
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(ntru_param, gadget, array_eval_a);     
+        ar(m_ntru_param, m_gadget, m_array_eval_a);     
     }
         
     template <class Archive>
     void load( Archive & ar )
     {    
         ar(cereal::base_class<GadgetPolynomialCT>(this));   
-        ar(ntru_param, gadget, array_eval_a);      
+        ar(m_ntru_param, m_gadget, m_array_eval_a);      
     } 
     #endif
        
@@ -353,11 +376,14 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
  */
 class NTRUGadgetSK : public GadgetPolynomialCTSK{
 
-    public:
+    protected:
+
     /// @brief The decomposition gadget.
-    std::shared_ptr<Gadget> gadget;
+    std::shared_ptr<Gadget> m_gadget;
     /// @brief The secret key of the NTRU encryption scheme.
-    std::shared_ptr<NTRUSK> sk;
+    std::shared_ptr<NTRUSK> m_sk;
+ 
+    public:
 
     /// @brief Default constructor.
     NTRUGadgetSK() = default;
@@ -409,15 +435,15 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
-        ar(gadget, sk);   
+        ar(m_gadget, m_sk);   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<GadgetPolynomialCTSK>(this));     
-        ar(gadget, sk);   
-        secret_key = sk;
+        ar(m_gadget, m_sk);   
+        m_secret_key = m_sk;
     } 
     #endif
 

@@ -16,19 +16,22 @@ namespace FHEDeck{
  */
 class FFTLongPlan{
 
-    public:
-    
+    protected: 
+
     // Ring type is either cyclic or negacyclic
-    RingType ring;
+    RingType m_ring;
     // N is the number of coefficients
-    uint32_t N; 
+    uint32_t m_N; 
     // Plan size is the size of the plan e.g. 2N for (X^N+1) and N for (X^N-1) 
-    uint32_t plan_size; 
+    uint32_t m_plan_size; 
      
     // Long Arithmetic Related
-    fftwl_plan plan_to_eval_form_l, plan_to_coef_form_l;
-    long double *in_l;
-    fftwl_complex *out_l;
+    fftwl_plan m_plan_to_eval_form_l, m_plan_to_coef_form_l;
+    long double *m_in_l;
+    fftwl_complex *m_out_l;
+
+    public:
+    
     
     FFTLongPlan() = default;
 
@@ -73,13 +76,15 @@ class FFTLongPlan{
  
 class FFTWLongNegacyclicEngine : public PolynomialMultiplicationEngine{
 
+    protected: 
+
+    std::unique_ptr<FFTLongPlan> m_engine; 
+
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
     public:
- 
-    std::unique_ptr<FFTLongPlan> engine; 
-
-    int32_t degree;
-    int64_t coef_modulus;
-
+  
     FFTWLongNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
   
     std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form();

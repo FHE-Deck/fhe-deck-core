@@ -111,13 +111,13 @@ Ciphertext FHEContext::eval(const Ciphertext& ct_in, const HomomorphicAccumulato
     if(lut.input_encoding != ct_in.encoding){ 
         throw std::logic_error("Input encoding of the accumulator does not match the encoding of the input ciphertext!");
     } 
-    std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param));  
+    std::shared_ptr<LWECT> ct_out(new LWECT(ct_in.lwe_c->param()));  
     if(ct_in.encoding.get_type() == PlaintextEncodingType::full_domain){      
         config->eval_key.bootstrap_pk->full_domain_bootstrap(*ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding, lut.output_encoding);
     }else if(ct_in.encoding.get_type() == PlaintextEncodingType::partial_domain){   
         config->eval_key.bootstrap_pk->bootstrap(*ct_out,  lut.boot_acc, *ct_in.lwe_c); 
     }else if(ct_in.encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){    
-        LWECT c_in_copy(ct_in.lwe_c->param);
+        LWECT c_in_copy(ct_in.lwe_c->param());
         ct_in.lwe_c->add(c_in_copy, ct_in.encoding.encode_message(ct_in.encoding.get_plaintext_space()));
         config->eval_key.bootstrap_pk->bootstrap(*ct_out, lut.boot_acc, c_in_copy);   
     } 
@@ -144,10 +144,10 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, const std::vec
 
     // The output vector of LWECT 
     std::vector<LWECT> out_vec_lwe;   
-    if((ct_in.encoding.get_type() == PlaintextEncodingType::full_domain) && !config->eval_key.bootstrap_pk->is_full_domain_bootstrap_function_amortizable){ 
+    if((ct_in.encoding.get_type() == PlaintextEncodingType::full_domain) && !config->eval_key.bootstrap_pk->is_amortizable()){ 
         // Amortization is not supported so lets run sequentially.
         for(const HomomorphicAccumulator& lut: lut_vec){ 
-            LWECT ct_out(ct_in.lwe_c->param);  
+            LWECT ct_out(ct_in.lwe_c->param());  
             config->eval_key.bootstrap_pk->full_domain_bootstrap(ct_out, lut.func_boot_acc, *ct_in.lwe_c, ct_in.encoding, output_encoding);
             out_vec_lwe.push_back(ct_out);
         }
@@ -163,7 +163,7 @@ std::vector<Ciphertext> FHEContext::eval(const Ciphertext& ct_in, const std::vec
         }else if(ct_in.encoding.get_type() == PlaintextEncodingType::partial_domain){ 
             out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, *ct_in.lwe_c, output_encoding);
         }else if(ct_in.encoding.get_type() == PlaintextEncodingType::signed_limied_short_int){  
-            LWECT ct_cast(ct_in.lwe_c->param);
+            LWECT ct_cast(ct_in.lwe_c->param());
             ct_in.lwe_c->add(ct_cast, ct_in.encoding.encode_message(ct_in.encoding.get_plaintext_space()));
             out_vec_lwe = config->eval_key.bootstrap_pk->bootstrap(accumulator_vec, ct_cast, output_encoding); 
         } 
@@ -197,7 +197,7 @@ Ciphertext FHEContext::sanitize(const Ciphertext& ct)const{
     if(!config->eval_key.is_sanitization_supported){
         throw std::logic_error("Sanitization is not supported, or sanitization key is not loaded!");
     }
-    std::shared_ptr<LWECT> ct_out(new LWECT(ct.lwe_c->param));  
+    std::shared_ptr<LWECT> ct_out(new LWECT(ct.lwe_c->param()));  
     config->eval_key.sanitization_pk->sanitize(*ct_out, *ct.lwe_c, ct.encoding);
     return Ciphertext(ct_out, ct.encoding, *this); 
 }

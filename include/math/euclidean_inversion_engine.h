@@ -9,12 +9,14 @@ namespace FHEDeck{
     
 class EuclideanInversionEngine : public PolynomialInversionEngine{
 
-    public: 
-    
-    std::vector<int64_t> poly_mod;
-    int32_t degree;
-    int64_t coef_modulus;
+    protected:
 
+    std::vector<int64_t> m_poly_mod;
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
+    public: 
+     
     EuclideanInversionEngine(const int32_t degree, const int64_t coef_modulus);
   
     /// @brief Computes the multiplivative inverse of the given polynomial, if such inverse exists. 

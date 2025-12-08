@@ -16,17 +16,19 @@ namespace FHEDeck{
  */
 class FFTPlan{
 
-    public:
+    protected: 
     
     // Ring type is either cyclic or negacyclic
-    RingType ring;
+    RingType m_ring;
     // N is the number of coefficients
-    uint32_t N; 
+    uint32_t m_N; 
     // Plan size is the size of the plan e.g. 2N for (X^N+1) and N for (X^N-1) 
-    uint32_t plan_size;
-    double *in;
-    fftw_complex *out;
-    fftw_plan plan_to_eval_form, plan_to_coef_form;
+    uint32_t m_plan_size;
+    double *m_in;
+    fftw_complex *m_out;
+    fftw_plan m_plan_to_eval_form, m_plan_to_coef_form;
+
+    public:
     
     FFTPlan() = default;
 
@@ -72,11 +74,14 @@ class FFTPlan{
  */
 class FFTWNegacyclicEngine : public PolynomialMultiplicationEngine{
 
+    protected: 
+
+    std::unique_ptr<FFTPlan> m_engine;  
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
     public:
  
-    std::unique_ptr<FFTPlan> engine;  
-    int32_t degree;
-    int64_t coef_modulus;
 
     FFTWNegacyclicEngine(int32_t degree, int64_t coef_modulus); 
     

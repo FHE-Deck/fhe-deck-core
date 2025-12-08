@@ -26,29 +26,40 @@ class FunctionSpecification{
 /**
  * @brief This class is used by blind rotation implementations. It is takes as a mandatory imput to blind rotation.
  * Typically it holds a rotation polynomial, or a RLWE/NTRU ciphertext encrypting a rotation polynomial. 
+ * TODO: Perhpas we should revisit the use of VectorCTAccumulator as well as PreparedVectorCTAccumulators and other. 
+ * After revisiting the code after a year, I don't have a immediate answer as to why these classes should exist.
+ *  Maybe it can be done easier.
  */
 class VectorCTAccumulator : public FunctionSpecification{ 
 
-    public:
+    protected:
+
     /// @brief Vector ciphertext, that defines the content of the Accumulator.
-    std::shared_ptr<VectorCT> acc_content; 
+    std::shared_ptr<VectorCT> m_acc_content; 
+
+    public:
  
     VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content);
   
     VectorCTAccumulator(VectorCTAccumulator &other);
  
     VectorCTAccumulator& operator=(const VectorCTAccumulator other);
+
+    std::shared_ptr<const VectorCT> content()const;
  
 };
-
-
+ 
 class PolynomialSpecification : public FunctionSpecification{
 
-    public:
+    protected:
     /// @brief Rotation Polynomial
-    RotationPoly rot_poly;
- 
+    RotationPoly m_rot_poly;
+
+    public:
+     
     PolynomialSpecification(RotationPoly rot_poly);
+
+    RotationPoly poly();
 };
  
  /**

@@ -19,13 +19,15 @@ namespace FHEDeck{
  */
 class CGGIBlindRotationKey : public BlindRotationPublicKey{
 
+    protected: 
+
+    // The blind rotation key  
+    std::vector<std::shared_ptr<GadgetVectorCT>> m_bk; 
+    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+
     public:
     
-    // The blind rotation key 
-    /// TODO: Perhaps we shold use md_span?
-    std::vector<std::shared_ptr<GadgetVectorCT>> bk; 
-    std::shared_ptr<VectorCTParam> vector_ct_param;
-   
+ 
     /// @brief Constructor (default constructor is needed for serialization purposes)
     CGGIBlindRotationKey() = default;
       
@@ -45,14 +47,14 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     void save( Archive & ar ) const
     { 
       ar(cereal::base_class<BlindRotationPublicKey>(this));   
-      ar(bk, vector_ct_param);    
+      ar(m_bk, m_vector_ct_param);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
       ar(cereal::base_class<BlindRotationPublicKey>(this));   
-      ar(bk, vector_ct_param);    
+      ar(m_bk, m_vector_ct_param);    
     }    
     #endif  
    
@@ -66,6 +68,7 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
     /// @brief Initializes the extended LWE key
     /// @param lwe_sk The LWE secret key
     /// @return Creates a new array which encodes the extended secret key. Its then used in the blind rotation key generation procedure. 
+    /// TODO: This should actually return a Vector. So, that in the future I can define a SecureVector that zeros the memory before free.
     uint64_t* init_binary_extended_lwe_key(std::shared_ptr<LWESK> lwe_sk);
     
     /// TODO: Leave this for a ternary blind rotation alg. that gonna be implemented in the future.

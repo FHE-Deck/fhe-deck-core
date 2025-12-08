@@ -16,10 +16,12 @@ namespace FHEDeck{
  */
 class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
+    protected:
+
+    std::shared_ptr<LWEToRLWEKeySwitchKey> m_rlwe_ksk;
+    std::shared_ptr<RLWEParam> m_poly_ct_params;
+
     public:  
-  
-    std::shared_ptr<LWEToRLWEKeySwitchKey> rlwe_ksk;
-    std::shared_ptr<RLWEParam> poly_ct_params;
   
     KSFunctionalBootstrapPublicKey(
         std::shared_ptr<LWEParam> lwe_par,  
@@ -41,14 +43,14 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));    
-        ar(rlwe_ksk);    
+        ar(m_rlwe_ksk);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));      
-        ar(rlwe_ksk);     
+        ar(m_rlwe_ksk);     
         init();
     } 
     #endif 

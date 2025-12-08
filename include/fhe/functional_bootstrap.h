@@ -25,24 +25,28 @@ namespace FHEDeck{
  */
 class FunctionalBootstrapPublicKey{
 
+    protected:
+
+    
+    /// @brief Blind Rotation Key  
+    std::shared_ptr<BlindRotationPublicKey> m_blind_rotation_key;
+    /// @brief Key Switching key, form extracted LWE to output LWE
+    std::shared_ptr<LWEToLWEKeySwitchKey> m_key_switch_key;
+    /// @brief LWE after modulus switching to 2*N (Can actually be extracted form the blind rotation key);
+    std::shared_ptr<LWEParam> m_lwe_par;   
+    /// @brief Needed to build a special accumulators, like acc_one that is used in the amortized bootstrapping.
+    std::shared_ptr<PreparedVectorCTAccumulators> m_prepared_acc_builder;
+    /// @brief A modulus switcher, that switcher from the LWE ciphertext extracted from a blind rotation output to a LWE with a smaller modulus.
+    LWEModSwitcher m_ms_from_extract_to_intermediate; 
+    /// @brief A modulus switcher, that switcher from the LWE ciphertext output by a LWE key switch to the LWE that is ready to be blind rotated. 
+    LWEModSwitcher m_ms_from_keyswitch_to_par; 
+    /// @brief The blind rotate output builder.
+    std::shared_ptr<BlindRotateOutputBuilder> m_blind_rotate_output_builder;
+    /// @brief Indicates whether a full_domain bootstrap supports function amortization. The flag needs to be set in the implementation of this class.
+    bool m_is_full_domain_bootstrap_function_amortizable = false;
+
     public:
         
-    /// @brief Blind Rotation Key  
-    std::shared_ptr<BlindRotationPublicKey> blind_rotation_key;
-    /// @brief Key Switching key, form extracted LWE to output LWE
-    std::shared_ptr<LWEToLWEKeySwitchKey> key_switch_key;
-    /// @brief LWE after modulus switching to 2*N (Can actually be extracted form the blind rotation key);
-    std::shared_ptr<LWEParam> lwe_par;   
-    /// @brief Needed to build a special accumulators, like acc_one that is used in the amortized bootstrapping.
-    std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder;
-    /// @brief A modulus switcher, that switcher from the LWE ciphertext extracted from a blind rotation output to a LWE with a smaller modulus.
-    LWEModSwitcher ms_from_extract_to_intermediate; 
-    /// @brief A modulus switcher, that switcher from the LWE ciphertext output by a LWE key switch to the LWE that is ready to be blind rotated. 
-    LWEModSwitcher ms_from_keyswitch_to_par; 
-    /// @brief The blind rotate output builder.
-    std::shared_ptr<BlindRotateOutputBuilder> blind_rotate_output_builder;
-    /// @brief Indicates whether a full_domain bootstrap supports function amortization. The flag needs to be set in the implementation of this class.
-    bool is_full_domain_bootstrap_function_amortizable = false;
    
     /// @brief The bootstrapping procedure. Its not necesarily a full domain bootstrapping. 
     /// @param lwe_ct_out The output ciphertext
@@ -71,17 +75,19 @@ class FunctionalBootstrapPublicKey{
     /// @param encoding The encoding of the plaintext in the input ciphertext.
     virtual std::vector<LWECT> full_domain_bootstrap(std::vector<std::shared_ptr<FunctionSpecification>> acc_in_vec, const LWECT &lwe_ct_in, const PlaintextEncoding &input_encoding, const PlaintextEncoding &output_encoding) = 0;
 
+    bool is_amortizable()const;
+
   #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     {   
-      ar(blind_rotation_key, key_switch_key, lwe_par, prepared_acc_builder, blind_rotate_output_builder);    
+      ar(m_blind_rotation_key, m_key_switch_key, m_lwe_par, m_prepared_acc_builder, m_blind_rotate_output_builder);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
-      ar(blind_rotation_key, key_switch_key, lwe_par, prepared_acc_builder, blind_rotate_output_builder);  
+      ar(m_blind_rotation_key, m_key_switch_key, m_lwe_par, m_prepared_acc_builder, m_blind_rotate_output_builder);  
     }    
   #endif 
  

@@ -17,12 +17,14 @@ namespace FHEDeck{
  */
 class IntelHexlNTTEngine : public PolynomialMultiplicationEngine{
 
+    protected: 
+
+    intel::hexl::NTT m_ntt; 
+    int32_t m_degree;
+    int64_t m_coef_modulus;
+
     public:
-
-    intel::hexl::NTT ntt; 
-    int32_t degree;
-    int64_t coef_modulus;
-
+ 
     IntelHexlNTTEngine(int32_t degree, int64_t coef_modulus);
 
     std::shared_ptr<PolynomialEvalForm> init_polynomial_eval_form(); 

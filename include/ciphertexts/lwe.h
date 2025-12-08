@@ -18,13 +18,15 @@ namespace FHEDeck{
  */  
 class LWEParam{
 
+  protected:
+
+  /// @brief LWE Dimension
+  int32_t m_dim;
+  /// @brief LWE Dimension
+  int64_t m_modulus; 
+
   public:  
-
-  /// @brief LWE Dimension
-  int32_t dim;
-  /// @brief LWE Dimension
-  int64_t modulus; 
-
+ 
   /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
   LWEParam() = default;
  
@@ -33,11 +35,15 @@ class LWEParam{
   /// @param modulus Modulus of the LWE instance
   LWEParam(int32_t dim, int64_t modulus); 
 
+  int32_t dim()const;
+
+  int64_t modulus()const;
+
   #if defined(USE_CEREAL)
    template<class Archive> 
    void serialize(Archive & ar) 
    { 
-     ar(dim, modulus); 
+     ar(m_dim, m_modulus); 
    }   
    #endif
 
@@ -48,12 +54,15 @@ class LWEParam{
  */
 class LWECT{
  
-  public:
+  protected:
  
     /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> param;
+    std::shared_ptr<LWEParam> m_param;
     /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M.  
-    Vector ct; 
+    Vector m_ct; 
+
+  public:
+
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWECT() = default; 
@@ -70,6 +79,16 @@ class LWECT{
     /// @param other Object that will be copied. 
     /// @return Reference to the copied object.
     LWECT& operator=(const LWECT other); 
+
+    int64_t& operator[](int32_t index);
+
+    int64_t operator[](int32_t index)const;
+
+    std::shared_ptr<LWEParam> param()const;
+
+    Vector& ct_vec();
+
+    const Vector& ct_vec()const;
 
     /// @brief Clones the ciphertext.
     /// @return Returns a pointer to the cloned ciphertext.
@@ -115,13 +134,13 @@ class LWECT{
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param, ct);    
+      ar(m_param, m_ct);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param, ct);  
+      ar(m_param, m_ct);  
     } 
     #endif
 };
@@ -132,13 +151,16 @@ class LWECT{
   */
 class LWEModSwitcher{
 
-  public:
-  /// @brief Pointer to the LWE parameters of the ciphertext before the modulus switch.
-  std::shared_ptr<LWEParam> from;
+  protected: 
+    /// @brief Pointer to the LWE parameters of the ciphertext before the modulus switch.
+  std::shared_ptr<LWEParam> m_from;
   /// @brief Pointer to the LWE parameters of the ciphertext after the modulus switch.
-  std::shared_ptr<LWEParam> to;
+  std::shared_ptr<LWEParam> m_to;
   /// @brief Flag that indicates if we need to use long arithmetic. Depending on the modulus we rescale the ciphertext over double or long double floating point numbers.
-  bool long_arithmetic = false;
+  bool m_is_long_arithmetic = false;
+
+  public:
+
 
   /// @brief The size of the ciphertext.
   int32_t ct_size;
@@ -163,29 +185,42 @@ class LWEModSwitcher{
   /// @param in_ct The input ciphertext.
   /// @note The function changes only the ct field of out_ct. In particular, it doesn't sent the parameters field, so you must make sure out_ct has the right parameters and is already initialized.
   void switch_modulus(LWECT &out_ct, const LWECT& in_ct);
+
+  LWECT switch_modulus(const LWECT& in_ct);
+
+  std::shared_ptr<LWEParam> from_param()const;
+
+  std::shared_ptr<LWEParam> to_param()const;
 };
  
 /**
  * @brief A class that stors the LWE secret key and operations on the secret key like encryption or decryption. 
 */
 class LWESK {
+
+  /// The freindships are necessary because we are encrypting the LWESK itself in the key switching generation procedures.
+  friend class LWEToLWEKeySwitchKey;
+  friend class LWEToRLWEKeySwitchKey;
+  friend class CGGIBlindRotationKey;
+
+  protected:
+    /// @brief Pointer to the LWE parameters.
+    std::shared_ptr<LWEParam> m_param; 
+    /// @brief Pointer to the uniform distribution.
+    std::shared_ptr<Distribution> m_unif_dist; 
+    /// @brief Pointer to the error distribution.
+    std::shared_ptr<Distribution> m_error_dist;
+    /// @brief Type of the key distribution.
+    KeyDistribution m_key_type;
+    /// @brief Standard deviation of the error distribution.
+    double m_stddev;
+    /// @brief The secret key. Initialized in the constructors and freed in the destructor. 
+    Vector m_key;   
+    /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
+    std::unique_ptr<LongIntegerMultipler> m_multiplier; 
  
     public:  
-    /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> param; 
-    /// @brief Pointer to the uniform distribution.
-    std::shared_ptr<Distribution> unif_dist; 
-    /// @brief Pointer to the error distribution.
-    std::shared_ptr<Distribution> error_dist;
-    /// @brief Type of the key distribution.
-    KeyDistribution key_type;
-    /// @brief Standard deviation of the error distribution.
-    double stddev;
-    /// @brief The secret key. Initialized in the constructors and freed in the destructor.
-    //int64_t *key;   
-    Vector key;   
-    /// @brief Needed if in the multiplicaiton of integers in the secret key and the LWE ciphertext exceed 64-bits.
-    std::unique_ptr<LongIntegerMultipler> multiplier; 
+
 
     /// NOTE: Never explicitely used in FHE-Deck, but its required by cereal.
     LWESK() = default;
@@ -241,28 +276,34 @@ class LWESK {
     /// @param encoding The plaintext encoding specification, that is used to decode the message after decryption.
     /// @return Returns the decrypted message.
     int64_t decrypt(LWECT& in, PlaintextEncoding encoding); 
+
+    std::shared_ptr<LWEParam> param()const;
+ 
+    KeyDistribution key_type()const; 
+
+    double stddev()const;
    
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param);  
+      ar(m_param);  
       std::vector<int64_t> s_arr; 
-      for(int32_t i = 0; i < param->dim; ++i){
-        s_arr.push_back(key[i]);
+      for(int32_t i = 0; i < m_param->dim(); ++i){
+        s_arr.push_back(m_key[i]);
       }
-      ar(s_arr, stddev, key_type);
+      ar(s_arr, m_stddev, m_key_type);
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param);
+      ar(m_param);
       std::vector<int64_t> s_arr;
-      ar(s_arr, stddev, key_type);
+      ar(s_arr, m_stddev, m_key_type);
       init(); 
-      for(int32_t i = 0; i < param->dim; ++i){
-        this->key[i] = s_arr[i];
+      for(int32_t i = 0; i < m_param->dim(); ++i){
+        m_key[i] = s_arr[i];
       }   
     } 
     #endif
@@ -281,19 +322,24 @@ class LWESK {
  */
 class LWEGadgetCT{
 
-  public: 
-  
-  /// @brief Decomposition base
-  int64_t base;
-  /// @brief Number of digits in the decomposition.
-  int32_t digits;
-  /// @brief Number of bits in the base.
-  int32_t bits_base;  
-  /// @brief Pointer to the LWE parameters.
-  std::shared_ptr<LWEParam> lwe_param;
-  /// @brief Array of pointers to the ciphertexts. 
-  std::unique_ptr<std::unique_ptr<LWECT>[]> ct_content;
+  friend class LWEGadgetSK;
 
+  protected:
+
+  /// TODO: Perhpas this shuld be done with the gadget class consistently with the Ring Ciphertexts?
+  /// @brief Decomposition base
+  int64_t m_base;
+  /// @brief Number of digits in the decomposition.
+  int32_t m_digits;
+  /// @brief Number of bits in the base.
+  int32_t m_bits_base;  
+  /// @brief Pointer to the LWE parameters.
+  std::shared_ptr<LWEParam> m_lwe_param;
+  /// @brief Array of pointers to the ciphertexts. 
+  std::unique_ptr<std::unique_ptr<LWECT>[]> m_ct_content;
+
+  public: 
+   
   LWEGadgetCT() = default;
 
   /// @brief Constructs the object.
@@ -311,23 +357,28 @@ class LWEGadgetCT{
   /// @param scalar The input scalar.
   void gadget_mul_lazy(LWECT& out_ct, int64_t scalar); 
 
+  
+  int64_t base()const;
+    
+  int32_t digits()const; 
+
   #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(base, digits, bits_base, lwe_param);    
-      for(int32_t i = 0; i < digits; ++i){
-        ar(ct_content[i]);
+      ar(m_base, m_digits, m_bits_base, m_lwe_param);    
+      for(int32_t i = 0; i < m_digits; ++i){
+        ar(m_ct_content[i]);
       } 
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(base, digits, bits_base, lwe_param); 
-      this->ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[digits]); 
-      for(int32_t i = 0; i < digits; ++i){
-        ar(ct_content[i]);
+      ar(m_base, m_digits, m_bits_base, m_lwe_param); 
+      m_ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_digits]); 
+      for(int32_t i = 0; i < m_digits; ++i){
+        ar(m_ct_content[i]);
       } 
     }  
     #endif
@@ -338,16 +389,25 @@ class LWEGadgetCT{
  */
 class LWEGadgetSK{
 
-  public: 
+  friend class BasicBootstrapBuilder;
+
+  protected:
+
     /// @brief Pointer to the LWE secret key.
-    std::shared_ptr<LWESK> lwe;
+    std::shared_ptr<LWESK> m_lwe_sk;
+
+    std::unique_ptr<LongIntegerMultipler> m_multiplier; 
+
+    /// TODO: Perhpas this shuld be done with the gadget class consistently with the Ring Ciphertexts?
     /// @brief Decomposition base.
-    int64_t base;
+    int64_t m_base;
     /// @brief Number of digits in the decomposition.
-    int32_t digits;
+    int32_t m_digits;
     /// @brief Number of bits in the base.
-    int32_t bits_base;  
-    
+    int32_t m_bits_base;  
+
+  public: 
+ 
     LWEGadgetSK() = default;
   
     /// @brief Constructs the object.
@@ -370,18 +430,25 @@ class LWEGadgetSK{
     /// @param out The output ciphertext
     /// @param m The message m
     void gadget_encrypt(LWEGadgetCT& out, int64_t m);
+
+    std::shared_ptr<LWEParam> param()const;
+
+    int64_t base()const;
+    
+    int32_t digits()const; 
   
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(lwe, base, digits, bits_base);  
+      ar(m_lwe_sk, m_base, m_digits, m_bits_base);  
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(lwe, base, digits, bits_base);  
+      ar(m_lwe_sk, m_base, m_digits, m_bits_base);  
+      m_multiplier = std::make_unique<LongIntegerMultipler>(m_lwe_sk->param()->modulus());
     }    
     #endif
 };
@@ -393,15 +460,18 @@ class LWEGadgetSK{
  */
 class LWEPublicKey{
 
+  protected:
+
+    double m_stddev; 
+    int32_t m_size;  
+    std::shared_ptr<Distribution> m_rand_masking;
+   
+    std::unique_ptr<std::unique_ptr<LWECT>[]> m_public_key_ptr;
+    /// @brief Pointer to the LWE parameters.
+    std::shared_ptr<LWEParam> m_param;
+
   public:
   
-    double stddev; 
-    int32_t size;  
-    std::shared_ptr<Distribution> rand_masking;
-   
-    std::unique_ptr<std::unique_ptr<LWECT>[]> public_key_ptr;
-    /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> param;
  
     LWEPublicKey() = default;
 
@@ -429,24 +499,26 @@ class LWEPublicKey{
     /// @return The pointer to a fresh enncryption of zero.
     std::unique_ptr<LWECT> ciphertext_of_zero();
 
+    std::shared_ptr<LWEParam> param()const;
+
     #if defined(USE_CEREAL)
     template <class Archive>
     void save( Archive & ar ) const
     { 
-      ar(param, stddev, size);     
-      for(int32_t i = 0; i < this->size; ++i){   
-          ar(public_key_ptr[i]);  
+      ar(m_param, m_stddev, m_size);     
+      for(int32_t i = 0; i < m_size; ++i){   
+          ar(m_public_key_ptr[i]);  
       }   
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(param, stddev, size); 
-      this->rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
-      this->public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
-      for(int32_t i = 0; i < this->size; ++i){   
-          ar(public_key_ptr[i]);  
+      ar(m_param, m_stddev, m_size); 
+      m_rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, m_stddev));
+      m_public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_size]); 
+      for(int32_t i = 0; i < m_size; ++i){   
+          ar(m_public_key_ptr[i]);  
       }   
     }    
     #endif

@@ -45,13 +45,13 @@ void VectorView::sub(VectorView &out, const VectorView &other) const{
     } 
 }
   
-void VectorView::neg(VectorView &out){
+void VectorView::neg(VectorView &out)const{
     for(int32_t i = 0; i < m_size; ++i){
         out.m_vec[i] = m_modulus - m_vec[i];   
     }  
 }
 
-std::string VectorView::to_string(int32_t size_of_string){
+std::string VectorView::to_string(int32_t size_of_string)const{
     if(size_of_string==0){
         return "[]";
     }

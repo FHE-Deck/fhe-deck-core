@@ -17,14 +17,12 @@ namespace FHEDeck{
  */
 class PolynomialInversionEngineBuilder{
 
-    public:
-    int64_t coef_modulus;
-    int32_t degree;
-    RingType ring;
-    PolynomialArithmetic arithmetic;
-    ModulusType mod_type;
+    protected:
 
-    bool is_init = false;
+    int64_t m_coef_modulus;
+    int32_t m_degree; 
+
+    public:
 
     PolynomialInversionEngineBuilder(int32_t degree, int64_t coef_modulus);
  

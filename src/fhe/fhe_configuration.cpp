@@ -202,7 +202,7 @@ void BasicBootstrapBuilder::build_vector_ct_gadget_secret_key(){
 
 void BasicBootstrapBuilder::build_blind_rotation_key(){ 
     if(this->br_algorithm == BlindRotationAlgorithm::cggi_binary){ 
-        blind_rotation_key = std::make_shared<CGGIBlindRotationKey>(secret_key->gadget_sk, lwe_gadget_sk->lwe);   
+        blind_rotation_key = std::make_shared<CGGIBlindRotationKey>(secret_key->gadget_sk, lwe_gadget_sk->m_lwe_sk);   
     }else{
         throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Blind Rotation Algorithm");
     }
@@ -224,7 +224,7 @@ void BasicBootstrapBuilder::build_functional_bootstrap_key(){
 }
 
 void BasicBootstrapBuilder::build_plaintext_encoding(){ 
-    this->default_encoding = PlaintextEncoding(this->plaintext_encoding_type, this->plaintext_space, encrypt_pk->param->modulus); 
+    this->default_encoding = PlaintextEncoding(this->plaintext_encoding_type, this->plaintext_space, encrypt_pk->param()->modulus()); 
 }
 
 void BasicBootstrapBuilder::setup_liu_micciancio_polyakov(){ 
@@ -233,20 +233,21 @@ void BasicBootstrapBuilder::setup_liu_micciancio_polyakov(){
             std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(vector_ct_param);
             boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
             func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size); 
+            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(rlwe_param->size()); 
         }else if(this->vector_encyption_type == VectorEncryptionType::NTRU){ 
             std::shared_ptr<NTRUGadgetSK> ntru_gadget_sk =  std::static_pointer_cast<NTRUGadgetSK>(secret_key->gadget_sk); 
             std::shared_ptr<NTRUParam> ntru_param = std::static_pointer_cast<NTRUParam>(vector_ct_param);
-            boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_gadget_sk->sk));
-            func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(ntru_gadget_sk->sk));
-            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(ntru_param->size); 
+            std::shared_ptr<NTRUSK> sk = std::static_pointer_cast<NTRUSK>(vector_ct_secret_key);
+            boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(sk));
+            func_boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new NTRUAccumulatorBuilder(sk));
+            multivalue_acc_builder = std::make_shared<PolynomialSpecificationBuilder>(ntru_param->size()); 
         }
         else{
             throw std::logic_error(" BasicBootstrapBuilder::build(): liu_micciancio_polyakov doesn't support the given vector_encyption_type");
         } 
         std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(boot_acc_builder); 
-        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size * 2));  
-        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size)); 
+        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size() * 2));  
+        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size())); 
         bootstrap_pk = std::make_shared<LMPFunctionalBootstrapPublicKey>(
             lwe_param_rot, 
             lwe_param_tiny,
@@ -263,19 +264,20 @@ void BasicBootstrapBuilder::setup_kluczniak_shield_fdfb2(){
             // Init Accumulator Builder and Blind Rotation Output Builder
             std::shared_ptr<RLWEParam> rlwe_param = std::static_pointer_cast<RLWEParam>(vector_ct_param);
             boot_acc_builder = std::shared_ptr<VectorCTAccumulatorBuilder>(new RLWEAccumulatorBuilder(rlwe_param));
-            func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
-            multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size, rlwe_param->coef_modulus);
+            func_boot_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size(), rlwe_param->modulus());
+            multivalue_acc_builder = std::make_shared<KSFunctionSpecificationBuilder>(rlwe_param->size(), rlwe_param->modulus());
   
             std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk =  std::static_pointer_cast<RLWEGadgetSK>(secret_key->gadget_sk); 
-            std::shared_ptr<Gadget> deter_gadget_rksk = std::shared_ptr<Gadget>(new SignedDecompositionGadget(degree, coef_modulus, lwe_to_rlwe_decomp_base));
-            std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::shared_ptr<RLWEGadgetSK>(new RLWEGadgetSK(deter_gadget_rksk, rlwe_gadget_sk->rlwe_sk));
+            std::shared_ptr<RLWESK> rlwe_sk = std::static_pointer_cast<RLWESK>(vector_ct_secret_key);
+            std::shared_ptr<Gadget> deter_gadget_rksk = std::make_shared<SignedDecompositionGadget>(degree, coef_modulus, lwe_to_rlwe_decomp_base);
+            std::shared_ptr<RLWEGadgetSK> rlwe_gadget_sk_rksk = std::make_shared<RLWEGadgetSK>(deter_gadget_rksk, rlwe_sk);
             rlwe_ksk = std::make_shared<LWEToRLWEKeySwitchKey>(*this->secret_key->lwe_sk, *rlwe_gadget_sk_rksk);
         }else{
             throw std::logic_error(" BasicBootstrapBuilder::build(): kluczniak_shield_fdfb2 doesn't support the given vector_encyption_type");
         }  
         std::shared_ptr<PreparedVectorCTAccumulators> prepared_acc_builder = std::make_shared<PreparedVectorCTAccumulators>(boot_acc_builder);
-        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size * 2));
-        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size * 2));
+        std::shared_ptr<LWEParam> lwe_param_rot(new LWEParam(lwe_dim, vector_ct_param->size() * 2));
+        std::shared_ptr<LWEParam> lwe_param_tiny(new LWEParam(lwe_dim, vector_ct_param->size() * 2));
         bootstrap_pk = std::make_shared<KSFunctionalBootstrapPublicKey>( 
                 lwe_param_rot, 
                 blind_rotation_key,

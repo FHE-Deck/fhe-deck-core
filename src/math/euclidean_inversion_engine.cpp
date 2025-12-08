@@ -3,11 +3,11 @@
 using namespace FHEDeck;
 
 EuclideanInversionEngine::EuclideanInversionEngine(const int32_t degree, const int64_t coef_modulus){
-    this->degree = degree;
-    this->coef_modulus = coef_modulus;
-    poly_mod = std::vector<int64_t>(degree+1, 0);
-    poly_mod[0] = 1;
-    poly_mod[degree] = 1;
+    m_degree = degree;
+    m_coef_modulus = coef_modulus;
+    m_poly_mod = std::vector<int64_t>(degree+1, 0);
+    m_poly_mod[0] = 1;
+    m_poly_mod[degree] = 1;
 }
 
 bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{ 
@@ -20,7 +20,7 @@ bool EuclideanInversionEngine::inv(Polynomial &out, const Polynomial &in)const{
     while (!a.empty() && a.back() == 0) {
         a.pop_back();
     } 
-    auto [g, u, v] = xgcd(a, poly_mod, coef_modulus);  
+    auto [g, u, v] = xgcd(a, m_poly_mod, m_coef_modulus);  
     out.zeroize();
     for(int i = 0; i < u.size(); ++i){
         out[i] = u[i];

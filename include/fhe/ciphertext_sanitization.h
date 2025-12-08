@@ -46,15 +46,18 @@ class SanitizationKey{
  */
 class DucasStehleWashingMachine : public SanitizationKey{
  
-    public: 
+    protected: 
+
         /// @brief The functional bootstrap public key
-        std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
+        std::shared_ptr<FunctionalBootstrapPublicKey> m_fun_bootstrap_pk; 
         /// @brief The accumulator builder (we need to compute the identity function)
-        std::shared_ptr<AbstractFunctionBuilder> accumulator_builder;
+        std::shared_ptr<AbstractFunctionBuilder> m_accumulator_builder;
         /// @brief The masking public key (used to sample a fresh ciphertext of zero)
-        std::shared_ptr<LWEPublicKey> masking_pk; 
+        std::shared_ptr<LWEPublicKey> m_masking_pk; 
         /// @brief Number of washing cycles
-        int32_t washing_cycles;
+        int32_t m_washing_cycles;
+
+    public: 
 
         ~DucasStehleWashingMachine() = default;
 
@@ -82,14 +85,14 @@ class DucasStehleWashingMachine : public SanitizationKey{
     void save( Archive & ar ) const
     {    
         ar(cereal::base_class<SanitizationKey>(this));     
-        ar(fun_bootstrap_pk, accumulator_builder, masking_pk, washing_cycles);
+        ar(m_fun_bootstrap_pk, m_accumulator_builder, m_masking_pk, m_washing_cycles);
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
         ar(cereal::base_class<SanitizationKey>(this));     
-        ar(fun_bootstrap_pk, accumulator_builder, masking_pk, washing_cycles);
+        ar(m_fun_bootstrap_pk, m_accumulator_builder, m_masking_pk, m_washing_cycles);
     }    
     #endif 
 
@@ -99,14 +102,17 @@ class DucasStehleWashingMachine : public SanitizationKey{
  * The scheme from https://eprint.iacr.org/2022/1459
  */
 class KluczniakRandomizedBootstrapping : public SanitizationKey{
+
+    protected: 
+        /// @brief The functional bootstrap public key
+        std::shared_ptr<FunctionalBootstrapPublicKey> m_fun_bootstrap_pk; 
+        /// @brief The accumulator builder (we need to compute the identity function)
+        std::shared_ptr<AbstractFunctionBuilder> m_accumulator_builder;
+        /// @brief The masking public key (used to sample a fresh ciphertext of zero)
+        std::shared_ptr<LWEPublicKey> m_masking_pk; 
  
     public: 
-        /// @brief The functional bootstrap public key
-        std::shared_ptr<FunctionalBootstrapPublicKey> fun_bootstrap_pk; 
-        /// @brief The accumulator builder (we need to compute the identity function)
-        std::shared_ptr<AbstractFunctionBuilder> accumulator_builder;
-        /// @brief The masking public key (used to sample a fresh ciphertext of zero)
-        std::shared_ptr<LWEPublicKey> masking_pk; 
+
   
         ~KluczniakRandomizedBootstrapping() = default;
 
@@ -132,14 +138,14 @@ class KluczniakRandomizedBootstrapping : public SanitizationKey{
     void save( Archive & ar ) const
     {    
         ar(cereal::base_class<SanitizationKey>(this));     
-        ar(fun_bootstrap_pk, accumulator_builder, masking_pk);
+        ar(m_fun_bootstrap_pk, m_accumulator_builder, m_masking_pk);
     }
         
     template <class Archive>
     void load( Archive & ar )
     {   
         ar(cereal::base_class<SanitizationKey>(this));     
-        ar(fun_bootstrap_pk, accumulator_builder, masking_pk);
+        ar(m_fun_bootstrap_pk, m_accumulator_builder, m_masking_pk);
     }    
     #endif 
 };

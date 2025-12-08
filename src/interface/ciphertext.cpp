@@ -58,37 +58,37 @@ void Ciphertext::mul(Ciphertext& out, const int64_t b) const{
 } 
       
 Ciphertext Ciphertext::operator+(int64_t b) const{ 
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->add(*c, encoding.encode_message(b)); 
     return Ciphertext(c, encoding, *context); 
 }
  
 Ciphertext Ciphertext::operator+(const Ciphertext& ct) const{ 
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->add(*c, *ct.lwe_c);
     return Ciphertext(c, this->encoding, *context);
 }
  
 Ciphertext Ciphertext::operator-(int64_t b) const{ 
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->sub(*c, this->encoding.encode_message(b));
     return Ciphertext(c, this->encoding, *context); 
 }
  
 Ciphertext Ciphertext::operator-(const Ciphertext& ct) const{
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->sub(*c, *ct.lwe_c);
     return Ciphertext(c, this->encoding, *context);
 }
  
 Ciphertext Ciphertext::operator-() const{ 
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->neg(*c);
     return Ciphertext(c, this->encoding, *context); 
 }
      
 Ciphertext Ciphertext::operator*(int64_t b) const{
-    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param));
+    std::shared_ptr<LWECT> c(new LWECT(lwe_c->param()));
     lwe_c->mul(*c, b);
     return Ciphertext(c, this->encoding, *context);
 }

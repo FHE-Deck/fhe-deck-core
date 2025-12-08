@@ -34,7 +34,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         std::ifstream is("NTRUParam_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive(is);  
         iarchive(ntru_par_test);  
-        if(ntru_par->size != ntru_par_test->size || ntru_par->coef_modulus != ntru_par_test->coef_modulus){
+        if(ntru_par->size() != ntru_par_test->size() || ntru_par->modulus() != ntru_par_test->modulus()){
             FAIL(); 
         } 
         std::remove("NTRUParam_test"); 
@@ -56,21 +56,16 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
         iarchive(sk);   
         std::remove("NTRUSK_test"); 
     }
-
-
-   Polynomial sk_test = Polynomial(ntru_par->size, plaintext_modulus);  
-   sk->sk.mul(sk_test, sk->inv_sk, ntru_par->mul_engine);  
+ 
    
-    Polynomial m(ntru_par->size, plaintext_modulus); 
+    Polynomial m(ntru_par->size(), plaintext_modulus); 
      
     PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_modulus, Q); 
     std::shared_ptr<NTRUCT> ct(new NTRUCT(ntru_par)); 
-    Polynomial out(ntru_par->size, plaintext_modulus);   
+    Polynomial out(ntru_par->size(), plaintext_modulus);   
     bool test = true;
-    for(int32_t i = 0; i < test_num; ++i){ 
-        //rand->fill_array(m.vec, ntru_par->size); 
-        rand->fill(m);
-        //m.normalize();
+    for(int32_t i = 0; i < test_num; ++i){  
+        rand->fill(m); 
         sk->kdm_encode_and_encrypt(*ct.get(), m, encoding); 
          {
             /// Serialize and Deserialize  RLWE Param 
@@ -94,15 +89,13 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
     }
 
     bool add_test = true;
-    Polynomial m_1(ntru_par->size, plaintext_modulus);
-    Polynomial m_2(ntru_par->size, plaintext_modulus);
-    Polynomial exp(ntru_par->size, plaintext_modulus);
-    for(int32_t i = 0; i < test_num; ++i){    
-        //rand->fill_array(m_1.vec, ntru_par->size);   
-        rand->fill(m_1);
-        //rand->fill_array(m_2.vec, ntru_par->size);  
+    Polynomial m_1(ntru_par->size(), plaintext_modulus);
+    Polynomial m_2(ntru_par->size(), plaintext_modulus);
+    Polynomial exp(ntru_par->size(), plaintext_modulus);
+    for(int32_t i = 0; i < test_num; ++i){        
+        rand->fill(m_1); 
         rand->fill(m_2);  
-        for(int32_t j = 0; j < ntru_par->size; ++j){ 
+        for(int32_t j = 0; j < ntru_par->size(); ++j){ 
             exp[j] = (m_1[j] + m_2[j]) % plaintext_modulus;
         }  
         std::shared_ptr<NTRUCT> ct_1 = sk->kdm_encode_and_encrypt(m_1, encoding);
@@ -119,12 +112,10 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
     } 
 
     bool sub_test = true; 
-    for(int32_t i = 0; i < test_num; ++i){    
-        //rand->fill_array(m_1.vec, ntru_par->size); 
-        rand->fill(m_1);
-        //rand->fill_array(m_2.vec, ntru_par->size);   
+    for(int32_t i = 0; i < test_num; ++i){     
+        rand->fill(m_1); 
         rand->fill(m_2);
-        for(int32_t j = 0; j < ntru_par->size; ++j){ 
+        for(int32_t j = 0; j < ntru_par->size(); ++j){ 
             exp[j] = Utils::integer_mod_form(m_1[j] - m_2[j], plaintext_modulus);
         }   
         std::shared_ptr<NTRUCT> ct_1(sk->kdm_encode_and_encrypt(m_1, encoding));
@@ -142,7 +133,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
     for(int32_t i = 0; i < test_num; ++i){     
         //rand->fill_array(m_1.vec, ntru_par->size); 
         rand->fill(m_1);
-        for(int32_t j = 0; j < ntru_par->size; ++j){ 
+        for(int32_t j = 0; j < ntru_par->size(); ++j){ 
             exp[j] = Utils::integer_mod_form(-m_1[j], plaintext_modulus);
         }   
         std::shared_ptr<NTRUCT> ct_1(sk->kdm_encode_and_encrypt(m_1, encoding)); 
@@ -177,7 +168,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
  
  
     PolynomialMultiplicationEngineBuilder builder = PolynomialMultiplicationEngineBuilder();
-    builder.set_degree(ntru_par->size);
+    builder.set_degree(ntru_par->size());
     builder.set_coef_modulus(plaintext_modulus);
     builder.set_polynomial_arithmetic(PolynomialArithmetic::naive);
     std::shared_ptr<PolynomialMultiplicationEngine> ntt_engine = builder.build();
@@ -185,12 +176,10 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
     bool mul_test = true; 
     m_1.set_multiplication_engine(ntt_engine);
 
-    Polynomial scalar(ntru_par->size, plaintext_modulus); 
+    Polynomial scalar(ntru_par->size(), plaintext_modulus); 
     scalar.zeroize();
-    for(int i = 0; i < test_num; ++i){ 
-        //rand->fill_array(m_1.vec, N);  
-        rand->fill(m_1);
-        //rand->fill_array(scalar.vec,  N/64);
+    for(int i = 0; i < test_num; ++i){    
+        rand->fill(m_1); 
         rand->fill(scalar);
         m_1.mul(exp, scalar); 
         std::shared_ptr<NTRUCT> ct_1(sk->kdm_encode_and_encrypt(m_1, encoding)); 
@@ -208,7 +197,7 @@ void ntru_test(int32_t test_num, int64_t N, int64_t Q, PolynomialArithmetic arit
 
 
    std::shared_ptr<LWESK> lwe_sk(sk->extract_lwe_key());  
-   LWECT lwe_ct(lwe_sk->param);
+   LWECT lwe_ct(lwe_sk->param());
    int64_t lwe_msg;
    test = true;
    for(int32_t i = 0; i < test_num; ++i){ 
@@ -255,21 +244,21 @@ void gadget_ntru_test(int32_t test_num,  int64_t N, int64_t Q, int64_t base, Pol
 
   
     PolynomialMultiplicationEngineBuilder builder = PolynomialMultiplicationEngineBuilder();
-    builder.set_degree(ntru_par->size);
+    builder.set_degree(ntru_par->size());
     builder.set_coef_modulus(plaintext_modulus);
     builder.set_polynomial_arithmetic(PolynomialArithmetic::naive);
     std::shared_ptr<PolynomialMultiplicationEngine> ntt_engine = builder.build();
 
 
-    Polynomial m(ntru_par->size, plaintext_modulus); 
+    Polynomial m(ntru_par->size(), plaintext_modulus); 
     m.set_multiplication_engine(ntt_engine);
-    Polynomial out(ntru_par->size, plaintext_modulus);
+    Polynomial out(ntru_par->size(), plaintext_modulus);
     out.set_multiplication_engine(ntt_engine);
-    Polynomial gadget_m(ntru_par->size, plaintext_modulus);
+    Polynomial gadget_m(ntru_par->size(), plaintext_modulus);
     gadget_m.set_multiplication_engine(ntt_engine);
     gadget_m.zeroize();
     gadget_m[0] = 1;
-    Polynomial exp_poly(ntru_par->size, plaintext_modulus);
+    Polynomial exp_poly(ntru_par->size(), plaintext_modulus);
     exp_poly.set_multiplication_engine(ntt_engine);
    
     bool test = true; 
@@ -319,18 +308,17 @@ void extract_and_key_switch_test(int32_t test_num, int64_t N, int64_t Q, Polynom
    KeyDistribution rlwe_key_type = KeyDistribution::binary;
    std::shared_ptr<NTRUParam> ntru_par(new NTRUParam(RingType::negacyclic, N, Q, arithmetic)); 
    std::shared_ptr<NTRUSK> sk(new NTRUSK(ntru_par, 3.2));  
-   Polynomial m(ntru_par->size, ntru_par->coef_modulus);  
+   Polynomial m(ntru_par->size(), ntru_par->modulus());  
    PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_modulus, Q); 
    std::shared_ptr<NTRUCT> ct(new NTRUCT(ntru_par)); 
-   Polynomial out(ntru_par->size, ntru_par->coef_modulus);  
+   Polynomial out(ntru_par->size(), ntru_par->modulus());  
 
    
    std::shared_ptr<LWESK> lwe_sk(sk->extract_lwe_key());  
-   LWECT lwe_ct(lwe_sk->param);
+   LWECT lwe_ct(lwe_sk->param());
    int64_t lwe_msg;
    bool test = true;
-   for(int32_t i = 0; i < test_num; ++i){ 
-      //rand->fill_array(m.vec, ntru_par->size);
+   for(int32_t i = 0; i < test_num; ++i){  
       rand->fill(m);
       ct = std::shared_ptr<NTRUCT>(sk->kdm_encode_and_encrypt(m, encoding));
       ct->extract_lwe(lwe_ct); 

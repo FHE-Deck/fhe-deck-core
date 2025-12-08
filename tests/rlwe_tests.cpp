@@ -35,34 +35,14 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::ifstream is_rlwe_param("rlweParam_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_rlwe_param(is_rlwe_param);  
         iarchive_rlwe_param(rlwe_par_2);  
-        if(rlwe_par->size != rlwe_par_2->size || rlwe_par->coef_modulus != rlwe_par_2->coef_modulus){
+        if(rlwe_par->size() != rlwe_par_2->size() || rlwe_par->modulus() != rlwe_par_2->modulus()){
             FAIL();  
         } 
         std::remove("rlweParam_test"); 
     }
  
     std::shared_ptr<RLWESK> sk = std::shared_ptr<RLWESK>(new RLWESK(rlwe_par, rlwe_key_type, 3.2)); 
- 
-    {
-        /// Serialize and Deserialize  RLWE Param 
-        std::ofstream os("poly_test", std::ios::binary); 
-        cereal::BinaryOutputArchive oarchive(os); 
-        oarchive(sk->sk_poly); 
-        os.close();   
-    }  
-    {
-        Polynomial sk_poly;
-        std::ifstream is("poly_test", std::ios::binary);
-        cereal::BinaryInputArchive iarchive(is);  
-        iarchive(sk_poly);  
-        if(sk->sk_poly.size() != sk_poly.size() || 
-        sk->sk_poly.modulus() != sk_poly.modulus() ||
-        sk->sk_poly!=sk_poly){
-            FAIL(); 
-        } 
-        std::remove("poly_test"); 
-    }
- 
+   
     {
         /// Serialize and Deserialize  RLWE Param 
         std::ofstream os_rlwe_sk("rlwe_sk_test", std::ios::binary); 
@@ -75,17 +55,14 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::ifstream is_rlwe_sk("rlwe_sk_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_rlwe_sk(is_rlwe_sk);  
         iarchive_rlwe_sk(rlwe_sk_2);  
-        if(sk->param->size != rlwe_sk_2->param->size || 
-        sk->param->coef_modulus != rlwe_sk_2->param->coef_modulus ||
-        sk->sk_poly != rlwe_sk_2->sk_poly){
+        if(sk->param()->size() != rlwe_sk_2->param()->size() || 
+        sk->param()->modulus() != rlwe_sk_2->param()->modulus()){
             FAIL();  
         } 
         std::remove("rlwe_sk_test"); 
     }
  
-    Polynomial m(rlwe_par->size, plaintext_mod);   
-    //m.zeroize(); 
-    //rand->fill_array(m.vec, N);
+    Polynomial m(rlwe_par->size(), plaintext_mod);    
     rand->fill(m);
     
     PlaintextEncoding encoding(PlaintextEncodingType::full_domain, plaintext_mod, Q); 
@@ -102,16 +79,16 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         std::ifstream is("ct_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive(is);  
         iarchive(ct_test);  
-        if(ct->param->size != ct_test->param->size || 
-        ct->param->coef_modulus != ct_test->param->coef_modulus ||
-        ct->a != ct_test->a ||
-        ct->b != ct_test->b){
+        if(ct->param().size() != ct_test->param().size() || 
+        ct->param().modulus() != ct_test->param().modulus() ||
+        ct->a() != ct_test->a() ||
+        ct->b() != ct_test->b()){
             FAIL(); 
         } 
         std::remove("ct_test"); 
     }
  
-    Polynomial out(rlwe_par->size, plaintext_mod);
+    Polynomial out(rlwe_par->size(), plaintext_mod);
   
     for(int i = 0; i < test_num; ++i){ 
         //rand->fill_array(m.vec, N); 
@@ -124,26 +101,24 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
     } 
   
     PolynomialMultiplicationEngineBuilder builder = PolynomialMultiplicationEngineBuilder();
-    builder.set_degree(rlwe_par->size);
+    builder.set_degree(rlwe_par->size());
     builder.set_coef_modulus(plaintext_mod);
     builder.set_polynomial_arithmetic(PolynomialArithmetic::naive);
     std::shared_ptr<PolynomialMultiplicationEngine> ntt_engine = builder.build();
  
-    Polynomial m_1(rlwe_par->size, plaintext_mod);
+    Polynomial m_1(rlwe_par->size(), plaintext_mod);
     m_1.set_multiplication_engine(ntt_engine);
     m_1.zeroize();
-    Polynomial m_2(rlwe_par->size, plaintext_mod);
+    Polynomial m_2(rlwe_par->size(), plaintext_mod);
     m_2.set_multiplication_engine(ntt_engine);
     m_2.zeroize();
-    Polynomial exp(rlwe_par->size, plaintext_mod);
+    Polynomial exp(rlwe_par->size(), plaintext_mod);
     exp.set_multiplication_engine(ntt_engine);
     exp.zeroize();
-    for(int i = 0; i < test_num; ++i){    
-        //rand->fill_array(m_1.vec, rlwe_par->size); 
-        rand->fill(m_1);
-        //rand->fill_array(m_2.vec, rlwe_par->size); 
+    for(int i = 0; i < test_num; ++i){     
+        rand->fill(m_1);  
         rand->fill(m_2);
-        for(int j = 0; j < rlwe_par->size; ++j){ 
+        for(int j = 0; j < rlwe_par->size(); ++j){ 
             exp[j] = (m_1[j] + m_2[j]) % plaintext_mod;
         }  
            
@@ -165,7 +140,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         rand->fill(m_1);
         //rand->fill_array(m_2.vec, rlwe_par->size);
         rand->fill(m_2); 
-        for(int j = 0; j < rlwe_par->size; ++j){ 
+        for(int j = 0; j < rlwe_par->size(); ++j){ 
             exp[j] = Utils::integer_mod_form(m_1[j] - m_2[j], plaintext_mod);
         }   
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding));
@@ -179,10 +154,9 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
         }
     } 
   
-    for(int i = 0; i < test_num; ++i){    
-        //rand->fill_array(m_1.vec, rlwe_par->size);  
+    for(int i = 0; i < test_num; ++i){     
         rand->fill(m_1);
-        for(int j = 0; j < rlwe_par->size; ++j){ 
+        for(int j = 0; j < rlwe_par->size(); ++j){ 
             exp[j] = Utils::integer_mod_form(-m_1[j], plaintext_mod);
         }   
         std::shared_ptr<RLWECT> ct_1 = std::static_pointer_cast<RLWECT>(sk->encode_and_encrypt(m_1, encoding)); 
@@ -217,7 +191,7 @@ void rlwe_test(int test_num, long N, long Q, PolynomialArithmetic arithmetic){
 
  
     bool mul_test = true;
-    Polynomial scalar(rlwe_par->size, plaintext_mod);
+    Polynomial scalar(rlwe_par->size(), plaintext_mod);
     scalar.set_multiplication_engine(ntt_engine);
     scalar.zeroize(); 
     for(int i = 0; i < test_num; ++i){ 
@@ -265,21 +239,21 @@ void gadget_rlwe_basic_test(int test_num, GadgetMulMode mode, long N, long Q, lo
     RLWEGadgetSK gadget_sk(deter_gadget, sk);
    
     PolynomialMultiplicationEngineBuilder builder = PolynomialMultiplicationEngineBuilder();
-    builder.set_degree(rlwe_par->size);
+    builder.set_degree(rlwe_par->size());
     builder.set_coef_modulus(plaintext_mod);
     builder.set_polynomial_arithmetic(PolynomialArithmetic::naive);
     std::shared_ptr<PolynomialMultiplicationEngine> ntt_engine = builder.build();
 
-    Polynomial m = Polynomial(rlwe_par->size, plaintext_mod);
+    Polynomial m = Polynomial(rlwe_par->size(), plaintext_mod);
     m.set_multiplication_engine(ntt_engine);
     m.zeroize(); 
-    Polynomial out = Polynomial(rlwe_par->size, plaintext_mod);
+    Polynomial out = Polynomial(rlwe_par->size(), plaintext_mod);
     out.set_multiplication_engine(ntt_engine);
     out.zeroize();
-    Polynomial gadget_m = Polynomial(rlwe_par->size, plaintext_mod);
+    Polynomial gadget_m = Polynomial(rlwe_par->size(), plaintext_mod);
     gadget_m.set_multiplication_engine(ntt_engine);
     gadget_m.zeroize();
-    Polynomial exp_poly = Polynomial(rlwe_par->size, plaintext_mod);
+    Polynomial exp_poly = Polynomial(rlwe_par->size(), plaintext_mod);
     exp_poly.set_multiplication_engine(ntt_engine);
     exp_poly.zeroize();
  
@@ -367,21 +341,21 @@ void gadget_rlwe_test(int test_num, GadgetMulMode mode, long N, long Q, long bas
     } 
  
     PolynomialMultiplicationEngineBuilder builder = PolynomialMultiplicationEngineBuilder();
-    builder.set_degree(rlwe_par->size);
+    builder.set_degree(rlwe_par->size());
     builder.set_coef_modulus(plaintext_modulus);
     builder.set_polynomial_arithmetic(PolynomialArithmetic::naive);
     std::shared_ptr<PolynomialMultiplicationEngine> ntt_engine = builder.build();
 
-    Polynomial m = Polynomial(rlwe_par->size, plaintext_modulus); 
+    Polynomial m = Polynomial(rlwe_par->size(), plaintext_modulus); 
     m.set_multiplication_engine(ntt_engine);
     m.zeroize();
-    Polynomial out = Polynomial(rlwe_par->size, plaintext_modulus);
+    Polynomial out = Polynomial(rlwe_par->size(), plaintext_modulus);
     out.set_multiplication_engine(ntt_engine);
-    Polynomial gadget_m = Polynomial(rlwe_par->size, plaintext_modulus);
+    Polynomial gadget_m = Polynomial(rlwe_par->size(), plaintext_modulus);
     gadget_m.set_multiplication_engine(ntt_engine);
     gadget_m.zeroize();
     gadget_m[0] = 1;
-    Polynomial exp_poly = Polynomial(rlwe_par->size, plaintext_modulus);
+    Polynomial exp_poly = Polynomial(rlwe_par->size(), plaintext_modulus);
     exp_poly.zeroize();
     exp_poly.set_multiplication_engine(ntt_engine);
     

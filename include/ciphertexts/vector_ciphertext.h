@@ -26,21 +26,21 @@ class VectorCT{
     /// @brief Rotates the plaintext within the ciphertext without affecting its decryptability. ote that this isn't necessarily a cyclic rotation. It's up to the implementation how the rotation is done.
     /// @param out The output ciphertext
     /// @param rot The amount of rotation
-    virtual void homomorphic_rotate(VectorCT &out, int32_t rot) = 0;
+    virtual void homomorphic_rotate(VectorCT &out, int32_t rot) const = 0;
 
     /// @brief Adds this ciphertext and ct, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The ciphertext to add
-    virtual void add(VectorCT &out, const VectorCT &ct) = 0;
+    virtual void add(VectorCT &out, const VectorCT &ct)const = 0;
     
     /// @brief Subtracts ct from this ciphertext, and stores the result in out.
     /// @param out The output ciphertext
     /// @param ct The input ciphertext
-    virtual void sub(VectorCT &out, const VectorCT &ct) = 0;
+    virtual void sub(VectorCT &out, const VectorCT &ct)const = 0;
   
     /// @brief Negates this ciphertext and stores the result in out.
     /// @param out The output ciphertext
-    virtual void neg(VectorCT &out) = 0; 
+    virtual void neg(VectorCT &out)const = 0; 
 
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -55,13 +55,18 @@ class VectorCT{
  * @brief Interface for vector ciphertext parameters. Example implementations include RLWEParam and NTRUParam.
  */
 class VectorCTParam{
-    public:
 
+    protected:
     /// @brief The size of the vector
-    int32_t size; 
+    int32_t m_size; 
 
+    public: 
+     
     /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space. 
     virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param) = 0;
+
+    int32_t size()const;
+
 
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -74,10 +79,12 @@ class VectorCTParam{
 
 class VectorCTSK{
 
+    protected: 
+
+    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+
     public:
-
-    std::shared_ptr<VectorCTParam> vector_ct_param;
-
+ 
     /// @brief Destructor
     virtual ~VectorCTSK() = default;
  
@@ -114,6 +121,8 @@ class VectorCTSK{
     /// @param ct The input ciphertext.
     /// @param encoding The plaintext encoding scheme.
     virtual void decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding) = 0;
+
+    std::shared_ptr<VectorCTParam> vector_ct_param()const;
     
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -154,13 +163,15 @@ class GadgetVectorCT{
  */
 class GadgetVectorCTSK{
 
-    public: 
- 
-    /// @brief The parameters of the VactorCT scheme
-    std::shared_ptr<VectorCTParam> vector_ct_param;
-    /// @brief The secret key of the VactorCT scheme
-    std::shared_ptr<VectorCTSK> secret_key;
+    protected: 
 
+    /// @brief The parameters of the VactorCT scheme
+    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+    /// @brief The secret key of the VactorCT scheme
+    std::shared_ptr<VectorCTSK> m_secret_key;
+
+    public: 
+  
     /// @brief Destructor
     virtual ~GadgetVectorCTSK() = default;
 
@@ -175,6 +186,8 @@ class GadgetVectorCTSK{
     /// @param size The size of the message
     /// @return Creates a new ciphertext
     virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) const = 0;  
+
+    std::shared_ptr<VectorCTParam> vector_ct_param()const;
 
     #if defined(USE_CEREAL)
     template <class Archive>

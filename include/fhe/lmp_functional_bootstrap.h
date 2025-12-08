@@ -18,11 +18,13 @@ namespace FHEDeck{
  */
 class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
 
+    protected:
+    // LWE after modulus switching to the degree of the polynomial ring (Its computed from lwe_par)
+    std::shared_ptr<LWEParam> m_lwe_par_tiny;
+    LWEModSwitcher m_ms_from_gadget_to_tiny_par;
+
     public: 
 
-    // LWE after modulus switching to the degree of the polynomial ring (Its computed from lwe_par)
-    std::shared_ptr<LWEParam> lwe_par_tiny;
-    LWEModSwitcher ms_from_gadget_to_tiny_par;
      
     LMPFunctionalBootstrapPublicKey() = default;
      
@@ -45,14 +47,14 @@ class LMPFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
     void save( Archive & ar ) const
     { 
         ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));    
-        ar(lwe_par_tiny);    
+        ar(m_lwe_par_tiny);    
     }
         
     template <class Archive>
     void load( Archive & ar )
     {  
         ar(cereal::base_class<FunctionalBootstrapPublicKey>(this));      
-        ar(lwe_par_tiny);    
+        ar(m_lwe_par_tiny);    
         init();
     } 
     #endif 

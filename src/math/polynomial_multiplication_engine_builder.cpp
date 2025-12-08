@@ -18,52 +18,48 @@
 using namespace FHEDeck; 
 
 void PolynomialMultiplicationEngineBuilder::set_coef_modulus(const int64_t coef_modulus){
-    this->coef_modulus = coef_modulus;
+    m_coef_modulus = coef_modulus;
 }
 
 void PolynomialMultiplicationEngineBuilder::set_degree(const int64_t degree){
-    this->degree = degree;
+    m_degree = degree;
 }
 
 void PolynomialMultiplicationEngineBuilder::set_ring_type(const RingType ring){
-    this->ring = ring;
+    m_ring = ring;
 }
 
 void PolynomialMultiplicationEngineBuilder::set_polynomial_arithmetic(const PolynomialArithmetic arithmetic){
-    this->arithmetic = arithmetic;
-    this->is_init = true;
+    m_arithmetic = arithmetic; 
 }
 
 void PolynomialMultiplicationEngineBuilder::set_modulus_type(const ModulusType mod_type){
-    this->mod_type = mod_type;
+    m_mod_type = mod_type;
 }
 
-std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBuilder::build(){
-    if(!is_init){
-        throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): No polynomial arithmetic type set!");
-    } 
-    if(arithmetic == PolynomialArithmetic::naive){ 
-        return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus)); 
+std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBuilder::build(){ 
+    if(m_arithmetic == PolynomialArithmetic::naive){ 
+        return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(m_degree, m_coef_modulus)); 
     }
-    if(arithmetic == PolynomialArithmetic::ntt64){
+    if(m_arithmetic == PolynomialArithmetic::ntt64){
         #if defined(USE_IntelHexl)
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No NTT engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
             return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
         #endif
     }
-    if(arithmetic == PolynomialArithmetic::double_fft){ 
+    if(m_arithmetic == PolynomialArithmetic::double_fft){ 
         #if defined(USE_FFTW)
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWNegacyclicEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWNegacyclicEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No FFT for double precision engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
             return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
         #endif
     }
-    if(arithmetic == PolynomialArithmetic::long_double_fft){
+    if(m_arithmetic == PolynomialArithmetic::long_double_fft){
         #if defined(USE_FFTWL)
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWLongNegacyclicEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWLongNegacyclicEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No FFT for quadruple precision engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
             return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));

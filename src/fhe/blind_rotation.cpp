@@ -3,21 +3,29 @@
 using namespace FHEDeck;
     
 VectorCTAccumulator::VectorCTAccumulator(std::shared_ptr<VectorCT> acc_content){
-    this->acc_content = acc_content; 
+    m_acc_content = acc_content; 
 }
 
 VectorCTAccumulator::VectorCTAccumulator(VectorCTAccumulator &other){
-    this->acc_content = other.acc_content; 
+    m_acc_content = other.m_acc_content; 
 }
 
 VectorCTAccumulator& VectorCTAccumulator::operator=(const VectorCTAccumulator other){
-    this->acc_content = other.acc_content; 
+    m_acc_content = other.m_acc_content; 
     return *this;
+}
+
+std::shared_ptr<const VectorCT> VectorCTAccumulator::content()const{
+    return m_acc_content;
 }
   
 PolynomialSpecification::PolynomialSpecification(RotationPoly rot_poly){ 
-    this->rot_poly = rot_poly;
-    this->rot_poly.to_amortization_form(); 
+    m_rot_poly = rot_poly;
+    m_rot_poly.to_amortization_form(); 
+}
+
+RotationPoly PolynomialSpecification::poly(){
+    return m_rot_poly;
 }
   
 
@@ -90,30 +98,28 @@ RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param)
 }
 
 std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
-    RotationPoly poly(f, this->param->size, input_encoding, output_encoding);   
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = poly;   
+    RotationPoly poly(f, param->size(), input_encoding, output_encoding);    
+    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<RLWEParam>(param));  
+    acc_ptr->b(poly);
     return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
  
 std::shared_ptr<VectorCTAccumulator> RLWEAccumulatorBuilder::prepare_accumulator(Vector& vec){
-    Polynomial vec_cast = static_cast<Polynomial&>(vec);
-    std::shared_ptr<RLWECT> acc_ptr = std::shared_ptr<RLWECT>(new RLWECT(std::static_pointer_cast<RLWEParam>(param))); 
-    acc_ptr->a.zeroize();
-    acc_ptr->b = vec_cast;  
+    Polynomial vec_cast = static_cast<Polynomial&>(vec);  
+    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<RLWEParam>(param));  
+    acc_ptr->b(vec_cast);
     return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
   
 NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
     this->sk = sk;
-    this->param = this->sk->param;
+    this->param = this->sk->param();
     this->is_sk_set = true;
 }
 
 std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     if(is_sk_set){
-        RotationPoly poly = RotationPoly(f, this->param->size, input_encoding, output_encoding);   
+        RotationPoly poly = RotationPoly(f, param->size(), input_encoding, output_encoding);   
         std::shared_ptr<NTRUCT> acc(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
         sk->kdm_encrypt(*acc, poly); 
         return std::make_shared<VectorCTAccumulator>(acc);
@@ -138,26 +144,26 @@ PreparedVectorCTAccumulators::PreparedVectorCTAccumulators(std::shared_ptr<Vecto
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_sgn(PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.get_plaintext_space(), builder->param->size, output_encoding.get_ciphertext_modulus());   
+    RotationPoly poly = RotationPoly::rot_sgn(output_encoding.get_plaintext_space(), builder->param->size(), output_encoding.get_ciphertext_modulus());   
     return builder->prepare_accumulator(poly);
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_msb(PlaintextEncoding output_encoding){
-    RotationPoly poly = RotationPoly::rot_msb(output_encoding.get_plaintext_space(), builder->param->size, output_encoding.get_ciphertext_modulus());  
+    RotationPoly poly = RotationPoly::rot_msb(output_encoding.get_plaintext_space(), builder->param->size(), output_encoding.get_ciphertext_modulus());  
     return builder->prepare_accumulator(poly);
 }
   
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_acc_one(PlaintextEncoding output_encoding){ 
-    RotationPoly poly = RotationPoly::rot_one(builder->param->size, output_encoding.get_ciphertext_modulus());
+    RotationPoly poly = RotationPoly::rot_one(builder->param->size(), output_encoding.get_ciphertext_modulus());
     poly[1] = output_encoding.encode_message(1);  
     return builder->prepare_accumulator(poly);
 }
 
 std::shared_ptr<VectorCTAccumulator> PreparedVectorCTAccumulators::get_pad_poly(PlaintextEncoding output_encoding){
-    Polynomial pad_poly(builder->param->size, output_encoding.get_ciphertext_modulus());
+    Polynomial pad_poly(builder->param->size(), output_encoding.get_ciphertext_modulus());
     pad_poly.zeroize();
     uint64_t scal = output_encoding.get_ciphertext_modulus() / (2 * output_encoding.get_plaintext_space());
-    uint64_t skip = 2 * (builder->param->size / (output_encoding.get_plaintext_space()));
+    uint64_t skip = 2 * (builder->param->size() / (output_encoding.get_plaintext_space()));
     /// NOTE: This is the same as pad poly, but encoded with double the plaintext space... In the paper its \frac{h} 
     for(long i = 0; i < skip; i++) {
         pad_poly[i] = scal;
@@ -170,7 +176,7 @@ RLWEBlindRotateOutputBuilder::RLWEBlindRotateOutputBuilder(std::shared_ptr<RLWEP
 }
 
 LWEParam* RLWEBlindRotateOutputBuilder::build_extract_lwe_param(){
-    return new LWEParam(rlwe_param->size, rlwe_param->coef_modulus);  
+    return new LWEParam(rlwe_param->size(), rlwe_param->modulus());  
 }
 
 BlindRotateOutput* RLWEBlindRotateOutputBuilder::build(){
@@ -182,7 +188,7 @@ NTRUBlindRotateOutputBuilder::NTRUBlindRotateOutputBuilder(std::shared_ptr<NTRUP
 }
 
 LWEParam* NTRUBlindRotateOutputBuilder::build_extract_lwe_param(){
-    return new LWEParam(ntru_param->size, ntru_param->coef_modulus);  
+    return new LWEParam(ntru_param->size(), ntru_param->modulus());  
 }
 
 BlindRotateOutput* NTRUBlindRotateOutputBuilder::build(){
@@ -205,7 +211,7 @@ void RLWEBlindRotateOutput::extract_lwe(LWECT& out){
 void RLWEBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc){ 
     std::shared_ptr<PolynomialSpecification> acc_cast = std::static_pointer_cast<PolynomialSpecification>(acc);
     std::shared_ptr<RLWEBlindRotateOutput> out_ptr = std::static_pointer_cast<RLWEBlindRotateOutput>(bl_out);  
-    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->rot_poly);
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->poly());
 }
 
 NTRUBlindRotateOutput::~NTRUBlindRotateOutput(){ 
@@ -224,7 +230,7 @@ void NTRUBlindRotateOutput::extract_lwe(LWECT& out){
 void NTRUBlindRotateOutput::post_rotation(std::shared_ptr<BlindRotateOutput> bl_out, std::shared_ptr<FunctionSpecification> acc){ 
     std::shared_ptr<PolynomialSpecification> acc_cast = std::static_pointer_cast<PolynomialSpecification>(acc);
     std::shared_ptr<NTRUBlindRotateOutput> out_ptr = std::static_pointer_cast<NTRUBlindRotateOutput>(bl_out); 
-    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->rot_poly);
+    this->accumulator_ptr->mul(*out_ptr->accumulator_ptr, acc_cast->poly());
 }
 
  

@@ -21,8 +21,8 @@ TEST(KSBootstrapTest, FDFBTest){
     std::shared_ptr<FunctionalBootstrapPublicKey> ks_pk = ctx.config->eval_key.bootstrap_pk; 
     int64_t t = encoding.get_plaintext_space();
     Ciphertext lwe_out = ctx.encrypt(0, encoding);
-    int64_t N = lwe_out.lwe_c->param->dim;
-    int64_t Q = lwe_out.lwe_c->param->modulus;
+    int64_t N = lwe_out.lwe_c->param()->dim();
+    int64_t Q = lwe_out.lwe_c->param()->modulus();
  
     std::function<long(long,long)> F_in_0 = [](long a, long b) { return  ((a*a ^ 0x41) + a * 3 + 7 * (a & 0xa)) % b;};  
     std::function<int64_t(int64_t)> F_in = std::bind(F_in_0, std::placeholders::_1, t);
