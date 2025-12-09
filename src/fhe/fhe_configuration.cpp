@@ -89,6 +89,7 @@ void BasicBootstrapBuilder::transfer_parameters(const BasicBootstrapBuilder& oth
 
 void BasicBootstrapBuilder::transfer_secret_key(BasicBootstrapBuilder& other){
     this->lwe_param = other.lwe_param;
+    this->gadget_lwe = other.gadget_lwe;
     this->lwe_gadget_sk = other.lwe_gadget_sk;
     this->secret_key->lwe_sk = other.secret_key->lwe_sk;
     this->vector_ct_param = other.vector_ct_param;
@@ -148,7 +149,7 @@ void BasicBootstrapBuilder::build_secret_keys(){
     this->lwe_param = std::make_shared<LWEParam>(this->lwe_dim, this->lwe_modulus);  
     /// =================== Generate Secret keys   
     /// Generate GadgetLWE key. Its the LWE key for LWE-to-LWE-Key Switching.
-    std::shared_ptr<LWESK> gadget_lwe = std::make_shared<LWESK>(lwe_param, this->lwe_stddev, KeyDistribution::binary); 
+    gadget_lwe = std::make_shared<LWESK>(lwe_param, this->lwe_stddev, KeyDistribution::binary); 
     this->lwe_gadget_sk = std::make_shared<LWEGadgetSK>(gadget_lwe, lwe_ks_decomp_base);  
     /// Generate Keys for the blind rotation gadget
     if(this->vector_encyption_type == VectorEncryptionType::RLWE){ 
@@ -202,7 +203,7 @@ void BasicBootstrapBuilder::build_vector_ct_gadget_secret_key(){
 
 void BasicBootstrapBuilder::build_blind_rotation_key(){ 
     if(this->br_algorithm == BlindRotationAlgorithm::cggi_binary){ 
-        blind_rotation_key = std::make_shared<CGGIBlindRotationKey>(secret_key->gadget_sk, lwe_gadget_sk->m_lwe_sk);   
+        blind_rotation_key = std::make_shared<CGGIBlindRotationKey>(secret_key->gadget_sk, gadget_lwe);   
     }else{
         throw std::logic_error("BasicBootstrapBuilder::build() Unrecognized Blind Rotation Algorithm");
     }

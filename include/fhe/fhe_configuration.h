@@ -180,7 +180,7 @@ class BasicBootstrapBuilder{
 
     std::shared_ptr<Gadget> vector_ct_gadget;
     std::shared_ptr<LWEParam> lwe_param;
-    //std::shared_ptr<LWESK> gadget_lwe;
+    std::shared_ptr<LWESK> gadget_lwe;
     std::shared_ptr<LWEGadgetSK> lwe_gadget_sk;
 
     /// @brief Parameters for the defauls plaintext encoding

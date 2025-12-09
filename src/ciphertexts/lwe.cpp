@@ -306,15 +306,6 @@ LWEGadgetSK::LWEGadgetSK(std::shared_ptr<LWESK> lwe_sk, int64_t base){
     m_digits = Utils::power_times(m_lwe_sk->param()->modulus(), base);   
     m_multiplier = std::make_unique<LongIntegerMultipler>(m_lwe_sk->param()->modulus());
 }
-
-LWEGadgetSK::LWEGadgetSK(const LWEGadgetSK &other){
-    throw std::runtime_error("LWEGadgetSK::LWEGadgetSK(const LWEGadgetSK &other)"); 
-}
-
-LWEGadgetSK& LWEGadgetSK::operator=(const LWEGadgetSK other){
-    throw std::runtime_error("LWEGadgetSK::operator=(const LWEGadgetSK other)"); 
-    return *this;
-}
  
 std::shared_ptr<LWEGadgetCT> LWEGadgetSK::gadget_encrypt(int64_t m){ 
     std::shared_ptr<LWEGadgetCT> out = std::make_shared<LWEGadgetCT>(m_lwe_sk->param(), m_base); 

@@ -388,9 +388,7 @@ class LWEGadgetCT{
  * @brief A class that knowns how to produce LWEGadgetCT's. 
  */
 class LWEGadgetSK{
-
-  friend class BasicBootstrapBuilder;
-
+  
   protected:
 
     /// @brief Pointer to the LWE secret key.
@@ -416,10 +414,10 @@ class LWEGadgetSK{
     LWEGadgetSK(std::shared_ptr<LWESK> lwe, int64_t base);
   
     /// @brief Copy constructor, throws an exception by default. 
-    LWEGadgetSK(const LWEGadgetSK& other);
+    LWEGadgetSK(const LWEGadgetSK& other) = delete;
 
     /// @brief = Operator, throws an exception by default.
-    LWEGadgetSK& operator=(const LWEGadgetSK other); 
+    LWEGadgetSK& operator=(const LWEGadgetSK other) = delete;
 
     /// @brief Encrypts a message m, and returns a pointer to a new LWEGadgetCT object.
     /// @param m The message m
