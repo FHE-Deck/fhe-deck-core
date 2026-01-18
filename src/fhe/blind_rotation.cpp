@@ -93,20 +93,20 @@ std::shared_ptr<FunctionSpecification> KSFunctionSpecificationBuilder::prepare_s
     return std::make_shared<KSFunctionSpecification>(f_2, degree, coef_modulus, input_encoding);
 }
   
-RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param){
+RLWEAccumulatorBuilder::RLWEAccumulatorBuilder(std::shared_ptr<const RLWEParam> param){
     this->param = param;
 }
 
 std::shared_ptr<FunctionSpecification> RLWEAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     RotationPoly poly(f, param->size(), input_encoding, output_encoding);    
-    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<RLWEParam>(param));  
+    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<const RLWEParam>(param));  
     acc_ptr->b(poly);
     return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
  
 std::shared_ptr<VectorCTAccumulator> RLWEAccumulatorBuilder::prepare_accumulator(Vector& vec){
     Polynomial vec_cast = static_cast<Polynomial&>(vec);  
-    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<RLWEParam>(param));  
+    std::shared_ptr<RLWECT> acc_ptr = std::make_shared<RLWECT>(std::static_pointer_cast<const RLWEParam>(param));  
     acc_ptr->b(vec_cast);
     return std::make_shared<VectorCTAccumulator>(acc_ptr);
 }
@@ -120,7 +120,7 @@ NTRUAccumulatorBuilder::NTRUAccumulatorBuilder(std::shared_ptr<NTRUSK> sk){
 std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding){
     if(is_sk_set){
         RotationPoly poly = RotationPoly(f, param->size(), input_encoding, output_encoding);   
-        std::shared_ptr<NTRUCT> acc(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
+        std::shared_ptr<NTRUCT> acc(new NTRUCT(std::static_pointer_cast<const NTRUParam>(param))); 
         sk->kdm_encrypt(*acc, poly); 
         return std::make_shared<VectorCTAccumulator>(acc);
     }else{
@@ -131,7 +131,7 @@ std::shared_ptr<FunctionSpecification> NTRUAccumulatorBuilder::prepare_specifica
 std::shared_ptr<VectorCTAccumulator> NTRUAccumulatorBuilder::prepare_accumulator(Vector& vec){
     Polynomial vec_cast = static_cast<Polynomial&>(vec);
     if(is_sk_set){  
-        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(std::static_pointer_cast<NTRUParam>(param))); 
+        std::shared_ptr<NTRUCT> acc = std::shared_ptr<NTRUCT>(new NTRUCT(std::static_pointer_cast<const NTRUParam>(param))); 
         sk->kdm_encrypt(*acc, vec_cast);
         return std::make_shared<VectorCTAccumulator>(acc);
     }else{

@@ -57,7 +57,7 @@ class NTRUParam : public PolynomialCTParam{
     /// @brief Constructs a new VectorCT object implemented as NTRUCT.
     /// @param param The parameters of the NTRU encryption scheme. Usually its the same object. 
     /// @return Retuns a new VectorCT object.
-    std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param);
+    std::shared_ptr<VectorCT> init_ct(std::shared_ptr<const VectorCTParam> param)const;
          
     uint64_t modulus()const;
     
@@ -91,7 +91,7 @@ class NTRUCT : public PolynomialCT{
     protected: 
 
       /// @brief The parameters of the NTRU encryption scheme.
-    std::shared_ptr<NTRUParam> m_param;  
+    std::shared_ptr<const NTRUParam> m_param;  
     /// @brief The ciphertext polynomial.
     Polynomial m_ct_poly; 
 
@@ -102,11 +102,11 @@ class NTRUCT : public PolynomialCT{
 
     /// @brief Constructs the NTRUCT object.
     /// @param param The parameters of the NTRU encryption scheme.
-    NTRUCT(std::shared_ptr<NTRUParam> param);
+    NTRUCT(std::shared_ptr<const NTRUParam> param);
  
-    NTRUCT(std::shared_ptr<NTRUParam> param, const Polynomial& ct_poly);
+    NTRUCT(std::shared_ptr<const NTRUParam> param, const Polynomial& ct_poly);
 
-    NTRUCT(std::shared_ptr<NTRUParam> param, Polynomial&& ct_poly);
+    NTRUCT(std::shared_ptr<const NTRUParam> param, Polynomial&& ct_poly);
  
     NTRUCT(const NTRUCT &other);
    
@@ -191,7 +191,7 @@ class NTRUSK : public VectorCTSK{
     protected:
 
     /// @brief  The parameters of the NTRU encryption scheme.
-    std::shared_ptr<NTRUParam> m_param;   
+    std::shared_ptr<const NTRUParam> m_param;   
     /// @brief The secret key polynomial.
     Polynomial m_sk; 
     /// @brief The multiplicative inverse of secret key polynomial.
@@ -213,7 +213,7 @@ class NTRUSK : public VectorCTSK{
     /// @brief Constructs the NTRUSK object.
     /// @param param The NTRU parameters.
     /// @param noise_stddev The noise standard deviation.
-    NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev); 
+    NTRUSK(std::shared_ptr<const NTRUParam> param, double noise_stddev); 
   
     /// @brief Generates the secret key. 
     /// NOTE: Depends on NTL need to init a Inversion Engine for that. 
@@ -288,7 +288,7 @@ class NTRUSK : public VectorCTSK{
     /// @return Creates and returns a new LWE key, with a newly created LWEParam object.
     std::shared_ptr<LWESK> extract_lwe_key();
 
-    std::shared_ptr<NTRUParam> param()const;
+    std::shared_ptr<const NTRUParam> param()const;
    
    #if defined(USE_CEREAL)
     template <class Archive>
@@ -321,7 +321,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   protected: 
 
     /// @brief The parameters of the NTRU encryption scheme.
-  std::shared_ptr<NTRUParam> m_ntru_param;
+  std::shared_ptr<const NTRUParam> m_ntru_param;
   /// @brief The decomposition gadget. 
   std::shared_ptr<Gadget> m_gadget; 
   /// @brief The array evaluation form holding the decomposition of the ciphertext.
@@ -336,7 +336,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @param ntru_param The parameters of the NTRU encryption scheme.
   /// @param gadget The decomposition gadget.
   /// @param gadget_ct The array of NTRUCT objects.
-  NTRUGadgetCT(std::shared_ptr<NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<NTRUCT>> &gadget_ct);
+  NTRUGadgetCT(std::shared_ptr<const NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<NTRUCT>> &gadget_ct);
 
   NTRUGadgetCT(const NTRUGadgetCT& other) = delete;
 

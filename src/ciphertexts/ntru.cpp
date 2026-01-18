@@ -29,8 +29,8 @@ void NTRUParam::init_mul_engine(){
     m_mul_engine = mul_engine_builder.build();  
 }
  
-std::shared_ptr<VectorCT> NTRUParam::init_ct(std::shared_ptr<VectorCTParam> param){
-    return std::make_shared<NTRUCT>(std::static_pointer_cast<NTRUParam>(param));
+std::shared_ptr<VectorCT> NTRUParam::init_ct(std::shared_ptr<const VectorCTParam> param)const{
+    return std::make_shared<NTRUCT>(std::static_pointer_cast<const NTRUParam>(param));
 } 
 
 uint64_t NTRUParam::modulus()const{
@@ -45,19 +45,19 @@ RingType NTRUParam::ring()const{
     return m_ring;
 }
   
-NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param){
+NTRUCT::NTRUCT(std::shared_ptr<const NTRUParam> param){
     m_param = param; 
     m_ct_poly = Polynomial(param->size(), param->modulus());  
     m_ct_poly.set_multiplication_engine(param->mul_engine());
 }
  
-NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param, const Polynomial& ct_poly){
+NTRUCT::NTRUCT(std::shared_ptr<const NTRUParam> param, const Polynomial& ct_poly){
     m_param = param;
     m_ct_poly = ct_poly;
     m_ct_poly.set_multiplication_engine(param->mul_engine());
 }
 
-NTRUCT::NTRUCT(std::shared_ptr<NTRUParam> param, Polynomial&& ct_poly){
+NTRUCT::NTRUCT(std::shared_ptr<const NTRUParam> param, Polynomial&& ct_poly){
     m_param = param;
     m_ct_poly = std::move(ct_poly);
     m_ct_poly.set_multiplication_engine(param->mul_engine());
@@ -139,7 +139,7 @@ void NTRUCT::extract_lwe(LWECT &out)const{
     } 
 }
       
-NTRUGadgetCT::NTRUGadgetCT(std::shared_ptr<NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
+NTRUGadgetCT::NTRUGadgetCT(std::shared_ptr<const NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<NTRUCT>> &gadget_ct){
     m_ntru_param = ntru_param;
     m_gadget = gadget;
     init(gadget_ct);
@@ -178,7 +178,7 @@ void NTRUGadgetCT::mul(VectorCT &out, const Vector &scalar){
     out_ptr = NTRUCT(m_ntru_param, std::move(ct_poly));
 }
  
-NTRUSK::NTRUSK(std::shared_ptr<NTRUParam> param, double noise_stddev){ 
+NTRUSK::NTRUSK(std::shared_ptr<const NTRUParam> param, double noise_stddev){ 
     m_param = param; 
     m_noise_stddev = noise_stddev; 
     init();
@@ -310,7 +310,7 @@ std::shared_ptr<LWESK> NTRUSK::extract_lwe_key(){
     return key;
 }
 
-std::shared_ptr<NTRUParam> NTRUSK::param()const{
+std::shared_ptr<const NTRUParam> NTRUSK::param()const{
     return m_param;
 }
  

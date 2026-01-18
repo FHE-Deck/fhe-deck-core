@@ -42,7 +42,7 @@ void LWEToRLWEKeySwitchKey::lwe_to_rlwe_key_switch(RLWECT& out, const LWECT& lwe
     out = std::move(temp);
 }
 
-std::shared_ptr<RLWEParam> LWEToRLWEKeySwitchKey::dest_param()const{
+std::shared_ptr<const RLWEParam> LWEToRLWEKeySwitchKey::dest_param()const{
     return m_dest_param;
 }
 

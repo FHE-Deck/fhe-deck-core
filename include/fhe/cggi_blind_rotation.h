@@ -23,7 +23,7 @@ class CGGIBlindRotationKey : public BlindRotationPublicKey{
 
     // The blind rotation key  
     std::vector<std::shared_ptr<GadgetVectorCT>> m_bk; 
-    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+    std::shared_ptr<const VectorCTParam> m_vector_ct_param;
 
     public:
     

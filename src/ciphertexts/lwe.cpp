@@ -15,7 +15,7 @@ int64_t LWEParam::modulus()const{
     return m_modulus;
 }
   
-LWECT::LWECT(std::shared_ptr<LWEParam> lwe_param){
+LWECT::LWECT(std::shared_ptr<const LWEParam> lwe_param){
     m_param = lwe_param; 
     m_ct = Vector(m_param->dim()+1, m_param->modulus());
 }
@@ -99,7 +99,7 @@ int64_t LWECT::operator[](int32_t index)const{
     return m_ct[index];
 }
 
-std::shared_ptr<LWEParam> LWECT::param()const{
+std::shared_ptr<const LWEParam> LWECT::param()const{
     return m_param;
 }
 
@@ -119,7 +119,7 @@ const Vector& LWECT::ct_vec()const{
     return m_ct;
 }
 
-LWEModSwitcher::LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to){
+LWEModSwitcher::LWEModSwitcher(std::shared_ptr<const LWEParam> from, std::shared_ptr<const LWEParam> to){
     m_from = from;
     m_to = to; 
     /// Check if we need int64_t arithmetic.
@@ -166,15 +166,15 @@ LWECT LWEModSwitcher::switch_modulus(const LWECT& in_ct){
     return out;
 }
 
-std::shared_ptr<LWEParam> LWEModSwitcher::from_param()const{
+std::shared_ptr<const LWEParam> LWEModSwitcher::from_param()const{
     return m_from;
 }
 
-std::shared_ptr<LWEParam> LWEModSwitcher::to_param()const{
+std::shared_ptr<const LWEParam> LWEModSwitcher::to_param()const{
     return m_to;
 }
    
-LWEGadgetCT::LWEGadgetCT(std::shared_ptr<LWEParam> lwe_param, int64_t base){
+LWEGadgetCT::LWEGadgetCT(std::shared_ptr<const LWEParam> lwe_param, int64_t base){
     m_lwe_param = lwe_param;
     m_base = base;  
     /// TODO:  Add check: Note that for now, we accept only power of two basis (because our decomposition is written this way)
@@ -211,7 +211,7 @@ int32_t LWEGadgetCT::digits()const{
     return m_digits;
 }
   
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type){
+LWESK::LWESK(std::shared_ptr<const LWEParam> lwe_par, double stddev, KeyDistribution key_type){
     m_param = lwe_par;  
     m_stddev  = stddev;
     m_key_type = key_type; 
@@ -219,7 +219,7 @@ LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution k
     init_key(); 
 }
 
-LWESK::LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type){
+LWESK::LWESK(std::shared_ptr<const LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type){
     m_param = lwe_par;  
     m_stddev  = stddev;
     m_key_type = key_type;  
@@ -286,7 +286,7 @@ int64_t LWESK::decrypt(LWECT& in, PlaintextEncoding encoding){
     return encoding.decode_message(partial_decrypt(in));
 }
 
-std::shared_ptr<LWEParam> LWESK::param()const{
+std::shared_ptr<const LWEParam> LWESK::param()const{
     return m_param;
 }
 
@@ -323,7 +323,7 @@ void LWEGadgetSK::gadget_encrypt(LWEGadgetCT& gadget_ct, int64_t m){
     } 
 } 
 
-std::shared_ptr<LWEParam> LWEGadgetSK::param()const{
+std::shared_ptr<const LWEParam> LWEGadgetSK::param()const{
     return m_lwe_sk->param();
 }
 
@@ -378,6 +378,6 @@ std::unique_ptr<LWECT> LWEPublicKey::ciphertext_of_zero(){
     return LWEPublicKey::encrypt(0);
 }
 
-std::shared_ptr<LWEParam> LWEPublicKey::param()const{
+std::shared_ptr<const LWEParam> LWEPublicKey::param()const{
     return m_param;
 }

@@ -26,7 +26,7 @@ namespace FHEDeck{
     /// @brief The content of the key switching key (all its ciphertexts) 
     std::vector<std::shared_ptr<ExtendedPolynomialCT>> m_ext_key_content;
     /// @brief The parameters of the destination RLWE ciphertext.
-    std::shared_ptr<RLWEParam> m_dest_param;
+    std::shared_ptr<const RLWEParam> m_dest_param;
 
     void key_switching_key_gen(const LWESK& sk_origin, const RLWEGadgetSK& sk_dest);
 
@@ -46,7 +46,7 @@ namespace FHEDeck{
  
         void lwe_to_rlwe_key_switch(RLWECT& rlwe_ct_out, const LWECT& lwe_ct_in);
 
-        std::shared_ptr<RLWEParam> dest_param()const;
+        std::shared_ptr<const RLWEParam> dest_param()const;
  
     #if defined(USE_CEREAL)
         template <class Archive>

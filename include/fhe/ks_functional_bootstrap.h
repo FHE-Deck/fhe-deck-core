@@ -19,7 +19,7 @@ class KSFunctionalBootstrapPublicKey: public FunctionalBootstrapPublicKey{
     protected:
 
     std::shared_ptr<LWEToRLWEKeySwitchKey> m_rlwe_ksk;
-    std::shared_ptr<RLWEParam> m_poly_ct_params;
+    std::shared_ptr<const RLWEParam> m_poly_ct_params;
 
     public:  
   

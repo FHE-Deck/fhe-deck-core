@@ -2,19 +2,19 @@
 
 using namespace FHEDeck;
 
-RLWECT::RLWECT(std::shared_ptr<RLWEParam> param){
+RLWECT::RLWECT(std::shared_ptr<const RLWEParam> param){
     m_param = param;   
     m_a = Polynomial(param->size(), param->modulus()); 
     m_b = Polynomial(param->size(), param->modulus());   
 }
 
-RLWECT::RLWECT(std::shared_ptr<RLWEParam> param, const Polynomial& a, const Polynomial& b){
+RLWECT::RLWECT(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b){
     m_param = param;   
     m_a = a; 
     m_b = b;   
 }
 
-RLWECT::RLWECT(std::shared_ptr<RLWEParam> param, Polynomial&& a, Polynomial&& b): 
+RLWECT::RLWECT(std::shared_ptr<const RLWEParam> param, Polynomial&& a, Polynomial&& b): 
     m_param(std::move(param)), m_a(std::move(a)), m_b(std::move(b))
 { 
 }
@@ -159,8 +159,8 @@ void RLWEParam::init_mul_engine(){
     m_mul_engine = mul_engine_builder.build();  
 }
  
-std::shared_ptr<VectorCT> RLWEParam::init_ct(std::shared_ptr<VectorCTParam> param){ 
-    return std::make_shared<RLWECT>(std::static_pointer_cast<RLWEParam>(param)); 
+std::shared_ptr<VectorCT> RLWEParam::init_ct(std::shared_ptr<const VectorCTParam> param)const{ 
+    return std::make_shared<RLWECT>(std::static_pointer_cast<const RLWEParam>(param)); 
 }
 
 uint64_t RLWEParam::modulus()const{
@@ -175,7 +175,7 @@ RingType RLWEParam::ring()const{
     return m_ring;
 }
 
-ExtendedRLWECT::ExtendedRLWECT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct){
+ExtendedRLWECT::ExtendedRLWECT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct){
     m_rlwe_param = rlwe_param;
     m_gadget = gadget;
     this->init(gadget_ct);
@@ -219,7 +219,7 @@ void ExtendedRLWECT::mul(VectorCT &out, const Vector &msg){
     out_ptr = RLWECT(m_rlwe_param, std::move(a), std::move(b));
 }
    
-RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk){
+RLWEGadgetCT::RLWEGadgetCT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk){
     m_rlwe_param = rlwe_param;
     m_gadget = gadget;
     this->init(gadget_ct, gadget_ct_sk);
@@ -278,7 +278,7 @@ void RLWEGadgetCT::mul(VectorCT &out, const VectorCT &ct){
     out_plus.add(out, out_minus);  
 }
    
-RLWESK::RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, double noise_stddev){ 
+RLWESK::RLWESK(std::shared_ptr<const RLWEParam> param, KeyDistribution key_type, double noise_stddev){ 
     m_param = param;
     m_key_type = key_type;
     m_noise_stddev = noise_stddev;
@@ -388,7 +388,7 @@ std::shared_ptr<LWESK> RLWESK::extract_lwe_key(){
     return std::make_shared<LWESK>(lwe_param, extract_key.get(), m_noise_stddev, m_key_type);
 }
 
-std::shared_ptr<RLWEParam> RLWESK::param()const{
+std::shared_ptr<const RLWEParam> RLWESK::param()const{
     return m_param;
 }
 
@@ -463,7 +463,7 @@ std::shared_ptr<ExtendedPolynomialCT> RLWEGadgetSK::extended_encrypt(const std::
 }
 
 
-std::shared_ptr<RLWEParam> RLWEGadgetSK::param()const{
-    return static_pointer_cast<RLWEParam>(m_vector_ct_param);
+std::shared_ptr<const RLWEParam> RLWEGadgetSK::param()const{
+    return static_pointer_cast<const RLWEParam>(m_vector_ct_param);
 }
 

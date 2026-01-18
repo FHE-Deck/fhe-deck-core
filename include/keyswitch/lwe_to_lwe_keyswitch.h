@@ -18,9 +18,9 @@ class LWEToLWEKeySwitchKey{
     /// @brief The content of the key switching key (all its ciphertexts)
     std::shared_ptr<std::shared_ptr<LWEGadgetCT>[]> m_key_content;
     /// @brief  LWE Parameter from which we do the switching. 
-    std::shared_ptr<LWEParam> m_origin; 
+    std::shared_ptr<const LWEParam> m_origin; 
     /// @brief The LWE Parameters of the destination ciphertext. 
-    std::shared_ptr<LWEParam>  m_destination;
+    std::shared_ptr<const LWEParam>  m_destination;
 
     
     /// @brief Lazy key switching (modulus reduction only at the end of the procedure)
@@ -61,9 +61,9 @@ class LWEToLWEKeySwitchKey{
     /// @note The function changes only the ct field of lwe_ct_out. In particular, it doesn't sent the parameters field, so you must make sure lwe_ct_out has the right parameters and is already initialized.
     void lwe_to_lwe_key_switch(LWECT& lwe_ct_out, const LWECT& lwe_ct_in);
  
-    std::shared_ptr<LWEParam> origin()const; 
+    std::shared_ptr<const LWEParam> origin()const; 
     
-    std::shared_ptr<LWEParam>  destination()const;
+    std::shared_ptr<const LWEParam>  destination()const;
  
   #if defined(USE_CEREAL)
     template <class Archive>

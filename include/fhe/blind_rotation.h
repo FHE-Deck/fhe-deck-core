@@ -182,7 +182,7 @@ class AbstractFunctionBuilder{
 class VectorCTAccumulatorBuilder : public AbstractFunctionBuilder{
  
     public:
-    std::shared_ptr<VectorCTParam> param; 
+    std::shared_ptr<const VectorCTParam> param; 
   
     virtual std::shared_ptr<VectorCTAccumulator> prepare_accumulator(Vector& vec) = 0; 
 
@@ -269,7 +269,7 @@ class RLWEAccumulatorBuilder final : public VectorCTAccumulatorBuilder{
 
     RLWEAccumulatorBuilder() = default;
 
-    RLWEAccumulatorBuilder(std::shared_ptr<RLWEParam> param);
+    RLWEAccumulatorBuilder(std::shared_ptr<const RLWEParam> param);
  
     std::shared_ptr<FunctionSpecification> prepare_specification(std::function<int64_t(int64_t)> f, PlaintextEncoding input_encoding, PlaintextEncoding output_encoding) override;
  
@@ -525,7 +525,7 @@ class BlindRotationPublicKey{
     virtual ~BlindRotationPublicKey() = default;
    
     /// @brief LWE parameters, that specify the LWE ciphertexts that is decrypted in blind rotation.
-    std::shared_ptr<LWEParam> lwe_par;  
+    std::shared_ptr<const LWEParam> lwe_par;  
   
     /// @brief The blind rotation algorithm.
     /// @param out Output accumulator which is a VectorCT (held usually by a BlindRotationOutput object)

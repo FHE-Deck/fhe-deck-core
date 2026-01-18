@@ -52,7 +52,7 @@ class RLWEParam : public PolynomialCTParam{
 
     /// @brief Constructs a new VectorCT object implemented as RLWECT.
     /// @return Retuns a new VectorCT object.
-    std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param);
+    std::shared_ptr<VectorCT> init_ct(std::shared_ptr<const VectorCTParam> param)const;
  
     uint64_t modulus()const;
 
@@ -105,11 +105,11 @@ class RLWECT : public PolynomialCT{
 
     /// @brief Constructs a new RLWECT object.
     /// @param param The parameters of the RLWE encryption scheme.
-    RLWECT(std::shared_ptr<RLWEParam> param);
+    RLWECT(std::shared_ptr<const RLWEParam> param);
  
-    RLWECT(std::shared_ptr<RLWEParam> param, const Polynomial& a, const Polynomial& b);
+    RLWECT(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b);
 
-    RLWECT(std::shared_ptr<RLWEParam> param, Polynomial&& a, Polynomial&& b);
+    RLWECT(std::shared_ptr<const RLWEParam> param, Polynomial&& a, Polynomial&& b);
     
     /// @brief Copy constructor
     /// @param other reference to the RLWECT object to be copied.
@@ -234,7 +234,7 @@ class ExtendedRLWECT : public ExtendedPolynomialCT{
   protected: 
 
   /// @brief  The parameters of the RLWE encryption scheme.
-  std::shared_ptr<RLWEParam> m_rlwe_param;
+  std::shared_ptr<const RLWEParam> m_rlwe_param;
   /// @brief The gadget decomposition object.
   std::shared_ptr<Gadget> m_gadget; 
   /// @brief Evaluation forms of the polynomials a from the RLWECT(base^i * message) ciphertexts.
@@ -251,7 +251,7 @@ class ExtendedRLWECT : public ExtendedPolynomialCT{
   /// @param gadget The gadget decomposition object. 
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
   /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
-  ExtendedRLWECT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct);
+  ExtendedRLWECT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct);
   
   /// @brief Function that initializes deter_ct_a_dec_poly, deter_ct_b_dec_poly, and the pointer tables deter_ct_a_dec and deter_ct_b_dec.
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
@@ -292,7 +292,7 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   protected: 
 
   /// @brief  The parameters of the RLWE encryption scheme.
-  std::shared_ptr<RLWEParam> m_rlwe_param;
+  std::shared_ptr<const RLWEParam> m_rlwe_param;
   /// @brief The gadget decomposition object.
   std::shared_ptr<Gadget> m_gadget;
  
@@ -314,7 +314,7 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   /// @param gadget The gadget decomposition object. 
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
   /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
-  RLWEGadgetCT(std::shared_ptr<RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk);
+  RLWEGadgetCT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<RLWECT>> &gadget_ct, std::vector<std::shared_ptr<RLWECT>> &gadget_ct_sk);
 
   RLWEGadgetCT(const RLWEGadgetCT& other) = delete;
 
@@ -359,7 +359,7 @@ class RLWESK : public VectorCTSK{
     protected: 
  
     /// @brief The parameters of the RLWE encryption scheme.
-    std::shared_ptr<RLWEParam> m_param; 
+    std::shared_ptr<const RLWEParam> m_param; 
     /// @brief The type of the key distribution.
     KeyDistribution m_key_type; 
     /// @brief The secret key polynomial.
@@ -382,7 +382,7 @@ class RLWESK : public VectorCTSK{
     /// @param param The RLWE parameters.
     /// @param key_type The Key distribution type.
     /// @param noise_stddev The standard deviation of the noise.
-    RLWESK(std::shared_ptr<RLWEParam> param, KeyDistribution key_type, double noise_stddev); 
+    RLWESK(std::shared_ptr<const RLWEParam> param, KeyDistribution key_type, double noise_stddev); 
  
     RLWESK(const RLWESK &other) = delete;
  
@@ -431,7 +431,7 @@ class RLWESK : public VectorCTSK{
     /// @return Creates a new object that stores the LWE secret key. Creates also new LWEParam for this object. 
     std::shared_ptr<LWESK> extract_lwe_key();
  
-    std::shared_ptr<RLWEParam> param()const;
+    std::shared_ptr<const RLWEParam> param()const;
     
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -504,7 +504,7 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     /// @return Creates a new object that stores the resulting ciphertext.
     std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg)const override;  
 
-    std::shared_ptr<RLWEParam> param()const;
+    std::shared_ptr<const RLWEParam> param()const;
 
     #if defined(USE_CEREAL)
     template <class Archive>

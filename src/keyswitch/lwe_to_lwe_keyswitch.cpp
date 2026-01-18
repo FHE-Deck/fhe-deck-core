@@ -75,10 +75,10 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, const 
     lwe_ct_out.ct_vec().normalize(); 
 }
 
-std::shared_ptr<LWEParam> LWEToLWEKeySwitchKey::origin()const{
+std::shared_ptr<const LWEParam> LWEToLWEKeySwitchKey::origin()const{
     return m_origin;
 }
     
-std::shared_ptr<LWEParam>  LWEToLWEKeySwitchKey::destination()const{
+std::shared_ptr<const LWEParam>  LWEToLWEKeySwitchKey::destination()const{
     return m_destination;
 }

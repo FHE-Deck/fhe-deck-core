@@ -63,7 +63,7 @@ class VectorCTParam{
     public: 
      
     /// @brief Initiates a VectorCT object which is not necessarily decryptable. its for allocating space. 
-    virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<VectorCTParam> param) = 0;
+    virtual std::shared_ptr<VectorCT> init_ct(std::shared_ptr<const VectorCTParam> param)const = 0;
 
     int32_t size()const;
 
@@ -81,7 +81,7 @@ class VectorCTSK{
 
     protected: 
 
-    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+    std::shared_ptr<const VectorCTParam> m_vector_ct_param;
 
     public:
  
@@ -122,7 +122,7 @@ class VectorCTSK{
     /// @param encoding The plaintext encoding scheme.
     virtual void decrypt(Vector &out, const VectorCT &ct, PlaintextEncoding encoding) = 0;
 
-    std::shared_ptr<VectorCTParam> vector_ct_param()const;
+    std::shared_ptr<const VectorCTParam> vector_ct_param()const;
     
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -166,7 +166,7 @@ class GadgetVectorCTSK{
     protected: 
 
     /// @brief The parameters of the VactorCT scheme
-    std::shared_ptr<VectorCTParam> m_vector_ct_param;
+    std::shared_ptr<const VectorCTParam> m_vector_ct_param;
     /// @brief The secret key of the VactorCT scheme
     std::shared_ptr<VectorCTSK> m_secret_key;
 
@@ -187,7 +187,7 @@ class GadgetVectorCTSK{
     /// @return Creates a new ciphertext
     virtual std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg) const = 0;  
 
-    std::shared_ptr<VectorCTParam> vector_ct_param()const;
+    std::shared_ptr<const VectorCTParam> vector_ct_param()const;
 
     #if defined(USE_CEREAL)
     template <class Archive>

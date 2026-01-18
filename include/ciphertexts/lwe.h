@@ -57,7 +57,7 @@ class LWECT{
   protected:
  
     /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> m_param;
+    std::shared_ptr<const LWEParam> m_param;
     /// @brief Array that stores the ciphertext. If s is a secret key, then ct[0] = - sum_{i=1}^{dim} s[i]*ct[i] + e + M.  
     Vector m_ct; 
 
@@ -69,7 +69,7 @@ class LWECT{
 
     /// @brief Initializes the ciphertext and allocates memory for the ciphertext vector.
     /// @param lwe_par Pointer to the LWE parameters.
-    LWECT(std::shared_ptr<LWEParam> lwe_par);
+    LWECT(std::shared_ptr<const LWEParam> lwe_par);
 
     /// @brief Copy Constructor
     /// @param c Reference to a LWECT object, that will be copied.
@@ -84,7 +84,7 @@ class LWECT{
 
     int64_t operator[](int32_t index)const;
 
-    std::shared_ptr<LWEParam> param()const;
+    std::shared_ptr<const LWEParam> param()const;
 
     Vector& ct_vec();
 
@@ -153,9 +153,9 @@ class LWEModSwitcher{
 
   protected: 
     /// @brief Pointer to the LWE parameters of the ciphertext before the modulus switch.
-  std::shared_ptr<LWEParam> m_from;
+  std::shared_ptr<const LWEParam> m_from;
   /// @brief Pointer to the LWE parameters of the ciphertext after the modulus switch.
-  std::shared_ptr<LWEParam> m_to;
+  std::shared_ptr<const LWEParam> m_to;
   /// @brief Flag that indicates if we need to use long arithmetic. Depending on the modulus we rescale the ciphertext over double or long double floating point numbers.
   bool m_is_long_arithmetic = false;
 
@@ -178,7 +178,7 @@ class LWEModSwitcher{
   /// @brief Initializes the LWE Mod Switcher with the two LWE Parameters.
   /// @param from LWE Parameters of the ciphertext before the modulus switch.
   /// @param to LWE Parameters of the ciphertext after the modulus switch.
-  LWEModSwitcher(std::shared_ptr<LWEParam> from, std::shared_ptr<LWEParam> to);
+  LWEModSwitcher(std::shared_ptr<const LWEParam> from, std::shared_ptr<const LWEParam> to);
   
   /// @brief Switch modulus of in_ct, and store the result in out_ct.
   /// @param out_ct The output ciphertext.
@@ -188,9 +188,9 @@ class LWEModSwitcher{
 
   LWECT switch_modulus(const LWECT& in_ct);
 
-  std::shared_ptr<LWEParam> from_param()const;
+  std::shared_ptr<const LWEParam> from_param()const;
 
-  std::shared_ptr<LWEParam> to_param()const;
+  std::shared_ptr<const LWEParam> to_param()const;
 };
  
 /**
@@ -205,7 +205,7 @@ class LWESK {
 
   protected:
     /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> m_param; 
+    std::shared_ptr<const LWEParam> m_param; 
     /// @brief Pointer to the uniform distribution.
     std::shared_ptr<Distribution> m_unif_dist; 
     /// @brief Pointer to the error distribution.
@@ -229,14 +229,14 @@ class LWESK {
     /// @param lwe_par LWE parameters.
     /// @param stddev Standard deviation of the error distribution.
     /// @param key_type Key distribution according to which we choose the key. 
-    LWESK(std::shared_ptr<LWEParam> lwe_par, double stddev, KeyDistribution key_type);
+    LWESK(std::shared_ptr<const LWEParam> lwe_par, double stddev, KeyDistribution key_type);
 
     /// @brief Constructs the LWESK object, but takes the secret key as an input. 
     /// @param lwe_par LWE parameters.
     /// @param key Pointer to the secret key. This object will create a copy of the key.
     /// @param stddev Stadard deviation of the error distribution.
     /// @param key_type Key distribution according to which the key was choosen. 
-    LWESK(std::shared_ptr<LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
+    LWESK(std::shared_ptr<const LWEParam> lwe_par, int64_t* key, double stddev, KeyDistribution key_type);
  
     /// @brief Deleted so that you are not tempted to copy the secret key around. 
     LWESK(const LWESK &other) = delete;
@@ -277,7 +277,7 @@ class LWESK {
     /// @return Returns the decrypted message.
     int64_t decrypt(LWECT& in, PlaintextEncoding encoding); 
 
-    std::shared_ptr<LWEParam> param()const;
+    std::shared_ptr<const LWEParam> param()const;
  
     KeyDistribution key_type()const; 
 
@@ -334,7 +334,7 @@ class LWEGadgetCT{
   /// @brief Number of bits in the base.
   int32_t m_bits_base;  
   /// @brief Pointer to the LWE parameters.
-  std::shared_ptr<LWEParam> m_lwe_param;
+  std::shared_ptr<const LWEParam> m_lwe_param;
   /// @brief Array of pointers to the ciphertexts. 
   std::unique_ptr<std::unique_ptr<LWECT>[]> m_ct_content;
 
@@ -345,7 +345,7 @@ class LWEGadgetCT{
   /// @brief Constructs the object.
   /// @param lwe_par Pointer to the LWE parameters.
   /// @param base The decomposition base.  
-  LWEGadgetCT(std::shared_ptr<LWEParam> lwe_par, int64_t base);
+  LWEGadgetCT(std::shared_ptr<const LWEParam> lwe_par, int64_t base);
   
   /// @brief Multiplication of this object by a scalar.
   /// @param out_ct The LWECT that stores the result.
@@ -356,8 +356,7 @@ class LWEGadgetCT{
   /// @param out_ct The LWECT that stores the result.
   /// @param scalar The input scalar.
   void gadget_mul_lazy(LWECT& out_ct, int64_t scalar); 
-
-  
+ 
   int64_t base()const;
     
   int32_t digits()const; 
@@ -409,9 +408,9 @@ class LWEGadgetSK{
     LWEGadgetSK() = default;
   
     /// @brief Constructs the object.
-    /// @param lwe Pointer to the LWE secret key.
+    /// @param sk Pointer to the LWE secret key.
     /// @param base The decomposition base.
-    LWEGadgetSK(std::shared_ptr<LWESK> lwe, int64_t base);
+    LWEGadgetSK(std::shared_ptr<LWESK> sk, int64_t base);
   
     /// @brief Copy constructor, throws an exception by default. 
     LWEGadgetSK(const LWEGadgetSK& other) = delete;
@@ -429,7 +428,7 @@ class LWEGadgetSK{
     /// @param m The message m
     void gadget_encrypt(LWEGadgetCT& out, int64_t m);
 
-    std::shared_ptr<LWEParam> param()const;
+    std::shared_ptr<const LWEParam> param()const;
 
     int64_t base()const;
     
@@ -466,7 +465,7 @@ class LWEPublicKey{
    
     std::unique_ptr<std::unique_ptr<LWECT>[]> m_public_key_ptr;
     /// @brief Pointer to the LWE parameters.
-    std::shared_ptr<LWEParam> m_param;
+    std::shared_ptr<const LWEParam> m_param;
 
   public:
   
@@ -497,7 +496,7 @@ class LWEPublicKey{
     /// @return The pointer to a fresh enncryption of zero.
     std::unique_ptr<LWECT> ciphertext_of_zero();
 
-    std::shared_ptr<LWEParam> param()const;
+    std::shared_ptr<const LWEParam> param()const;
 
     #if defined(USE_CEREAL)
     template <class Archive>
