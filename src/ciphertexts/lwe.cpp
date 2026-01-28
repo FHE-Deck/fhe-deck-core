@@ -180,15 +180,16 @@ LWEGadgetCT::LWEGadgetCT(std::shared_ptr<const LWEParam> lwe_param, int64_t base
     /// TODO:  Add check: Note that for now, we accept only power of two basis (because our decomposition is written this way)
     m_bits_base = Utils::power_times(base, 2);  
     m_digits = Utils::power_times(lwe_param->modulus(), base);   
-    m_ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_digits]);  
+    //m_ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_digits]);  
+    m_ct_content.resize(m_digits);
 }
 
 void LWEGadgetCT::gadget_mul(LWECT& out_ct, int64_t scalar){  
     std::vector<int64_t> scalar_decomposed = Utils::integer_decomp(scalar, m_base, m_bits_base, m_digits);
     LWECT temp_ct(m_lwe_param); 
-    m_ct_content[0]->mul(out_ct, scalar_decomposed[0]);
+    m_ct_content[0].mul(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < m_digits; ++i){
-        m_ct_content[i]->mul(temp_ct, scalar_decomposed[i]);
+        m_ct_content[i].mul(temp_ct, scalar_decomposed[i]);
         out_ct.add(out_ct, temp_ct);  
     } 
 } 
@@ -196,9 +197,9 @@ void LWEGadgetCT::gadget_mul(LWECT& out_ct, int64_t scalar){
 void LWEGadgetCT::gadget_mul_lazy(LWECT& out_ct, int64_t scalar){  
     std::vector<int64_t> scalar_decomposed = Utils::integer_decomp(scalar, m_base, m_bits_base, m_digits);
     LWECT temp_ct(m_lwe_param); 
-    m_ct_content[0]->mul_lazy(out_ct, scalar_decomposed[0]);
+    m_ct_content[0].mul_lazy(out_ct, scalar_decomposed[0]);
     for(int32_t i = 1; i < m_digits; ++i){
-        m_ct_content[i]->mul_lazy(temp_ct, scalar_decomposed[i]);
+        m_ct_content[i].mul_lazy(temp_ct, scalar_decomposed[i]);
         out_ct.add_lazy(out_ct, temp_ct);  
     } 
 } 
@@ -246,9 +247,10 @@ void LWESK::init_key(){
     sk_dist->fill(m_key);  
 }
  
-std::unique_ptr<LWECT> LWESK::encrypt(int64_t m){
-    std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);
-    encrypt(*out, m);
+LWECT LWESK::encrypt(int64_t m){
+    //std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);
+    LWECT out(m_param);
+    encrypt(out, m);
     return out;
 }
  
@@ -262,9 +264,10 @@ void LWESK::encrypt(LWECT& out, int64_t m){
     }   
 }
   
-std::unique_ptr<LWECT> LWESK::encode_and_encrypt(int64_t m, PlaintextEncoding encoding){  
-    std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);
-    encrypt(*out, encoding.encode_message(m)); 
+LWECT LWESK::encode_and_encrypt(int64_t m, PlaintextEncoding encoding){  
+    //std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);
+    LWECT out(m_param);
+    encrypt(out, encoding.encode_message(m)); 
     return out;
 }
  
@@ -307,9 +310,10 @@ LWEGadgetSK::LWEGadgetSK(std::shared_ptr<LWESK> lwe_sk, int64_t base){
     m_multiplier = std::make_unique<LongIntegerMultipler>(m_lwe_sk->param()->modulus());
 }
  
-std::shared_ptr<LWEGadgetCT> LWEGadgetSK::gadget_encrypt(int64_t m){ 
-    std::shared_ptr<LWEGadgetCT> out = std::make_shared<LWEGadgetCT>(m_lwe_sk->param(), m_base); 
-    gadget_encrypt(*out, m);
+LWEGadgetCT LWEGadgetSK::gadget_encrypt(int64_t m){ 
+    //std::shared_ptr<LWEGadgetCT> out = std::make_shared<LWEGadgetCT>(m_lwe_sk->param(), m_base); 
+    LWEGadgetCT out(m_lwe_sk->param(), m_base);
+    gadget_encrypt(out, m);
     return out;
 }
 
@@ -340,10 +344,10 @@ LWEPublicKey::LWEPublicKey(std::shared_ptr<LWESK> lwe_sk, int32_t size, double s
     m_stddev = stddev;
     m_param = lwe_sk->param(); 
     m_rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, stddev));
-    // Initialize the key switching key 
-    m_public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[size]); 
-    for(int32_t i = 0; i < m_size; ++i){   
-        m_public_key_ptr[i] = std::unique_ptr<LWECT>(lwe_sk->encrypt(0));
+    // Initialize the key switching key  
+    m_public_key_ptr.resize(size);
+    for(int32_t i = 0; i < m_size; ++i){    
+        m_public_key_ptr[i] = lwe_sk->encrypt(0);
     }   
 }
 
@@ -358,23 +362,24 @@ LWEPublicKey& LWEPublicKey::operator=(const LWEPublicKey other){
  
 void LWEPublicKey::encrypt(LWECT& out, int64_t message){
     int64_t noise = m_rand_masking->next();
-    m_public_key_ptr[0]->mul(out, noise); 
+    m_public_key_ptr[0].mul(out, noise); 
     LWECT temp(m_param);
     for(int32_t i = 1; i < m_size; ++i){
         noise = m_rand_masking->next();
-        m_public_key_ptr[i]->mul(temp, noise); 
+        m_public_key_ptr[i].mul(temp, noise); 
         out.add(out, temp); 
     }  
     out.add(out, message); 
 }
   
-std::unique_ptr<LWECT> LWEPublicKey::encrypt(int64_t message){
-    std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);  
-    encrypt(*out, message);
+LWECT LWEPublicKey::encrypt(int64_t message){
+    //std::unique_ptr<LWECT> out = std::make_unique<LWECT>(m_param);  
+    LWECT out(m_param);
+    encrypt(out, message);
     return out;    
 }
  
-std::unique_ptr<LWECT> LWEPublicKey::ciphertext_of_zero(){
+LWECT LWEPublicKey::ciphertext_of_zero(){
     return LWEPublicKey::encrypt(0);
 }
 

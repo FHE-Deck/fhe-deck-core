@@ -34,7 +34,7 @@ Ciphertext FHEContext::encrypt(int64_t message, const PlaintextEncoding& encodin
     if(!config->is_secret_key_set){
         throw std::logic_error("No Secret Key Initialized!");
     }        
-    std::shared_ptr<LWECT> c(config->secret_key->lwe_sk->encrypt(encoding.encode_message(message)));
+    std::shared_ptr<LWECT> c = std::make_shared<LWECT>(std::move(config->secret_key->lwe_sk->encrypt(encoding.encode_message(message))));
     return Ciphertext(c, encoding, *this); 
 }
  
@@ -42,7 +42,7 @@ Ciphertext FHEContext::encrypt_public(int64_t message, const PlaintextEncoding& 
     if(!config->eval_key.is_encrypt_pk_set){
         throw std::logic_error("No Public Key Initialized!");
     } 
-    std::shared_ptr<LWECT> c(config->eval_key.encrypt_pk->encrypt(encoding.encode_message(message))); 
+    std::shared_ptr<LWECT> c = std::make_shared<LWECT>(std::move(config->eval_key.encrypt_pk->encrypt(encoding.encode_message(message)))); 
     return Ciphertext(c, encoding, *this);
 }
  

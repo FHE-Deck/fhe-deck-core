@@ -32,7 +32,7 @@ TEST(LWEToRLWEKeySwitch, BasicKeySwitchTest){
     auto test_input = sk_lwe->encrypt(message);
     RLWECT output(rlwe_param);
 
-    lwe_to_rlwe_key.lwe_to_rlwe_key_switch(output, *test_input);
+    lwe_to_rlwe_key.lwe_to_rlwe_key_switch(output, test_input);
 
     Polynomial dec(N, coef_modulus);
     sk_rlwe->partial_decrypt(dec, output);

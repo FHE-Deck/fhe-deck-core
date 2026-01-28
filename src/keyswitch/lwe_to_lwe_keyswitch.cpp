@@ -10,7 +10,8 @@ LWEToLWEKeySwitchKey::LWEToLWEKeySwitchKey(std::shared_ptr<LWESK> sk_origin, std
 }
    
 void LWEToLWEKeySwitchKey::key_switching_key_gen(std::shared_ptr<LWESK> sk_origin, std::shared_ptr<LWEGadgetSK> sk_dest){   
-    m_key_content = std::unique_ptr<std::shared_ptr<LWEGadgetCT>[]>(new std::shared_ptr<LWEGadgetCT>[m_origin->dim()]); 
+    //m_key_content = std::unique_ptr<std::shared_ptr<LWEGadgetCT>[]>(new std::shared_ptr<LWEGadgetCT>[m_origin->dim()]); 
+    m_key_content.resize(m_origin->dim());
     for(int32_t i = 0; i < m_origin->dim(); ++i){      
         m_key_content[i] = sk_dest->gadget_encrypt(sk_origin->m_key[i]);  
     }   
@@ -42,10 +43,10 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch(LWECT& lwe_ct_out, const LWECT&
 }
   
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
-    m_key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in[1]); 
+    m_key_content[0].gadget_mul_lazy(lwe_ct_out, lwe_ct_in[1]); 
     LWECT temp_lwe_ct(m_destination);
     for(int32_t i=2; i < m_origin->dim()+1; ++i){  
-        m_key_content[i-1]->gadget_mul_lazy(temp_lwe_ct, lwe_ct_in[i]);  
+        m_key_content[i-1].gadget_mul_lazy(temp_lwe_ct, lwe_ct_in[i]);  
         lwe_ct_out.add_lazy(lwe_ct_out, temp_lwe_ct);
     }  
     lwe_ct_out[0] = lwe_ct_in[0] + lwe_ct_out[0];
@@ -53,10 +54,10 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_lazy(LWECT& lwe_ct_out, const L
 }
  
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
-    m_key_content[0]->gadget_mul_lazy(lwe_ct_out, lwe_ct_in[1]); 
+    m_key_content[0].gadget_mul_lazy(lwe_ct_out, lwe_ct_in[1]); 
     LWECT temp_lwe_ct(m_destination);  
     for(int32_t i=2; i < m_origin->dim()+1; ++i){   
-        m_key_content[i-1]->gadget_mul_lazy(temp_lwe_ct, lwe_ct_in[i]);  
+        m_key_content[i-1].gadget_mul_lazy(temp_lwe_ct, lwe_ct_in[i]);  
         lwe_ct_out.add(lwe_ct_out, temp_lwe_ct);
     }  
     // Add the ``b'' term
@@ -65,10 +66,10 @@ void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_partial_lazy(LWECT& lwe_ct_out,
 } 
  
 void LWEToLWEKeySwitchKey::lwe_to_lwe_key_switch_bussy(LWECT& lwe_ct_out, const LWECT& lwe_ct_in){ 
-    m_key_content[0]->gadget_mul(lwe_ct_out, lwe_ct_in[1]); 
+    m_key_content[0].gadget_mul(lwe_ct_out, lwe_ct_in[1]); 
     LWECT temp_lwe_ct(m_destination);
     for(int32_t i=2; i < m_origin->dim()+1; ++i){  
-        m_key_content[i-1]->gadget_mul(temp_lwe_ct, lwe_ct_in[i]);  
+        m_key_content[i-1].gadget_mul(temp_lwe_ct, lwe_ct_in[i]);  
         lwe_ct_out.add(lwe_ct_out, temp_lwe_ct);
     }  
     lwe_ct_out[0] = lwe_ct_in[0] + lwe_ct_out[0];

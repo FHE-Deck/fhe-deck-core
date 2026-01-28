@@ -21,16 +21,14 @@ TEST(LWETests, BasicLWETest){
     int64_t Q = 1073741827; 
     double stddev = 3.2;
     std::shared_ptr<LWEParam> param(new LWEParam(n, Q));
-    LWESK lwe_sk(param, stddev, KeyDistribution::binary);  
-
-    {
+    LWESK lwe_sk(param, stddev, KeyDistribution::binary);   
+    { 
         /// Serialize and Deserialize  LWE Param 
         std::ofstream os_lwe_param("lweParam_test", std::ios::binary); 
         cereal::BinaryOutputArchive oarchive_lwe_param(os_lwe_param); 
         oarchive_lwe_param(param); 
         os_lwe_param.close();   
-    } 
-  
+    }  
     {
         std::shared_ptr<LWEParam> param2;
         std::ifstream is_lwe_param("lweParam_test", std::ios::binary);
@@ -42,15 +40,16 @@ TEST(LWETests, BasicLWETest){
             print_out << "param->dim: " << param->dim() << ", param2->dim: " << param2->dim() <<  std::endl;    
         } 
         std::remove("lweParam_test"); 
-    }
+    } 
     print_out << "Serialization of LWE Param: OK" << std::endl;
+ 
     {
         /// Serialize and Deserialize LWE SK 
         std::ofstream os_lwe_sk("lwe_sk_test", std::ios::binary); 
         cereal::BinaryOutputArchive oarchive_lwe_sk(os_lwe_sk); 
         oarchive_lwe_sk(lwe_sk); 
         os_lwe_sk.close();   
-    }
+    } 
     {   
         LWESK lwe_sk_2;
         std::ifstream is_lwe_sk("lwe_sk_test", std::ios::binary);
@@ -63,7 +62,7 @@ TEST(LWETests, BasicLWETest){
                 FAIL();
         }  
         std::remove("lwe_sk_test");
-    }
+    } 
     print_out << "Serialization of LWE SK: OK" << std::endl;
 
     int64_t t = 8;
@@ -72,12 +71,11 @@ TEST(LWETests, BasicLWETest){
     int64_t msg = 2;
     int64_t scaled_msg = encoding.encode_message(msg);
 
-    std::shared_ptr<LWECT> ct(lwe_sk.encrypt(scaled_msg)); 
-    int64_t phase = lwe_sk.partial_decrypt(*ct.get());
+    LWECT ct = lwe_sk.encrypt(scaled_msg); 
+    int64_t phase = lwe_sk.partial_decrypt(ct);
     int64_t error = phase - scaled_msg;
-    int64_t dec = lwe_sk.decrypt(*ct.get(), encoding); 
-
-
+    int64_t dec = lwe_sk.decrypt(ct, encoding); 
+ 
     {
         /// Serialize and Deserialize Cihertext
         std::ofstream os_ct("lwe_ct_test", std::ios::binary); 
@@ -86,13 +84,13 @@ TEST(LWETests, BasicLWETest){
         os_ct.close();   
     }
     {
-        std::shared_ptr<LWECT> ct_test;
+        LWECT ct_test;
         std::ifstream is_ct("lwe_ct_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_ct(is_ct);  
         iarchive_ct(ct_test);  
-        if(ct->param()->dim() != ct_test->param()->dim() || 
-            ct->param()->modulus() != ct_test->param()->modulus() ||  
-            (ct->ct_vec() != ct_test->ct_vec())){
+        if(ct.param()->dim() != ct_test.param()->dim() || 
+            ct.param()->modulus() != ct_test.param()->modulus() ||  
+            (ct.ct_vec() != ct_test.ct_vec())){
                 print_out << "LWECT Serialization Test: Fail" << std::endl;  
                 FAIL();
         } 
@@ -103,7 +101,7 @@ TEST(LWETests, BasicLWETest){
  
     int64_t scalar = 3; 
     LWECT ct_mul(param); 
-    ct->mul(ct_mul, scalar); 
+    ct.mul(ct_mul, scalar); 
     int64_t scalar_dec = lwe_sk.decrypt(ct_mul, encoding); 
     int64_t expected = (msg * scalar) % t;
     int64_t scalar_error =  lwe_sk.partial_decrypt(ct_mul) - expected * delta_Q_t;
@@ -112,10 +110,10 @@ TEST(LWETests, BasicLWETest){
   
     int64_t m_1 = 2;
     int64_t m_2 = 3;
-    std::shared_ptr<LWECT> ct_1 = lwe_sk.encrypt(delta_Q_t * m_1);
-    std::shared_ptr<LWECT> ct_2 = lwe_sk.encrypt(delta_Q_t * m_2); 
+    LWECT ct_1 = lwe_sk.encrypt(delta_Q_t * m_1);
+    LWECT ct_2 = lwe_sk.encrypt(delta_Q_t * m_2); 
     LWECT ct_added(param);
-    ct_1->add(ct_added, *ct_2);
+    ct_1.add(ct_added, ct_2);
     int64_t added_expected = (m_1 + m_2) % t;
     int64_t added_dec = lwe_sk.decrypt(ct_added, encoding);
     ASSERT_EQ(added_expected, added_dec); 
@@ -131,8 +129,8 @@ TEST(LWETests, GadgetMulTest){
     int32_t n = 10;
     int64_t Q = 1073741827; 
     double stddev = 3.2;
-    std::shared_ptr<LWEParam> param =  std::shared_ptr<LWEParam>(new LWEParam(n, Q)); 
-    std::shared_ptr<LWESK> lwe = std::shared_ptr<LWESK>(new LWESK(param, stddev, KeyDistribution::binary));  
+    std::shared_ptr<LWEParam> param = std::make_shared<LWEParam>(n, Q); 
+    std::shared_ptr<LWESK> lwe_sk = std::make_shared<LWESK>(param, stddev, KeyDistribution::binary);  
       
     int64_t t = 8;
     PlaintextEncoding encoding(PlaintextEncodingType::full_domain, t, Q);
@@ -147,7 +145,7 @@ TEST(LWETests, GadgetMulTest){
    // From python
    // 11 = math.ceil(math.log(1073741827, 8)) 
 
-    LWEGadgetSK lwe_g(lwe, base); 
+    LWEGadgetSK lwe_g(lwe_sk, base); 
     /// Serialize and Deserialize LWEGadgetSK 
     std::ofstream os_lwe_sk("LWEGadgetSK_test", std::ios::binary); 
     cereal::BinaryOutputArchive oarchive_lwe_sk(os_lwe_sk); 
@@ -167,7 +165,7 @@ TEST(LWETests, GadgetMulTest){
 
     LWECT ct(param); 
 
-    std::shared_ptr<LWEGadgetCT> gadget_ct(gadget_lwe_sk.gadget_encrypt(gadget_msg));
+    LWEGadgetCT gadget_ct = gadget_lwe_sk.gadget_encrypt(gadget_msg);
   
     {
         /// Serialize and Deserialize LWEGadgetSK 
@@ -177,12 +175,12 @@ TEST(LWETests, GadgetMulTest){
         os_glwe_ct.close();  
     }
     {
-        std::shared_ptr<LWEGadgetCT> gadget_ct_test;
+        LWEGadgetCT gadget_ct_test;
         std::ifstream is_glwe_ct("LWEGadgetCT_test", std::ios::binary);
         cereal::BinaryInputArchive iarchive_glwe_ct(is_glwe_ct);  
         iarchive_glwe_ct(gadget_ct_test);  
-        if(gadget_ct->base() != gadget_ct_test->base() || 
-            gadget_ct->digits() != gadget_ct_test->digits()){
+        if(gadget_ct.base() != gadget_ct_test.base() || 
+            gadget_ct.digits() != gadget_ct_test.digits()){
                 FAIL();
             print_out << "LWEGadgetCT Serialization Test: Fail" << std::endl;  
         } 
@@ -190,9 +188,9 @@ TEST(LWETests, GadgetMulTest){
     }
 
 
-    gadget_ct->gadget_mul(ct, scaled_msg);
+    gadget_ct.gadget_mul(ct, scaled_msg);
   
-    int64_t dec = lwe->decrypt(ct, encoding);
+    int64_t dec = lwe_sk->decrypt(ct, encoding);
     int64_t expected = (msg * gadget_msg) % t;
     ASSERT_EQ(dec, expected);
   
@@ -214,8 +212,8 @@ TEST(LWETests, ModSwitchTest){
     int64_t msg = 2;
     int64_t scaled_msg = delta_Q_t * msg;
  
-    std::shared_ptr<LWECT> ct = lwe.encrypt(scaled_msg); 
-    int64_t dec = lwe.decrypt(*ct, encoding);  
+    LWECT ct = lwe.encrypt(scaled_msg); 
+    int64_t dec = lwe.decrypt(ct, encoding);  
      
     ASSERT_EQ(dec, msg); 
 
@@ -225,7 +223,7 @@ TEST(LWETests, ModSwitchTest){
     std::shared_ptr<LWEParam> new_param = std::shared_ptr<LWEParam>(new LWEParam(n, new_Q));  
     LWECT new_c(new_param);
     LWEModSwitcher mod_switcher(param, new_param);
-    mod_switcher.switch_modulus(new_c, *ct);
+    mod_switcher.switch_modulus(new_c, ct);
 
     /// TODO: How is this working? I should initialize a lwe secret key which is modulus switched to the new one.
     int64_t new_dec = lwe.decrypt(new_c, encoding);  

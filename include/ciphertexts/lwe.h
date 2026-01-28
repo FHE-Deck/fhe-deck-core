@@ -247,7 +247,7 @@ class LWESK {
     /// @brief Encryption a message m, and returns a pointer to a new LWECT object.
     /// @param m The input message. Should be an integer in the ciphertext modulus range.
     /// @return Pointer to the new ciphertext. 
-    std::unique_ptr<LWECT> encrypt(int64_t m);
+    LWECT encrypt(int64_t m);
 
     /// @brief Encryption a message m, and stores the result in out
     /// @param out pointer to the output ciphertext. It is assumed it is already initialized with the right parameters.  
@@ -258,7 +258,7 @@ class LWESK {
     /// @param m The input message.
     /// @param encoding The plaintext encoding specification. It is used to encode the message m, before encrypting it. 
     /// @return Returns a pointer to the new ciphertext, that encrypts encoding.encode(m).
-    std::unique_ptr<LWECT> encode_and_encrypt(int64_t m, PlaintextEncoding encoding); 
+    LWECT encode_and_encrypt(int64_t m, PlaintextEncoding encoding); 
     
     /// @brief Encodes and encrypts a message m, and stores the result in out.
     /// @param m The input message.
@@ -335,8 +335,8 @@ class LWEGadgetCT{
   int32_t m_bits_base;  
   /// @brief Pointer to the LWE parameters.
   std::shared_ptr<const LWEParam> m_lwe_param;
-  /// @brief Array of pointers to the ciphertexts. 
-  std::unique_ptr<std::unique_ptr<LWECT>[]> m_ct_content;
+  /// @brief Array of pointers to the ciphertexts.  
+  std::vector<LWECT> m_ct_content;
 
   public: 
    
@@ -374,8 +374,8 @@ class LWEGadgetCT{
     template <class Archive>
     void load( Archive & ar )
     {  
-      ar(m_base, m_digits, m_bits_base, m_lwe_param); 
-      m_ct_content = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_digits]); 
+      ar(m_base, m_digits, m_bits_base, m_lwe_param);  
+      m_ct_content.resize(m_digits);
       for(int32_t i = 0; i < m_digits; ++i){
         ar(m_ct_content[i]);
       } 
@@ -421,7 +421,7 @@ class LWEGadgetSK{
     /// @brief Encrypts a message m, and returns a pointer to a new LWEGadgetCT object.
     /// @param m The message m
     /// @return A newly constructed LWEGadgetCT object that encrypts m.
-    std::shared_ptr<LWEGadgetCT> gadget_encrypt(int64_t m); 
+    LWEGadgetCT gadget_encrypt(int64_t m); 
 
     /// @brief Encrypts a message m, and and stores the result in the out.
     /// @param out The output ciphertext
@@ -462,8 +462,8 @@ class LWEPublicKey{
     double m_stddev; 
     int32_t m_size;  
     std::shared_ptr<Distribution> m_rand_masking;
-   
-    std::unique_ptr<std::unique_ptr<LWECT>[]> m_public_key_ptr;
+    
+    std::vector<LWECT> m_public_key_ptr;
     /// @brief Pointer to the LWE parameters.
     std::shared_ptr<const LWEParam> m_param;
 
@@ -490,11 +490,11 @@ class LWEPublicKey{
     /// @brief Encrypts the message and output a pointer to a newly created ciphertexts.
     /// @param message The input message.
     /// @return The output ciphertexts. 
-    std::unique_ptr<LWECT> encrypt(int64_t message);
+    LWECT encrypt(int64_t message);
 
     /// @brief  Encrypts zero, and returns a pointer to the ciphertext.
     /// @return The pointer to a fresh enncryption of zero.
-    std::unique_ptr<LWECT> ciphertext_of_zero();
+    LWECT ciphertext_of_zero();
 
     std::shared_ptr<const LWEParam> param()const;
 
@@ -512,8 +512,8 @@ class LWEPublicKey{
     void load( Archive & ar )
     {  
       ar(m_param, m_stddev, m_size); 
-      m_rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, m_stddev));
-      m_public_key_ptr = std::unique_ptr<std::unique_ptr<LWECT>[]>(new std::unique_ptr<LWECT>[m_size]); 
+      m_rand_masking = std::shared_ptr<Distribution>(new StandardRoundedGaussianDistribution(0, m_stddev)); 
+      m_public_key_ptr.resize(m_size);
       for(int32_t i = 0; i < m_size; ++i){   
           ar(m_public_key_ptr[i]);  
       }   
