@@ -28,7 +28,7 @@ void CGGIBlindRotationKey::blind_rotation_key_gen(std::shared_ptr<GadgetVectorCT
     std::vector<int64_t> msg(1);
     for(int32_t i = 0; i < lwe_par->dim(); ++i){    
         msg[0] = ext_s[i]; 
-        m_bk.push_back(rlwe_gadget_sk->gadget_encrypt(msg));
+        m_bk.push_back(rlwe_gadget_sk->gadget_encrypt_as_gadget_vector_ct(msg));
     }      
 }
 

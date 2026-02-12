@@ -20,7 +20,7 @@ void LWEToRLWEKeySwitchKey::key_switching_key_gen(const LWESK& sk_origin, const 
     Polynomial sk_auto(m_dest_param->size(), m_dest_param->modulus());  
     for(int i = 2; i <= m_dest_param->size(); i *= 2) {
         eval_auto_poly(sk_auto, sk_origin.m_key, i+1); 
-        m_ext_key_content.push_back(sk_dest.extended_encrypt(sk_auto)); 
+        m_ext_key_content.push_back(sk_dest.extended_encrypt_as_extended_polynomial_ct(sk_auto)); 
     }
 }
    

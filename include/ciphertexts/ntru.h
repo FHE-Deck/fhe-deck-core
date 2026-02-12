@@ -222,7 +222,12 @@ class NTRUSK : public VectorCTSK{
     NTRUSK(const NTRUSK &other) = delete;
 
     NTRUSK& operator=(const NTRUSK other) = delete;
-  
+
+    /// @brief Encrypts the message polynomial m, and stores the result in out.
+    /// @param m The input polynomial.
+    /// @return Creates and returns the ciphertext.
+    NTRUCT encrypt(const Vector &m);
+ 
     /// @brief Encrypts the message polynomial m, and stores the result in out.
     /// @param out The output ciphertext. 
     /// @param m The input polynomial.
@@ -231,13 +236,13 @@ class NTRUSK : public VectorCTSK{
     /// @brief Encrypts the message polynomial m, and returns the result.
     /// @param m The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<VectorCT> encrypt(const Vector &m) override; 
+    std::shared_ptr<VectorCT> encrypt_as_vectorct(const Vector &m) override; 
 
     /// @brief Encodes and the message polynomial m, and returns the result.
     /// @param m The input polynomial.
     /// @param encoding The encoding scheme.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<VectorCT> encode_and_encrypt(const Vector &m, PlaintextEncoding encoding) override;
+    std::shared_ptr<VectorCT> encode_and_encrypt_as_vectorct(const Vector &m, PlaintextEncoding encoding) override;
 
     /// @brief Encodes and the message polynomial m, and returns the result.
     /// @param m The input polynomial.
@@ -254,7 +259,7 @@ class NTRUSK : public VectorCTSK{
     /// @param ct The input ciphertext.
     /// @param encoding The encoding scheme.
     /// @return Creates and returns a new polynomial.
-    std::shared_ptr<Vector> decrypt(const VectorCT &ct, PlaintextEncoding encoding) override;
+    Vector decrypt_vector(const VectorCT &ct, PlaintextEncoding encoding) override;
  
     /// @brief Decrypts ct, and stores the result in out.
     /// @param out The  output polynomial.
@@ -265,7 +270,7 @@ class NTRUSK : public VectorCTSK{
     /// @brief Encrypts msg * inv_sk. 
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<NTRUCT> kdm_encrypt(const Polynomial &msg); 
+    NTRUCT kdm_encrypt(const Polynomial &msg); 
  
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out
     /// @param ct_out The output ciphertext.
@@ -282,7 +287,7 @@ class NTRUSK : public VectorCTSK{
     /// @param msg The input polynomial.
     /// @param encoding The input encoding.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<NTRUCT> kdm_encode_and_encrypt(const Polynomial &msg, PlaintextEncoding encoding);
+    NTRUCT kdm_encode_and_encrypt(const Polynomial &msg, PlaintextEncoding encoding);
   
     /// @brief Extracts the LWE key.
     /// @return Creates and returns a new LWE key, with a newly created LWEParam object.
@@ -336,7 +341,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
   /// @param ntru_param The parameters of the NTRU encryption scheme.
   /// @param gadget The decomposition gadget.
   /// @param gadget_ct The array of NTRUCT objects.
-  NTRUGadgetCT(std::shared_ptr<const NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<std::shared_ptr<NTRUCT>> &gadget_ct);
+  NTRUGadgetCT(std::shared_ptr<const NTRUParam> ntru_param, std::shared_ptr<Gadget> gadget, std::vector<NTRUCT> &gadget_ct);
 
   NTRUGadgetCT(const NTRUGadgetCT& other) = delete;
 
@@ -344,7 +349,7 @@ class NTRUGadgetCT : public GadgetPolynomialCT, public ExtendedPolynomialCT{
 
   /// @brief Initializes deter_ct_a_dec, deter_ct_a_dec_poly and array_eval_a
   /// @param gadget_ct 
-  void init(std::vector<std::shared_ptr<NTRUCT>>& gadget_ct);
+  void init(std::vector<NTRUCT> &gadget_ct);
    
   /// @brief Multiplies this with the input ct, and stores the result in out.
   /// @param out The output ciphertext.
@@ -396,17 +401,17 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     NTRUGadgetSK(const NTRUGadgetSK &other) = delete;
 
     NTRUGadgetSK& operator=(const NTRUGadgetSK other) = delete;
-
+ 
     /// @brief Encrypts the input polynomial msg, and returns the result.
     /// @param msg The input polynomial.
     /// @return Creates and returns a new ciphertext.        
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const Vector &msg)const override; 
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt_as_gadget_vector_ct(const Vector &msg)const override; 
 
     /// @brief Encrypts the input message array msg, and returns the result.
     /// @param msg The input message array.
     /// @param size The size of the input message array.
     /// @return Creates and returns a new ciphertext.
-    std::shared_ptr<GadgetVectorCT> gadget_encrypt(const std::vector<int64_t>& msg)const override;  
+    std::shared_ptr<GadgetVectorCT> gadget_encrypt_as_gadget_vector_ct(const std::vector<int64_t>& msg)const override;  
      
     /// @brief Encrypts msg * inv_sk, and stores the result in ct_out.
     /// @param msg The input polynomial.
@@ -422,13 +427,13 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const Vector &msg)const override; 
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt_as_extended_polynomial_ct(const Vector &msg)const override; 
 
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
     /// @param size the size of the msg array (should be smaller than the ring size)
     /// @return Creates a new object that stores the resulting ciphertext.
-    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt(const std::vector<int64_t>& msg)const override;  
+    std::shared_ptr<ExtendedPolynomialCT> extended_encrypt_as_extended_polynomial_ct(const std::vector<int64_t>& msg)const override;  
    
     #if defined(USE_CEREAL)
     template <class Archive>
@@ -452,7 +457,7 @@ class NTRUGadgetSK : public GadgetPolynomialCTSK{
     /// TODO: Make this non-const (public interfaced will be forced to do compies, and check formal formating, but this is free to change the message.)
     /// The alternative is, that you copy the message twice, what doesn't make sense. 
     /// Also, its not publicly available, so the user shoulnd't be affected by this. 
-    std::vector<std::shared_ptr<NTRUCT>> ext_enc(const Vector &msg)const;
+    std::vector<NTRUCT> ext_enc(const Vector &msg)const;
 };
  
 } /// End of namespace FHEDeck
