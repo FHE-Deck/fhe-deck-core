@@ -429,8 +429,35 @@ std::vector<RLWECT> RLWEGadgetSK::ext_enc(Polynomial &msg)const{
     }  
     return ext_ct;
 }
+ 
+
+RLWEGadgetCT RLWEGadgetSK::gadget_encrypt(const Vector &msg)const{
+    if(msg.modulus() > m_rlwe_sk->param()->modulus()){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
+
+    if(msg.size() != m_rlwe_sk->param()->size()){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
+ 
+    Polynomial msg_poly(msg, m_rlwe_sk->param()->size(), m_rlwe_sk->param()->modulus());     
+
+    std::vector<RLWECT> gadget_ct = ext_enc(msg_poly); 
+    // Encryptions of - msg * sk * base**i    
+    Polynomial msg_x_sk(msg, m_rlwe_sk->param()->size(), m_rlwe_sk->param()->modulus());  
+    // Multiply msg with sk.s. Result is in msg_x_sk  
+    msg_x_sk.mul(msg_x_sk, m_rlwe_sk->m_sk_poly, m_rlwe_sk->param()->mul_engine()); 
+    std::vector<RLWECT> gadget_ct_sk = ext_enc(msg_x_sk);   
+    return RLWEGadgetCT(m_rlwe_sk->param(), m_gadget, gadget_ct, gadget_ct_sk);
+}
+
+RLWEGadgetCT RLWEGadgetSK::gadget_encrypt(const std::vector<int64_t>& msg)const{
+        if(msg.size() > m_rlwe_sk->param()->size()){
+        throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
+    }
+    
+    Polynomial msg_poly(msg, m_rlwe_sk->param()->size(), m_rlwe_sk->param()->modulus()); 
+    return gadget_encrypt(msg_poly);
+}
   
 std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt_as_gadget_vector_ct(const Vector &msg)const{   
+    /*
     if(msg.modulus() > m_rlwe_sk->param()->modulus()){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): modulus bigger"); }
 
     if(msg.size() != m_rlwe_sk->param()->size()){ throw std::logic_error("RLWEGadgetSK::gadget_encrypt(const Vector &msg): size different"); }
@@ -444,15 +471,20 @@ std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt_as_gadget_vector_ct
     msg_x_sk.mul(msg_x_sk, m_rlwe_sk->m_sk_poly, m_rlwe_sk->param()->mul_engine()); 
     std::vector<RLWECT> gadget_ct_sk = ext_enc(msg_x_sk);   
     return std::make_shared<RLWEGadgetCT>(m_rlwe_sk->param(), m_gadget, gadget_ct, gadget_ct_sk);
+    */
+   return std::make_shared<RLWEGadgetCT>(std::move(gadget_encrypt(msg)));
 }
  
 std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt_as_gadget_vector_ct(const std::vector<int64_t>& msg)const{
+    /*
     if(msg.size() > m_rlwe_sk->param()->size()){
         throw std::logic_error("GadgetVectorCT* RLWEGadgetSK::gadget_encrypt(int64_t *msg, int32_t size): size of the message array too big.");
     }
     
     Polynomial msg_poly(msg, m_rlwe_sk->param()->size(), m_rlwe_sk->param()->modulus()); 
     return gadget_encrypt_as_gadget_vector_ct(msg_poly);
+    */
+    return std::make_shared<RLWEGadgetCT>(std::move(gadget_encrypt(msg)));
 }
  
  

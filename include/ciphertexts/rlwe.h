@@ -316,9 +316,9 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
   RLWEGadgetCT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
 
-  RLWEGadgetCT(const RLWEGadgetCT& other) = delete;
+  //RLWEGadgetCT(const RLWEGadgetCT& other) = delete;
 
-  RLWEGadgetCT& operator=(const RLWEGadgetCT other) = delete;
+  //RLWEGadgetCT& operator=(const RLWEGadgetCT other) = delete;
 
   /// @brief Function that initializes deter_ct_a_dec_poly, deter_ct_b_dec_poly, and the pointer tables deter_ct_a_dec and deter_ct_b_dec.
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
@@ -485,6 +485,10 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     RLWEGadgetSK(const RLWEGadgetSK &other) = delete;
  
     RLWEGadgetSK& operator=(const RLWEGadgetSK other) = delete;
+  
+    RLWEGadgetCT gadget_encrypt(const Vector &msg)const;
+
+    RLWEGadgetCT gadget_encrypt(const std::vector<int64_t>& msg)const;
        
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
