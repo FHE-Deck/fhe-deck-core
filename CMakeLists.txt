@@ -177,7 +177,7 @@ endif()
 
 # Set CEREAL
 
-set(USE_CEREAL TRUE CACHE BOOL "Choose whether to support serializartion using cereal library.")
+set(USE_CEREAL FALSE CACHE BOOL "Choose whether to support serializartion using cereal library.")
 message("--- USE_CEREAL: " ${USE_CEREAL}) 
 if(USE_CEREAL) 
     add_dependencies(fhe_deck cereal_lib)

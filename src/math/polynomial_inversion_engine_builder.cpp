@@ -15,7 +15,7 @@ std::shared_ptr<PolynomialInversionEngine> PolynomialInversionEngineBuilder::bui
 #if defined(USE_NTL) 
     return std::make_shared<NTLInversionEngine>(m_degree, m_coef_modulus);
 #else 
-    return std::make_shared<EuclideanInversionEngine>(degree, coef_modulus);
+    return std::make_shared<EuclideanInversionEngine>(m_degree, m_coef_modulus);
 #endif 
   
 }
