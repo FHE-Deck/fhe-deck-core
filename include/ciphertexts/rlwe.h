@@ -225,6 +225,134 @@ class RLWECT : public PolynomialCT{
 };
   
 
+/**
+ * @brief The RLWE ciphertext class. 
+ * Consists of polynomials b and a s.t. b = a*s + e + M, where e and M are the error and message respectively, and s is the secret key polynomial. 
+ */
+class RLWECTEvalForm : public PolynomialCT{
+  
+  protected:
+
+    /// @brief The parameters of the RLWE encryption scheme.
+    std::shared_ptr<const RLWEParam> m_param;  
+
+    /// @brief The polynomial a, in the RLWE ciphertext (a, b) s.t. b = a*s + e + M.
+    std::shared_ptr<PolynomialEvalForm> m_a;
+    /// @brief The polynomial b, in the RLWE ciphertext (a, b) s.t. b = a*s + e + M.
+    std::shared_ptr<PolynomialEvalForm> m_b;  
+
+  public:
+   
+    RLWECTEvalForm() = default;
+
+    /// @brief Constructs a new RLWECT object.
+    /// @param param The parameters of the RLWE encryption scheme.
+    RLWECTEvalForm(std::shared_ptr<const RLWEParam> param);
+ 
+    RLWECTEvalForm(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b);
+
+    RLWECTEvalForm(std::shared_ptr<const RLWEParam> param, Polynomial&& a, Polynomial&& b);
+    
+    /// @brief Copy constructor
+    /// @param other reference to the RLWECT object to be copied.
+    RLWECTEvalForm(const RLWECTEvalForm &other);
+  
+    /// @brief = operator
+    /// @param other reference to the RLWECT object to be copied.
+    RLWECTEvalForm& operator=(RLWECTEvalForm other);
+    
+    /// @brief Depending on the RLWEParam ring type, performs a cyclic or nagacyclic rotation the coefficients of the ciphertext polynomials.
+    /// @param out The ouptut RLWECT object.
+    /// @param rot The size of the rotation. 
+    void homomorphic_rotate(VectorCT &out, int32_t rot)const override;
+
+    /// @brief Add ct to this, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param ct The input RLWECT object.
+    void add(VectorCT &out, const VectorCT &ct)const override;
+ 
+    /// @brief Add the polynomial x to this, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param x The input polynomial.
+    void add(RLWECTEvalForm &out, const PolynomialEvalForm &x)const;
+
+    /// @brief Subtract ct from this, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param ct The input RLWECT object.
+    void sub(VectorCT &out, const VectorCT &ct)const override;
+ 
+    /// @brief Subtract the polynomial x from this, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param x The input polynomial.
+    void sub(RLWECTEvalForm &out, const PolynomialEvalForm &x)const; 
+ 
+    /// @brief Multiply this by the polynomial x, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param x The input polynomial.
+    void mul(RLWECTEvalForm &out, const PolynomialEvalForm &x)const;
+
+    /// @brief Multiply this by the integer x, and store the result in out.
+    /// @param out The output RLWECT object.
+    /// @param x The input integer.
+    void mul(RLWECTEvalForm &out, int64_t x)const;
+
+    /// @brief Negate the coefficients of this ciphertext's polynomials, and store the result in out.
+    /// @param out The output RLWECT object.
+    void neg(VectorCT &out)const;
+  
+    /// @brief Extracts the LWE ciphertext encrypting the constant coefficient from the RLWE ciphertext.
+    /// @param out The output ciphertext
+    /// @note The function operates only on the ciphertext vector of out, and doesn't set its parameters field. It is assumed that out is properly initialized. 
+    /// @todo The function works for negacyclic rings only. It may be a problem when other rings are used.  
+    //void extract_lwe(LWECT &out)const; 
+
+    /// @brief Extracts the LWE ciphertext encrypting the 'position' coefficient from the RLWE ciphertext.
+    /// @param out The output ciphertext
+    /// @param position The position of the coefficient to be extracted.
+    /// @note The function operates only on the ciphertext vector of out, and doesn't set its parameters field. It is assumed that out is properly initialized.  
+    /// @todo The function works for negacyclic rings only. It may be a problem when other rings are used. 
+    //void extract_lwe(LWECT &out, uint32_t position)const; 
+   
+    const RLWEParam& param()const;
+ 
+    //const Polynomial& a()const;
+
+    //const PolynomialEvalForm& b()const;
+
+        /// @brief Copy set the a component
+    /// @param in The a component of the ciphertext
+    //void a(const PolynomialEvalForm& in);
+
+    /// @brief Copy set the b component
+    /// @param in The b component of the ciphertext
+    //void b(const PolynomialEvalForm& in);
+
+    /// @brief Move set the a component
+    /// @param in The a component of the ciphertext
+    //void a(PolynomialEvalForm&& in);
+
+    /// @brief Move set the b component
+    /// @param in The b component of the ciphertext
+    //void b(PolynomialEvalForm&& in);
+    
+  #if defined(USE_CEREAL)
+  template <class Archive>
+    void save( Archive & ar ) const
+    {  
+        ar(cereal::base_class<PolynomialCT>(this));   
+        ar(m_param, m_a, m_b); 
+    }
+        
+    template <class Archive>
+    void load( Archive & ar )
+    {   
+        ar(cereal::base_class<PolynomialCT>(this));   
+        ar(m_param, m_a, m_b); 
+    }  
+    #endif 
+};
+  
+
 
 /**
  * @brief Implementation of the GSW scheme over the RLWE encryption scheme. It consists of RLWECT(base^i * message).
@@ -315,10 +443,6 @@ class RLWEGadgetCT : public GadgetPolynomialCT{
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.
   /// @param gadget_ct_sk The RLWECT(- base^i * message * secret key) ciphertexts.
   RLWEGadgetCT(std::shared_ptr<const RLWEParam> rlwe_param, std::shared_ptr<Gadget> gadget, std::vector<RLWECT> &gadget_ct, std::vector<RLWECT> &gadget_ct_sk);
-
-  //RLWEGadgetCT(const RLWEGadgetCT& other) = delete;
-
-  //RLWEGadgetCT& operator=(const RLWEGadgetCT other) = delete;
 
   /// @brief Function that initializes deter_ct_a_dec_poly, deter_ct_b_dec_poly, and the pointer tables deter_ct_a_dec and deter_ct_b_dec.
   /// @param gadget_ct The RLWECT(base^i * message) ciphertexts.

@@ -140,7 +140,97 @@ void RLWECT::extract_lwe(LWECT &lwe_ct_out, uint32_t position)const{
     tmp.extract_lwe(lwe_ct_out);
 }
 
+
+RLWECTEvalForm::RLWECTEvalForm(std::shared_ptr<const RLWEParam> param){
+    m_param = param;   
+    
+    param->mul_engine()->init_polynomial_eval_form();
+    m_a = param->mul_engine()->init_polynomial_eval_form();
+    m_b = param->mul_engine()->init_polynomial_eval_form();
+ }
+ 
+RLWECTEvalForm::RLWECTEvalForm(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b){
+    m_param = param;   
+    m_a = param->mul_engine()->init_polynomial_eval_form();
+    m_b = param->mul_engine()->init_polynomial_eval_form();
+    param->mul_engine()->to_eval(*m_a, a);
+    param->mul_engine()->to_eval(*m_b, b); 
+}
+
+RLWECTEvalForm::RLWECTEvalForm(std::shared_ptr<const RLWEParam> param, Polynomial&& a, Polynomial&& b){
+    m_param = std::move(param);   
+    m_a = param->mul_engine()->init_polynomial_eval_form();
+    m_b = param->mul_engine()->init_polynomial_eval_form();
+    param->mul_engine()->to_eval(*m_a, a);
+    param->mul_engine()->to_eval(*m_b, b);
+}
+
+
+RLWECTEvalForm::RLWECTEvalForm(const RLWECTEvalForm &other){
+    m_param = other.m_param;
+    m_a = other.m_a;
+    m_b = other.m_b;
+ }
+
+RLWECTEvalForm& RLWECTEvalForm::operator=(RLWECTEvalForm other){
+    m_param = other.m_param;
+    m_a = other.m_a;
+    m_b = other.m_b;   
+    return *this;
+}
+
+
+void RLWECTEvalForm::homomorphic_rotate(VectorCT &out, int32_t rot)const{
+    /// TODO: Implement
+}
+
+void RLWECTEvalForm::add(VectorCT &out, const VectorCT &ct)const{ 
+    RLWECTEvalForm &out_ptr = static_cast<RLWECTEvalForm&>(out); 
+    const RLWECTEvalForm &ct_ptr = static_cast<const RLWECTEvalForm&>(ct); 
+    m_a->add(*out_ptr.m_a, *ct_ptr.m_a);
+    m_b->add(*out_ptr.m_b, *ct_ptr.m_b);
+}
+
+
+void RLWECTEvalForm::add(RLWECTEvalForm &out, const PolynomialEvalForm &x)const{
+    m_a->add(*out.m_a, x);
+    m_b->add(*out.m_b, x);
+}
+
+void RLWECTEvalForm::sub(VectorCT &out, const VectorCT &ct)const{
+    RLWECTEvalForm &out_ptr = static_cast<RLWECTEvalForm&>(out); 
+    const RLWECTEvalForm &ct_ptr = static_cast<const RLWECTEvalForm&>(ct); 
+    m_a->sub(*out_ptr.m_a, *ct_ptr.m_a);
+    m_b->sub(*out_ptr.m_b, *ct_ptr.m_b);
+}
+ 
+void RLWECTEvalForm::sub(RLWECTEvalForm &out, const PolynomialEvalForm &x)const{
+    m_a->sub(*out.m_a, x);
+    m_b->sub(*out.m_b, x);
+}
   
+void RLWECTEvalForm::mul(RLWECTEvalForm &out, const PolynomialEvalForm &x)const{
+    m_param->mul_engine()->mul(*out.m_a, *m_a, x);
+    m_param->mul_engine()->mul(*out.m_b, *m_b, x); 
+
+}
+
+void RLWECTEvalForm::mul(RLWECTEvalForm &out, int64_t x)const{
+    m_a->mul(*out.m_a, x);
+    m_b->mul(*out.m_b, x);
+}
+
+void RLWECTEvalForm::neg(VectorCT &out)const{
+    RLWECTEvalForm &out_ptr = static_cast<RLWECTEvalForm&>(out);  
+    m_a->neg(*out_ptr.m_a);
+    m_b->neg(*out_ptr.m_b);
+}
+  
+const RLWEParam& RLWECTEvalForm::param()const{
+    return *m_param;
+}
+ 
+
 RLWEParam::RLWEParam(RingType ring, int32_t ring_degree, uint64_t coef_modulus,  PolynomialArithmetic arithmetic){
     m_coef_modulus = coef_modulus; 
     m_size = ring_degree;  
