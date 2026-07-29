@@ -337,6 +337,9 @@ class LWEGadgetCT{
   std::shared_ptr<const LWEParam> m_lwe_param;
   /// @brief Array of pointers to the ciphertexts.  
   std::vector<LWECT> m_ct_content;
+ 
+  /// Give access to m_lwe_sk
+  friend class LWEToRGSWKeySwitchKey;
 
   public: 
    
@@ -402,6 +405,7 @@ class LWEGadgetSK{
     int32_t m_digits;
     /// @brief Number of bits in the base.
     int32_t m_bits_base;  
+
 
   public: 
  

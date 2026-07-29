@@ -46,7 +46,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
             return std::shared_ptr<PolynomialMultiplicationEngine>(new IntelHexlNTTEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No NTT engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(m_degree, m_coef_modulus));
         #endif
     }
     if(m_arithmetic == PolynomialArithmetic::double_fft){ 
@@ -54,7 +54,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
             return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWNegacyclicEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No FFT for double precision engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(m_degree, m_coef_modulus));
         #endif
     }
     if(m_arithmetic == PolynomialArithmetic::long_double_fft){
@@ -62,7 +62,7 @@ std::shared_ptr<PolynomialMultiplicationEngine> PolynomialMultiplicationEngineBu
             return std::shared_ptr<PolynomialMultiplicationEngine>(new FFTWLongNegacyclicEngine(m_degree, m_coef_modulus));
         #else 
             std::cout << "WARNING: No FFT for quadruple precision engine available. Using NaiveNegacyclicMultiplicationEngine." << std::endl;
-            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(degree, coef_modulus));
+            return std::shared_ptr<PolynomialMultiplicationEngine>(new NaiveNegacyclicMultiplicationEngine(m_degree, m_coef_modulus));
         #endif  
     } 
     throw std::logic_error("PolynomialMultiplicationEngineBuilder::build(): Polynomial arithmetic not supported!");

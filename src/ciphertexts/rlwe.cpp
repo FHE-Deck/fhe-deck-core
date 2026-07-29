@@ -18,6 +18,14 @@ RLWECT::RLWECT(std::shared_ptr<const RLWEParam> param, Polynomial&& a, Polynomia
     m_param(std::move(param)), m_a(std::move(a)), m_b(std::move(b))
 { 
 }
+
+RLWECT::RLWECT(const RLWECTEvalForm& other){
+    m_param = other.m_param;   
+    m_a = Polynomial(other.m_a->size(), m_param->modulus());
+    m_b = Polynomial(other.m_b->size(), m_param->modulus());
+    m_param->mul_engine()->to_coef(m_a, *other.m_a);
+    m_param->mul_engine()->to_coef(m_b, *other.m_b); 
+}
  
 RLWECT::RLWECT(const RLWECT &other){ 
     m_param = other.m_param;
@@ -170,6 +178,14 @@ RLWECTEvalForm::RLWECTEvalForm(const RLWECTEvalForm &other){
     m_param = other.m_param;
     m_a = other.m_a;
     m_b = other.m_b;
+ }
+
+ RLWECTEvalForm::RLWECTEvalForm(const RLWECT& other){
+    m_param = other.m_param;
+    m_a = m_param->mul_engine()->init_polynomial_eval_form();
+    m_b = m_param->mul_engine()->init_polynomial_eval_form();
+    m_param->mul_engine()->to_eval(*m_a, other.a()); 
+    m_param->mul_engine()->to_eval(*m_b, other.b()); 
  }
 
 RLWECTEvalForm& RLWECTEvalForm::operator=(RLWECTEvalForm other){
@@ -545,6 +561,10 @@ RLWEGadgetCT RLWEGadgetSK::gadget_encrypt(const std::vector<int64_t>& msg)const{
     Polynomial msg_poly(msg, m_rlwe_sk->param()->size(), m_rlwe_sk->param()->modulus()); 
     return gadget_encrypt(msg_poly);
 }
+
+RLWEGadgetCT RLWEGadgetSK::gadget_encrypt_sk()const{
+    return gadget_encrypt(m_rlwe_sk->m_sk_poly);
+}
   
 std::shared_ptr<GadgetVectorCT> RLWEGadgetSK::gadget_encrypt_as_gadget_vector_ct(const Vector &msg)const{   
     /*
@@ -603,3 +623,8 @@ std::shared_ptr<const RLWEParam> RLWEGadgetSK::param()const{
     return static_pointer_cast<const RLWEParam>(m_vector_ct_param);
 }
 
+
+
+std::shared_ptr<Gadget> RLWEGadgetSK::gadget()const{
+    return m_gadget;
+}

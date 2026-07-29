@@ -3,5 +3,6 @@
 
 #include "keyswitch/lwe_to_lwe_keyswitch.h"
 #include "keyswitch/lwe_to_rlwe_keyswitch.h" 
+#include "keyswitch/lwe_to_rgsw_keyswitch.h" 
 
 #endif 

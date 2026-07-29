@@ -19,6 +19,9 @@
   
 namespace FHEDeck{
  
+  /// Forward declaration so that RLWECT know its about RLWECTEvalForm.
+class RLWECTEvalForm;
+
 /**
  * @brief RLWEParam class is used to store the parameters of the RLWE encryption scheme.
  */
@@ -99,13 +102,15 @@ class RLWECT : public PolynomialCT{
     /// @brief The polynomial b, in the RLWE ciphertext (a, b) s.t. b = a*s + e + M.
     Polynomial m_b;  
 
+    friend class RLWECTEvalForm; 
+
   public:
    
     RLWECT() = default;
 
     /// @brief Constructs a new RLWECT object.
     /// @param param The parameters of the RLWE encryption scheme.
-    RLWECT(std::shared_ptr<const RLWEParam> param);
+    RLWECT(std::shared_ptr<const RLWEParam> param); 
  
     RLWECT(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b);
 
@@ -115,6 +120,9 @@ class RLWECT : public PolynomialCT{
     /// @param other reference to the RLWECT object to be copied.
     RLWECT(const RLWECT &other);
   
+    
+    RLWECT(const RLWECTEvalForm& other);
+
     /// @brief = operator
     /// @param other reference to the RLWECT object to be copied.
     RLWECT& operator=(RLWECT other);
@@ -241,6 +249,8 @@ class RLWECTEvalForm : public PolynomialCT{
     /// @brief The polynomial b, in the RLWE ciphertext (a, b) s.t. b = a*s + e + M.
     std::shared_ptr<PolynomialEvalForm> m_b;  
 
+    friend class RLWECT; 
+
   public:
    
     RLWECTEvalForm() = default;
@@ -248,6 +258,8 @@ class RLWECTEvalForm : public PolynomialCT{
     /// @brief Constructs a new RLWECT object.
     /// @param param The parameters of the RLWE encryption scheme.
     RLWECTEvalForm(std::shared_ptr<const RLWEParam> param);
+
+    RLWECTEvalForm(const RLWECT& other);
  
     RLWECTEvalForm(std::shared_ptr<const RLWEParam> param, const Polynomial& a, const Polynomial& b);
 
@@ -613,6 +625,8 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     RLWEGadgetCT gadget_encrypt(const Vector &msg)const;
 
     RLWEGadgetCT gadget_encrypt(const std::vector<int64_t>& msg)const;
+
+    RLWEGadgetCT gadget_encrypt_sk()const;
        
     /// @brief Encrypts the message msg, and returns the resulting ciphertext.
     /// @param msg The input message.
@@ -637,6 +651,8 @@ class RLWEGadgetSK : public GadgetPolynomialCTSK{
     std::shared_ptr<ExtendedPolynomialCT> extended_encrypt_as_extended_polynomial_ct(const std::vector<int64_t>& msg)const override;  
 
     std::shared_ptr<const RLWEParam> param()const;
+
+    std::shared_ptr<Gadget> gadget()const;
 
     #if defined(USE_CEREAL)
     template <class Archive>
